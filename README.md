@@ -1,5 +1,7 @@
 # Engøya · vær, tidevann og sjø
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/25b2290a-e5dc-40de-bd92-9d6f5939347f/deploy-status)](https://app.netlify.com/projects/engoya/deploys)
+
 Nettsted for Engøya utenfor Ørnes i Meløy. Statisk — ingen API-nøkler, ingen byggesteg.
 Nettleseren henter ferske tall direkte fra åpne, norske datakilder. Lys apple.com-stil:
 varm hvit (`#F9F7F4`), grå kort (`#F5F5F7`), svarte knapper, himmelblått (`#62B1EA`/`#3E8FD0`).

@@ -2,6 +2,10 @@
 # Proxyen gjør at nettleseren kan hente nyhetslisten fra Meløy kommune
 # (kommunens server sender ikke CORS-headere, så direktehenting blokkeres).
 
+[build]
+  # Ren statisk side: ingen byggekommando, publiser repo-rota
+  publish = "."
+
 [[redirects]]
   from = "/meloy-proxy/*"
   to = "https://www.meloy.kommune.no/:splat"
