@@ -37,11 +37,11 @@ const TZ = "Europe/Oslo";
 
 const MENU_LINKS = [
   ["index.html", "Hjem"],
-  ["tidevann.html", "Tidevann"],
   ["vaer.html", "Været"],
   ["vind.html", "Vind"],
-  ["sjo.html", "Sjø og telemetri"],
+  ["tidevann.html", "Tidevann"],
   ["sol.html", "Sol"],
+  ["sjo.html", "Sjø og telemetri"],
   ["himmel.html", "Himmel"],
   ["kart.html", "Kartet"],
 ];
