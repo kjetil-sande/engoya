@@ -10,3 +10,9 @@
   from = "/meloy-proxy/*"
   to = "https://www.meloy.kommune.no/:splat"
   status = 200
+
+# Hold hele siden ute av søkemotorene (Google, Bing m.fl.)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
