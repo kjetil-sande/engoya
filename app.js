@@ -172,8 +172,21 @@ function gradientFor(code) {
   return "cloudy";
 }
 
+/* Lysner en heksfarge mot hvitt (f = 0–1) */
+function lightenHex(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const mix = (v) => Math.round(v + (255 - v) * f).toString(16).padStart(2, "0");
+  return `#${mix(n >> 16)}${mix((n >> 8) & 255)}${mix(n & 255)}`;
+}
+
 function applyCardGradients(code) {
-  const g = GRADIENTS[gradientFor(code)];
+  const key = gradientFor(code);
+  let g = GRADIENTS[key];
+  // På dagtid lysnes de mørkeste forløpene litt, så «Rain» ikke ligner «Night»
+  const erNatt = key === "night";
+  if (!erNatt && (key === "rain" || key === "thunderstorm")) {
+    g = g.map((c) => lightenHex(c, 0.16));
+  }
   document.querySelectorAll('.kort[data-art="vaer"] .kort-illu, .page-hero[data-art="vaer"]').forEach((el) => {
     el.style.background = `linear-gradient(180deg, ${g[0]}, ${g[1]} 52%, ${g[2]})`;
   });
