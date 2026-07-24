@@ -1,5 +1,6 @@
 .DS_Store
 config.local.js
+.env.local
 
 # Rå-originaler (for store) holdes utenfor repoet — de ferdige mp4-ene deployes
 video/*.mov

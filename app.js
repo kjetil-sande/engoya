@@ -26,7 +26,7 @@ const CONFIG = {
     // Film i menyen (autoplay, lydløs, sømløs loop) — byttes automatisk etter været.
     // Sømløse loop-versjoner laget med ffmpeg av råfilene i video/ (se README).
     overskyet: "video/engoya-overskyet.mp4",
-    sommer: "video/engoya-sommer.mp4",
+    sommer: "video/engoya-sol.mp4",
     url: "video/engoya-overskyet.mp4", // standard til værvarselet er lastet
   },
   kryssing: {
@@ -58,6 +58,7 @@ const MENU_LINKS = [
   ["sol.html", "Sol"],
   ["sjo.html", "Sjø og telemetri"],
   ["himmel.html", "Himmel"],
+  ["butikker.html", "Butikker"],
   ["kart.html", "Kartet"],
 ];
 
@@ -1494,6 +1495,139 @@ async function loadNews() {
   }
 }
 
+/* ---------- KOLLEKTIV: HURTIGBÅT + BUSS (Entur) ---------- */
+
+async function loadReise() {
+  const grid = $("#reiseGrid");
+  if (!grid) return;
+
+  const q = `{ stopPlace(id:"NSR:StopPlace:59490") {
+    estimatedCalls(numberOfDepartures: 40, timeRange: 172800) {
+      expectedDepartureTime realtime cancellation
+      destinationDisplay { frontText }
+      serviceJourney { line { publicCode transportMode } }
+    } } }`;
+
+  try {
+    const res = await fetch("https://api.entur.io/journey-planner/v3/graphql", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "ET-Client-Name": "engoya-nettside" },
+      body: JSON.stringify({ query: q }),
+    });
+    if (!res.ok) throw new Error(`Entur ${res.status}`);
+    const calls = (await res.json()).data?.stopPlace?.estimatedCalls || [];
+
+    const now = Date.now();
+    // finn første ikke-innstilte avgang som matcher
+    const forste = (fn) =>
+      calls.find((c) => !c.cancellation && new Date(c.expectedDepartureTime).getTime() > now - 60e3 && fn(c));
+
+    const dest = (c) => (c.destinationDisplay?.frontText || "").toLowerCase();
+    const mode = (c) => c.serviceJourney?.line?.transportMode;
+    const kode = (c) => c.serviceJourney?.line?.publicCode || "";
+
+    const erHurtigbat = (c) => mode(c) === "water" && /^23-/.test(kode(c)); // Nordlandsekspressen Bodø–Sandnessjøen
+    const erBuss = (c) => mode(c) === "bus" && kode(c) === "200";
+
+    const rader = [
+      ["Hurtigbåt", [
+        ["Nordgående", "mot Bodø", forste((c) => erHurtigbat(c) && dest(c).includes("bodø"))],
+        ["Sørgående", "mot Sandnessjøen", forste((c) => erHurtigbat(c) && !dest(c).includes("bodø"))],
+      ]],
+      ["Buss 200", [
+        ["Mot Bodø", "til flyplass/sentrum", forste((c) => erBuss(c) && dest(c).includes("bodø"))],
+        ["Fra Bodø", "mot Glomfjord", forste((c) => erBuss(c) && !dest(c).includes("bodø"))],
+      ]],
+    ];
+
+    grid.innerHTML = rader
+      .map(([tittel, dirs]) => {
+        const rows = dirs
+          .map(([retning, undertekst, call]) => {
+            const tid = call ? reiseTid(call.expectedDepartureTime) : "—";
+            const sanntid = call?.realtime ? ` <span class="reise-live" title="sanntid">●</span>` : "";
+            return `<div class="reise-row">
+              <div><span class="reise-dir">${retning}</span><span class="reise-und">${undertekst}</span></div>
+              <span class="reise-tid">${tid}${sanntid}</span>
+            </div>`;
+          })
+          .join("");
+        return `<div class="card reise-card"><h3 class="reise-tittel">${tittel}</h3>${rows}</div>`;
+      })
+      .join("");
+  } catch (err) {
+    console.warn("Reise:", err);
+    grid.innerHTML = `<div class="card fact-card"><p>Fikk ikke hentet avgangene fra Entur akkurat nå. <a href="https://entur.no" target="_blank" rel="noopener">Sjekk på entur.no ↗</a></p></div>`;
+  }
+}
+
+function reiseTid(iso) {
+  const d = new Date(iso);
+  const idag = dateKey(new Date());
+  const imorgen = dateKey(new Date(Date.now() + 86400e3));
+  const k = dateKey(d);
+  const kl = fmtClock.format(d);
+  if (k === idag) return kl;
+  if (k === imorgen) return `i morgen ${kl}`;
+  return `${capFirst(fmtWeekday.format(d))} ${kl}`;
+}
+
+/* ---------- BUTIKKER (butikker.html) ---------- */
+
+async function loadButikker() {
+  const wrap = $("#butikkListe");
+  if (!wrap) return;
+  try {
+    const res = await fetch("/api/apningstider");
+    const data = await res.json();
+
+    if (res.status === 503) {
+      wrap.innerHTML = `<div class="card fact-card"><p>Åpningstidene kobles til så snart Google-nøkkelen er lagt inn i Netlify (se README).</p></div>`;
+      return;
+    }
+    if (!data.butikker?.length) {
+      wrap.innerHTML = `<div class="card fact-card"><p>Butikklisten er klar til å fylles — legg til butikker i <code>netlify/functions/apningstider.mjs</code>.</p></div>`;
+      return;
+    }
+
+    // Dagens ukedag i Google-rekkefølge (mandag = 0), etter norsk tid
+    const dagNavn = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, weekday: "long" }).format(new Date());
+    const idag = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].indexOf(dagNavn);
+
+    const grupper = new Map();
+    data.butikker.forEach((b) => {
+      if (!grupper.has(b.bransje)) grupper.set(b.bransje, []);
+      grupper.get(b.bransje).push(b);
+    });
+
+    wrap.innerHTML = [...grupper.entries()]
+      .map(([bransje, liste]) => {
+        const rader = liste
+          .map((b) => {
+            const badge =
+              b.apenNa === true ? `<span class="butikk-badge er-apen">Åpent nå</span>`
+              : b.apenNa === false ? `<span class="butikk-badge er-stengt">Stengt</span>`
+              : `<span class="butikk-badge">–</span>`;
+            const dagens = (b.ukedager[idag] || "").replace(/^[^:]+:\s*/, "");
+            const inner = `
+              <span class="butikk-navn">${escapeHtml(b.navn)}</span>
+              <span class="butikk-tid">${escapeHtml(dagens)}</span>
+              ${badge}
+              ${b.lenke ? `<span class="news-arrow">↗</span>` : ""}`;
+            return b.lenke
+              ? `<a class="news-item butikk-item" href="${b.lenke}" target="_blank" rel="noopener">${inner}</a>`
+              : `<div class="news-item butikk-item">${inner}</div>`;
+          })
+          .join("");
+        return `<div class="sec-block"><h2 class="kicker">${escapeHtml(bransje)}</h2><div class="news-list">${rader}</div></div>`;
+      })
+      .join("");
+  } catch (err) {
+    console.warn("Butikker:", err);
+    wrap.innerHTML = `<div class="card fact-card"><p>Fikk ikke hentet åpningstidene akkurat nå — prøv å laste siden på nytt.</p></div>`;
+  }
+}
+
 /* ---------- WEBKAMERA ---------- */
 
 function initWebcam() {
@@ -1608,6 +1742,8 @@ initCarousel();
 loadMoon();
 loadNews();
 loadSunWeek();
+loadButikker();
+loadReise();
 
 loadTide().catch((err) => {
   console.warn("Tidevann:", err);

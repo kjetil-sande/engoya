@@ -467,6 +467,25 @@ main {
 .krysse-tid strong { font-weight: 600; }
 .krysse-info { font-family: var(--font-mono); font-size: .7rem; color: var(--text-3); }
 
+/* ============ KOLLEKTIV / REISE ============ */
+
+.reise-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+.reise-card { padding: 1rem 1.2rem; }
+.reise-tittel { margin: 0 0 .5rem; font-size: 1rem; font-weight: 800; }
+.reise-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: .5rem 0; border-bottom: 1px solid var(--hairline);
+}
+.reise-row:last-child { border-bottom: 0; }
+.reise-dir { display: block; font-weight: 700; font-size: .88rem; }
+.reise-und { display: block; font-size: .72rem; color: var(--text-3); }
+.reise-tid { font-family: var(--font-mono); font-weight: 600; font-size: .95rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.reise-live { color: #1E9E5A; font-size: .7em; vertical-align: middle; }
+
+@media (max-width: 640px) {
+  .reise-grid { grid-template-columns: 1fr; }
+}
+
 /* ============ NYHETER ============ */
 
 .news-list { display: flex; flex-direction: column; gap: .5rem; }
@@ -485,6 +504,27 @@ main {
 .news-arrow { color: var(--text-3); flex: 0 0 auto; }
 
 .news-more { margin: .6rem 0 0; font-family: var(--font-mono); font-size: .72rem; }
+
+/* ============ BUTIKKER ============ */
+
+.butikk-item { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: .8rem; }
+.butikk-navn { font-weight: 700; font-size: .9rem; }
+.butikk-tid { font-family: var(--font-mono); font-size: .74rem; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.butikk-badge {
+  font-size: .62rem; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  border-radius: 999px; padding: .38em .8em;
+  background: var(--panel-2); color: var(--text-2);
+  white-space: nowrap;
+}
+.butikk-badge.er-apen { background: var(--mint); color: #1E5A32; }
+.butikk-badge.er-stengt { background: #FBE5E2; color: #8C2F24; }
+
+@media (max-width: 640px) {
+  .butikk-item { grid-template-columns: 1fr auto; }
+  .butikk-tid { grid-column: 1; }
+  .butikk-badge { grid-row: 1; grid-column: 2; }
+}
 
 /* ============ TIDEVANN ============ */
 

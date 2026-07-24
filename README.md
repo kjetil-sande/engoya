@@ -77,6 +77,29 @@ uten nyhetslisten — den trenger proxy-ruten.)
 følger med, så nyhetene virker ut av boksen. GitHub Pages funker også, men uten
 nyhets-proxyen (seksjonen viser da bare lenken).
 
+## Butikker og åpningstider (Google Places)
+
+`butikker.html` viser butikker gruppert etter bransje med **live «åpent nå»-status** fra
+Google. Henting skjer via serverfunksjonen `netlify/functions/apningstider.mjs`
+(rute `/api/apningstider`), som holder API-nøkkelen skjult og mellomlagrer svaret i
+5 minutter så Google-kvoten holder seg på gratisnivå.
+
+**Engangsoppsett:**
+
+1. [Google Cloud Console](https://console.cloud.google.com): opprett/velg prosjekt →
+   aktiver **Places API (New)** → *Credentials* → lag en **API key** (begrens den gjerne
+   til kun Places API). Fakturering må være aktivert på prosjektet, men med få butikker
+   og mellomlagringen ligger bruken normalt godt innenfor gratiskvoten.
+2. Netlify: *Project configuration → Environment variables* → legg til
+   `GOOGLE_PLACES_KEY` = nøkkelen → **Deploy** på nytt.
+3. Lokalt: lag `.env.local` (git-ignorert) i prosjektmappa med
+   `GOOGLE_PLACES_KEY=nøkkelen`.
+
+**Legge til butikker:** fyll `BUTIKKER`-lista øverst i
+`netlify/functions/apningstider.mjs` med `{ bransje, navn, placeId }`. Place-ID finner
+du med [Googles Place ID Finder](https://developers.google.com/maps/documentation/places/web-service/place-id)
+— eller send navnelisten til Claude, så slås de opp.
+
 ## Webkamera (Foscam)
 
 Kameraet er en Foscam og står på lokalnettet på **`192.168.68.58`, port 88**
