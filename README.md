@@ -40,27 +40,17 @@ sidene automatisk — legg til/endre lenker i `MENU_LINKS` øverst i fila.
 
 ## Film i menyen (værstyrt)
 
-Menypanelet har en filmrute (autoplay, lydløs, sømløs loop) som **bytter etter været**:
-sol/klarvær → sommerfilmen, ellers → den overskyede. Valget skjer i `menuVideoFor()` i
-`app.js`, basert på værsymbolet fra Yr.
+Menypanelet har en filmrute (autoplay, lydløs, loop) som **bytter etter været**: sol/klarvær
+→ `engoya-sommer.mp4`, ellers → `engoya-overskyet.mp4`. Valget skjer i `menuVideoFor()` i
+`app.js`, basert på værsymbolet fra Yr. Klikk på filmen for å se den i **full størrelse**
+(lightbox med kontroller — hele videoen spilles, med lyd hvis man skrur på).
 
-Rå-videoene ligger i `video/` men er **git-ignorert** (for store for repoet). Kun de
-optimaliserte, sømløse loop-filene deployes:
+Hele originalvideoene brukes direkte (ingen klipping). De ferdige mp4-ene ligger i `video/`
+og deployes som de er; kun store råoriginaler (`.mov` / `*-ORIG.*`) er git-ignorert.
 
-| Rå-fil (ignoreres) | Loop som deployes |
-|---|---|
-| `engoya-overskyet.mp4` | `engoya-overskyet-loop.mp4` |
-| `engoya-sommer.mp4` | `engoya-sommer-loop.mp4` |
-
-**Ny eller oppdatert film?** Legg rå-fila i `video/` og lag en sømløs, web-optimalisert
-loop med ffmpeg (juster `start`/`end` til et rolig parti; `offset` = lengde − 1,5):
-
-```bash
-ffmpeg -i video/engoya-sommer.mp4 -filter_complex \
-"[0:v]trim=start=1.5:end=15,setpts=PTS-STARTPTS[v1];[0:v]trim=start=0:end=1.5,setpts=PTS-STARTPTS[v2];[v1][v2]xfade=transition=fade:duration=1.5:offset=12" \
--an -c:v libx264 -crf 26 -preset slow -pix_fmt yuv420p -movflags +faststart \
-video/engoya-sommer-loop.mp4
-```
+**Ny eller oppdatert film?** Bytt ut `video/engoya-sommer.mp4` (eller `-overskyet`) med den
+nye fila — samme filnavn, så virker den automatisk. Web-tips: H.264/`.mp4`, gjerne
+≤ 1280 px bred og komprimert (den overskyede er ~25 MB; lavere er bedre for mobil).
 
 ## Nyheter fra Meløy kommune
 

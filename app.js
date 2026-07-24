@@ -25,9 +25,9 @@ const CONFIG = {
   menuVideo: {
     // Film i menyen (autoplay, lydløs, sømløs loop) — byttes automatisk etter været.
     // Sømløse loop-versjoner laget med ffmpeg av råfilene i video/ (se README).
-    overskyet: "video/engoya-overskyet-loop.mp4",
-    sommer: "video/engoya-sommer-loop.mp4",
-    url: "video/engoya-overskyet-loop.mp4", // standard til værvarselet er lastet
+    overskyet: "video/engoya-overskyet.mp4",
+    sommer: "video/engoya-sommer.mp4",
+    url: "video/engoya-overskyet.mp4", // standard til værvarselet er lastet
   },
   kryssing: {
     // «Tørrskodd til Messøya»: vindu vises når vannstanden er under denne
@@ -109,7 +109,10 @@ function initMenu() {
     .map(([href, label]) => `<a href="${href}"${href === here ? ' class="is-current"' : ""}>${label}</a>`)
     .join("");
   const promo = CONFIG.menuVideo.url
-    ? `<div class="menu-promo"><video src="${CONFIG.menuVideo.url}" autoplay muted loop playsinline></video></div>`
+    ? `<button type="button" class="menu-promo" id="menuPromo" aria-label="Vis filmen i full størrelse">
+         <video src="${CONFIG.menuVideo.url}" autoplay muted loop playsinline preload="metadata"></video>
+         <span class="menu-promo-expand" aria-hidden="true">⤢</span>
+       </button>`
     : `<div class="menu-promo"></div>`;
 
   document.body.insertAdjacentHTML(
@@ -143,6 +146,12 @@ function initMenu() {
           </div>
         </div>
       </div>
+    </div>
+    <div class="video-lightbox" id="videoLightbox" hidden>
+      <button type="button" class="video-lightbox-close" id="lightboxClose" aria-label="Lukk filmen">
+        <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <video id="lightboxVideo" controls autoplay muted loop playsinline></video>
     </div>`
   );
 
@@ -162,6 +171,29 @@ function initMenu() {
   $("#menuClose").addEventListener("click", close);
   overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
   window.addEventListener("keydown", (e) => { if (e.key === "Escape" && !overlay.hidden) close(); });
+
+  // Klikk på filmen → vis den i full størrelse (lightbox)
+  const promoBtn = $("#menuPromo");
+  const lightbox = $("#videoLightbox");
+  const lbVideo = $("#lightboxVideo");
+  if (promoBtn && lightbox && lbVideo) {
+    const openLb = () => {
+      const src = document.querySelector(".menu-promo video")?.getAttribute("src");
+      if (src && lbVideo.getAttribute("src") !== src) { lbVideo.setAttribute("src", src); lbVideo.load(); }
+      lightbox.hidden = false;
+      document.body.classList.add("menu-open");
+      lbVideo.play().catch(() => {});
+    };
+    const closeLb = () => {
+      lightbox.hidden = true;
+      lbVideo.pause();
+      if (overlay.hidden) document.body.classList.remove("menu-open");
+    };
+    promoBtn.addEventListener("click", openLb);
+    $("#lightboxClose").addEventListener("click", closeLb);
+    lightbox.addEventListener("click", (e) => { if (e.target === lightbox) closeLb(); });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape" && !lightbox.hidden) closeLb(); });
+  }
 
   // Pillen gjemmer seg når man scroller ned, og kommer tilbake ved scroll opp
   const topbar = document.querySelector(".topbar");
@@ -466,6 +498,25 @@ function initMap() {
       document.querySelectorAll(".map-btn").forEach((b) => b.classList.toggle("is-active", b === btn));
     });
   });
+
+  // Fullskjerm av/på med minimer-knapp
+  const fsBtn = $("#mapFsBtn");
+  if (fsBtn) {
+    const card = document.querySelector(".map-card");
+    const setLabel = (on) => fsBtn.setAttribute("aria-label", on ? "Lukk fullskjerm" : "Vis kartet i fullskjerm");
+    const toggle = () => {
+      const on = card.classList.toggle("is-fullscreen");
+      document.body.classList.toggle("map-fs-open", on);
+      fsBtn.classList.toggle("is-on", on);
+      setLabel(on);
+      map.invalidateSize();
+      setTimeout(() => map.invalidateSize(), 220); // etter overgang
+    };
+    fsBtn.addEventListener("click", toggle);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && card.classList.contains("is-fullscreen")) toggle();
+    });
+  }
 }
 
 /* ---------- TIDEVANN ---------- */
