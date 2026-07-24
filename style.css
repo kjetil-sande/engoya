@@ -11,7 +11,7 @@
   --hairline:   #E6E4E0;
   --hairline-2: #D8D6D2;
   --text:       #1C1D1F;
-  --text-2:     #6E6E73;
+  --text-2:     #606065;
   --text-3:     #8E8E93;
   --black:      #000000;   /* knapper og markører */
   --blue:       #62B1EA;   /* himmelblå — myke fyll */
@@ -366,6 +366,18 @@ main {
 .chart-legend { display: flex; gap: 1.1rem; margin-bottom: .4rem; font-size: .72rem; font-weight: 600; color: var(--text-2); }
 .chart-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: .35em; vertical-align: -1px; }
 
+.tile-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+
+.stat-tile { display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; padding: 1.3rem 1.4rem; }
+.stat-value {
+  font-weight: 800; font-size: clamp(1.9rem, 4vw, 2.6rem);
+  line-height: 1; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.stat-value small { font-size: .5em; font-weight: 600; color: var(--text-2); }
+.stat-label { font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); }
+.stat-note { font-size: .82rem; color: var(--text-2); }
+
 .hour-list { display: flex; flex-direction: column; }
 .hour-row {
   display: grid;
@@ -388,9 +400,9 @@ main {
 .data-table th {
   text-align: left; font-size: .62rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .09em; color: var(--text-3);
-  padding: .3rem .6rem .3rem 0; border-bottom: 1px solid var(--hairline-2);
+  padding: .3rem .6rem .3rem 8px; border-bottom: 1px solid var(--hairline-2);
 }
-.data-table td { padding: .42rem .6rem .42rem 0; border-bottom: 1px solid var(--hairline); font-variant-numeric: tabular-nums; }
+.data-table td { padding: .42rem .6rem .42rem 8px; border-bottom: 1px solid var(--hairline); font-variant-numeric: tabular-nums; }
 .data-table tr:last-child td { border-bottom: 0; }
 .data-table .num { font-family: var(--font-mono); font-size: .8rem; }
 .data-table .is-now td { font-weight: 700; background: var(--blue-soft); }
@@ -714,6 +726,7 @@ main {
   .tide-layout, .sky-layout, .map-cam-layout { grid-template-columns: 1fr; }
   #map { min-height: 300px; }
   .tele-grid { grid-template-columns: repeat(3, 1fr); }
+  .tile-row { grid-template-columns: 1fr; }
   .kort { flex: 0 0 min(76vw, 320px); height: 460px; }
   /* Værtiles på mobil: rutenett som brekker vertikalt — ingen sidescroll */
   .forecast-grid { grid-template-columns: repeat(3, 1fr); }

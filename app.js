@@ -276,7 +276,7 @@ function lineChart(sel, series, opts = {}) {
         .gc-grid{stroke:#E4E4E9;stroke-width:1}
         .gc-ylab{font:500 10px "Spline Sans Mono",monospace;fill:#86868B;text-anchor:end}
         .gc-xlab{font:500 10px "Spline Sans Mono",monospace;fill:#86868B;text-anchor:middle}
-        .gc-xday{font:600 9px "Spline Sans Mono",monospace;fill:#6E6E73;text-anchor:middle;text-transform:uppercase;letter-spacing:.08em}
+        .gc-xday{font:600 9px "Spline Sans Mono",monospace;fill:#606065;text-anchor:middle;text-transform:uppercase;letter-spacing:.08em}
         .gc-cross{stroke:rgba(28,29,31,.35);stroke-width:1;stroke-dasharray:3 3;opacity:0}
       </style>
       ${opts.unit ? `<text x="${padL - 6}" y="${padT - 12}" class="gc-ylab">${opts.unit}</text>` : ""}
@@ -352,7 +352,7 @@ function barChart(sel, points, opts = {}) {
       <style>
         .gc-grid{stroke:#E4E4E9;stroke-width:1}
         .gc-ylab{font:500 10px "Spline Sans Mono",monospace;fill:#86868B;text-anchor:end}
-        .gc-xday{font:600 9px "Spline Sans Mono",monospace;fill:#6E6E73;text-anchor:middle;text-transform:uppercase;letter-spacing:.08em}
+        .gc-xday{font:600 9px "Spline Sans Mono",monospace;fill:#606065;text-anchor:middle;text-transform:uppercase;letter-spacing:.08em}
       </style>
       ${grid}${bars}${thr}
     </svg>`;
@@ -657,11 +657,11 @@ function renderTideChart(points, events, now) {
       .tc-ylab { font: 500 11px "Spline Sans Mono", monospace; fill: #86868B; text-anchor: end; }
       .tc-tick { stroke: #C7C7CC; stroke-width: 1; }
       .tc-xlab { font: 500 11px "Spline Sans Mono", monospace; fill: #86868B; text-anchor: middle; }
-      .tc-xday { font: 600 10px "Spline Sans Mono", monospace; fill: #6E6E73; text-anchor: middle; letter-spacing: .08em; text-transform: uppercase; }
+      .tc-xday { font: 600 10px "Spline Sans Mono", monospace; fill: #606065; text-anchor: middle; letter-spacing: .08em; text-transform: uppercase; }
       .tc-area { fill: rgba(98, 177, 234, .26); }
       .tc-line { fill: none; stroke: #3E8FD0; stroke-width: 2.2; stroke-linejoin: round; }
       .tc-extreme { fill: #3E8FD0; }
-      .tc-exlab { font: 500 11px "Spline Sans Mono", monospace; fill: #6E6E73; text-anchor: middle; }
+      .tc-exlab { font: 500 11px "Spline Sans Mono", monospace; fill: #606065; text-anchor: middle; }
       .tc-exlab-cm { font: 700 13px "Spline Sans Mono", monospace; fill: #1C1D1F; text-anchor: middle; }
       .tc-now { stroke: #1C1D1F; stroke-width: 1.6; stroke-dasharray: 4 4; }
       .tc-nowdot { fill: #1C1D1F; stroke: #FFFFFF; stroke-width: 2.5; }
@@ -1158,7 +1158,7 @@ function renderSunArc(rise, set, polarDay) {
     <text x="12" y="${cy + 20}" style="font:500 10px 'Spline Sans Mono',monospace;fill:#A08D82;letter-spacing:.1em">ØST</text>
     <text x="${W - 12}" y="${cy + 20}" text-anchor="end" style="font:500 10px 'Spline Sans Mono',monospace;fill:#A08D82;letter-spacing:.1em">VEST</text>
     ${sun}
-    ${f == null ? `<text x="${cx}" y="${cy - 30}" text-anchor="middle" style="font:500 13px 'Montserrat',sans-serif;fill:#6E6E73">Sola er under horisonten</text>` : ""}
+    ${f == null ? `<text x="${cx}" y="${cy - 30}" text-anchor="middle" style="font:500 13px 'Montserrat',sans-serif;fill:#606065">Sola er under horisonten</text>` : ""}
   </svg>`;
 }
 
