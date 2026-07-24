@@ -699,6 +699,17 @@ main {
   padding: .38em .7em; border-radius: 7px;
 }
 
+.cam-ptz { position: absolute; right: .7rem; bottom: .7rem; display: flex; gap: .45rem; }
+.cam-ptz button {
+  width: 42px; height: 42px; border-radius: 50%; border: 0; cursor: pointer;
+  background: rgba(0, 0, 0, .6); backdrop-filter: blur(6px);
+  color: #FFFFFF; font-size: 1rem;
+  display: grid; place-items: center;
+  transition: background .15s ease, transform .1s ease;
+}
+.cam-ptz button:hover { background: rgba(0, 0, 0, .8); }
+.cam-ptz button:active { transform: scale(.92); }
+
 /* ============ FOOTER ============ */
 
 .foot {

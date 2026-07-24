@@ -95,6 +95,16 @@ window.ENGOYA_LOKAL = {
 
 Da virker kameraet lokalt uten at passordet kan havne på GitHub eller nettsiden.
 
+**Panorering (venstre/høyre)**: sett `ptz: true` i `config.local.js` — da får kamerabildet
+◀ ▶-knapper (hold inne for å svinge, slipp for å stoppe). Vis aldri disse offentlig:
+alle som ser knappene kan styre kameraet.
+
+**Fjernaksess**: nettverket har DDNS-adressen `engoy.tplinkdns.com`. Kameraets port 88
+er (fornuftig nok) *ikke* videresendt ut på internett per nå — utenfra svarer bare
+ruterens 80/443. Skal kameraet nås utenfra, må det settes opp portvideresending i
+Deco-appen (ekstern port → 192.168.68.58:88) — men les sikkerhetspunktene under først;
+for den offentlige siden er FTP-opplasting fortsatt den trygge løsningen.
+
 ### ⚠ Viktig om sikkerhet
 
 - **Alle som åpner nettsiden kan lese adressen — med brukernavn og passord.** Samme

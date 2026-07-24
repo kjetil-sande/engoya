@@ -18,6 +18,9 @@ const CONFIG = {
     url: "",
     type: "image",     // "image" (stillbilde som oppdateres) eller "iframe"
     refreshSec: 60,
+    // Panorering (venstre/høyre) for Foscam: sett true i config.local.js.
+    // Knappene vises kun når url-en er et Foscam CGI-endepunkt.
+    ptz: false,
   },
   menuVideo: {
     // Film i menyen (spilles automatisk i loop, uten lyd).
@@ -1437,11 +1440,27 @@ function initWebcam() {
     return;
   }
 
+  const kanStyre = CONFIG.webcam.ptz && url.includes("CGIProxy.fcgi");
   card.innerHTML = `
     <div class="cam-live">
       <img id="camImg" src="${url}" alt="Direktebilde fra webkameraet på Engøya">
       <span class="cam-stamp" id="camStamp">direkte</span>
+      ${kanStyre ? `<div class="cam-ptz">
+        <button type="button" data-cmd="ptzMoveLeft" aria-label="Sving kameraet mot venstre">◀</button>
+        <button type="button" data-cmd="ptzMoveRight" aria-label="Sving kameraet mot høyre">▶</button>
+      </div>` : ""}
     </div>`;
+
+  // Hold inne for å svinge — slipp for å stoppe (Foscam PTZ-kommandoer)
+  if (kanStyre) {
+    const cgi = (cmd) => fetch(url.replace(/cmd=[^&]+/, `cmd=${cmd}`), { mode: "no-cors" }).catch(() => {});
+    card.querySelectorAll(".cam-ptz button").forEach((btn) => {
+      btn.addEventListener("pointerdown", () => cgi(btn.dataset.cmd));
+      ["pointerup", "pointerleave", "pointercancel"].forEach((ev) =>
+        btn.addEventListener(ev, () => cgi("ptzStopRun"))
+      );
+    });
+  }
 
   const img = $("#camImg");
   const stamp = $("#camStamp");
