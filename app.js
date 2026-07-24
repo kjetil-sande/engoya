@@ -39,6 +39,7 @@ const MENU_LINKS = [
   ["index.html", "Hjem"],
   ["tidevann.html", "Tidevann"],
   ["vaer.html", "Været"],
+  ["vind.html", "Vind"],
   ["sjo.html", "Sjø og telemetri"],
   ["sol.html", "Sol"],
   ["himmel.html", "Himmel"],
@@ -195,6 +196,173 @@ function symbolIcon(code) {
   return "cloudy.png";
 }
 
+/* ---------- GRAFHJELPERE (gjenbrukes på dybdesidene) ---------- */
+
+const chartRedraws = [];
+let chartsResizeHooked = false;
+function hookChartsResize() {
+  if (chartsResizeHooked) return;
+  chartsResizeHooked = true;
+  let rT;
+  window.addEventListener("resize", () => {
+    clearTimeout(rT);
+    rT = setTimeout(() => chartRedraws.forEach((fn) => fn()), 200);
+  });
+}
+
+function niceStep(span) {
+  const raw = (span || 1) / 4;
+  const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+  for (const m of [1, 2, 2.5, 5, 10]) if (raw <= m * pow) return m * pow;
+  return 10 * pow;
+}
+
+/* Linjegraf med 1–2 serier, rutenett, døgnmerker og avlesing */
+function lineChart(sel, series, opts = {}) {
+  const wrap = $(sel);
+  if (!wrap || !series.length || !series[0].points.length) return;
+
+  const draw = () => {
+    const rect = wrap.getBoundingClientRect();
+    const W = Math.max(320, Math.round(rect.width || 640));
+    const H = opts.height || 230;
+    const padL = 42, padR = 14, padT = 26, padB = 34;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const all = series.flatMap((s) => s.points);
+    const t0 = Math.min(...all.map((p) => p.t)), t1 = Math.max(...all.map((p) => p.t));
+    let vMax = Math.max(...all.map((p) => p.v));
+    let vMin = 0;
+    if (opts.zeroBase === false) {
+      vMin = Math.min(...all.map((p) => p.v));
+      const span = vMax - vMin || 1;
+      vMin -= span * 0.2; vMax += span * 0.2;
+    } else {
+      vMax = Math.max(vMax * 1.15, opts.minMax || 1);
+    }
+    const step = niceStep(vMax - vMin);
+    vMin = Math.floor(vMin / step) * step;
+    vMax = Math.ceil(vMax / step) * step;
+    const x = (t) => padL + ((t - t0) / (t1 - t0 || 1)) * plotW;
+    const y = (v) => padT + (1 - (v - vMin) / (vMax - vMin || 1)) * plotH;
+
+    let grid = "";
+    for (let v = vMin; v <= vMax + 1e-9; v += step) {
+      grid += `<line x1="${padL}" y1="${y(v)}" x2="${W - padR}" y2="${y(v)}" class="gc-grid"/><text x="${padL - 6}" y="${y(v) + 3.5}" class="gc-ylab">${nbNum(v)}</text>`;
+    }
+    let xt = "";
+    const ft = new Date(t0); ft.setMinutes(0, 0, 0);
+    for (let t = ft.getTime(); t <= t1; t += 3600e3) {
+      const h = osloHour(new Date(t));
+      if (h % 6 !== 0 || t < t0) continue;
+      xt += `<text x="${x(t)}" y="${H - padB + 16}" class="gc-xlab">${String(h).padStart(2, "0")}</text>`;
+      if (h === 0) xt += `<text x="${x(t)}" y="${H - padB + 29}" class="gc-xday">${fmtWeekday.format(new Date(t))}</text>`;
+    }
+    const paths = series
+      .map((s, i) => {
+        const d = s.points.map((p, j) => `${j ? "L" : "M"}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join("");
+        const area = i === 0 && opts.area !== false
+          ? `<path d="${d}L${x(t1).toFixed(1)},${y(vMin)}L${x(t0).toFixed(1)},${y(vMin)}Z" fill="${s.color}" opacity=".15"/>`
+          : "";
+        return `${area}<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.2" stroke-linejoin="round"${s.dash ? ` stroke-dasharray="${s.dash}"` : ""}/>`;
+      })
+      .join("");
+    const legend = series.length > 1
+      ? `<div class="chart-legend">${series.map((s) => `<span><i style="background:${s.color}"></i>${s.name}</span>`).join("")}</div>`
+      : "";
+
+    wrap.innerHTML = `${legend}
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opts.label || ""}">
+      <style>
+        .gc-grid{stroke:#E4E4E9;stroke-width:1}
+        .gc-ylab{font:500 10px "Spline Sans Mono",monospace;fill:#86868B;text-anchor:end}
+        .gc-xlab{font:500 10px "Spline Sans Mono",monospace;fill:#86868B;text-anchor:middle}
+        .gc-xday{font:600 9px "Spline Sans Mono",monospace;fill:#6E6E73;text-anchor:middle;text-transform:uppercase;letter-spacing:.08em}
+        .gc-cross{stroke:rgba(28,29,31,.35);stroke-width:1;stroke-dasharray:3 3;opacity:0}
+      </style>
+      ${opts.unit ? `<text x="${padL - 6}" y="${padT - 12}" class="gc-ylab">${opts.unit}</text>` : ""}
+      ${grid}${xt}${paths}
+      <line class="gc-cross" x1="0" x2="0" y1="${padT}" y2="${H - padB}"/>
+      <rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="transparent"/>
+    </svg>
+    <div class="chart-tip" hidden></div>`;
+
+    const svgEl = wrap.querySelector("svg");
+    const tip = wrap.querySelector(".chart-tip");
+    const cross = wrap.querySelector(".gc-cross");
+    const nearest = (s, t) => {
+      let best = s.points[0];
+      for (const p of s.points) if (Math.abs(p.t - t) < Math.abs(best.t - t)) best = p;
+      return best;
+    };
+    svgEl.addEventListener("pointermove", (ev) => {
+      const r = svgEl.getBoundingClientRect();
+      const fx = ((ev.clientX - r.left) / r.width) * W;
+      if (fx < padL || fx > W - padR) { cross.style.opacity = 0; tip.hidden = true; return; }
+      const t = t0 + ((fx - padL) / plotW) * (t1 - t0);
+      cross.setAttribute("x1", fx); cross.setAttribute("x2", fx);
+      cross.style.opacity = 1;
+      tip.hidden = false;
+      tip.textContent = `kl. ${fmtClock.format(new Date(t))} · ` + series.map((s) => `${series.length > 1 ? s.name + " " : ""}${nbNum(nearest(s, t).v)}${opts.unit ? " " + opts.unit : ""}`).join(" · ");
+      tip.style.left = `${(fx / W) * r.width}px`;
+      tip.style.top = `${padT}px`;
+    });
+    svgEl.addEventListener("pointerleave", () => { cross.style.opacity = 0; tip.hidden = true; });
+  };
+
+  draw();
+  chartRedraws.push(draw);
+  hookChartsResize();
+}
+
+/* Stolpegraf (brukes til Kp-prognosen) */
+function barChart(sel, points, opts = {}) {
+  const wrap = $(sel);
+  if (!wrap || !points.length) return;
+
+  const draw = () => {
+    const rect = wrap.getBoundingClientRect();
+    const W = Math.max(320, Math.round(rect.width || 640));
+    const H = opts.height || 210;
+    const padL = 34, padR = 10, padT = 20, padB = 34;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const vMax = opts.vMax || Math.max(...points.map((p) => p.v)) * 1.2;
+    const y = (v) => padT + (1 - v / vMax) * plotH;
+    const bw = Math.max(4, plotW / points.length - 3);
+
+    let grid = "";
+    for (let v = 0; v <= vMax + 1e-9; v += opts.step || niceStep(vMax)) {
+      grid += `<line x1="${padL}" y1="${y(v)}" x2="${W - padR}" y2="${y(v)}" class="gc-grid"/><text x="${padL - 6}" y="${y(v) + 3.5}" class="gc-ylab">${nbNum(v, 0)}</text>`;
+    }
+    let bars = "", xt = "", lastDay = "";
+    points.forEach((p, i) => {
+      const bx = padL + (i / points.length) * plotW;
+      const hi = opts.hi != null && p.v >= opts.hi;
+      bars += `<rect x="${bx.toFixed(1)}" y="${y(p.v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y(0) - y(p.v)).toFixed(1)}" rx="2.5" fill="${hi ? "#1C1D1F" : "#3E8FD0"}"><title>${capFirst(fmtWeekday.format(new Date(p.t)))} kl. ${fmtClock.format(new Date(p.t))} · ${opts.name || ""} ${nbNum(p.v)}</title></rect>`;
+      const day = fmtWeekday.format(new Date(p.t));
+      if (day !== lastDay) {
+        xt += `<text x="${bx + bw / 2}" y="${H - padB + 16}" class="gc-xday">${day}</text>`;
+        lastDay = day;
+      }
+    });
+    const thr = opts.threshold != null
+      ? `<line x1="${padL}" y1="${y(opts.threshold)}" x2="${W - padR}" y2="${y(opts.threshold)}" stroke="#1C1D1F" stroke-width="1.2" stroke-dasharray="5 4"/><text x="${W - padR}" y="${y(opts.threshold) - 5}" class="gc-ylab" text-anchor="end" style="text-anchor:end">${opts.thresholdLabel || ""}</text>`
+      : "";
+
+    wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opts.label || ""}">
+      <style>
+        .gc-grid{stroke:#E4E4E9;stroke-width:1}
+        .gc-ylab{font:500 10px "Spline Sans Mono",monospace;fill:#86868B;text-anchor:end}
+        .gc-xday{font:600 9px "Spline Sans Mono",monospace;fill:#6E6E73;text-anchor:middle;text-transform:uppercase;letter-spacing:.08em}
+      </style>
+      ${grid}${bars}${thr}
+    </svg>`;
+  };
+
+  draw();
+  chartRedraws.push(draw);
+  hookChartsResize();
+}
+
 /* ---------- KARTET (kart.html) ---------- */
 
 function initMap() {
@@ -303,8 +471,36 @@ async function loadTide() {
   renderNextTide(events, now);
   renderTideTable(events, now);
   renderKryssing(points, now);
+  renderTideExtras(events);
   if (points.length > 5) renderTideChart(points, events, now);
   else $("#tideChartLoading")?.remove();
+}
+
+/* Ukas ytterpunkter + spring/nipp (tidevann.html) */
+function renderTideExtras(events) {
+  const el = $("#tideWeekStats");
+  if (!el || !events.length) return;
+
+  const flos = events.filter((e) => e.high);
+  const fjas = events.filter((e) => !e.high);
+  const rad = (navn, e) =>
+    `<tr><td>${navn}</td><td class="num">${capFirst(fmtWeekday.format(e.time))} ${fmtDayMonth.format(e.time)} kl. ${fmtClock.format(e.time)}</td><td class="num">${nbNum(Math.round(e.cm), 0)} cm</td></tr>`;
+  let html = "";
+  if (flos.length) html += rad("Ukas høyeste flo", flos.reduce((a, b) => (b.cm > a.cm ? b : a)));
+  if (fjas.length) html += rad("Ukas laveste fjære", fjas.reduce((a, b) => (b.cm < a.cm ? b : a)));
+  el.innerHTML = html;
+
+  // Spring eller nipp? (følger månefasen)
+  const synodic = 29.53058867;
+  const epoch = Date.UTC(2000, 0, 6, 18, 14) / 86400e3;
+  const phase = (((Date.now() / 86400e3 - epoch) % synodic) + synodic) % synodic;
+  const distNyFull = Math.min(phase, Math.abs(phase - synodic / 2), synodic - phase);
+  const distKvart = Math.min(Math.abs(phase - synodic / 4), Math.abs(phase - (3 * synodic) / 4));
+  let txt;
+  if (distNyFull <= 2.5) txt = "Vi er i springperioden nå — ekstra stor forskjell på flo og fjære. Springvirkningen topper seg et par døgn etter ny- eller fullmåne.";
+  else if (distKvart <= 2.5) txt = "Vi er i nipperioden nå — minst forskjell på flo og fjære (månen står i kvarter).";
+  else txt = "Vi er mellom spring og nipp — middels forskjell på flo og fjære.";
+  setText("#springNipp", txt);
 }
 
 /* «Tørrskodd til Messøya»: vinduer der vannstanden er under terskelen */
@@ -605,6 +801,9 @@ async function loadWeather() {
       d.windMax = inst.wind_speed;
       d.windDir = inst.wind_from_direction || 0;
     }
+    if (inst.wind_speed_of_gust != null && inst.wind_speed_of_gust > (d.gustMax ?? -1)) {
+      d.gustMax = inst.wind_speed_of_gust;
+    }
     const s6 = entry.data.next_6_hours?.summary?.symbol_code;
     if (s6) {
       if (!(h in d.symbols)) d.symbols[h] = s6;
@@ -673,6 +872,14 @@ async function loadWeather() {
 
   setText("#footNote", `Hentet ${fmtClock.format(new Date())} · oppdater siden for ferske tall`);
 
+  // Dybdesidene (fyller bare det som finnes på siden)
+  renderVindPage(first, series, list);
+  renderHourly(series);
+  renderTempChart(series);
+  if (json.properties.meta?.updated_at) {
+    setText("#varselOppdatert", `Varselet fra Meteorologisk institutt ble sist oppdatert kl. ${fmtClock.format(new Date(json.properties.meta.updated_at))}. Tallene gjelder punktet 66,8706° N, 13,6733° Ø.`);
+  }
+
   // Været-dagskortet
   if (list.length) {
     const d0 = list[0][1];
@@ -683,6 +890,111 @@ async function loadWeather() {
     if (heroIcon) heroIcon.src = `ikoner/${symbolIcon(daySym)}`;
     setText("#kVaerSub", d0.precip >= 0.1 ? `${nbNum(d0.precip)} mm nedbør i vente` : "Tørt resten av dagen");
   }
+}
+
+/* ---------- VIND-SIDEN ---------- */
+
+const BEAUFORT = [
+  [0, 0.2, "Stille"], [0.3, 1.5, "Flau vind"], [1.6, 3.3, "Svak vind"],
+  [3.4, 5.4, "Lett bris"], [5.5, 7.9, "Laber bris"], [8.0, 10.7, "Frisk bris"],
+  [10.8, 13.8, "Liten kuling"], [13.9, 17.1, "Stiv kuling"], [17.2, 20.7, "Sterk kuling"],
+  [20.8, 24.4, "Liten storm"], [24.5, 28.4, "Full storm"], [28.5, 32.6, "Sterk storm"],
+  [32.7, 99, "Orkan"],
+];
+const beaufortName = (ms) => BEAUFORT.find(([lo, hi]) => ms >= lo && ms <= hi)?.[2] || "";
+
+function renderVindPage(first, series, list) {
+  if (!$("#vindChartWrap")) return;
+
+  // Nå-tall
+  if (first.wind_speed != null) {
+    setStat("#vindNowVal", `${nbNum(first.wind_speed, 0)}<small> m/s</small>`);
+    setText("#vindNowNote", beaufortName(first.wind_speed).toLowerCase());
+  }
+  if (first.wind_speed_of_gust != null) setStat("#vindKastVal", `${nbNum(first.wind_speed_of_gust, 0)}<small> m/s</small>`);
+  if (first.wind_from_direction != null) {
+    setStat("#vindDirVal", `<span class="w-arrow" style="display:inline-block;transform:rotate(${Math.round(first.wind_from_direction + 180)}deg)">↑</span> ${compassName(first.wind_from_direction)}`);
+    setText("#vindDirNote", `vinden kommer fra ${compassName(first.wind_from_direction)}`);
+  }
+
+  // 48-timersgraf: vind + kast
+  const cutoff = Date.now() + 48 * 3600e3;
+  const vindPts = [], kastPts = [];
+  series.forEach((e) => {
+    const t = new Date(e.time).getTime();
+    if (t > cutoff) return;
+    const i = e.data.instant?.details || {};
+    if (i.wind_speed != null) vindPts.push({ t, v: i.wind_speed });
+    if (i.wind_speed_of_gust != null) kastPts.push({ t, v: i.wind_speed_of_gust });
+  });
+  lineChart("#vindChartWrap", [
+    { name: "Vind", color: "#3E8FD0", points: vindPts },
+    { name: "Kast", color: "#1C1D1F", points: kastPts, dash: "4 4" },
+  ], { unit: "m/s", label: "Vind og vindkast neste to døgn" });
+
+  // 7-dagerstabell
+  const week = $("#vindWeek");
+  if (week && list) {
+    week.innerHTML = list
+      .map(([k, d]) => {
+        const day = k === dateKey(new Date()) ? "I dag" : capFirst(fmtWeekday.format(d.date));
+        return `<tr>
+          <td>${day} <span class="num" style="color:var(--text-3)">${fmtDayMonth.format(d.date)}</span></td>
+          <td class="num">${d.windMax >= 0 ? nbNum(d.windMax, 0) + " m/s" : "–"}</td>
+          <td class="num">${d.gustMax != null ? nbNum(d.gustMax, 0) + " m/s" : "–"}</td>
+          <td><span class="w-arrow" style="display:inline-block;color:var(--blue-deep);font-weight:700;transform:rotate(${Math.round(d.windDir + 180)}deg)">↑</span> ${compassName(d.windDir)}</td>
+          <td>${beaufortName(d.windMax)}</td>
+        </tr>`;
+      })
+      .join("");
+  }
+
+  // Beaufort-tabell med dagens nivå markert
+  const bt = $("#beaufortTable");
+  if (bt) {
+    const nowMs = first.wind_speed ?? -1;
+    bt.innerHTML = BEAUFORT.map(([lo, hi, navn], i) => {
+      const er = nowMs >= lo && nowMs <= hi;
+      return `<tr${er ? ' class="is-now"' : ""}><td class="num">${i}</td><td>${navn}</td><td class="num">${nbNum(lo)}–${hi === 99 ? "" : nbNum(hi)} m/s</td></tr>`;
+    }).join("");
+  }
+}
+
+/* ---------- VÆR-SIDEN: time for time + temperaturgraf ---------- */
+
+function renderHourly(series) {
+  const list = $("#hourList");
+  if (!list) return;
+  const rows = series
+    .filter((e) => e.data.next_1_hours)
+    .slice(0, 24)
+    .map((e) => {
+      const t = new Date(e.time);
+      const i = e.data.instant?.details || {};
+      const mm = e.data.next_1_hours?.details?.precipitation_amount ?? 0;
+      const sym = e.data.next_1_hours?.summary?.symbol_code;
+      return `<div class="hour-row">
+        <span class="hour-kl">${fmtClock.format(t)}</span>
+        <img src="ikoner/${symbolIcon(sym)}" alt="">
+        <span class="hour-temp">${i.air_temperature != null ? Math.round(i.air_temperature) + "°" : "–"}</span>
+        <span class="hour-nedbor${mm >= 0.1 ? "" : " is-dry"}">${mm >= 0.1 ? nbNum(mm) + " mm" : "tørt"}</span>
+        <span class="hour-vind"><span class="w-arrow" style="transform:rotate(${Math.round((i.wind_from_direction || 0) + 180)}deg)">↑</span> ${nbNum(i.wind_speed ?? 0, 0)} m/s</span>
+      </div>`;
+    });
+  list.innerHTML = rows.join("");
+}
+
+function renderTempChart(series) {
+  if (!$("#tempChartWrap")) return;
+  const cutoff = Date.now() + 48 * 3600e3;
+  const pts = [];
+  series.forEach((e) => {
+    const t = new Date(e.time).getTime();
+    if (t > cutoff) return;
+    const v = e.data.instant?.details?.air_temperature;
+    if (v != null) pts.push({ t, v });
+  });
+  lineChart("#tempChartWrap", [{ name: "Temperatur", color: "#3E8FD0", points: pts }], { unit: "°C", zeroBase: false, label: "Temperatur neste to døgn" });
 }
 
 function renderTelemetry(first, series) {
@@ -751,6 +1063,30 @@ async function loadOcean() {
   if (d.sea_water_speed != null) {
     setStat("#current", `${nbNum(d.sea_water_speed)}<small> m/s</small>`);
     if (d.sea_water_to_direction != null) setText("#currentNote", `setter mot ${compassName(d.sea_water_to_direction)}`);
+  }
+
+  // Dybdesiden: grafer for sjøtemperatur og bølger + badetemperatur-skala
+  const cutoff = Date.now() + 48 * 3600e3;
+  const tempPts = [], bolgePts = [];
+  json.properties.timeseries.forEach((e) => {
+    const t = new Date(e.time).getTime();
+    if (t > cutoff) return;
+    const i = e.data.instant?.details || {};
+    if (i.sea_water_temperature != null) tempPts.push({ t, v: i.sea_water_temperature });
+    if (i.sea_surface_wave_height != null) bolgePts.push({ t, v: i.sea_surface_wave_height });
+  });
+  lineChart("#sjoTempChartWrap", [{ name: "Sjøtemperatur", color: "#3E8FD0", points: tempPts }], { unit: "°C", zeroBase: false, label: "Sjøtemperatur neste to døgn" });
+  lineChart("#bolgeChartWrap", [{ name: "Bølgehøyde", color: "#3E8FD0", points: bolgePts }], { unit: "m", label: "Bølgehøyde neste to døgn" });
+
+  const skala = $("#badeSkala");
+  if (skala && d.sea_water_temperature != null) {
+    const nivaer = [[0, 5.9, "Iskaldt — kun for ekte vikinger"], [6, 9.9, "Friskt, for å si det pent"], [10, 12.9, "Forfriskende dukkert"], [13, 15.9, "Fint badevann — til Nordland å være"], [16, 99, "Nesten sydentilstander"]];
+    skala.innerHTML = nivaer
+      .map(([lo, hi, txt]) => {
+        const er = d.sea_water_temperature >= lo && d.sea_water_temperature <= hi;
+        return `<tr${er ? ' class="is-now"' : ""}><td class="num">${nbNum(lo, 0)}–${hi === 99 ? "" : nbNum(hi, 0)}°</td><td>${txt}</td></tr>`;
+      })
+      .join("");
   }
 }
 
@@ -832,6 +1168,48 @@ function updateHimmelSub() {
   if (parts.length) setText("#kHimmelSub", parts.join(" · "));
 }
 
+/* Soltider for hele uka (sol.html) */
+async function loadSunWeek() {
+  const tb = $("#solWeek");
+  if (!tb) return;
+  try {
+    const dates = [...Array(7)].map((_, i) => dateKey(new Date(Date.now() + i * 86400e3)));
+    const svar = await Promise.all(
+      dates.map((dt) =>
+        fetch(`https://api.met.no/weatherapi/sunrise/3.0/sun?lat=${POS.lat}&lon=${POS.lon}&date=${dt}&offset=%2B02%3A00`).then((r) => r.json())
+      )
+    );
+    let forrige = null;
+    const todayKey = dateKey(new Date());
+    tb.innerHTML = svar
+      .map((j, i) => {
+        const p = j.properties || {};
+        const rise = p.sunrise?.time ? new Date(p.sunrise.time) : null;
+        const set = p.sunset?.time ? new Date(p.sunset.time) : null;
+        const dt = new Date(Date.now() + i * 86400e3);
+        const dag = dateKey(dt) === todayKey ? "I dag" : capFirst(fmtWeekday.format(dt));
+        if (!rise || !set) {
+          forrige = null;
+          return `<tr><td>${dag} <span class="num" style="color:var(--text-3)">${fmtDayMonth.format(dt)}</span></td><td colspan="4">${p.solarnoon?.visible ? "Midnattssol — sola går ikke ned" : "Mørketid — sola kommer ikke opp"}</td></tr>`;
+        }
+        const len = Math.round((set - rise) / 60e3);
+        const endring = forrige != null ? len - forrige : null;
+        forrige = len;
+        return `<tr${dateKey(dt) === todayKey ? ' class="is-now"' : ""}>
+          <td>${dag} <span class="num" style="color:var(--text-3)">${fmtDayMonth.format(dt)}</span></td>
+          <td class="num">${fmtClock.format(rise)}</td>
+          <td class="num">${fmtClock.format(set)}</td>
+          <td class="num">${Math.floor(len / 60)} t ${String(len % 60).padStart(2, "0")} m</td>
+          <td class="num">${endring == null ? "–" : (endring >= 0 ? "+" : "−") + Math.abs(endring) + " min"}</td>
+        </tr>`;
+      })
+      .join("");
+  } catch (err) {
+    console.warn("Soluke:", err);
+    tb.innerHTML = `<tr><td colspan="5"><span class="err">⚠ Fikk ikke hentet soltidene for uka.</span></td></tr>`;
+  }
+}
+
 function loadMoon() {
   const synodic = 29.53058867;
   const epoch = Date.UTC(2000, 0, 6, 18, 14) / 86400e3;
@@ -843,6 +1221,20 @@ function loadMoon() {
   setText("#moonName", names);
   himmelSub.moon = `${emoji} ${names.toLowerCase()}`;
   updateHimmelSub();
+
+  // Månekalender (himmel.html): neste nymåne og fullmåne
+  const cal = $("#moonCal");
+  if (cal) {
+    const d = 86400e3;
+    const tilNy = (synodic - phase) * d;
+    const tilFull = (phase < synodic / 2 ? synodic / 2 - phase : synodic + synodic / 2 - phase) * d;
+    const fmt = (ms) => {
+      const dt = new Date(Date.now() + ms);
+      return `${capFirst(fmtWeekday.format(dt))} ${fmtDayMonth.format(dt)} (om ${Math.round(ms / d)} d.)`;
+    };
+    cal.innerHTML = `<tr><td>🌕 Neste fullmåne</td><td class="num">${fmt(tilFull)}</td></tr>
+      <tr><td>🌑 Neste nymåne</td><td class="num">${fmt(tilNy)}</td></tr>`;
+  }
 }
 
 async function loadAurora() {
@@ -877,6 +1269,15 @@ async function loadAurora() {
   setText("#kHimmelValue", chance);
   himmelSub.kp = `Kp ${nbNum(kp)}`;
   updateHimmelSub();
+
+  // Kp-prognose neste tre døgn (himmel.html)
+  if ($("#kpChartWrap")) {
+    const pts = rows
+      .filter((r) => r.observed !== "observed")
+      .map((r) => ({ t: Date.parse(`${r.time_tag}Z`), v: Number(r.kp) }))
+      .filter((p) => p.t >= now - 3 * 3600e3 && p.t <= now + 72 * 3600e3);
+    barChart("#kpChartWrap", pts, { vMax: 9, step: 3, hi: 4, threshold: 2, thresholdLabel: "synlig herfra (ca.)", name: "Kp", label: "Kp-prognose neste tre døgn" });
+  }
 }
 
 /* ---------- BLÅSKJELL + POLLEN ---------- */
@@ -1033,6 +1434,7 @@ initPollen();
 initCarousel();
 loadMoon();
 loadNews();
+loadSunWeek();
 
 loadTide().catch((err) => {
   console.warn("Tidevann:", err);

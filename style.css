@@ -357,6 +357,52 @@ main {
 .kort-btn:hover:not(:disabled) { background: var(--hairline-2); }
 .kort-btn:disabled { opacity: .35; cursor: default; }
 
+/* ============ DYBDESIDER: grafer, timelister og tabeller ============ */
+
+.sec-block { margin-top: 1.2rem; }
+.block-title { margin: 0 0 .6rem; font-size: .95rem; font-weight: 800; }
+.block-sub { margin: -.4rem 0 .6rem; font-size: .8rem; color: var(--text-2); }
+
+.chart-legend { display: flex; gap: 1.1rem; margin-bottom: .4rem; font-size: .72rem; font-weight: 600; color: var(--text-2); }
+.chart-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: .35em; vertical-align: -1px; }
+
+.hour-list { display: flex; flex-direction: column; }
+.hour-row {
+  display: grid;
+  grid-template-columns: 3.2em 34px 3.2em 1fr 4.6em;
+  align-items: center; gap: .7rem;
+  padding: .34rem 0;
+  border-bottom: 1px solid var(--hairline);
+  font-variant-numeric: tabular-nums;
+}
+.hour-row:last-child { border-bottom: 0; }
+.hour-kl { font-family: var(--font-mono); font-size: .78rem; color: var(--text-2); }
+.hour-row img { height: 30px; width: auto; justify-self: center; }
+.hour-temp { font-weight: 800; font-size: .92rem; }
+.hour-nedbor { font-family: var(--font-mono); font-size: .74rem; color: var(--blue-deep); }
+.hour-nedbor.is-dry { color: var(--text-3); }
+.hour-vind { font-family: var(--font-mono); font-size: .74rem; color: var(--text-2); text-align: right; }
+.hour-vind .w-arrow { display: inline-block; color: var(--blue-deep); font-weight: 700; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+.data-table th {
+  text-align: left; font-size: .62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .09em; color: var(--text-3);
+  padding: .3rem .6rem .3rem 0; border-bottom: 1px solid var(--hairline-2);
+}
+.data-table td { padding: .42rem .6rem .42rem 0; border-bottom: 1px solid var(--hairline); font-variant-numeric: tabular-nums; }
+.data-table tr:last-child td { border-bottom: 0; }
+.data-table .num { font-family: var(--font-mono); font-size: .8rem; }
+.data-table .is-now td { font-weight: 700; background: var(--blue-soft); }
+.data-table .is-now td:first-child { border-radius: 8px 0 0 8px; }
+.data-table .is-now td:last-child { border-radius: 0 8px 8px 0; }
+.table-scroll { overflow-x: auto; }
+
+.fact-card { background: var(--lavender); }
+.fact-card.warm { background: var(--peach); }
+.fact-card p { margin: .3rem 0 0; font-size: .86rem; }
+.fact-card p:first-of-type { margin-top: .5rem; }
+
 /* ============ TØRRSKODD TIL MESSØYA ============ */
 
 .krysse-card { background: var(--mint); margin-bottom: .7rem; }
@@ -669,8 +715,8 @@ main {
   #map { min-height: 300px; }
   .tele-grid { grid-template-columns: repeat(3, 1fr); }
   .kort { flex: 0 0 min(76vw, 320px); height: 460px; }
-  .forecast-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .4rem; }
-  .fc-day { flex: 0 0 104px; scroll-snap-align: start; }
+  /* Værtiles på mobil: rutenett som brekker vertikalt — ingen sidescroll */
+  .forecast-grid { grid-template-columns: repeat(3, 1fr); }
   .cam-placeholder { padding: 2rem 1.2rem; }
 }
 
