@@ -6,7 +6,7 @@
 
 :root {
   --bg:         #F9F7F4;   /* varm hvit — sidebakgrunn */
-  --panel:      #F5F5F7;   /* grå kort */
+  --panel:      #FFFFFF;   /* hvite kort/tiles mot den varme bakgrunnen */
   --panel-2:    #ECECEF;
   --hairline:   #E6E4E0;
   --hairline-2: #D8D6D2;
@@ -59,7 +59,9 @@ a:hover { color: var(--blue); }
   justify-content: center;
   padding: 12px;
   pointer-events: none;
+  transition: transform .3s ease, opacity .3s ease;
 }
+.topbar.is-hidden { transform: translateY(-120%); opacity: 0; }
 
 .menu-pill {
   pointer-events: auto;
@@ -83,7 +85,7 @@ a:hover { color: var(--blue); }
   border-radius: 10px;
   transition: background .15s ease;
 }
-.menu-burger:hover, .menu-close:hover { background: var(--panel); }
+.menu-burger:hover, .menu-close:hover { background: #F2F2F4; }
 
 .menu-overlay {
   position: fixed; inset: 0;
@@ -368,7 +370,7 @@ main {
 
 .tile-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
 
-.stat-tile { display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; padding: 1.3rem 1.4rem; }
+.stat-tile { background: #FFFFFF; display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; padding: 1.3rem 1.4rem; }
 .stat-value {
   font-weight: 800; font-size: clamp(1.9rem, 4vw, 2.6rem);
   line-height: 1; letter-spacing: -.02em;
@@ -418,6 +420,7 @@ main {
 /* ============ TØRRSKODD TIL MESSØYA ============ */
 
 .krysse-card { background: var(--mint); margin-bottom: .7rem; }
+.sund-card { background: #E4F0FA; }
 .krysse-title { margin: 0; font-size: 1.02rem; font-weight: 800; }
 .krysse-list { display: flex; flex-direction: column; gap: .4rem; margin-top: .7rem; }
 .krysse-item {
@@ -485,7 +488,7 @@ main {
   border: 1px solid var(--hairline);
   border-radius: 7px;
   padding: .32em .5em;
-  background: #FFFFFF;
+  background: #F4F4F6;
   display: inline-flex; align-items: center; gap: .4em;
   font-variant-numeric: tabular-nums;
 }
@@ -651,7 +654,7 @@ main {
   font-family: var(--font-sans);
 }
 .map-btn.is-active { background: var(--black); color: #FFFFFF; }
-.map-btn:not(.is-active):hover { background: var(--panel); }
+.map-btn:not(.is-active):hover { background: #F0F0F2; }
 
 .side-stack { display: flex; flex-direction: column; gap: .7rem; }
 
@@ -737,6 +740,11 @@ main {
   /* Litt større tekst på mobil (+10 %) */
   html { font-size: 110%; }
   body { font-size: 16.5px; }
+  /* Menypillen 15 % større på mobil */
+  .menu-pill { gap: 18px; padding: 9px 12px 9px 14px; }
+  .menu-pill .menu-logo img { height: 34.5px; }
+  .menu-burger { width: 44px; height: 39px; }
+  .menu-burger svg { width: 21px; height: 16px; }
   /* Menyen på mobil: filmen legger seg under lenkene */
   .menu-cols { grid-template-columns: 1fr; gap: 1rem; }
   .menu-promo { aspect-ratio: 16 / 9; }

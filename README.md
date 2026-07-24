@@ -76,14 +76,24 @@ nyhets-proxyen (seksjonen viser da bare lenken).
 
 ## Webkamera (Foscam)
 
-Foscam (HD-modellene) har innebygd CGI-API. Stillbildet ligger på:
+Kameraet er en Foscam og står på lokalnettet på **`192.168.68.58`, port 88**
+(bekreftet: CGI-API-et svarer, web-UI «IPCam Client», Foscam-MAC). Stillbildet ligger på:
 
 ```
-http://KAMERA-ADRESSE:PORT/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr=BRUKER&pwd=PASSORD
+http://192.168.68.58:88/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr=BRUKER&pwd=PASSORD
 ```
 
-(Eldre modeller: `/snapshot.cgi?user=…&pwd=…`.) Lim adressen inn i `CONFIG.webcam.url`
-øverst i `app.js`.
+**Til lokal bruk**: ikke legg adressen (med passord) i `app.js` — repoet og siden er
+offentlige. Lag heller fila `config.local.js` i prosjektmappa (git-ignorert, lastes
+automatisk hvis den finnes):
+
+```js
+window.ENGOYA_LOKAL = {
+  webcam: { url: "http://192.168.68.58:88/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr=BRUKER&pwd=PASSORD" },
+};
+```
+
+Da virker kameraet lokalt uten at passordet kan havne på GitHub eller nettsiden.
 
 ### ⚠ Viktig om sikkerhet
 

@@ -30,7 +30,18 @@ const CONFIG = {
     // terskelen (cm over sjøkartnull). Anslag — juster etter erfaring!
     maksVannstand: 120,
   },
+  baatsund: {
+    // «Gjennom sundet med lettbåt»: vindu vises når vannstanden er over denne
+    // terskelen (cm over sjøkartnull). Anslag — juster etter erfaring!
+    minVannstand: 170,
+  },
 };
+
+/* Lokal overstyring (git-ignorert): lag config.local.js med f.eks.
+   window.ENGOYA_LOKAL = { webcam: { url: "http://192.168.68.58:88/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr=…&pwd=…" } };
+   Da funker kameraet hjemme uten at passordet noensinne havner i repoet. */
+if (window.ENGOYA_LOKAL?.webcam) Object.assign(CONFIG.webcam, window.ENGOYA_LOKAL.webcam);
+if (window.ENGOYA_LOKAL?.menuVideo) Object.assign(CONFIG.menuVideo, window.ENGOYA_LOKAL.menuVideo);
 
 const POS = { lat: 66.8706, lon: 13.6733 };
 const TZ = "Europe/Oslo";
@@ -147,6 +158,22 @@ function initMenu() {
   $("#menuClose").addEventListener("click", close);
   overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
   window.addEventListener("keydown", (e) => { if (e.key === "Escape" && !overlay.hidden) close(); });
+
+  // Pillen gjemmer seg når man scroller ned, og kommer tilbake ved scroll opp
+  const topbar = document.querySelector(".topbar");
+  let lastY = window.scrollY;
+  window.addEventListener(
+    "scroll",
+    () => {
+      const y = window.scrollY;
+      const delta = y - lastY;
+      if (y < 80) topbar.classList.remove("is-hidden");
+      else if (delta > 6) topbar.classList.add("is-hidden");
+      else if (delta < -6) topbar.classList.remove("is-hidden");
+      lastY = y;
+    },
+    { passive: true }
+  );
 }
 
 /* ---------- VÆRGRADIENT + IKONER ---------- */
@@ -484,6 +511,7 @@ async function loadTide() {
   renderNextTide(events, now);
   renderTideTable(events, now);
   renderKryssing(points, now);
+  renderSund(points, now);
   renderTideExtras(events);
   if (points.length > 5) renderTideChart(points, events, now);
   else $("#tideChartLoading")?.remove();
@@ -516,37 +544,36 @@ function renderTideExtras(events) {
   setText("#springNipp", txt);
 }
 
-/* «Tørrskodd til Messøya»: vinduer der vannstanden er under terskelen */
-function renderKryssing(points, now) {
-  const list = $("#krysseList");
-  if (!list) return;
-  const T = CONFIG.kryssing.maksVannstand;
-  setText("#krysseTerskel", nbNum(T, 0));
-
+/* Finner sammenhengende vinduer i kurven der vannstanden består testen */
+function finnVinduer(points, test) {
   const wins = [];
-  let start = null, min = Infinity, prev = null;
+  let cur = null;
   points.forEach((p) => {
-    if (p.cm <= T) {
-      if (!start) { start = p.time; min = p.cm; }
-      if (p.cm < min) min = p.cm;
-      prev = p.time;
-    } else if (start) {
-      wins.push({ from: start, to: prev, min });
-      start = null; min = Infinity;
+    if (test(p.cm)) {
+      if (!cur) cur = { from: p.time, to: p.time, min: p.cm, max: p.cm, minT: p.time, maxT: p.time };
+      cur.to = p.time;
+      if (p.cm < cur.min) { cur.min = p.cm; cur.minT = p.time; }
+      if (p.cm > cur.max) { cur.max = p.cm; cur.maxT = p.time; }
+    } else if (cur) {
+      wins.push(cur);
+      cur = null;
     }
   });
-  if (start) wins.push({ from: start, to: points[points.length - 1].time, min });
+  if (cur) wins.push(cur);
+  return wins;
+}
 
+function renderVinduListe(listEl, wins, now, info, tomtekst) {
   const todayKey = dateKey(now);
   const tomorrowKey = dateKey(new Date(now.getTime() + 86400e3));
   const upcoming = wins.filter((w) => w.to > now).slice(0, 4);
 
   if (!upcoming.length) {
-    list.innerHTML = `<div class="krysse-item"><span class="krysse-day">Ingen vindu det neste halvannet døgnet</span><span class="krysse-info">vannstanden holder seg over ${nbNum(T, 0)} cm</span></div>`;
+    listEl.innerHTML = `<div class="krysse-item"><span class="krysse-day">Ingen vindu det neste halvannet døgnet</span><span class="krysse-info">${tomtekst}</span></div>`;
     return;
   }
 
-  list.innerHTML = upcoming
+  listEl.innerHTML = upcoming
     .map((w) => {
       const k = dateKey(w.from);
       const day = k === todayKey ? "I dag" : k === tomorrowKey ? "I morgen" : capFirst(fmtWeekday.format(w.from));
@@ -554,10 +581,47 @@ function renderKryssing(points, now) {
       return `<div class="krysse-item">
         <span class="krysse-day">${day}</span>
         <span class="krysse-tid"><strong>${fmtClock.format(w.from)}–${fmtClock.format(w.to)}</strong></span>
-        <span class="krysse-info">ca. ${varighet} min · lavest ${nbNum(Math.round(w.min), 0)} cm</span>
+        <span class="krysse-info">ca. ${varighet} min · ${info(w)}</span>
       </div>`;
     })
     .join("");
+}
+
+/* «Tørrskodd til Messøya»: vinduer der vannstanden er under terskelen */
+function renderKryssing(points, now) {
+  const list = $("#krysseList");
+  if (!list) return;
+  const T = CONFIG.kryssing.maksVannstand;
+  setText("#krysseTerskel", nbNum(T, 0));
+  renderVinduListe(
+    list,
+    finnVinduer(points, (cm) => cm <= T),
+    now,
+    (w) => `lavest ${nbNum(Math.round(w.min), 0)} cm`,
+    `vannstanden holder seg over ${nbNum(T, 0)} cm`
+  );
+}
+
+/* «Gjennom sundet med lettbåt»: vinduer der vannstanden er over terskelen */
+function renderSund(points, now) {
+  const list = $("#sundList");
+  if (!list) return;
+  const T = CONFIG.baatsund.minVannstand;
+  setText("#sundTerskel", nbNum(T, 0));
+  // Maks to timer per vindu, sentrert rundt flo-toppen
+  const vinduer = finnVinduer(points, (cm) => cm >= T).map((w) => {
+    const en_t = 3600e3;
+    const from = new Date(Math.max(w.from.getTime(), w.maxT.getTime() - en_t));
+    const to = new Date(Math.min(w.to.getTime(), w.maxT.getTime() + en_t));
+    return { ...w, from, to };
+  });
+  renderVinduListe(
+    list,
+    vinduer,
+    now,
+    (w) => `høyest ${nbNum(Math.round(w.max), 0)} cm`,
+    `vannstanden når ikke opp til ${nbNum(T, 0)} cm`
+  );
 }
 
 function renderNextTide(events, now) {
