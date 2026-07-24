@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tidevann · Engøya</title>
+  <meta name="description" content="Flo og fjære for Engøya i Meløy: tidevannskurve og tabell for uka fremover, beregnet av Kartverket.">
+  <meta name="theme-color" content="#F9F7F4">
+  <link rel="icon" href="engoya-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="with-topbar">
+  <section class="sec in" id="tidevann">
+    <div class="page-hero" style="background-image: url('bilder/tidevann.jpg')">
+      <h1 class="page-hero-title">Tidevann</h1>
+    </div>
+
+    <div class="card krysse-card">
+      <h2 class="krysse-title">🚶 Tørrskodd til Messøya</h2>
+      <p class="mini-note">Vindu rundt fjære sjø, når vannstanden er under <span id="krysseTerskel">–</span>&nbsp;cm over sjøkartnull.</p>
+      <div class="krysse-list" id="krysseList">
+        <div class="chart-loading">Beregner …</div>
+      </div>
+      <p class="fine-print">Terskelen er et anslag — juster «maksVannstand» i app.js etter erfaring. Vind og værbidrag kan endre vannstanden, så vurder alltid forholdene selv.</p>
+    </div>
+
+    <div class="tide-layout">
+      <div class="card chart-card">
+        <div class="chart-wrap" id="tideChartWrap">
+          <div class="chart-loading" id="tideChartLoading">Henter fra Kartverket …</div>
+          <div class="chart-tip" id="tideTip" hidden></div>
+        </div>
+      </div>
+      <div class="card table-card">
+        <div class="tide-days" id="tideDays"></div>
+        <p class="fine-print" id="tideStationInfo">cm over sjøkartnull · norsk lokaltid</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p class="foot-line" id="footNote"></p>
+  <p class="foot-line">Tidevann: <a href="https://www.kartverket.no/til-sjos/se-havniva" target="_blank" rel="noopener">Kartverket</a> (CC BY 4.0)</p>
+  <p class="foot-line">Til kos og planlegging — ikke til navigasjon.</p>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>

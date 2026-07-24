@@ -1,0 +1,8 @@
+# Netlify-oppsett for Engøya-siden.
+# Proxyen gjør at nettleseren kan hente nyhetslisten fra Meløy kommune
+# (kommunens server sender ikke CORS-headere, så direktehenting blokkeres).
+
+[[redirects]]
+  from = "/meloy-proxy/*"
+  to = "https://www.meloy.kommune.no/:splat"
+  status = 200

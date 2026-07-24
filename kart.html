@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kartet · Engøya</title>
+  <meta name="description" content="Kart over Engøya i Meløy — Kartverkets landkart og sjøkart, med fakta om øya.">
+  <meta name="theme-color" content="#F9F7F4">
+  <link rel="icon" href="engoya-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="with-topbar">
+  <section class="sec in" id="kart">
+    <h1 class="page-title">Kartet</h1>
+    <div class="map-cam-layout">
+      <div class="card map-card">
+        <div id="map" aria-label="Kart over Engøya"></div>
+        <div class="map-toggle" role="group" aria-label="Velg karttype">
+          <button type="button" class="map-btn is-active" data-layer="topo">Land</button>
+          <button type="button" class="map-btn" data-layer="sjo">Sjøkart</button>
+        </div>
+      </div>
+      <div class="side-stack">
+        <aside class="card facts-card">
+          <dl class="facts">
+            <div><dt>Posisjon</dt><dd>66,8706°&nbsp;N · 13,6733°&nbsp;Ø</dd></div>
+            <div><dt>Kommune</dt><dd>Meløy, Nordland</dd></div>
+            <div><dt>Nærmeste sted</dt><dd>Ørnes</dd></div>
+            <div><dt>Polarsirkelen</dt><dd>35 km sør for øya</dd></div>
+            <div><dt>Tidevann</dt><dd>fra Bodø, −5&nbsp;min ×&nbsp;0,97</dd></div>
+          </dl>
+          <p class="facts-links">
+            <a href="https://www.google.com/maps/place/Eng%C3%B8ya/@66.8708489,13.6695165,728m/data=!3m1!1e3" target="_blank" rel="noopener">Google&nbsp;Maps&nbsp;↗</a>
+            <a href="https://norgeskart.no/#!?project=norgeskart&layers=1002&zoom=13&lat=7427000&lon=467000" target="_blank" rel="noopener">norgeskart.no&nbsp;↗</a>
+          </p>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p class="foot-line" id="footNote"></p>
+  <p class="foot-line">Kart: © Kartverket (åpen visningstjeneste)</p>
+  <p class="foot-line">Til kos og planlegging — ikke til navigasjon.</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="app.js" defer></script>
+</body>
+</html>

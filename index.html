@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Engøya · vær, tidevann og sjø</title>
+  <meta name="description" content="Oppslagstavle for Engøya utenfor Ørnes i Meløy: flo og fjære, vær, sjø, sol, pollen, webkamera og siste nytt fra Meløy.">
+  <meta name="theme-color" content="#F9F7F4">
+  <meta property="og:title" content="Engøya · vær, tidevann og sjø">
+  <meta property="og:description" content="Flo og fjære, vær og sjø for Engøya i Meløy — rett utenfor Ørnes.">
+  <link rel="icon" href="engoya-logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="with-topbar">
+
+  <section class="sec" id="idag">
+    <h2 class="kicker">I dag</h2>
+    <div class="kort-track" id="kortTrack" tabindex="0" aria-label="Nøkkeltall for i dag — bla sidelengs">
+
+      <article class="kort" data-art="vaer">
+        <div class="kort-illu" aria-hidden="true"></div>
+        <h3 class="kort-title">Vær</h3>
+        <img class="kort-ikon" id="kVaerIcon" src="ikoner/cloudy.png" alt="" aria-hidden="true">
+        <div class="kort-bottom">
+          <div class="kort-data">
+            <span class="kort-label">Akkurat nå</span>
+            <span class="kort-value" id="kVaerTemp">–</span>
+            <span class="kort-sub" id="kVaerSub"></span>
+          </div>
+          <a class="kort-cta" href="vaer.html">Prognoser</a>
+        </div>
+      </article>
+
+      <article class="kort" data-art="vind">
+        <div class="kort-illu" aria-hidden="true"></div>
+        <h3 class="kort-title">Vind</h3>
+        <div class="kort-bottom">
+          <div class="kort-data">
+            <span class="kort-label">Akkurat nå</span>
+            <span class="kort-value" id="kVindValue">–</span>
+            <span class="kort-sub" id="kVindSub"></span>
+          </div>
+          <a class="kort-cta" href="vaer.html">Se tabell</a>
+        </div>
+      </article>
+
+      <article class="kort" data-art="tidevann">
+        <div class="kort-illu" aria-hidden="true"></div>
+        <h3 class="kort-title">Tidevann</h3>
+        <div class="kort-bottom">
+          <div class="kort-data">
+            <span class="kort-label" id="kTideLabel">Neste</span>
+            <span class="kort-value" id="kTideValue">–</span>
+            <span class="kort-sub" id="kTideSub"></span>
+          </div>
+          <a class="kort-cta" href="tidevann.html">Se tabell</a>
+        </div>
+      </article>
+
+      <article class="kort" data-art="sol">
+        <div class="kort-illu" aria-hidden="true"></div>
+        <h3 class="kort-title">Sol</h3>
+        <div class="kort-bottom">
+          <div class="kort-data">
+            <span class="kort-label">Daglengde</span>
+            <span class="kort-value" id="kSolValue">–</span>
+            <span class="kort-sub" id="kSolSub"></span>
+          </div>
+          <a class="kort-cta" href="sol.html">Se tabell</a>
+        </div>
+      </article>
+
+      <article class="kort" data-art="pollen">
+        <div class="kort-illu" aria-hidden="true"></div>
+        <h3 class="kort-title">Pollen</h3>
+        <div class="kort-bottom">
+          <div class="kort-data">
+            <span class="kort-label">Sesong nå</span>
+            <span class="kort-value" id="kPollenValue">–</span>
+            <span class="kort-sub" id="kPollenSub"></span>
+          </div>
+          <a class="kort-cta" href="https://www.pollenvarslingen.no" target="_blank" rel="noopener">Sjekk nivå</a>
+        </div>
+      </article>
+
+      <article class="kort" data-art="hav">
+        <div class="kort-illu" aria-hidden="true"></div>
+        <h3 class="kort-title">Hav</h3>
+        <div class="kort-bottom">
+          <div class="kort-data">
+            <span class="kort-label">Temperatur i sjøen</span>
+            <span class="kort-value" id="kSjoValue">–</span>
+            <span class="kort-sub" id="kSjoSub"></span>
+          </div>
+          <a class="kort-cta" href="sjo.html">Se tabell</a>
+        </div>
+      </article>
+
+      <article class="kort" data-art="himmel">
+        <div class="kort-illu" aria-hidden="true"></div>
+        <h3 class="kort-title">Himmel</h3>
+        <div class="kort-bottom">
+          <div class="kort-data">
+            <span class="kort-label">Nordlys</span>
+            <span class="kort-value" id="kHimmelValue">–</span>
+            <span class="kort-sub" id="kHimmelSub"></span>
+          </div>
+          <a class="kort-cta" href="himmel.html">Prognoser</a>
+        </div>
+      </article>
+
+    </div>
+    <div class="kort-nav">
+      <button type="button" class="kort-btn" id="kortPrev" aria-label="Forrige kort" disabled>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 2 4 7l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="kort-btn" id="kortNext" aria-label="Neste kort">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m5 2 5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section class="sec" id="nyheter">
+    <h2 class="kicker">Siste nytt fra Meløy kommune</h2>
+    <div class="news-list" id="newsList">
+      <div class="chart-loading">Henter nyheter …</div>
+    </div>
+    <p class="news-more"><a href="https://www.meloy.kommune.no" target="_blank" rel="noopener">Alle nyheter fra Meløy kommune&nbsp;↗</a></p>
+  </section>
+
+  <section class="sec" id="webkamera">
+    <h2 class="kicker">Webkamera</h2>
+    <div class="card cam-card" id="camCard"></div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <p class="foot-line" id="footNote"></p>
+  <p class="foot-line">Vær og sjø: <a href="https://www.yr.no" target="_blank" rel="noopener">MET / Yr</a> (CC BY 4.0) · Tidevann: <a href="https://www.kartverket.no/til-sjos/se-havniva" target="_blank" rel="noopener">Kartverket</a> (CC BY 4.0) · Kart: © Kartverket · Nordlys: NOAA · Foto: Unsplash</p>
+  <p class="foot-line">Til kos og planlegging — ikke til navigasjon.</p>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>

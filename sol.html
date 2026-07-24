@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sol · Engøya</title>
+  <meta name="description" content="Sola over Engøya i Meløy: soloppgang, solnedgang, daglengde, midnattssol og UV.">
+  <meta name="theme-color" content="#F9F7F4">
+  <link rel="icon" href="engoya-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="with-topbar">
+  <section class="sec in" id="sol">
+    <div class="page-hero" style="background-image: url('bilder/sol.jpg')">
+      <h1 class="page-hero-title">Sol</h1>
+    </div>
+    <div class="sky-layout">
+      <div class="card sun-card">
+        <div class="sun-arc-wrap" id="sunArcWrap"></div>
+        <div class="sun-times" id="sunTimes"></div>
+      </div>
+      <div class="sky-side">
+        <div class="card mini-tile mini-tile-warm">
+          <div class="moon-row">
+            <span class="uv-badge" id="uvBig">–</span>
+            <div>
+              <span class="tele-label">UV-indeks</span>
+              <span class="mini-note">klarværsverdi akkurat nå — fra Yr</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p class="foot-line" id="footNote"></p>
+  <p class="foot-line">Soltider og UV: <a href="https://www.yr.no" target="_blank" rel="noopener">MET / Yr</a> (CC BY 4.0)</p>
+  <p class="foot-line">Til kos og planlegging — ikke til navigasjon.</p>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>
