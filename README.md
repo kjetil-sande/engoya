@@ -38,16 +38,29 @@ sidene automatisk — legg til/endre lenker i `MENU_LINKS` øverst i fila.
 - Pollen-kortet viser sesongstatus (grovt, månedsbasert) — Norge har ikke noe åpent
   pollen-API, så selve nivået sjekkes hos pollenvarslingen.no
 
-## Film i menyen
+## Film i menyen (værstyrt)
 
-Menypanelet har en filmrute (autoplay, lydløs, loop). Legg filmen i prosjektet
-(f.eks. `film/engoya.mp4`, H.264, gjerne under ~20 MB) og pek på den øverst i `app.js`:
+Menypanelet har en filmrute (autoplay, lydløs, sømløs loop) som **bytter etter været**:
+sol/klarvær → sommerfilmen, ellers → den overskyede. Valget skjer i `menuVideoFor()` i
+`app.js`, basert på værsymbolet fra Yr.
 
-```js
-menuVideo: { url: "film/engoya.mp4" },
+Rå-videoene ligger i `video/` men er **git-ignorert** (for store for repoet). Kun de
+optimaliserte, sømløse loop-filene deployes:
+
+| Rå-fil (ignoreres) | Loop som deployes |
+|---|---|
+| `engoya-overskyet.mp4` | `engoya-overskyet-loop.mp4` |
+| `engoya-sommer.mp4` | `engoya-sommer-loop.mp4` |
+
+**Ny eller oppdatert film?** Legg rå-fila i `video/` og lag en sømløs, web-optimalisert
+loop med ffmpeg (juster `start`/`end` til et rolig parti; `offset` = lengde − 1,5):
+
+```bash
+ffmpeg -i video/engoya-sommer.mp4 -filter_complex \
+"[0:v]trim=start=1.5:end=15,setpts=PTS-STARTPTS[v1];[0:v]trim=start=0:end=1.5,setpts=PTS-STARTPTS[v2];[v1][v2]xfade=transition=fade:duration=1.5:offset=12" \
+-an -c:v libx264 -crf 26 -preset slow -pix_fmt yuv420p -movflags +faststart \
+video/engoya-sommer-loop.mp4
 ```
-
-Tomt felt viser hav-bildet med «Her kommer film fra øya».
 
 ## Nyheter fra Meløy kommune
 

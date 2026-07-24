@@ -1,2 +1,8 @@
 .DS_Store
 config.local.js
+
+# Store råvideoer holdes utenfor repoet — kun de optimaliserte løkkene deployes
+video/*.mov
+video/*.mp4
+!video/engoya-overskyet-loop.mp4
+!video/engoya-sommer-loop.mp4

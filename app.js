@@ -23,10 +23,11 @@ const CONFIG = {
     ptz: false,
   },
   menuVideo: {
-    // Film i menyen (spilles automatisk i loop, uten lyd).
-    // engoya-loop.mp4 er en sømløs loop-utgave av video/engoya-web.mp4 —
-    // ny film? Legg fila i video/ og pek på den her.
-    url: "video/engoya-loop.mp4",
+    // Film i menyen (autoplay, lydløs, sømløs loop) — byttes automatisk etter været.
+    // Sømløse loop-versjoner laget med ffmpeg av råfilene i video/ (se README).
+    overskyet: "video/engoya-overskyet-loop.mp4",
+    sommer: "video/engoya-sommer-loop.mp4",
+    url: "video/engoya-overskyet-loop.mp4", // standard til værvarselet er lastet
   },
   kryssing: {
     // «Tørrskodd til Messøya»: vindu vises når vannstanden er under denne
@@ -177,6 +178,25 @@ function initMenu() {
     },
     { passive: true }
   );
+}
+
+/* Menyfilm etter været: sol/klarvær → sommer, ellers → overskyet */
+function menuVideoFor(code) {
+  if (!code) return CONFIG.menuVideo.url;
+  const base = code.replace(/_(day|night|polartwilight)$/, "");
+  const solrikt = base === "clearsky" || base === "fair";
+  return solrikt ? CONFIG.menuVideo.sommer : CONFIG.menuVideo.overskyet;
+}
+
+function updateMenuVideo(code) {
+  const v = document.querySelector(".menu-promo video");
+  if (!v) return;
+  const src = menuVideoFor(code);
+  if (src && !(v.getAttribute("src") || "").endsWith(src)) {
+    v.setAttribute("src", src);
+    v.load();
+    v.play().catch(() => {});
+  }
 }
 
 /* ---------- VÆRGRADIENT + IKONER ---------- */
@@ -834,6 +854,7 @@ async function loadWeather() {
     series[0].data.next_6_hours?.summary?.symbol_code ||
     series[0].data.next_12_hours?.summary?.symbol_code;
   applyCardGradients(sym0);
+  updateMenuVideo(sym0);
 
   const first = series[0].data.instant.details;
 
@@ -843,13 +864,18 @@ async function loadWeather() {
     setStat("#kVaerTemp", `${Math.round(first.air_temperature)}°<small> (føles som ${Math.round(fl)}°)</small>`);
   }
 
-  // Vind-dagskortet
+  // Vind-dagskortet: middelvind–kast som range (kastene kjennes mest på øya)
   if (first.wind_speed != null) {
-    setStat("#kVindValue", `${nbNum(first.wind_speed, 0)} m/s`);
-    const vb = [];
-    if (first.wind_speed_of_gust != null) vb.push(`kast ${nbNum(first.wind_speed_of_gust, 0)} m/s`);
-    if (first.wind_from_direction != null) vb.push(`fra ${compassName(first.wind_from_direction)}`);
-    setText("#kVindSub", vb.join(" · "));
+    const mean = first.wind_speed, gust = first.wind_speed_of_gust;
+    if (gust != null && gust - mean >= 1) {
+      setStat("#kVindValue", `${nbNum(mean, 0)}–${nbNum(gust, 0)} m/s`);
+    } else {
+      setStat("#kVindValue", `${nbNum(mean, 0)} m/s`);
+    }
+    const sub = [];
+    if (first.wind_from_direction != null) sub.push(`Fra ${compassName(first.wind_from_direction)}`);
+    sub.push(`${beaufortName(gust ?? mean).toLowerCase()} i kastene`);
+    setText("#kVindSub", sub.join(" · "));
   }
 
   renderTelemetry(first, series);
