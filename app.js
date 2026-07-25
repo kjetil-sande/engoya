@@ -8,20 +8,6 @@
 /* ---------- INNSTILLINGER ---------- */
 
 const CONFIG = {
-  webcam: {
-    // Adressen til kamerabildet. For Foscam (HD-modeller) er stillbilde-adressen:
-    //   http://KAMERA-ADRESSE:PORT/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr=BRUKER&pwd=PASSORD
-    //
-    // ⚠ VIKTIG: alle som åpner nettsiden kan lese denne adressen — inkludert
-    //   brukernavn og passord. Greit hjemme; på en offentlig side bør kameraet
-    //   heller laste opp bilder via FTP. Se «Webkamera» i README.md.
-    url: "",
-    type: "image",     // "image" (stillbilde som oppdateres) eller "iframe"
-    refreshSec: 60,
-    // Panorering (venstre/høyre) for Foscam: sett true i config.local.js.
-    // Knappene vises kun når url-en er et Foscam CGI-endepunkt.
-    ptz: false,
-  },
   menuVideo: {
     // Film i menyen (autoplay, lydløs, sømløs loop) — byttes automatisk etter været.
     // Sømløse loop-versjoner laget med ffmpeg av råfilene i video/ (se README).
@@ -42,9 +28,7 @@ const CONFIG = {
 };
 
 /* Lokal overstyring (git-ignorert): lag config.local.js med f.eks.
-   window.ENGOYA_LOKAL = { webcam: { url: "http://192.168.68.58:88/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr=…&pwd=…" } };
-   Da funker kameraet hjemme uten at passordet noensinne havner i repoet. */
-if (window.ENGOYA_LOKAL?.webcam) Object.assign(CONFIG.webcam, window.ENGOYA_LOKAL.webcam);
+   window.ENGOYA_LOKAL = { menuVideo: { sommer: "video/min-film.mp4" } }; */
 if (window.ENGOYA_LOKAL?.menuVideo) Object.assign(CONFIG.menuVideo, window.ENGOYA_LOKAL.menuVideo);
 
 const POS = { lat: 66.8706, lon: 13.6733 };
@@ -1628,65 +1612,6 @@ async function loadButikker() {
   }
 }
 
-/* ---------- WEBKAMERA ---------- */
-
-function initWebcam() {
-  const card = $("#camCard");
-  if (!card) return;
-  const { url, type, refreshSec } = CONFIG.webcam;
-
-  if (!url) {
-    card.innerHTML = `
-      <div class="cam-placeholder">
-        <span class="cam-ico">📷</span>
-        <strong>Kamera kommer</strong>
-        <p>Lim inn adressen i <code>CONFIG.webcam.url</code> øverst i <code>app.js</code>.
-        Har du Foscam? Se «Webkamera» i <code>README.md</code> — og ikke legg brukernavn og passord på en offentlig side.</p>
-      </div>`;
-    return;
-  }
-
-  if (type === "iframe") {
-    card.innerHTML = `<div class="cam-live"><iframe src="${url}" title="Webkamera på Engøya" loading="lazy" allowfullscreen></iframe></div>`;
-    return;
-  }
-
-  const kanStyre = CONFIG.webcam.ptz && url.includes("CGIProxy.fcgi");
-  card.innerHTML = `
-    <div class="cam-live">
-      <img id="camImg" src="${url}" alt="Direktebilde fra webkameraet på Engøya">
-      <span class="cam-stamp" id="camStamp">direkte</span>
-      ${kanStyre ? `<div class="cam-ptz">
-        <button type="button" data-cmd="ptzMoveLeft" aria-label="Sving kameraet mot venstre">◀</button>
-        <button type="button" data-cmd="ptzMoveRight" aria-label="Sving kameraet mot høyre">▶</button>
-      </div>` : ""}
-    </div>`;
-
-  // Hold inne for å svinge — slipp for å stoppe (Foscam PTZ-kommandoer)
-  if (kanStyre) {
-    const cgi = (cmd) => fetch(url.replace(/cmd=[^&]+/, `cmd=${cmd}`), { mode: "no-cors" }).catch(() => {});
-    card.querySelectorAll(".cam-ptz button").forEach((btn) => {
-      btn.addEventListener("pointerdown", () => cgi(btn.dataset.cmd));
-      ["pointerup", "pointerleave", "pointercancel"].forEach((ev) =>
-        btn.addEventListener(ev, () => cgi("ptzStopRun"))
-      );
-    });
-  }
-
-  const img = $("#camImg");
-  const stamp = $("#camStamp");
-  const refresh = () => {
-    const sep = url.includes("?") ? "&" : "?";
-    img.src = `${url}${sep}t=${Date.now()}`;
-    stamp.textContent = `oppdatert ${fmtClockSec.format(new Date())}`;
-  };
-  img.addEventListener("error", () => {
-    stamp.textContent = "får ikke kontakt med kameraet";
-  });
-  if (refreshSec > 0) setInterval(refresh, refreshSec * 1000);
-  stamp.textContent = `hentet ${fmtClockSec.format(new Date())}`;
-}
-
 /* ---------- DAGSKORT-KARUSELL ---------- */
 
 function initCarousel() {
@@ -1735,7 +1660,6 @@ function initReveal() {
 initMenu();
 initReveal();
 initMap();
-initWebcam();
 initShell();
 initPollen();
 initCarousel();

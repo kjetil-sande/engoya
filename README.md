@@ -10,14 +10,14 @@ varm hvit (`#F9F7F4`), grå kort (`#F5F5F7`), svarte knapper, himmelblått (`#62
 
 | Fil | Innhold |
 |---|---|
-| `index.html` | Forsiden: dagskort-karusell, webkamera, siste nytt fra Meløy kommune |
+| `index.html` | Forsiden: dagskort-karusell, siste nytt fra Meløy kommune |
 | `tidevann.html` | Tidevannskurve + flo/fjære-tabell for uka |
 | `vaer.html` | 7-dagersvarsel med 3D-værikoner |
 | `sjo.html` | Bølger, strøm, vannstand + telemetri og blåskjellvarsel |
 | `sol.html` | Solbue, soltider, midnattssol og UV |
 | `himmel.html` | Nordlysvarsel, månefase og skydekke |
 | `kart.html` | Kartverkets landkart/sjøkart + fakta om øya |
-| `app.js` | All datahenting + menyen — og innstillingene (webkamera, menyfilm) |
+| `app.js` | All datahenting + menyen — og innstillingene (menyfilm) |
 | `style.css` | Utseendet |
 | `bilder/` | Kortbakgrunner (Unsplash) — bytt ved å erstatte filene med samme navn |
 | `ikoner/` | 3D-værikoner (brukes kun i Været-blokkene) |
@@ -99,46 +99,6 @@ Google. Henting skjer via serverfunksjonen `netlify/functions/apningstider.mjs`
 `netlify/functions/apningstider.mjs` med `{ bransje, navn, placeId }`. Place-ID finner
 du med [Googles Place ID Finder](https://developers.google.com/maps/documentation/places/web-service/place-id)
 — eller send navnelisten til Claude, så slås de opp.
-
-## Webkamera (Foscam)
-
-Kameraet er en Foscam og står på lokalnettet på **`192.168.68.58`, port 88**
-(bekreftet: CGI-API-et svarer, web-UI «IPCam Client», Foscam-MAC). Stillbildet ligger på:
-
-```
-http://192.168.68.58:88/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr=BRUKER&pwd=PASSORD
-```
-
-**Til lokal bruk**: ikke legg adressen (med passord) i `app.js` — repoet og siden er
-offentlige. Lag heller fila `config.local.js` i prosjektmappa (git-ignorert, lastes
-automatisk hvis den finnes):
-
-```js
-window.ENGOYA_LOKAL = {
-  webcam: { url: "http://192.168.68.58:88/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2&usr=BRUKER&pwd=PASSORD" },
-};
-```
-
-Da virker kameraet lokalt uten at passordet kan havne på GitHub eller nettsiden.
-
-**Panorering (venstre/høyre)**: sett `ptz: true` i `config.local.js` — da får kamerabildet
-◀ ▶-knapper (hold inne for å svinge, slipp for å stoppe). Vis aldri disse offentlig:
-alle som ser knappene kan styre kameraet.
-
-**Fjernaksess**: nettverket har DDNS-adressen `engoy.tplinkdns.com`. Kameraets port 88
-er (fornuftig nok) *ikke* videresendt ut på internett per nå — utenfra svarer bare
-ruterens 80/443. Skal kameraet nås utenfra, må det settes opp portvideresending i
-Deco-appen (ekstern port → 192.168.68.58:88) — men les sikkerhetspunktene under først;
-for den offentlige siden er FTP-opplasting fortsatt den trygge løsningen.
-
-### ⚠ Viktig om sikkerhet
-
-- **Alle som åpner nettsiden kan lese adressen — med brukernavn og passord.** Samme
-  konto styrer hele kameraet. Direktelenke er kun greit så lenge siden bare brukes hjemme.
-- **For offentlig side:** la kameraet laste opp stillbilder via **FTP** (Innstillinger →
-  Network → FTP) til webhotellet, og pek `url` på det opplastede bildet.
-- Lag uansett en egen **«visitor»-bruker** i kameraet — ikke bruk admin.
-- `https://`-side blokkerer `http://`-bilder (mixed content) — enda en grunn til FTP.
 
 ## Datakilder og vilkår
 

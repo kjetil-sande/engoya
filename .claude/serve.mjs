@@ -33,14 +33,20 @@ createServer(async (req, res) => {
   try {
     let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
 
-    // Åpningstider: kjør Netlify-funksjonen direkte (samme kode som i produksjon)
-    if (path.startsWith("/api/apningstider")) {
-      // cache-bust så funksjonsendringer slår gjennom uten omstart av dev-serveren
-      const mod = await import(join(root, "netlify/functions/apningstider.mjs") + "?t=" + Date.now());
-      const svar = await mod.default();
-      const body = await svar.text();
-      res.writeHead(svar.status, { "content-type": svar.headers.get("content-type") || "application/json", "cache-control": "no-store" });
-      res.end(body);
+    // /api/<navn>: kjør Netlify-funksjonen netlify/functions/<navn>.mjs direkte
+    // (samme kode som i produksjon; cache-bust så endringer slår gjennom uten omstart)
+    if (path.startsWith("/api/")) {
+      const navn = path.split("/")[2]?.replace(/[^a-z0-9-]/gi, "");
+      try {
+        const mod = await import(join(root, `netlify/functions/${navn}.mjs`) + "?t=" + Date.now());
+        const svar = await mod.default();
+        const body = await svar.text();
+        res.writeHead(svar.status, { "content-type": svar.headers.get("content-type") || "application/json", "cache-control": "no-store" });
+        res.end(body);
+      } catch {
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end('{"feil":"ukjent api-rute"}');
+      }
       return;
     }
 
