@@ -80,7 +80,7 @@
   .depthsel button.on{background:var(--paper);color:var(--ink)}
   .depthsel button.locked{opacity:.4}
   .actionbtn{width:min(90%,340px);text-align:center}
-  .hint{color:#eaf3ee;font-family:var(--mono);font-size:12px;text-shadow:0 1px 2px #0008;min-height:15px;text-align:center}
+  .hint{color:#eaf3ee;font-family:var(--mono);font-size:15px;font-weight:600;text-shadow:0 1px 3px #000a;min-height:19px;text-align:center}
 
   /* Tension/progress during reel */
   #reelui{display:none;flex-direction:column;gap:8px;align-items:center;width:min(92%,360px)}
@@ -134,7 +134,7 @@
   @media (max-height:430px){ /* mobil i landskap: kompakt bunnpanel så fisken synes under kamp */
     .vbar{height:64px} #reelui .bars{gap:10px}
     #sea .bottom{gap:4px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
-    .hint{font-size:11px;margin:0}
+    .hint{font-size:13px;margin:0}
     .actionbtn{padding:8px 18px;font-size:15px} }
   .slot.locked{opacity:.72}
   .slot.locked .nm{color:var(--ink-soft)}
@@ -163,6 +163,9 @@
   #notice.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
   /* Mobil: HUD fikk ikke plass til 4 chips + 5 ikoner på én rad → chips rad 1, ikoner rad 2 */
   @media (max-width:520px){
+    .depthsel{width:100%;gap:4px}
+    .depthsel button{flex:1;font-size:16px;padding:9px 4px}
+    .depthsel button small{font-size:11px;margin-top:2px}
     #hud{flex-wrap:wrap;gap:5px;padding:7px 8px}
     #hud .chip{padding:5px 8px;font-size:11px}
     #hud .fuel{width:44px}
@@ -213,7 +216,7 @@
         </div>
       </div>
       <div class="depthsel" id="depthsel">
-        <button data-d="0" class="on">Overflate<small>0–50 m</small></button>
+        <button data-d="0" class="on">Grunt<small>0–50 m</small></button>
         <button data-d="1">Mellomdyp<small>50–150 m</small></button>
         <button data-d="2">Dypt<small>150–300 m</small></button>
       </div>
@@ -268,7 +271,7 @@
   <div class="modal" id="mapModal"><div class="card" style="max-width:660px;padding:12px">
     <div class="mapwrap" id="mapWrap">
       <img id="mapImg" alt="Områdekart">
-      <button class="mappin" data-d="0" title="Overflate"></button>
+      <button class="mappin" data-d="0" title="Grunt"></button>
       <button class="mappin" data-d="1" title="Mellomdyp"></button>
       <button class="mappin" data-d="2" title="Dypt"></button>
     </div>
@@ -391,10 +394,10 @@ FISH.forEach(function(f){ var base=FIMG[f.k]||f.k;
   var sn=(f.k==="sei")?"sei-silhuett":base+"-silhuette"; // sei mangler 'e' i filnavnet; resten følger mønsteret
   var s=new Image(); s.src="spill/assets/"+sn+".png"; fishSil[f.k]=s;
 });
-var ZONE=["Overflate","Mellomdyp","Dypt"];
+var ZONE=["Grunt","Mellomdyp","Dypt"];
 var DEPM=["0–50 m","50–150 m","150–300 m"];
 var RODS=[{n:"Stang I",max:1.2},{n:"Stang II",max:2.3},{n:"Stang III",max:3.6}];
-var LURES=[{n:"Overflate-sluk",zone:0,pris:15},{n:"Mellomdyp-sluk",zone:1,pris:50},{n:"Djuphavs-sluk",zone:2,pris:120}];
+var LURES=[{n:"Gruntvann-sluk",zone:0,pris:15},{n:"Mellomdyp-sluk",zone:1,pris:50},{n:"Djuphavs-sluk",zone:2,pris:120}];
 
 /* ---------- Lagring (per spiller) ---------- */
 var SAVE="storkveita-save-v1";
@@ -727,7 +730,7 @@ function freePots(ty){ var out=0; P.pots.out.forEach(function(t){ if(potType(t)=
 function potInZone(z,ty){ ty=ty||"k"; for(var i=0;i<P.pots.out.length;i++)if(P.pots.out[i].zone===z&&potType(P.pots.out[i])===ty)return i; return -1; }
 function setPot(ty){ ty=ty||"k";
   if(phase!=="idle"||!P)return;
-  if(ty==="h"&&depth!==0){ notice("Hummeren står på grunt vann ved skjæra — sett den på Overflate 🦞"); return; }
+  if(ty==="h"&&depth!==0){ notice("Hummeren står på grunt vann ved skjæra — sett den på Grunt 🦞"); return; }
   if(ty==="h"&&!hummerSeason()){ notice("Hummeren er freda nå — sesongen er 1. okt til 31. des 🦞"); return; }
   if(potInZone(depth,ty)>=0){ notice("Du har alt en slik teine ute i denne sonen."); return; }
   if(freePots(ty)<1)return;
@@ -953,7 +956,7 @@ updateDyptImg();
 })();
 var WLF=[0.332,0.179,0.118];   // vannlinjas andel av bildehøyden pr. nivå (målt)
 var DESC_DUR=[3.2,6,10];        // nedstigningstid i sek pr. nivå (dypere = lengre ferd)
-var LTF=[0.88,0.75,0.89];       // slukens måldybde (andel av bildet) — mellomdyp stopper over berget
+var LTF=[0.79,0.75,0.89];       // slukens måldybde (andel av bildet) — Grunt 10 % over bunn-dekoren, mellomdyp over berget
 var camY=0, camBottom=0, descend=0, lureW=0, lureTargetW=0; // kamera + sluk i verdenskoordinater (px i bildet)
 function colGeom(){ var img=waterImg[depth]; if(!img||!img.complete||!img.naturalWidth)return null;
   var s=Math.max(W/img.naturalWidth,H/img.naturalHeight), imgW=img.naturalWidth*s, imgH=img.naturalHeight*s;
@@ -1155,8 +1158,10 @@ function drawScene(dt){
       drawSwim(fx,fy,sceneFish.f,0, sceneFish.vx>0, goldCatch, sceneFish.sizeLen);
     }
     if(phase==="reel"&&hooked){ // fisken snur seg etter kroking: biter med munnen, halen ned, munnen opp mot kroken
-      var r=Math.min(1,fightT/1.6), runFlat=(runT>0?0.45:1), ang=(1.35*r*runFlat + 0.06*Math.sin(bob*5)*r)*(hookFace?-1:1), tw=fishScale(hooked,hookedLen);
-      drawSwim(lineX+(1-r)*tw*0.45*(hookFace?-1:1), ey+r*tw*0.45, hooked, ang, hookFace, goldCatch, hookedLen);
+      var r=Math.min(1,fightT/1.6), runFlat=(runT>0?0.45:1), tw=fishScale(hooked,hookedLen);
+      var sprell=(runT>0)?Math.sin(bob*17)*0.34:0, sX=(runT>0)?Math.sin(bob*23)*tw*0.07:0; // spreller når den gjør motstand
+      var ang=(1.35*r*runFlat + 0.06*Math.sin(bob*5)*r + sprell)*(hookFace?-1:1);
+      drawSwim(lineX+(1-r)*tw*0.45*(hookFace?-1:1)+sX, ey+r*tw*0.45, hooked, ang, hookFace, goldCatch, hookedLen);
     }
   }
 }
