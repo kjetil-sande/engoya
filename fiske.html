@@ -79,6 +79,7 @@
   .depthsel button small{display:block;font-size:9px;font-weight:600;opacity:.8;margin-top:1px}
   .depthsel button.on{background:var(--paper);color:var(--ink)}
   .depthsel button.locked{opacity:.4}
+  #sea.fishing #depthsel,#sea.fishing #potRow{display:none} /* snøret er ute — ned med valgene til fisken er i båten */
   .actionbtn{width:min(90%,340px);text-align:center}
   .hint{color:#eaf3ee;font-family:var(--mono);font-size:15px;font-weight:600;text-shadow:0 1px 3px #000a;min-height:19px;text-align:center}
 
@@ -225,7 +226,7 @@
         <button data-d="1">Mellomdyp<small>50–150 m</small></button>
         <button data-d="2">Dypt<small>150–300 m</small></button>
       </div>
-      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <div id="potRow" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         <button class="btn sm" id="potBtn" style="display:none"></button>
         <button class="btn sm" id="potPull" style="display:none"></button>
         <button class="btn sm" id="potBtnH" style="display:none"></button>
@@ -1198,7 +1199,7 @@ function loop(now){
   else if(fisherT<1) fisherT=Math.min(1,fisherT+dt/0.5);
   if(document.querySelector("#catchModal").classList.contains("on")) liftT+=dt; else liftT=0; // løft-fangst spilles ÉN gang, nullstilles mellom fangster
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH); drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,3,lobbySpawn,0); } // måker over tittelen i lobbyen
-  if($("#sea").classList.contains("on")) drawScene(dt);
+  if($("#sea").classList.contains("on")){ drawScene(dt); $("#sea").classList.toggle("fishing", phase!=="idle"); }
   // fisketilstand — fryser bak åpne popups og utenfor sjøen (så fisken ikke glipper bak en modal / på menyen)
   if(!$("#sea").classList.contains("on") || document.querySelector(".modal.on")){ if(phase==="reel")Snd.reelSound(false); requestAnimationFrame(loop); return; }
   if(phase==="sink"){ // kameraet følger sluken nedover: jevn ferd, varighet etter dybde
