@@ -149,6 +149,7 @@
   .tabs button.on{background:var(--wood);color:#fff}
   .fam{margin-top:8px}
   .fam .frow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;padding:7px 4px;border-bottom:1px dashed var(--paper-2)}
+  .fam .frow .fjernx{border:0;background:#e8ddc6;color:#7a5b3a;border-radius:6px;font-size:11px;padding:2px 7px;cursor:pointer;margin-left:6px;font-family:var(--font)}
   .fam .frow.rek{align-items:center;gap:8px;font-size:12px}
   .fam .frow.rek>b{display:flex;align-items:center;gap:7px;min-width:0}
   .fam .frow.rek>b canvas{position:static;width:40px;height:24px;flex:0 0 auto}
@@ -335,7 +336,10 @@ var Snd=(function(){
     bjeff3:{url:"spill/lyd/hund-bjeff-03.aac", vol:0.3},
     knurr:{url:"spill/lyd/hund-knurring.aac", vol:0.22},
     motor:{url:"spill/lyd/paahengsmotor.aac", vol:0.5},
-    stritter:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.65} };
+    stritter:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.65},
+    nys1:{url:"spill/lyd/nys-01.aac", vol:0.5},
+    nys2:{url:"spill/lyd/nys-02.aac", vol:0.5},
+    nys3:{url:"spill/lyd/nys-03.aac", vol:0.5} };
   var motorNode=null, altClick=false; // påhengsmotoren styres separat (start/fade-stopp)
   function motorStart(){ var c=AC(); if(!c||muted)return; motorStop(0); var buf=buffers.motor; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; s.loop=true; var g=c.createGain(); g.gain.value=0.0001;
@@ -377,6 +381,7 @@ var Snd=(function(){
     gladDog:function(){ this.bjeff(); var self=this; setTimeout(function(){ self.bjeff(); },280); }, // gledesbjeff ×2
     sadDog:function(){ oneShot("knurr"); }, // lav, skuffet knurring
     stritter:function(){ if(buffers.stritter)oneShot("stritter"); else { beep(140,0.35,"sawtooth",0.12,90); } }, // fisken stritter imot (utras)
+    nys:function(){ var c=["nys1","nys2","nys3"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); }, // fiskeren nyser av og til
     motorOn:function(){ loadAll(); motorStart(); },
     motorOff:function(fade){ motorStop(fade==null?0.8:fade); }
   };
@@ -466,6 +471,8 @@ function syncFam(force){ var code=famCode(); if(!code||!P||famBusy)return;
         if(+rp.ts>=(lp.ts||0)){ lp.kr=rp.kr||0; lp.ts=+rp.ts||0; }
         lp.caught=lp.caught||{}; famFlett(lp.caught, rp.caught); DB.players[nm]=lp; }
     });
+    Object.keys(DB.players).forEach(function(nm){ var lp=DB.players[nm]; // slettet fra familien på nett → fjern speilet (aldri aktiv/lokal spiller)
+      if(lp&&lp.remote&&nm!==P.name&&!egen(j.players,nm)) delete DB.players[nm]; });
     saveAll(); famInfo="synket "+new Date().toTimeString().slice(0,5);
     var bm=document.querySelector("#bookModal");
     if(bm&&bm.classList.contains("on")){ if($("#bookMine").style.display!=="none") renderMine(); if($("#bookFam").style.display!=="none") renderFam(); if($("#bookRek").style.display!=="none") renderRek(); }
@@ -523,6 +530,8 @@ var flee=null; // mistet fisk som stikker av før kameraet går hjem
 var serpent=null, serpentCd=0; // påskeegg: sjøormen — et ultrasjeldent glimt langt der nede i Dypt
 
 function setHint(t){msg=t; $("#hint").textContent=t}
+var nysCool=20; // første nys tidligst etter 20 s i båten
+function erfaren(){ if(!P||!P.caught)return false; var n=0; for(var k in P.caught){ n+=(P.caught[k]&&P.caught[k].count)||0; if(n>=20)return true; } return false; }
 var noticeT=null;
 function notice(m){ var n=$("#notice"); if(!n)return; n.textContent=m; n.classList.add("on"); if(noticeT)clearTimeout(noticeT); noticeT=setTimeout(function(){n.classList.remove("on")},2800); }
 function setAction(t,on){var b=$("#actionBtn"); b.textContent=t; b.style.display=on===false?"none":"block"; if(typeof updatePotBtn==="function")updatePotBtn();}
@@ -534,7 +543,7 @@ function setDepth(d){
   depth=d; camY=camHome(); // ny sone → vannlinja på samme skjermhøyde
   $("#hudLure").textContent="🪝 "+(P.lures[d]||0);
   document.querySelectorAll("#depthsel button").forEach(function(x){x.classList.toggle("on",+x.dataset.d===d)});
-  if(phase==="idle") setHint(ZONE[d]+" "+DEPM[d]+" valgt. Kast ut.");
+  if(phase==="idle") setHint(erfaren()?"":ZONE[d]+" "+DEPM[d]+" valgt. Kast ut.");
   if(typeof updatePotBtn==="function")updatePotBtn();
 }
 
@@ -646,7 +655,7 @@ function commitBite(){
   var cf=sceneFish?sceneFish.f:FISH.filter(function(f){return (f.z===depth||f.allZ) && f.k!=="makrellstorje"})[0];
   hooked=cf; hookedLen=(sceneFish&&sceneFish.sizeLen)||Math.round(rnd(cf.len[0],cf.len[1])); phase="bite"; hookWindow=1.6;
   if(!sceneFish)sceneFish={f:cf,x:(lureSX/W)||0.5,y:lureTargetY}; else sceneFish.committing=true;
-  setHint("NAPP! Trykk for å kroke! 🐟"); setAction("KROK!",true); Snd.bite();
+  setHint(erfaren()?"":"NAPP! Trykk for å kroke! 🐟"); setAction("KROK!",true); Snd.bite();
   if(navigator.vibrate)navigator.vibrate(30);
 }
 var hookFace=false, storjeTried=false, runT=0, runPow=0, hookedLen=0; // + utras + den krokede fiskens lengde
@@ -656,7 +665,7 @@ function tryHook(){
   phase="reel"; tension=0; prog=0; holding=false; slackT=0; fightT=0; storjeTried=false; runT=0; runPow=0;
   dogShow(1,null); Snd.bjeff(); // hunden dukker gira opp når fisken er på
   $("#reelui").classList.add("on");
-  setHint("Hold inne SVEIV for å dra inn — men ikke spreng snøret!");
+  setHint(erfaren()?"":"Hold inne SVEIV for å dra inn — men ikke spreng snøret!");
   setAction("SVEIV (hold)",true);
 }
 function miss(){
@@ -677,10 +686,10 @@ function reelStep(dt){
   // UTRAS: fighterne stikker mot dypet — spennet skyter i været, slipp og vent til den roer seg
   if(runT>0){ runT-=dt; prog-=runPow*dt*(holding?1:0.55); if(prog<2)prog=2;
     if(holding) tension += tRise*1.8*dt;
-    if(runT<=0) setHint("Den roer seg — sveiv inn!"); }
+    if(runT<=0&&!erfaren()) setHint("Den roer seg — sveiv inn!"); }
   else if(f.fight && Math.random()<f.fight*dt*0.12*Math.min(1,Math.sqrt(21/reelSec))){ // langkampfisk raser sjeldnere …
     runT=1.2+Math.random()*1.6; runPow=Math.min(6, pRise*(3+f.fight*3)); // … og utraset stjeler en BEGRENSET andel av framdriften
-    setHint("Den stikker mot dypet — slipp litt! 🌀"); Snd.stritter(); if(Math.random()<0.35)Snd.bjeff(); if(navigator.vibrate)navigator.vibrate(35); }
+    if(!erfaren())setHint("Den stikker mot dypet — slipp litt! 🌀"); Snd.stritter(); if(Math.random()<0.35)Snd.bjeff(); if(navigator.vibrate)navigator.vibrate(35); }
   if(tension<0)tension=0;
   $("#tensionBar").style.height=Math.min(100,tension)+"%";
   $("#progBar").style.height=Math.min(100,prog)+"%";
@@ -1001,11 +1010,14 @@ function renderFam(){
     return {nm:nm, arter:Object.keys(pl.caught).length, kveite: kv?kv.bestLen:0, kr:pl.kr, stars:starSumFor(pl)}});
   rows.sort(function(a,b){return b.stars-a.stars || b.arter-a.arter || b.kveite-a.kveite});
   box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Spiller</b><span>★ · Arter · Største kveite</span></div>');
+  var code=famCode();
   rows.forEach(function(r){
-    box.insertAdjacentHTML("beforeend",'<div class="frow"><b>'+esc(r.nm)+'</b><span>★ '+r.stars+' · '+r.arter+' arter'+(r.kveite?' · 🏆 '+r.kveite+' cm':'')+'</span></div>');
+    var row=document.createElement("div"); row.className="frow";
+    row.innerHTML='<b>'+esc(r.nm)+'</b><span>★ '+r.stars+' · '+r.arter+' arter'+(r.kveite?' · 🏆 '+r.kveite+' cm':'')+(code&&(!P||r.nm!==P.name)?' <button class="fjernx" title="Fjern fra familiegruppen på nett">✕</button>':'')+'</span>';
+    var fx=row.querySelector(".fjernx"); if(fx)fx.onclick=function(){ fjernFraFam(r.nm); };
+    box.appendChild(row);
   });
   if(!rows.length)box.innerHTML='<p class="muted center">Ingen spillere ennå.</p>';
-  var code=famCode();
   box.insertAdjacentHTML("beforeend", code
     ? '<p class="muted center" style="margin-top:10px;font-size:12px">👨‍👩‍👧 Familiekode: <b>'+esc(code)+'</b>'+(famInfo?' · '+esc(famInfo):'')+' <button class="btn sm" id="famBytt">Bytt</button></p>'
     : '<p class="muted center" style="margin-top:10px"><button class="btn sm gold" id="famKoble">👨‍👩‍👧 Koble familien sammen på nett</button><br><span class="muted" style="font-size:11px">Samme kode på alle enheter → felles rekorder på hytta og hjemme</span></p>');
@@ -1014,6 +1026,17 @@ function renderFam(){
     if(!c)return; if(c.length<4){ alert("Minst 4 tegn 🙂"); return; } if(c.length>40){ alert("Maks 40 tegn 🙂"); return; }
     try{localStorage.setItem("storkveita-familiekode",c)}catch(e){}
     famInfo="kobler til …"; renderFam(); famLast=0; syncFam(true); };
+}
+function fjernFraFam(nm){ // slett fra familiegruppen på nett; speilryddingen i syncFam rydder de andre enhetene
+  var code=famCode(); if(!code)return;
+  if(!confirm("Fjerne "+nm+" fra familiegruppen på nett?\n(Fangstboka på "+nm+" sin egen enhet slettes ikke.)"))return;
+  famInfo="fjerner …"; renderFam();
+  fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:code,fjern:nm})})
+  .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
+  .then(function(){ var lp=DB.players[nm];
+    if(lp&&lp.remote&&(!P||nm!==P.name)) delete DB.players[nm];
+    saveAll(); famInfo="fjernet "+nm; famLast=0; renderFam(); })
+  .catch(function(){ famInfo="fikk ikke kontakt"; renderFam(); });
 }
 function famRecords(){ // beste lengde per art på tvers av alle spillere (lokale + familie på nett)
   var out={};
@@ -1206,7 +1229,8 @@ function loop(now){
   else if(fisherT<1) fisherT=Math.min(1,fisherT+dt/0.5);
   if(document.querySelector("#catchModal").classList.contains("on")) liftT+=dt; else liftT=0; // løft-fangst spilles ÉN gang, nullstilles mellom fangster
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH); drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,3,lobbySpawn,0); } // måker over tittelen i lobbyen
-  if($("#sea").classList.contains("on")){ drawScene(dt); $("#sea").classList.toggle("fishing", phase!=="idle"); }
+  if($("#sea").classList.contains("on")){ drawScene(dt); $("#sea").classList.toggle("fishing", phase!=="idle");
+    if(boatIn>=1&&fisherT>=1){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/150){ Snd.nys(); nysCool=60; } } } // frisk luft — men han nyser nå og da
   // fisketilstand — fryser bak åpne popups og utenfor sjøen (så fisken ikke glipper bak en modal / på menyen)
   if(!$("#sea").classList.contains("on") || document.querySelector(".modal.on")){ if(phase==="reel")Snd.reelSound(false); requestAnimationFrame(loop); return; }
   if(phase==="sink"){ // kameraet følger sluken nedover: jevn ferd, varighet etter dybde

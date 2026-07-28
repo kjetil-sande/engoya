@@ -82,10 +82,15 @@ export default async (req) => {
   const fam = (await lager.get(nokkel, { type: "json" })) || { players: {} };
   if (!fam.players || typeof fam.players !== "object") fam.players = {};
 
-  if (body.player) {
-    flettSpiller(fam, body.player);
+  let skriv = false;
+  if (typeof body.fjern === "string") { // familien rydder: fjern en spiller fra gruppa (koden er familiens nøkkel)
+    const navnF = body.fjern.trim().slice(0, 14);
+    if (navnF && !FARLIGE.has(navnF) && egen(fam.players, navnF)) { delete fam.players[navnF]; skriv = true; }
+  }
+  if (body.player) { flettSpiller(fam, body.player); skriv = true; }
+  if (skriv) {
     fam.updatedAt = Date.now();
-    await lager.setJSON(nokkel, fam); // kun innsendinger skriver — rene hentinger lar bloben ligge
+    await lager.setJSON(nokkel, fam); // kun endringer skriver — rene hentinger lar bloben ligge
   }
 
   return Response.json(
