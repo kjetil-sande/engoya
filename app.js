@@ -13,6 +13,7 @@ const CONFIG = {
     // Sømløse loop-versjoner laget med ffmpeg av råfilene i video/ (se README).
     overskyet: "video/engoya-overskyet.mp4",
     sommer: "video/engoya-sol.mp4",
+    regn: "video/engoya-regn.mp4",
     url: "video/engoya-overskyet.mp4", // standard til værvarselet er lastet
   },
   kryssing: {
@@ -197,10 +198,11 @@ function initMenu() {
   );
 }
 
-/* Menyfilm etter været: sol/klarvær → sommer, ellers → overskyet */
+/* Menyfilm etter været: regn → regn, sol/klarvær → sommer, ellers → overskyet */
 function menuVideoFor(code) {
   if (!code) return CONFIG.menuVideo.url;
   const base = code.replace(/_(day|night|polartwilight)$/, "");
+  if (base.includes("rain")) return CONFIG.menuVideo.regn; // regn, regnbyger og regn+torden (Yr-koder med «rain»)
   const solrikt = base === "clearsky" || base === "fair";
   return solrikt ? CONFIG.menuVideo.sommer : CONFIG.menuVideo.overskyet;
 }
@@ -1657,7 +1659,18 @@ function initReveal() {
   document.querySelectorAll(".sec").forEach((s) => io.observe(s));
 }
 
+/* Liten kveite i bunnteksten → lenke til fiskespillet (aktiv når spillet er lansert) */
+function initGameLink() {
+  const foot = document.querySelector(".foot");
+  if (!foot || foot.querySelector(".spill-link")) return;
+  foot.insertAdjacentHTML(
+    "beforeend",
+    '<p class="foot-line" style="margin:0"><a class="spill-link" href="fiske.html" title="Jakten på storkveita – fiskespillet"><img src="bilder/kveite-spill.png" alt="" width="30" height="16"><span>Jakten på storkveita</span></a></p>'
+  );
+}
+
 initMenu();
+initGameLink();
 initReveal();
 initMap();
 initShell();

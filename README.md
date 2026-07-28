@@ -40,16 +40,17 @@ sidene automatisk — legg til/endre lenker i `MENU_LINKS` øverst i fila.
 
 ## Film i menyen (værstyrt)
 
-Menypanelet har en filmrute (autoplay, lydløs, loop) som **bytter etter været**: sol/klarvær
-→ `engoya-sommer.mp4`, ellers → `engoya-overskyet.mp4`. Valget skjer i `menuVideoFor()` i
-`app.js`, basert på værsymbolet fra Yr. Klikk på filmen for å se den i **full størrelse**
+Menypanelet har en filmrute (autoplay, lydløs, loop) som **bytter etter været**: regn →
+`engoya-regn.mp4`, sol/klarvær → `engoya-sol.mp4`, ellers → `engoya-overskyet.mp4`. Valget
+skjer i `menuVideoFor()` i `app.js`, basert på værsymbolet fra Yr (Yr-koder som inneholder
+«rain» regnes som regn). Klikk på filmen for å se den i **full størrelse**
 (lightbox med kontroller — hele videoen spilles, med lyd hvis man skrur på).
 
 Hele originalvideoene brukes direkte (ingen klipping). De ferdige mp4-ene ligger i `video/`
 og deployes som de er; kun store råoriginaler (`.mov` / `*-ORIG.*`) er git-ignorert.
 
-**Ny eller oppdatert film?** Bytt ut `video/engoya-sommer.mp4` (eller `-overskyet`) med den
-nye fila — samme filnavn, så virker den automatisk. Web-tips: H.264/`.mp4`, gjerne
+**Ny eller oppdatert film?** Bytt ut `video/engoya-sol.mp4` (eller `-overskyet` / `-regn`) med
+den nye fila — samme filnavn, så virker den automatisk. Web-tips: H.264/`.mp4`, gjerne
 ≤ 1280 px bred og komprimert (den overskyede er ~25 MB; lavere er bedre for mobil).
 
 ## Nyheter fra Meløy kommune

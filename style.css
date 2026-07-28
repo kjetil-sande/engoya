@@ -781,6 +781,15 @@ body.map-fs-open { overflow: hidden; }
 .foot-line { margin: .25rem 0 0; font-family: var(--font-mono); font-size: .64rem; letter-spacing: .04em; color: var(--text-3); }
 .foot-line a { color: var(--text-2); }
 .foot-line:empty { display: none; }
+/* Liten kveite i bunn → lenke til fiskespillet (Jakten på storkveita) */
+.spill-link { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1rem; padding: .35rem .8rem; border-radius: 999px;
+  text-decoration: none; color: var(--text-2); font-family: var(--font-mono); font-size: .68rem; letter-spacing: .04em;
+  border: 1px solid transparent; transition: background .2s, border-color .2s, color .2s; }
+.spill-link:hover { background: #F0F0F3; border-color: var(--hairline); color: #3E8FD0; }
+.spill-link img { width: 30px; height: auto; image-rendering: pixelated; transform-origin: center; animation: kveiteSvom 4.5s ease-in-out infinite; }
+.spill-link:hover img { animation-duration: 1.4s; }
+@keyframes kveiteSvom { 0%,100% { transform: translateX(0) rotate(0deg); } 25% { transform: translateX(-2px) rotate(-4deg); } 75% { transform: translateX(2px) rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) { .spill-link img { animation: none; } }
 
 /* ============ ANIMASJONER ============ */
 

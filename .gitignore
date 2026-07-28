@@ -5,3 +5,9 @@ config.local.js
 # Rå-originaler (for store) holdes utenfor repoet — de ferdige mp4-ene deployes
 video/*.mov
 video/*-ORIG.*
+
+# Grafikk-kildefiler (PSD/AI) holdes utenfor repoet — spillet laster kun PNG/JPG
+spill/assets/*.psd
+spill/assets/*.ai
+spill/assets/*ORIG*
+ikoner/*.ai
