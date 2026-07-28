@@ -68,7 +68,8 @@ export default async (req) => {
 
   // Koden hashes → blob-nøkkel. Selve koden lagres aldri.
   const nokkel = createHash("sha256").update("storkveita:" + kode).digest("hex");
-  const lager = getStore("familierekorder");
+  // strong: les-etter-skriv MÅ se siste versjon (ellers «glemmer» familien seg selv mellom instanser)
+  const lager = getStore({ name: "familierekorder", consistency: "strong" });
 
   const fam = (await lager.get(nokkel, { type: "json" })) || { players: {} };
   if (!fam.players || typeof fam.players !== "object") fam.players = {};
