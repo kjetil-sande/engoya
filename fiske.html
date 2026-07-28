@@ -684,7 +684,9 @@ function reelStep(dt){
   // STØRJA: kan hogge på fisken din nær overflata — mellomdyp/dypt, Stang III, i sesongen, svært sjelden
   if(!storjeTried && p>0.72 && depth>=1 && P.rod===2 && storjeSeason() && f && !f.trophy && f.k!=="makrellstorje"){
     storjeTried=true;
-    if(Math.random()<0.03){ // svært sjelden
+    var iDag=new Date().toISOString().slice(0,10);
+    if(P.storjeDag!==iDag && Math.random()<0.01){ // svært sjelden — og aldri mer enn én utløst per dag
+      P.storjeDag=iDag; saveAll();
       hooked=byKey["makrellstorje"]; f=hooked; hookedLen=Math.round(rnd(150,300)); goldCatch=false; fightT=0; prog=8; tension=Math.min(tension,35); slackT=0; runT=2.6; runPow=6;
       notice("MAKRELLSTØRJA HOGG PÅ FISKEN DIN! 🐟⚡"); setHint("Størja har tatt fangsten — dette blir en LANG kamp!");
       Snd.bite(); if(navigator.vibrate)navigator.vibrate([60,40,120,40,60]);
@@ -914,7 +916,7 @@ function openShop(){
   LURES.forEach(function(lu,i){ addShop(L,"🪝 "+lu.n,"Til "+DEPM[i]+" · har "+(P.lures[i]||0)+" stk. Ryker snøret, mister du én.",lu.pris,false,function(){P.lures[i]=(P.lures[i]||0)+1;}); });
   if(P.svc>=200) addShop(L,"⚙️ Båtservice — Jensen Service AS, Ørnes",
     (P.svc>250?"Motoren hoster og sluker ekstra bensin! ":"")+"Full service på motoren ("+P.svc+" turer siden sist).",
-    600,false,function(){P.svc=0; notice("Motoren spinner som en katt igjen — takk, Jensen! ⚙️");});
+    2500,false,function(){P.svc=0; notice("Motoren spinner som en katt igjen — takk, Jensen! ⚙️");});
   addShop(L,"🦀 Krabbeteine","Sett den ut og la den fiske mens du er borte. I Dypt kan trollkrabba gå i teina. Har "+(P.pots.owned||0)+" (plass til "+P.pots.cap+").",150,(P.pots.owned||0)>=P.pots.cap,function(){P.pots.owned++;});
   if(hummerSeason()) addShop(L,"🦞 Hummerteine","Grunt vann (0–50 m). Hummeren går i teina om natta — la den stå over natta! Har "+(P.pots.ownedH||0)+".",600,(P.pots.ownedH||0)>=2,function(){P.pots.ownedH++;});
   else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🦞 Hummerteiner selges kun i hummersesongen (1. okt–31. des). Hummeren er freda resten av året.</p>');
