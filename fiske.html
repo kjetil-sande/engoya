@@ -283,7 +283,7 @@
 
   <!-- TEINETREKK -->
   <div class="modal" id="potModal"><div class="card center">
-    <h2>🦀 Teinetrekk</h2>
+    <h2 id="potTitle">🦀 Teinetrekk</h2>
     <div id="potList"></div>
     <div class="statline" id="potTotal"></div>
     <div class="row"><span></span><button class="btn gold" id="potTake">Ta med</button></div>
@@ -842,7 +842,7 @@ function setPot(ty){ ty=ty||"k";
   if(phase!=="idle"||!P)return;
   if(ty==="h"&&depth!==0){ notice("Hummeren står på grunt vann ved skjæra — sett den på Grunt 🦞"); return; }
   if(ty==="h"&&!hummerSeason()){ notice("Hummeren er freda nå — sesongen er 1. okt til 31. des 🦞"); return; }
-  if(ty==="l"&&depth!==2&&depth!==3){ notice("Bunnlina hører hjemme på Dypt eller i Djuphavet — der storfisken står 🪢"); return; }
+  if(ty==="k"&&depth!==0){ notice("Krabbeteina hører hjemme på grunt vann (0–50 m) 🦀"); return; }
   if(freePots(ty)<1)return;
   if(ty==="l"){ if((P.pots.lineAgn||0)<1){ notice("Lina mangler agn — kjøp linagn i butikken 🛒"); return; } }
   else if((P.pots.bait||0)<1){ notice("Teina mangler agn — kjøp teineagn i butikken 🛒"); return; }
@@ -902,14 +902,20 @@ function lineFisk(rng,k){ var f=byKey[k], t=rng(), len=Math.round(f.len[0]+(f.le
 function lineOutcome(t,soak){ // bunnline: kveitesjansen er BETRAKTELIG større enn med stang — men den vil stå natta over
   var rng=mulberry32(t.seed^((soak/60000)|0)), q=Math.max(0,Math.min(1,soak/(10*3600000))), lines=[];
   if(soak<20*60000) return {lines:[],total:0,early:true};
-  var POOL;
-  if(t.zone===3){ // djuphavslina (300–500 m): blåkveita erstatter kveita — og ytterst sjelden: havets eldste
+  var POOL, z=t.zone||0;
+  if(z===3){ // djuphavslina (300–500 m): blåkveita erstatter kveita — og ytterst sjelden: havets eldste
     if(rng()<0.02*q) lines.push(lineFisk(rng,"haakjerring"));
     else if(rng()<0.10*q) lines.push(lineFisk(rng,"blaakveite"));
     POOL=["brosme","brosme","lange","haagjel","haagjel","svarthaa","havmus","uer","blaalange","skate"];
-  } else {
-    if(rng()<0.08*q) lines.push(lineFisk(rng,"kveite")); // ~8 % pr. fullt sett — kveita går på lina!
+  } else if(z===2){
+    if(rng()<0.08*q) lines.push(lineFisk(rng,"kveite")); // ~8 % pr. fullt sett — kveitelina!
     POOL=["brosme","brosme","lange","lange","uer","rodspette","steinbit","steinbit","breiflabb"];
+  } else if(z===1){
+    if(rng()<0.06*q) lines.push(lineFisk(rng,"kveite"));
+    POOL=["torsk","torsk","hyse","lange","brosme","uer","lysing","steinbit","breiflabb"];
+  } else {
+    if(rng()<0.05*q) lines.push(lineFisk(rng,"kveite"));
+    POOL=["torsk","sei","hyse","sandflyndre","skrubbe","lomre","steinbit","breiflabb"];
   }
   var n=Math.floor(q*(1+rng()*4)); // 0–5 bunnfisk ved full tid
   for(var i=0;i<n;i++) lines.push(lineFisk(rng,POOL[(rng()*POOL.length)|0]));
@@ -940,6 +946,7 @@ function pullPot(ty){ ty=ty||"k";
   P.pots.out.splice(idx,1); P.kr+=res.total; hud(); saveAll(); updatePotBtn(); if(ty==="l")syncFam();
   if(fikkKveite){ Snd.trophy(); notice("STORKVEITA GIKK PÅ LINA! 🏆"); dogShow(0,7); Snd.gladDog(); }
   else if(res.lines.some(function(l){return l.fk==="haakjerring"})){ Snd.trophy(); notice("HÅKJERRINGA GIKK PÅ LINA! 🦈 Havets eldste!"); dogShow(0,7); Snd.gladDog(); setTimeout(Snd.fiskerImponert,500); }
+  $("#potTitle").textContent = ty==="l"?"🪢 Linetrekk":ty==="h"?"🦞 Hummerteinetrekk":"🦀 Teinetrekk";
   var L=$("#potList"); L.innerHTML="";
   if(!res.lines.length){
     var tomMsg = ty==="l" ? "Tom line denne gangen — men kveita svømmer der ute et sted."
@@ -948,7 +955,8 @@ function pullPot(ty){ ty=ty||"k";
                           : "Tom teine denne gangen. Slik er teinefiske!";
     L.innerHTML='<p class="muted center">'+tomMsg+'</p>';
   }
-  else res.lines.forEach(function(l){ var ic=l.img?'<img src="spill/assets/'+l.img+'.png" onerror="this.style.display=\'none\'" style="height:26px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">':(l.e+" ");
+  else res.lines.forEach(function(l){ var fb=(l.img&&LIKNER[l.img])?'spill/assets/'+LIKNER[l.img]+'.png':'';
+    var ic=l.img?'<img src="spill/assets/'+l.img+'.png" data-fb="'+fb+'" onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.dataset.fb=\'\'}else this.style.display=\'none\'" style="height:26px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">':(l.e+" ");
     L.insertAdjacentHTML("beforeend",'<div class="statline">'+ic+esc(l.n)+(l.kr?' — <b>'+l.kr+' kr</b>':'')+'</div>'); });
   $("#potTotal").innerHTML=(res.total?'Solgt til Rusten: <b>'+res.total+' kr</b>':'')+(extra?'<div class="muted" style="margin-top:6px">'+extra+'</div>':'');
   if(res.total)Snd.coin();
@@ -957,7 +965,7 @@ function pullPot(ty){ ty=ty||"k";
 function potSetState(b,ty){ // Sett-knapp: vises når du har ledig bruk og er i riktig sone
   if(!b)return;
   var emo=ty==="h"?"🦞":ty==="l"?"🪢":"🦀", settNavn=ty==="h"?"hummerteine":ty==="l"?"bunnline":"teine";
-  var canZone = ty==="h" ? (depth===0&&hummerSeason()) : ty==="l" ? (depth===2||depth===3) : true;
+  var canZone = ty==="h" ? (depth===0&&hummerSeason()) : ty==="l" ? true : depth===0; // line på alle dyp; krabbeteine kun grunt
   var harAgn = ty==="l" ? (P.pots.lineAgn||0)>0 : (P.pots.bait||0)>0;
   var fri=freePots(ty);
   if(fri>0&&canZone){ b.textContent=harAgn?emo+" Sett "+settNavn+(fri>1?" ("+fri+" igjen)":"")+" · 1 agn + 2 ⛽":emo+" Sett "+settNavn+" — mangler agn"; b.style.display="inline-block"; return; }
@@ -1007,11 +1015,11 @@ function openShop(){
     addShop(L,'<img src="spill/assets/ornes-baatforening-logo.png" class="shoplogo rund" alt=""> Havneavgift',
       "Kaiplass i Ørnes havn — Ørnes Båtforening (stifta 1964).",350,false,
       function(){P.havnNeste=Date.now()+30*864e5; notice("Havneavgiften er betalt — trygg kaiplass ⚓");});
-  addShop(L,"🦀 Krabbeteine","Sett den ut og la den fiske mens du er borte. I Dypt kan trollkrabba gå i teina. Har "+(P.pots.owned||0)+" (plass til "+P.pots.cap+").",150,(P.pots.owned||0)>=P.pots.cap,function(){P.pots.owned++;});
+  addShop(L,"🦀 Krabbeteine","Settes på grunt vann (0–50 m) og fisker mens du er borte. Har "+(P.pots.owned||0)+" (plass til "+P.pots.cap+").",150,(P.pots.owned||0)>=P.pots.cap,function(){P.pots.owned++;});
   if(hummerSeason()) addShop(L,"🦞 Hummerteine","Grunt vann (0–50 m). Hummeren går i teina om natta — la den stå over natta! Har "+(P.pots.ownedH||0)+".",600,(P.pots.ownedH||0)>=2,function(){P.pots.ownedH++;});
   else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🦞 Hummerteiner selges kun i hummersesongen (1. okt–31. des). Hummeren er freda resten av året.</p>');
   addShop(L,"🪱 Teineagn (3 stk)","1 agn per utsett. Har "+(P.pots.bait||0)+" stk.",25,false,function(){P.pots.bait=(P.pots.bait||0)+3;});
-  if(P.rod>=2){ addShop(L,"🪢 Bunnline","Settes på Dypt og står natta over — betraktelig bedre kveitesjanse, pluss brosme, lange og steinbit. Har "+(P.pots.lineOwned||0)+".",800,(P.pots.lineOwned||0)>=1,function(){P.pots.lineOwned=1;});
+  if(P.rod>=2){ addShop(L,"🪢 Bunnline","Settes ut på valgfritt dyp og står natta over — fangsten følger dypet, og kveita kan gå på. Har "+(P.pots.lineOwned||0)+".",800,(P.pots.lineOwned||0)>=1,function(){P.pots.lineOwned=1;});
     addShop(L,"🐟 Linagn (10 kroker)","1 sett per utsett av bunnlina. Har "+(P.pots.lineAgn||0)+".",60,false,function(){P.pots.lineAgn=(P.pots.lineAgn||0)+1;}); }
   if(P.pots.cap<4&&(P.pots.owned||0)>0) addShop(L,"⚓ Ekstra blåser og tau","Plass til 4 teiner ute samtidig (i dag: "+P.pots.cap+").",350,false,function(){P.pots.cap=4;});
   if(P.rod>=1&&!P.ekko) addShop(L,"📡 Ekkolodd","Ser stimene før de ser deg — 20 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
