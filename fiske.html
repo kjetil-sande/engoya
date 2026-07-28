@@ -400,6 +400,34 @@ var LURES=[{n:"Overflate-sluk",zone:0,pris:15},{n:"Mellomdyp-sluk",zone:1,pris:5
 var SAVE="storkveita-save-v1";
 function loadAll(){try{return JSON.parse(localStorage.getItem(SAVE))||{players:{},last:null}}catch(e){return{players:{},last:null}}}
 function saveAll(){try{localStorage.setItem(SAVE,JSON.stringify(DB))}catch(e){}}
+/* ---------- Familierekorder på nett (Netlify Blobs via familiekode) ---------- */
+var FAM_URL="/.netlify/functions/familierekorder", famLast=0, famBusy=false, famInfo="";
+function famCode(){ try{return (localStorage.getItem("storkveita-familiekode")||"").trim()}catch(e){return ""} }
+function famFarlig(n){ return n==="__proto__"||n==="constructor"||n==="prototype"; }
+function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinner
+  Object.keys(andre||{}).forEach(function(k){ if(famFarlig(k)||!andre[k])return;
+    var b=andre[k], a=mine[k];
+    if(!a){ a=mine[k]={count:0,bestLen:0,bestWt:0}; }
+    a.count=Math.max(a.count||0,b.count||0); a.bestLen=Math.max(a.bestLen||0,b.bestLen||0);
+    a.bestWt=Math.max(a.bestWt||0,b.bestWt||0); if(b.gold)a.gold=Math.max(a.gold||0,b.gold); });
+}
+function syncFam(force){ var code=famCode(); if(!code||!P||famBusy)return;
+  var now=Date.now(); if(!force && now-famLast<45000)return; famBusy=true; famLast=now;
+  fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({code:code, player:{name:P.name, kr:P.kr, caught:P.caught, ts:now}})})
+  .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
+  .then(function(j){ famBusy=false; if(!j||!j.players)return;
+    Object.keys(j.players).forEach(function(nm){ if(famFarlig(nm))return;
+      var rp=j.players[nm]||{};
+      if(nm===P.name){ famFlett(P.caught, rp.caught); }             // egen fremgang fra andre enheter
+      else if(DB.players[nm]&&!DB.players[nm].remote){ famFlett(DB.players[nm].caught, rp.caught); } // lokal navnebror
+      else { var lp=DB.players[nm]||newPlayer(nm); lp.remote=true; lp.kr=rp.kr||0; lp.caught=rp.caught||{}; DB.players[nm]=lp; } // familie fra andre enheter
+    });
+    saveAll(); famInfo="synket "+new Date().toTimeString().slice(0,5);
+    var bm=document.querySelector("#bookModal");
+    if(bm&&bm.classList.contains("on")&&$("#bookFam").style.display!=="none") renderFam();
+  }).catch(function(){ famBusy=false; famInfo="fikk ikke kontakt"; });
+}
 var DB=loadAll();
 function newPlayer(name){return{name:name,kr:40,fuel:24,fuelMax:24,rod:0,lures:{0:3,1:0,2:0},caught:{}}}
 var P=null; // aktiv spiller
@@ -466,6 +494,7 @@ function setDepth(d){
 
 function toSea(){Snd.themeOff(); Snd.ambienceOn(); show("sea"); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth(Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase==="idle")setHint("📋 Rusten betaler +50 % for "+dk.n.toLowerCase()+" i dag. "+ZONE[dk.z]+" ("+DEPM[dk.z]+")."); },1200);
+  syncFam();
   var ht=hoytid(); if(ht){ try{ var hk="storkveita-hoytid", today=new Date().toISOString().slice(0,10);
     if(localStorage.getItem(hk)!==today){ localStorage.setItem(hk,today); setTimeout(function(){notice(ht)},3500); } }catch(e){} }}
 function hoytid(){ var d=new Date(), m=d.getMonth(), day=d.getDate();
@@ -672,6 +701,7 @@ function land(){
   $("#catchKr").innerHTML="Verdi: <b>"+kr+" kr</b>"+(isDaily?' <span class="newtag" title="Rustens bestilling i dag">BESTILLING +50%</span>':'')
     +(famBeat?'<div class="famrec">🏅 NY FAMILIEREKORD — du slo '+esc(famBeat.nm)+' ('+famBeat.len+' cm)!</div>':'');
   dogShow(0,7); Snd.gladDog(); // fisken er i båten — hunden bjeffer av glede
+  syncFam();
   saveAll(); modal("catchModal",true); (f.trophy||gold?Snd.trophy():(isRecord&&!isNew?Snd.trophy():Snd.land()));
   if(navigator.vibrate)navigator.vibrate(f.trophy?[80,50,80,50,120]:60);
 }
@@ -840,7 +870,7 @@ function openMap(){
 /* ---------- Fangstbok ---------- */
 function openBook(which){
   var mine=$("#bookMine"), fam=$("#bookFam");
-  if(which==="fam"){ $("#tabMine").classList.remove("on"); $("#tabFam").classList.add("on"); mine.style.display="none"; fam.style.display="block"; renderFam(); }
+  if(which==="fam"){ $("#tabMine").classList.remove("on"); $("#tabFam").classList.add("on"); mine.style.display="none"; fam.style.display="block"; renderFam(); syncFam(true); }
   else { $("#tabMine").classList.add("on"); $("#tabFam").classList.remove("on"); mine.style.display="block"; fam.style.display="none"; renderMine(); }
   var have=Object.keys(P.caught).length;
   var starSum=0; FISH.forEach(function(f){ var rec=P.caught[f.k]; if(!rec)return; var t=(rec.bestLen-f.len[0])/(f.len[1]-f.len[0]); starSum+=Math.round(Math.max(0,Math.min(1,t))*10)/2; });
@@ -878,6 +908,15 @@ function renderFam(){
     box.insertAdjacentHTML("beforeend",'<div class="frow"><b>'+esc(r.nm)+'</b><span>★ '+r.stars+' · '+r.arter+' arter'+(r.kveite?' · 🏆 '+r.kveite+' cm':'')+'</span></div>');
   });
   if(!rows.length)box.innerHTML='<p class="muted center">Ingen spillere ennå.</p>';
+  var code=famCode();
+  box.insertAdjacentHTML("beforeend", code
+    ? '<p class="muted center" style="margin-top:10px;font-size:12px">👨‍👩‍👧 Familiekode: <b>'+esc(code)+'</b>'+(famInfo?' · '+esc(famInfo):'')+' <button class="btn sm" id="famBytt">Bytt</button></p>'
+    : '<p class="muted center" style="margin-top:10px"><button class="btn sm gold" id="famKoble">👨‍👩‍👧 Koble familien sammen på nett</button><br><span class="muted" style="font-size:11px">Samme kode på alle enheter → felles rekorder på hytta og hjemme</span></p>');
+  var kb=$("#famKoble")||$("#famBytt");
+  if(kb)kb.onclick=function(){ var c=(prompt("Familiekode (4–40 tegn — finn på en hemmelig sammen!)", code||"")||"").trim();
+    if(!c)return; if(c.length<4){ alert("Minst 4 tegn 🙂"); return; }
+    try{localStorage.setItem("storkveita-familiekode",c)}catch(e){}
+    famInfo="kobler til …"; renderFam(); famLast=0; syncFam(true); };
 }
 
 /* ---------- Tegning: scene + fisk-sprites (plassholder) ---------- */

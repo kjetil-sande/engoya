@@ -1,0 +1,8 @@
+{
+  "name": "engoya",
+  "private": true,
+  "description": "engoya.no — statisk side + Netlify Functions (åpningstider, pollen, familierekorder)",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

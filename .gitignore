@@ -11,3 +11,4 @@ spill/assets/*.psd
 spill/assets/*.ai
 spill/assets/*ORIG*
 ikoner/*.ai
+node_modules/
