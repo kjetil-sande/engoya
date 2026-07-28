@@ -43,7 +43,7 @@ function flettSpiller(fam, p) {
     const flettet = {
       count: Math.max(a.count || 0, tall(b.count, 1e6)),
       bestLen: Math.max(a.bestLen || 0, tall(b.bestLen, 500)),
-      bestWt: Math.max(a.bestWt || 0, tall(b.bestWt, 700)),
+      bestWt: Math.max(a.bestWt || 0, tall(b.bestWt, 1500)), // håkjerringa kan veie over tonnet
     };
     const gold = Math.max(a.gold || 0, tall(b.gold, 1e6));
     if (gold) flettet.gold = gold;

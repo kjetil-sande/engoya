@@ -45,8 +45,8 @@
   #menu #playBtn{animation:fadeUp .8s ease 1.8s both}
   #menu .muted{animation:fadeUp .8s ease 2.05s both}
   #menu.leaving .logo,#menu.leaving .logo-fallback,#menu.leaving .who,#menu.leaving #playBtn,#menu.leaving .muted{opacity:0!important;transition:opacity .5s ease;animation:none}
-  #menu .driveby{position:absolute;bottom:16%;left:0;width:min(36%,210px);transform:translateX(-160%) rotate(-5deg);transform-origin:50% 82%;pointer-events:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3));z-index:3}
-  #menu .driveby.go{transform:translateX(520%) rotate(-5deg);transition:transform 1.9s linear} /* 520 % av egen bredde → godt forbi høyre kant på alle skjermer */
+  #menu .driveby{position:absolute;bottom:16%;left:0;width:min(36%,210px);transform:translateX(-160%) rotate(-2.5deg);transform-origin:50% 82%;pointer-events:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3));z-index:3}
+  #menu .driveby.go{transform:translateX(520%) rotate(-2.5deg);transition:transform 2.6s linear} /* 520 % av egen bredde → godt forbi høyre kant på alle skjermer */
   #menu .logo{width:auto;max-width:min(84%,470px);max-height:44vh;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 6px 0 rgba(0,0,0,.12));margin:clamp(6px,2vh,18px) 0 clamp(18px,5vh,40px)}
   #menu .logo-fallback{font-size:clamp(30px,8vw,60px);font-weight:800;color:#f6ecd0;text-shadow:3px 3px 0 var(--wood-dark);
     letter-spacing:.02em;line-height:1;margin-bottom:12px}
@@ -83,8 +83,10 @@
   .depthsel button small{display:block;font-size:9px;font-weight:600;opacity:.8;margin-top:1px}
   .depthsel button.on{background:var(--paper);color:var(--ink)}
   .depthsel button.locked{opacity:.4}
+  .depthsel.four button{padding:6px 5px;font-size:12px}
+  .depthsel.four button small{font-size:8px}
   #sea.fishing #depthsel,#sea.fishing #potRow{display:none} /* snøret er ute — ned med valgene til fisken er i båten */
-  .actionbtn{width:min(90%,340px);text-align:center}
+  .actionbtn{width:min(90%,340px);text-align:center;padding-top:19px;padding-bottom:19px;font-size:18px}
   .hint{color:#eaf3ee;font-family:var(--mono);font-size:15px;font-weight:600;text-shadow:0 1px 3px #000a;min-height:19px;text-align:center}
 
   /* Tension/progress during reel */
@@ -140,7 +142,7 @@
     .vbar{height:64px} #reelui .bars{gap:10px}
     #sea .bottom{gap:4px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
     .hint{font-size:13px;margin:0}
-    .actionbtn{padding:8px 18px;font-size:15px} }
+    .actionbtn{padding:11px 18px;font-size:15px} }
   .slot.locked{opacity:.72}
   .slot.locked .nm{color:var(--ink-soft)}
   .slot.trophy{border-color:var(--gold);background:#fdf3d6}
@@ -177,6 +179,8 @@
   @media (max-width:520px){
     .depthsel{width:100%;gap:4px}
     .depthsel button{flex:1;font-size:16px;padding:9px 4px}
+    .depthsel.four button{font-size:13px;padding:9px 2px}
+    .depthsel.four button small{font-size:9px}
     .depthsel button small{font-size:11px;margin-top:2px}
     #hud{flex-wrap:wrap;gap:5px;padding:7px 8px}
     #hud .chip{padding:5px 8px;font-size:11px}
@@ -231,6 +235,7 @@
         <button data-d="0" class="on">Grunt<small>0–50 m</small></button>
         <button data-d="1">Mellomdyp<small>50–150 m</small></button>
         <button data-d="2">Dypt<small>150–300 m</small></button>
+        <button data-d="3" style="display:none">Djuphavet<small>300–500 m</small></button>
       </div>
       <div id="potRow" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         <button class="btn sm" id="potBtn" style="display:none"></button>
@@ -320,7 +325,7 @@ var Snd=(function(){
     s.connect(f); f.connect(ga); ga.connect(c.destination); s.start(); }
   // --- Ekte lyd-klipp: sjø + fugler + snelle (sømløse Web Audio-loops) + butikk-kjøp (one-shot) ---
   var buffers={}, loaded=false;
-  var loops={ sea:{url:"spill/lyd/bolgeskvulp.aac",  vol:0.5,  want:false, node:null},   // bølgeskvulp når man fisker
+  var loops={ sea:{url:"spill/lyd/bolgeskvulp.aac",  vol:0.32,  want:false, node:null},   // bølgeskvulp når man fisker
               bird:{url:"spill/lyd/fuglelyder.aac",   vol:0.22, want:false, node:null},   // fugler lavt i bakgrunnen
               reel:{url:"spill/lyd/fiskesnelle-loop.aac", vol:0.55, want:false, node:null} }; // snelle mens man sveiver
   var ONESHOT={ buy:{url:"spill/lyd/butikk-kjop.aac", vol:0.7},
@@ -332,20 +337,20 @@ var Snd=(function(){
     teineplask:{url:"spill/lyd/teine-plask.aac", vol:0.7},
     klikk1:{url:"spill/lyd/klikk-tre-01.aac", vol:0.45},
     klikk2:{url:"spill/lyd/klikk-tre-02.aac", vol:0.45},
-    bjeff1:{url:"spill/lyd/hund-bjeff-01.aac", vol:0.3},
-    bjeff2:{url:"spill/lyd/hund-bjeff-02.aac", vol:0.3},
-    bjeff3:{url:"spill/lyd/hund-bjeff-03.aac", vol:0.3},
-    knurr:{url:"spill/lyd/hund-knurring.aac", vol:0.22},
+    bjeff1:{url:"spill/lyd/hund-bjeff-01.aac", vol:0.45},
+    bjeff2:{url:"spill/lyd/hund-bjeff-02.aac", vol:0.45},
+    bjeff3:{url:"spill/lyd/hund-bjeff-03.aac", vol:0.45},
+    knurr:{url:"spill/lyd/hund-knurring.aac", vol:0.32},
     motor:{url:"spill/lyd/paahengsmotor.aac", vol:0.5},
     stritter:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.65},
-    nys1:{url:"spill/lyd/nys-01.aac", vol:0.5},
-    nys2:{url:"spill/lyd/nys-02.aac", vol:0.5},
-    nys3:{url:"spill/lyd/nys-03.aac", vol:0.5},
-    hmm:{url:"spill/lyd/fisker-hmm.aac", vol:0.5},
-    imponert:{url:"spill/lyd/fisker-imponert.aac", vol:0.55},
-    surGrynt:{url:"spill/lyd/fisker-surt-grynt.aac", vol:0.55},
-    lettet:{url:"spill/lyd/fisker-lettet-stonn.aac", vol:0.55},
-    host:{url:"spill/lyd/fisker-host.aac", vol:0.45} };
+    nys1:{url:"spill/lyd/nys-01.aac", vol:0.68},
+    nys2:{url:"spill/lyd/nys-02.aac", vol:0.68},
+    nys3:{url:"spill/lyd/nys-03.aac", vol:0.68},
+    hmm:{url:"spill/lyd/fisker-hmm.aac", vol:0.62},
+    imponert:{url:"spill/lyd/fisker-imponert.aac", vol:0.68},
+    surGrynt:{url:"spill/lyd/fisker-surt-grynt.aac", vol:0.68},
+    lettet:{url:"spill/lyd/fisker-lettet-stonn.aac", vol:0.68},
+    host:{url:"spill/lyd/fisker-host.aac", vol:0.6} };
   var motorNode=null, altClick=false; // påhengsmotoren styres separat (start/fade-stopp)
   function motorStart(){ var c=AC(); if(!c||muted)return; motorStop(0); var buf=buffers.motor; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; s.loop=true; var g=c.createGain(); g.gain.value=0.0001;
@@ -404,18 +409,31 @@ var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
  {k:"lyr",n:"Lyr",z:0,pull:0.9,w:70,len:[35,78],kg:5,pris:40,col:"#b0895a",shape:"torpedo",rar:0,fight:0.75},
  {k:"makrell",n:"Makrell",z:0,pull:1.15,w:80,len:[24,46],kg:8,pris:25,col:"#2e7d8b",shape:"streak",rar:0,fight:0.8},
  {k:"berggylte",n:"Berggylte",z:0,pull:0.9,w:45,len:[25,50],kg:3,pris:35,col:"#6f8a4a",shape:"deep",rar:1,fight:0.4},
+ {k:"sandflyndre",n:"Sandflyndre",z:0,pull:0.5,w:45,len:[18,40],kg:9,pris:25,col:"#b09a6e",shape:"flat",rar:0,fight:0.2},
+ {k:"skrubbe",n:"Skrubbe",z:0,pull:0.6,w:22,len:[20,45],kg:9,pris:25,col:"#7d6b4c",shape:"flat",rar:1,fight:0.25},
+ {k:"knurr",n:"Knurr",z:0,pull:0.7,w:22,len:[22,45],kg:7,pris:45,col:"#b06a4a",shape:"deep",rar:1,fight:0.3},
+ {k:"hvitting",n:"Hvitting",z:0,pull:0.6,w:8,len:[25,50],kg:5,pris:35,col:"#a8a49a",shape:"cod",rar:1,fight:0.2},
+ {k:"lomre",n:"Lomre",z:0,pull:0.6,w:8,len:[24,45],kg:9,pris:80,col:"#8f7346",shape:"flat",rar:1,fight:0.25},
  {k:"torsk",n:"Torsk",z:1,pull:1.0,w:90,len:[40,95],kg:10,pris:200,col:"#8a7d55",shape:"cod",rar:0,fight:0.25}, // kg kalibrert: 90 cm ≈ 8 kg (reell torskevekt)
  {k:"hyse",n:"Hyse",z:1,pull:0.8,w:70,len:[32,62],kg:6,pris:170,col:"#9aa0a6",shape:"cod",rar:0,fight:0.15},
  {k:"blastal",n:"Blåstål",z:1,pull:0.8,w:26,len:[24,40],kg:6,pris:180,col:"#2f6ea0",shape:"deep",rar:1,fight:0.35},
- {k:"uer",n:"Uer",z:2,pull:1.1,w:55,len:[24,46],kg:10,pris:260,col:"#c0392b",shape:"deep",rar:1,fight:0.1},
+ {k:"lysing",n:"Lysing",z:1,pull:1.2,w:8,len:[45,100],kg:7,pris:220,col:"#8b8f96",shape:"torpedo",rar:1,fight:0.45},
+ {k:"uer",n:"Uer",z:2,zb:3,pull:1.1,w:55,len:[24,46],kg:10,pris:260,col:"#c0392b",shape:"deep",rar:1,fight:0.1},
  {k:"rodspette",n:"Rødspette",z:2,pull:0.8,w:45,len:[25,46],kg:9,pris:200,col:"#8a7d5a",shape:"flat",rar:1,fight:0.3},
  {k:"brungylt",n:"Brungylt",z:2,pull:0.9,w:22,len:[15,30],kg:5,pris:180,col:"#6b5540",shape:"deep",rar:1,fight:0.3},
- {k:"brosme",n:"Brosme",z:2,pull:1.4,w:38,len:[42,82],kg:7,pris:300,col:"#7a6a4f",shape:"eel",rar:1,fight:0.2},
- {k:"lange",n:"Lange",z:2,pull:1.8,w:26,len:[60,120],kg:8,pris:420,col:"#5c6b4a",shape:"eel",rar:1,fight:0.2},
+ {k:"brosme",n:"Brosme",z:2,zb:3,pull:1.4,w:38,len:[42,82],kg:7,pris:300,col:"#7a6a4f",shape:"eel",rar:1,fight:0.2},
+ {k:"lange",n:"Lange",z:2,zb:3,pull:1.8,w:26,len:[60,120],kg:8,pris:420,col:"#5c6b4a",shape:"eel",rar:1,fight:0.2},
+ {k:"blaalange",n:"Blålange",z:2,zb:3,pull:1.7,w:8,len:[70,140],kg:7,pris:380,col:"#4a5a6b",shape:"eel",rar:1,fight:0.2},
+ {k:"skate",n:"Storskate",z:2,zb:3,pull:2.1,w:8,len:[90,180],kg:12,pris:420,col:"#6b5d52",shape:"flat",rar:1,fight:0.6},
+ {k:"haagjel",n:"Hågjel",z:3,pull:0.9,w:45,len:[40,68],kg:5,pris:70,col:"#7a7268",shape:"shark",rar:0,fight:0.35},
+ {k:"havmus",n:"Havmus",z:3,pull:0.9,w:30,len:[55,100],kg:4,pris:90,col:"#8e8496",shape:"eel",rar:0,fight:0.3},
+ {k:"svarthaa",n:"Svarthå",z:3,pull:0.8,w:22,len:[30,55],kg:5,pris:75,col:"#3a3f4a",shape:"shark",rar:1,fight:0.4},
+ {k:"blaakveite",n:"Blåkveite",z:3,pull:1.7,w:22,len:[55,100],kg:12,pris:700,col:"#4d5a66",shape:"flat",rar:1,fight:0.5},
  {k:"steinbit",n:"Steinbit",z:2,allZ:true,pull:1.5,w:18,len:[50,125],kg:11,pris:380,col:"#5b6570",shape:"eel",rar:1,fight:0.55}, // biter på ALLE dyp
  {k:"piggha",n:"Pigghå",z:2,pull:2.3,w:14,len:[60,100],kg:5,pris:340,col:"#7d8890",shape:"shark",rar:2,fight:0.5},
  {k:"makrellstorje",n:"Makrellstørje",z:0,pull:2.9,w:3,len:[150,300],kg:19,pris:2500,col:"#2b4a66",shape:"torpedo",rar:2,reelSec:1800,fight:1.0}, // ~45-60 min kamp
  {k:"breiflabb",n:"Breiflabb",z:1,pull:1.9,w:4,len:[60,150],kg:20,pris:900,col:"#5a4a3a",shape:"flat",rar:2,fight:0.25},
+ {k:"haakjerring",n:"Håkjerring",z:3,pull:3.4,w:3,len:[220,450],kg:11,reelSec:900,pris:2200,col:"#5d564e",shape:"shark",rar:2,fight:0.9}, // dyphavets kjempe — ~30 min kamp, kan veie over 1000 kg
  {k:"kveite",n:"Kveite",z:2,pull:3.2,w:6,len:[80,138],kg:14,pris:6000,col:"#6d7c63",shape:"flat",trophy:true,rar:2,fight:0.85} // maks ~40 kg — større er urealistisk å få i båten
 ];
 var RARN=["Vanlig","Sjelden","Legendarisk"];
@@ -423,15 +441,19 @@ var byKey={}; FISH.forEach(function(f){byKey[f.k]=f});
 // Fisk-sprites (transparent PNG). Filnavn kan avvike litt fra nøkkel.
 var FIMG={sei:"sei",lyr:"lyr",makrell:"makrell",berggylte:"berggylte",torsk:"torsk",hyse:"hyse",blastal:"blaastaal",uer:"uer",rodspette:"rodspette",brungylt:"brungylt",brosme:"brosme",lange:"lange",piggha:"pigghaa",kveite:"kveite"};
 var fishImg={}, fishSil={};
-FISH.forEach(function(f){ var base=FIMG[f.k]||f.k;
-  var im=new Image(); im.src="spill/assets/"+base+".png"; fishImg[f.k]=im;
+var LIKNER={sandflyndre:"rodspette",skrubbe:"rodspette",lomre:"rodspette",skate:"rodspette",hvitting:"hyse",knurr:"uer",
+  lysing:"lyr",blaalange:"lange",haagjel:"pigghaa",svarthaa:"pigghaa",haakjerring:"pigghaa",havmus:"brosme",blaakveite:"kveite"}; // midlertidig lookalike til egen kunst er generert — egen PNG overtar automatisk
+FISH.forEach(function(f){ var base=FIMG[f.k]||f.k, fb=LIKNER[f.k];
+  var im=new Image(); if(fb)im.onerror=function(){ im.onerror=null; im.src="spill/assets/"+fb+".png"; };
+  im.src="spill/assets/"+base+".png"; fishImg[f.k]=im;
   var sn=(f.k==="sei")?"sei-silhuett":base+"-silhuette"; // sei mangler 'e' i filnavnet; resten følger mønsteret
-  var s=new Image(); s.src="spill/assets/"+sn+".png"; fishSil[f.k]=s;
+  var s=new Image(); if(fb)s.onerror=function(){ s.onerror=null; s.src="spill/assets/"+fb+"-silhuette.png"; };
+  s.src="spill/assets/"+sn+".png"; fishSil[f.k]=s;
 });
-var ZONE=["Grunt","Mellomdyp","Dypt"];
-var DEPM=["0–50 m","50–150 m","150–300 m"];
+var ZONE=["Grunt","Mellomdyp","Dypt","Djuphavet"];
+var DEPM=["0–50 m","50–150 m","150–300 m","300–500 m"];
 var RODS=[{n:"Stang I",max:1.2},{n:"Stang II",max:2.3},{n:"Stang III",max:3.6}];
-var LURES=[{n:"Gruntvann-sluk",zone:0,pris:15},{n:"Mellomdyp-sluk",zone:1,pris:50},{n:"Djuphavs-sluk",zone:2,pris:120}];
+var LURES=[{n:"Gruntvann-sluk",zone:0,pris:15},{n:"Mellomdyp-sluk",zone:1,pris:50},{n:"Djuphavs-sluk",zone:2,pris:120},{n:"Djuphavs-agnrigg",zone:3,pris:250}];
 
 /* ---------- Lagring (per spiller) ---------- */
 var SAVE="storkveita-save-v1";
@@ -452,7 +474,7 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
     Object.keys(ny.players).forEach(function(nm){ if(famFarlig(nm))return; var np=ny.players[nm]; if(!np)return;
       if(!egen(DB.players,nm)){ DB.players[nm]=np; return; }
       var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
-      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; }
+      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; }
     });
   }catch(e){} });
 /* ---------- Familierekorder på nett (Netlify Blobs via familiekode) ---------- */
@@ -519,6 +541,8 @@ function chosen(name){P=DB.players[name]; if(!P.lures)P.lures={0:3,1:0,2:0};
   if(P.svc==null)P.svc=0; // turer siden forrige båtservice (Jensen Service AS, Ørnes)
   if(P.propOk==null)P.propOk=true; if(P.forsTil==null)P.forsTil=0; // propell + båtforsikring
   if(P.havnNeste==null)P.havnNeste=Date.now()+30*864e5; // første havneavgift forfaller om en måned
+  if(P.vinsj==null)P.vinsj=false; if(P.ekko==null)P.ekko=false; // djuphavsrigg + ekkolodd
+  if(P.lures[3]==null)P.lures[3]=0; // djuphavs-agnrigg
   if(P.pots.lineOwned==null)P.pots.lineOwned=0; if(P.pots.lineAgn==null)P.pots.lineAgn=0; // bunnline på Dypt
   var pp=P.pots; if(pp.owned==null)pp.owned=0; if(pp.bait==null)pp.bait=0; if(pp.cap==null)pp.cap=2; if(!Array.isArray(pp.out))pp.out=[]; if(pp.rescue==null)pp.rescue=false;
   if(P.remote)delete P.remote; // valgt lokalt → lokalt autoritativ (synk fletter monotont, erstatter aldri)
@@ -548,11 +572,17 @@ function erfaren(){ if(!P||!P.caught)return false; var n=0; for(var k in P.caugh
 var noticeT=null;
 function notice(m){ var n=$("#notice"); if(!n)return; n.textContent=m; n.classList.add("on"); if(noticeT)clearTimeout(noticeT); noticeT=setTimeout(function(){n.classList.remove("on")},2800); }
 function setAction(t,on){var b=$("#actionBtn"); b.textContent=t; b.style.display=on===false?"none":"block"; if(typeof updatePotBtn==="function")updatePotBtn();}
-function updateDepthLocks(){ document.querySelectorAll("#depthsel button").forEach(function(b){ b.classList.toggle("locked",+b.dataset.d>P.rod); }); }
+function updateDepthLocks(){ var klar=vinsjKlar();
+  var b3=document.querySelector('#depthsel button[data-d="3"]'); if(b3)b3.style.display=klar?"":"none";
+  $("#depthsel").classList.toggle("four",klar);
+  document.querySelectorAll("#depthsel button").forEach(function(b){ var d=+b.dataset.d;
+    b.classList.toggle("locked", d===3?!P.vinsj:d>P.rod); }); }
 function setDepth(d){
   if(!P)return;
   if(phase!=="idle")return; // ikke bytt dybde midt i fisking (gjelder også kart/pins)
-  if(d>P.rod){ setHint(RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+") — kjøp i butikken 🛒"); return; }
+  if(d===3){ if(!vinsjKlar())return;
+    if(!P.vinsj){ setHint("Vinsj og dyphavsrigg trengs for djuphavet (300–500 m) — kjøp i butikken 🛒"); return; } }
+  else if(d>P.rod){ setHint(RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+") — kjøp i butikken 🛒"); return; }
   depth=d; camY=camHome(); // ny sone → vannlinja på samme skjermhøyde
   $("#hudLure").textContent="🪝 "+(P.lures[d]||0);
   document.querySelectorAll("#depthsel button").forEach(function(x){x.classList.toggle("on",+x.dataset.d===d)});
@@ -560,7 +590,7 @@ function setDepth(d){
   if(typeof updatePotBtn==="function")updatePotBtn();
 }
 
-function toSea(){Snd.themeOff(); Snd.ambienceOn(); show("sea"); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth(Math.min(depth,P.rod));
+function toSea(){Snd.themeOff(); Snd.ambienceOn(); show("sea"); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase==="idle")setHint("📋 Rusten betaler +50 % for "+dk.n.toLowerCase()+" i dag. "+ZONE[dk.z]+" ("+DEPM[dk.z]+")."); },1200);
   syncFam();
   var ht=hoytid(); if(ht){ try{ var hk="storkveita-hoytid", today=new Date().toISOString().slice(0,10);
@@ -624,13 +654,13 @@ function cast(){
   if(g){ lureW=g.wl+mn*0.05; lureTargetW=g.imgH*LTF[depth]-mn*0.04; // fra rett under overflata → like over bunn-dekoren
     camBottom=Math.min(g.maxScroll, Math.max(camHome(), lureTargetW-H*0.56));
     lureTargetY=Math.min(0.92,(lureTargetW-camBottom)/H); }        // sluk-posisjon på skjermen når vi er nede (brukes av napp-fisken)
-  else { lureW=H*0.35; lureTargetW=H*0.6; camBottom=0; lureTargetY=[0.5,0.58,0.64][depth]; castNoGeom=true; }
+  else { lureW=H*0.35; lureTargetW=H*0.6; camBottom=0; lureTargetY=[0.5,0.58,0.64,0.7][depth]; castNoGeom=true; }
   lureY=0.06;
   setHint(""); setAction("…",false);
 }
 /* Rustens bestilling: dato-seedet «dagens art» — hele familien får samme, selges +50 % */
 function dailyFish(){ var d=new Date(), s=d.getFullYear()*372+d.getMonth()*31+d.getDate();
-  var pool=FISH.filter(function(f){return !f.trophy}); return pool[((s*9301+49297)%233280)%pool.length]; }
+  var pool=FISH.filter(function(f){return !f.trophy&&f.z!==3}); return pool[((s*9301+49297)%233280)%pool.length]; } // djuphavsarter er ikke dagens art (ikke alle har vinsj)
 function starSumFor(pl){ var sum=0; FISH.forEach(function(f){ var rec=pl.caught&&pl.caught[f.k]; if(!rec)return;
   var t=(rec.bestLen-f.len[0])/(f.len[1]-f.len[0]); sum+=Math.round(Math.max(0,Math.min(1,t))*10)/2; }); return sum; }
 var goldCatch=false; // 1 av 40: gyllen fisk (×3 verdi, ✨ i boka)
@@ -639,12 +669,13 @@ function startWait(){
   phase="wait";
   goldCatch=Math.random()<0.025;
   // 1 av 150 er legendarisk, 1 av 75 er sjelden — og de biter ikke alltid (25 % / 50 %)
-  var zf=FISH.filter(function(f){return (f.z===depth||f.allZ) && f.k!=="makrellstorje"}); // størja tas ALDRI på bunnsluk; allZ (steinbit) biter overalt
+  var zf=FISH.filter(function(f){return (f.z===depth||f.zb===depth||f.allZ) && f.k!=="makrellstorje"}); // størja tas ALDRI på bunnsluk; allZ (steinbit) biter overalt; zb = art med to soner
   var t2=zf.filter(function(f){return f.rar===2}), t1=zf.filter(function(f){return f.rar===1}), t0=zf.filter(function(f){return !f.rar});
   var base=t0.length?t0:(t1.length?t1:zf); // sonens hverdagsfisk (i Dypt spiller de «sjeldne» hverdagsrollen)
-  var roll=Math.random(), pool, bc;
-  if(roll<1/150 && t2.length){ pool=t2; bc=0.25; }
-  else if(roll<1/150+1/75 && t1.length && t1!==base){ pool=t1; bc=0.5; }
+  if(depth===3){ base=base.concat(t1.filter(function(f){return f.zb===depth})); t1=t1.filter(function(f){return f.zb!==depth}); } // to-sone-artene (brosme/lange/uer m.fl.) er hverdagsfisk også i Djuphavet
+  var roll=Math.random(), pool, bc, ek=P.ekko?1.2:1; // ekkoloddet ser stimene: +20 % sjanse for sjelden/legendarisk
+  if(roll<ek/150 && t2.length){ pool=t2; bc=0.25; }
+  else if(roll<ek/150+ek/75 && t1.length && t1!==base){ pool=t1; bc=0.5; }
   else { pool=base; bc=1; }
   var tot=0; pool.forEach(function(f){tot+=f.w}); var r=Math.random()*tot, acc=0, cf=pool[0];
   for(var i=0;i<pool.length;i++){acc+=pool[i].w; if(r<=acc){cf=pool[i];break;}}
@@ -673,10 +704,10 @@ function approachStep(dt){
   if(s.x<0.08||s.x>0.92){ s.vx=-s.vx; s.passes++; s.x=Math.max(0.08,Math.min(0.92,s.x)); } // snur ved kanten
 }
 function commitBite(){
-  var cf=sceneFish?sceneFish.f:FISH.filter(function(f){return (f.z===depth||f.allZ) && f.k!=="makrellstorje"})[0];
+  var cf=sceneFish?sceneFish.f:FISH.filter(function(f){return (f.z===depth||f.zb===depth||f.allZ) && f.k!=="makrellstorje"})[0];
   hooked=cf; hookedLen=(sceneFish&&sceneFish.sizeLen)||Math.round(rnd(cf.len[0],cf.len[1])); phase="bite"; hookWindow=1.6;
   if(!sceneFish)sceneFish={f:cf,x:(lureSX/W)||0.5,y:lureTargetY}; else sceneFish.committing=true;
-  setHint(erfaren()?"":"NAPP! Trykk for å kroke! 🐟"); setAction("KROK!",true); Snd.bite();
+  setHint(erfaren()?"":"NAPP! Trykk for å kroke! 🐟"); setAction("HUGG!",true); Snd.bite();
   if(navigator.vibrate)navigator.vibrate(30);
 }
 var hookFace=false, storjeTried=false, runT=0, runPow=0, hookedLen=0; // + utras + den krokede fiskens lengde
@@ -718,7 +749,7 @@ function reelStep(dt){
   var p=Math.min(1,prog/100), g1=colGeom(), chr=camHome();
   camY=chr+(camBottom-chr)*(1-p);
   // STØRJA: kan hogge på fisken din nær overflata — mellomdyp/dypt, Stang III, i sesongen, svært sjelden
-  if(!storjeTried && p>0.72 && depth>=1 && P.rod===2 && storjeSeason() && f && !f.trophy && f.k!=="makrellstorje"){
+  if(!storjeTried && p>0.72 && depth>=1 && depth<=2 && P.rod===2 && storjeSeason() && f && !f.trophy && f.k!=="makrellstorje"){ // størja er en overflatejeger — aldri 400 m nede
     storjeTried=true;
     var iDag=new Date().toISOString().slice(0,10);
     if(P.storjeDag!==iDag && Math.random()<0.01){ // svært sjelden — og aldri mer enn én utløst per dag
@@ -811,7 +842,7 @@ function setPot(ty){ ty=ty||"k";
   if(phase!=="idle"||!P)return;
   if(ty==="h"&&depth!==0){ notice("Hummeren står på grunt vann ved skjæra — sett den på Grunt 🦞"); return; }
   if(ty==="h"&&!hummerSeason()){ notice("Hummeren er freda nå — sesongen er 1. okt til 31. des 🦞"); return; }
-  if(ty==="l"&&depth!==2){ notice("Bunnlina hører hjemme på Dypt — der kveita står 🪢"); return; }
+  if(ty==="l"&&depth!==2&&depth!==3){ notice("Bunnlina hører hjemme på Dypt eller i Djuphavet — der storfisken står 🪢"); return; }
   if(freePots(ty)<1)return;
   if(ty==="l"){ if((P.pots.lineAgn||0)<1){ notice("Lina mangler agn — kjøp linagn i butikken 🛒"); return; } }
   else if((P.pots.bait||0)<1){ notice("Teina mangler agn — kjøp teineagn i butikken 🛒"); return; }
@@ -832,7 +863,7 @@ function potOutcome(t,soak){ // krabbeteine — deterministisk av seed+soak: rel
   // 0–15 krabber pr. teine: fylles LANGSOMT opp, maks effekt ved 2 døgn (q48). Krabbe = 25–30 kr.
   var rng=mulberry32(t.seed^((soak/60000)|0)), q48=Math.max(0,Math.min(1,soak/(48*3600000))), lines=[];
   if(soak<20*60000) return {lines:[],total:0,early:true};
-  if(t.zone===2){ // Dypt: taskekrabba trives ikke — men TROLLKRABBA kan gå i teina
+  if(t.zone>=2){ // Dypt/Djuphavet: taskekrabba trives ikke — men TROLLKRABBA kan gå i teina (lever ned mot 800 m)
     var r1=rng(), qd=Math.min(1,soak/(8*3600000));
     if(r1<0.10*qd){ var tt3=rng(); lines.push({e:"🦀",n:"TROLLKRABBE — dyphavets ridder!",kr:Math.round(450*(0.6+0.9*tt3)),img:"trollkrabbe"}); }
     else if(r1<0.35*qd){ lines.push({e:"🦀",n:"Taskekrabbe (langt hjemmefra)",kr:25+Math.round(rng()*5),img:"taskekrabbe"}); }
@@ -871,8 +902,15 @@ function lineFisk(rng,k){ var f=byKey[k], t=rng(), len=Math.round(f.len[0]+(f.le
 function lineOutcome(t,soak){ // bunnline: kveitesjansen er BETRAKTELIG større enn med stang — men den vil stå natta over
   var rng=mulberry32(t.seed^((soak/60000)|0)), q=Math.max(0,Math.min(1,soak/(10*3600000))), lines=[];
   if(soak<20*60000) return {lines:[],total:0,early:true};
-  if(rng()<0.08*q) lines.push(lineFisk(rng,"kveite")); // ~8 % pr. fullt sett — kveita går på lina!
-  var POOL=["brosme","brosme","lange","lange","uer","rodspette","steinbit","steinbit","breiflabb"];
+  var POOL;
+  if(t.zone===3){ // djuphavslina (300–500 m): blåkveita erstatter kveita — og ytterst sjelden: havets eldste
+    if(rng()<0.02*q) lines.push(lineFisk(rng,"haakjerring"));
+    else if(rng()<0.10*q) lines.push(lineFisk(rng,"blaakveite"));
+    POOL=["brosme","brosme","lange","haagjel","haagjel","svarthaa","havmus","uer","blaalange","skate"];
+  } else {
+    if(rng()<0.08*q) lines.push(lineFisk(rng,"kveite")); // ~8 % pr. fullt sett — kveita går på lina!
+    POOL=["brosme","brosme","lange","lange","uer","rodspette","steinbit","steinbit","breiflabb"];
+  }
   var n=Math.floor(q*(1+rng()*4)); // 0–5 bunnfisk ved full tid
   for(var i=0;i<n;i++) lines.push(lineFisk(rng,POOL[(rng()*POOL.length)|0]));
   if(!lines.length&&rng()<0.5) lines.push({e:"🪝",n:"Krokene var slikket reine — noe har forsynt seg av agnet",kr:0});
@@ -901,6 +939,7 @@ function pullPot(ty){ ty=ty||"k";
     if(byKey[l.fk].trophy)fikkKveite=true; });
   P.pots.out.splice(idx,1); P.kr+=res.total; hud(); saveAll(); updatePotBtn(); if(ty==="l")syncFam();
   if(fikkKveite){ Snd.trophy(); notice("STORKVEITA GIKK PÅ LINA! 🏆"); dogShow(0,7); Snd.gladDog(); }
+  else if(res.lines.some(function(l){return l.fk==="haakjerring"})){ Snd.trophy(); notice("HÅKJERRINGA GIKK PÅ LINA! 🦈 Havets eldste!"); dogShow(0,7); Snd.gladDog(); setTimeout(Snd.fiskerImponert,500); }
   var L=$("#potList"); L.innerHTML="";
   if(!res.lines.length){
     var tomMsg = ty==="l" ? "Tom line denne gangen — men kveita svømmer der ute et sted."
@@ -918,7 +957,7 @@ function pullPot(ty){ ty=ty||"k";
 function potSetState(b,ty){ // Sett-knapp: vises når du har ledig bruk og er i riktig sone
   if(!b)return;
   var emo=ty==="h"?"🦞":ty==="l"?"🪢":"🦀", settNavn=ty==="h"?"hummerteine":ty==="l"?"bunnline":"teine";
-  var canZone = ty==="h" ? (depth===0&&hummerSeason()) : ty==="l" ? depth===2 : true;
+  var canZone = ty==="h" ? (depth===0&&hummerSeason()) : ty==="l" ? (depth===2||depth===3) : true;
   var harAgn = ty==="l" ? (P.pots.lineAgn||0)>0 : (P.pots.bait||0)>0;
   var fri=freePots(ty);
   if(fri>0&&canZone){ b.textContent=harAgn?emo+" Sett "+settNavn+(fri>1?" ("+fri+" igjen)":"")+" · 1 agn + 2 ⛽":emo+" Sett "+settNavn+" — mangler agn"; b.style.display="inline-block"; return; }
@@ -951,7 +990,8 @@ function openShop(){
   L.insertAdjacentHTML("beforeend",'<p class="muted center" style="background:#fdf3d6;border:2px solid var(--gold);border-radius:9px;padding:7px 10px;margin:0 0 4px">📋 Rustens bestilling i dag: <b>'+dk.n+'</b> — betaler <b>+50 %</b></p>');
   var fillCost=(P.fuelMax-P.fuel)*2;
   addShop(L,"⛽ Fyll bensin","Fyll tanken helt opp.", fillCost, P.fuel>=P.fuelMax, function(){P.fuel=P.fuelMax;});
-  LURES.forEach(function(lu,i){ addShop(L,"🪝 "+lu.n,"Til "+DEPM[i]+" · har "+(P.lures[i]||0)+" stk. Ryker snøret, mister du én.",lu.pris,false,function(){P.lures[i]=(P.lures[i]||0)+1;}); });
+  LURES.forEach(function(lu,i){ if(i===3&&!P.vinsj)return; // agnriggen trenger vinsjen
+    addShop(L,"🪝 "+lu.n,"Til "+DEPM[i]+" · har "+(P.lures[i]||0)+" stk. Ryker snøret, mister du én.",lu.pris,false,function(){P.lures[i]=(P.lures[i]||0)+1;}); });
   if(P.svc>=200) addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Båtservice — Ørnes',
     (P.svc>250?"Motoren hoster og sluker ekstra bensin! ":"")+"Full service på motoren ("+P.svc+" turer siden sist).",
     2500,false,function(){P.svc=0; notice("Motoren spinner som en katt igjen — takk, Jensen! ⚙️");});
@@ -974,6 +1014,9 @@ function openShop(){
   if(P.rod>=2){ addShop(L,"🪢 Bunnline","Settes på Dypt og står natta over — betraktelig bedre kveitesjanse, pluss brosme, lange og steinbit. Har "+(P.pots.lineOwned||0)+".",800,(P.pots.lineOwned||0)>=1,function(){P.pots.lineOwned=1;});
     addShop(L,"🐟 Linagn (10 kroker)","1 sett per utsett av bunnlina. Har "+(P.pots.lineAgn||0)+".",60,false,function(){P.pots.lineAgn=(P.pots.lineAgn||0)+1;}); }
   if(P.pots.cap<4&&(P.pots.owned||0)>0) addShop(L,"⚓ Ekstra blåser og tau","Plass til 4 teiner ute samtidig (i dag: "+P.pots.cap+").",350,false,function(){P.pots.cap=4;});
+  if(P.rod>=1&&!P.ekko) addShop(L,"📡 Ekkolodd","Ser stimene før de ser deg — 20 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
+  if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,"🪛 Vinsj og dyphavsrigg","Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures[3]=(P.lures[3]||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
+    else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
   if(P.rod<1) addShop(L,"🎣 Stang II","Låser opp mellomdypt vann (50–150 m): torsk, hyse, blåstål.",250,false,function(){P.rod=1;});
   else if(P.rod<2) addShop(L,"🎣 Stang III","Grovt djuphavsutstyr — låser opp dypt vann (150–300 m) og storkveita.",7500,false,function(){P.rod=2;});
   else{ var kv=P.caught["kveite"];
@@ -1107,8 +1150,13 @@ function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); var r=$("#stage")
       if(phase==="wait"||phase==="bite"){ lureW=lureTargetW; camY=camBottom; } } } }
 window.addEventListener("resize",resize);
 var boatImg=new Image(),boatReady=false; boatImg.onload=function(){boatReady=true}; boatImg.src="spill/assets/spill-baat-ny.png";
-var waterImg=[new Image(),new Image(),new Image()];
+var waterImg=[new Image(),new Image(),new Image(),new Image()];
 ["nedstigning-1","nedstigning-2"].forEach(function(n,i){waterImg[i].src="spill/assets/"+n+".jpg"});
+var n4Fallback=false; // nivå 4: mangler skumring/natt-variant → fall tilbake til -dag (mangler alt → sonen skjules)
+waterImg[3].onerror=function(){ if(!n4Fallback){ n4Fallback=true; waterImg[3].src="spill/assets/nedstigning-4-dag.jpg"; } };
+waterImg[3].onload=function(){ if(waterImg[3].naturalHeight)WLF[3]=894/waterImg[3].naturalHeight; // samme toppblokk som nivå 3: vannlinja på rad 894
+  if(window.P&&typeof updateDepthLocks==="function")updateDepthLocks(); };
+function vinsjKlar(){ return waterImg[3].complete&&waterImg[3].naturalWidth>0; } // sonen åpner først når bakgrunnsbildet finnes
 var seaWx=null, dyptCur=""; // vær-symbol fra MET (samme kilde som engoya.no) + valgt dybde-3-variant
 function gloomyWx(){ var c=seaWx||""; return /^cloudy|rain|sleet|snow|fog/.test(c); }
 function dyptVariant(){ if(window.__dv)return window.__dv; // test-override
@@ -1116,7 +1164,10 @@ function dyptVariant(){ if(window.__dv)return window.__dv; // test-override
   if(h>=22||h<5)return "natt";
   if(h>=18||h<8)return "skumring";
   return gloomyWx()?"skumring":"dag"; } // gråvær demper dagen
-function updateDyptImg(){ var v=dyptVariant(); if(v===dyptCur)return; dyptCur=v; waterImg[2].src="spill/assets/nedstigning-3-"+v+".jpg"; }
+function updateDyptImg(){ var v=dyptVariant(); if(v===dyptCur)return; dyptCur=v; waterImg[2].src="spill/assets/nedstigning-3-"+v+".jpg";
+  var u="spill/assets/nedstigning-4-"+v+".jpg";
+  if(!vinsjKlar()){ n4Fallback=false; waterImg[3].src=u; } // ingenting lastet ennå — direktelast (med dag-fallback)
+  else { var pre=new Image(); pre.onload=function(){ waterImg[3]=pre; if(pre.naturalHeight)WLF[3]=894/pre.naturalHeight; }; pre.src=u; } } // bytt aldri bort et lastet nivå-4-bilde før det nye er klart
 updateDyptImg();
 (function(){ try{ var c=JSON.parse(localStorage.getItem("storkveita-vaer")||"null");
     if(c&&Date.now()-c.t<1800000){ seaWx=c.code; updateDyptImg(); return; } }catch(e){}
@@ -1127,9 +1178,9 @@ updateDyptImg();
     updateDyptImg();
   }).catch(function(){});
 })();
-var WLF=[0.332,0.179,0.118];   // vannlinjas andel av bildehøyden pr. nivå (målt)
-var DESC_DUR=[3.2,6,10];        // nedstigningstid i sek pr. nivå (dypere = lengre ferd)
-var LTF=[0.79,0.75,0.89];       // slukens måldybde (andel av bildet) — Grunt 10 % over bunn-dekoren, mellomdyp over berget
+var WLF=[0.332,0.179,0.118,0.089]; // vannlinjas andel av bildehøyden pr. nivå (målt; nivå 4 automåles ved lasting)
+var DESC_DUR=[3.2,6,10,14];        // nedstigningstid i sek pr. nivå (dypere = lengre ferd)
+var LTF=[0.79,0.75,0.89,0.93];     // slukens måldybde (andel av bildet) — Grunt 10 % over bunn-dekoren, mellomdyp over berget
 var camY=0, camBottom=0, descend=0, lureW=0, lureTargetW=0, castNoGeom=false; // kamera + sluk i verdenskoordinater (px i bildet)
 function colGeom(){ var img=waterImg[depth]; if(!img||!img.complete||!img.naturalWidth)return null;
   // tredje ledd: zoom nok til at vannlinja ALLTID kan ligge på 34 % skjermhøyde (høye mobilskjermer)
@@ -1385,6 +1436,7 @@ function drawBoat(x,y,s){
 // Skala etter reell lengde relativt til båten (~6,4 m = mn*0.5): realistiske størrelser i sjøen.
 function fishScale(f,len){ var L=len||((f.len[0]+f.len[1])/2); // individuell lengde styrer størrelsen på skjermen
   if(f.k==="makrellstorje")return Math.min(W,H)*(0.20+0.08*Math.max(0,Math.min(1,(L-150)/150))); // størja er DIGER
+  if(f.k==="haakjerring")return Math.min(W,H)*(0.22+0.10*Math.max(0,Math.min(1,(L-220)/230))); // håkjerringa enda større
   return Math.min(W,H)*Math.max(0.035,Math.min(0.24, L*0.00085)); }
 var starImg=new Image(); starImg.src="spill/assets/stjerne-full.png";
 function drawSwim(x,y,f,angle,flip,gold,len){ var im=fishImg[f.k], tw=fishScale(f,len);
