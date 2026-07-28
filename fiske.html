@@ -993,7 +993,9 @@ var DESC_DUR=[3.2,6,10];        // nedstigningstid i sek pr. nivå (dypere = len
 var LTF=[0.79,0.75,0.89];       // slukens måldybde (andel av bildet) — Grunt 10 % over bunn-dekoren, mellomdyp over berget
 var camY=0, camBottom=0, descend=0, lureW=0, lureTargetW=0; // kamera + sluk i verdenskoordinater (px i bildet)
 function colGeom(){ var img=waterImg[depth]; if(!img||!img.complete||!img.naturalWidth)return null;
-  var s=Math.max(W/img.naturalWidth,H/img.naturalHeight), imgW=img.naturalWidth*s, imgH=img.naturalHeight*s;
+  // tredje ledd: zoom nok til at vannlinja ALLTID kan ligge på 34 % skjermhøyde (høye mobilskjermer)
+  var s=Math.max(W/img.naturalWidth, H/img.naturalHeight, (0.34*H)/(WLF[depth]*img.naturalHeight));
+  var imgW=img.naturalWidth*s, imgH=img.naturalHeight*s;
   return {img:img,imgW:imgW,imgH:imgH,dx:(W-imgW)/2,wl:WLF[depth]*imgH,maxScroll:Math.max(0,imgH-H)}; }
 function camHome(){ var g=colGeom(); if(!g)return 0; // hjem-kamera: vannlinja på SAMME skjermhøyde (34 %) på alle nivåer
   return Math.max(0, Math.min(g.maxScroll, g.wl - H*0.34)); }
