@@ -12,6 +12,10 @@
 <meta property="og:url" content="https://engoya.no/fiske.html">
 <meta property="og:type" content="website">
 <link rel="icon" href="engoya-logo.png">
+<link rel="apple-touch-icon" href="ikoner/hjemskjerm-kveite-180.png">
+<link rel="manifest" href="fiske.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   :root{
     --sky:#f0dfc0; --sea:#3f7d86; --sea-deep:#123a47; --paper:#f2e4c7; --paper-2:#e6d3a9;
@@ -1112,6 +1116,8 @@ function drawCover(img,dx,dy,dw,dh){ if(!img||!img.complete||!img.naturalWidth)r
   cx.drawImage(img,dx+(dw-w)/2,dy+(dh-h)/2,w,h); return true; }
 var fisherImg={}; ["venter","kast-01","kast-02","lofter-fangst-01","lofter-fangst-02","lofter-fangst-03"].forEach(function(n){ var im=new Image(); im.src="spill/assets/fisker-"+n+".png"; fisherImg[n]=im; });
 var gullImg=[]; for(var _gi=1;_gi<=4;_gi++){ var _gm=new Image(); _gm.src="spill/assets/maake-sprite-0"+_gi+".png"; gullImg.push(_gm); }
+var maakeSitImg=new Image(); maakeSitImg.onerror=function(){}; maakeSitImg.src="spill/assets/maake-sitter.png"; // sittepositur (valgfri — flyframes som fallback)
+var buoyGull=null; // måke som tar seg en pust på en av blåsene
 var bubbleImg=[]; for(var _bi=1;_bi<=8;_bi++){ var _bm=new Image(); _bm.src="spill/assets/luftboble-"+_bi+".png"; bubbleImg.push(_bm); }
 var bubbles=[]; // små luftbobler som stiger (som snø, motsatt vei)
 var dogImg=[]; ["glad","kikker","tenker"].forEach(function(n){ var im=new Image(); im.src="spill/assets/hund-blindpassasjer-"+n+".png"; dogImg.push(im); });
@@ -1255,9 +1261,9 @@ function drawScene(dt){
   if(by>-bh){ if(boatIn>=1){ tickDog(dt); drawDog(bx,by,bw,bh,mn); }
     if(boatReady){ cx.save(); cx.translate(bx,by); cx.rotate(bTilt); cx.drawImage(boatImg,-bw/2,-bh*0.5,bw,bh); cx.restore(); } else drawBoat(bx,by,mn*0.14); }
   // teiner i sona: blåse på vannlinja, grønt tau ned, teine ved bunnen av bildet
+  var BPOS=[0.08,0.92,0.16,0.84,0.24,0.87]; // annenhver side av båten — klar av motor og skrog
   if(P&&P.pots&&g){ var zi=0;
     P.pots.out.forEach(function(t){ if(t.zone!==depth)return;
-      var BPOS=[0.08,0.92,0.16,0.84,0.24,0.87]; // annenhver side av båten — klar av motor og skrog
       var pbX=W*BPOS[zi%BPOS.length], pbY=wlY+Math.sin(bob*1.1+2+zi)*1.5, potY=g.imgH*0.93-camY; zi++;
       cx.strokeStyle="rgba(63,125,78,.8)"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(pbX,Math.max(pbY,-10)); cx.lineTo(pbX,Math.min(potY,H+20)); cx.stroke();
       var ti=poteineImg[potType(t)]; // teine-sprite ved bunnen (når den er i bildet)
@@ -1266,6 +1272,30 @@ function drawScene(dt){
         cx.drawImage(blaaseImg,pbX-bw2/2,pbY-bh2*0.5,bw2,bh2); } // halvveis nede i sjøen
     });
   }
+  // MÅKE PÅ BLÅSA: av og til glir en måke ned og tar seg en pust på en av teineblåsene
+  if(P&&P.pots&&g){
+    var nB=0; P.pots.out.forEach(function(t){ if(t.zone===depth)nB++; });
+    var kanSitte=maakeSitImg.complete&&maakeSitImg.naturalWidth>0;
+    if(!buoyGull && nB>0 && wlY>H*0.08 && wlY<H*0.8 && Math.random()<dt*0.02)
+      buoyGull={zi:(Math.random()*nB)|0, st:"inn", t:0, sitT:kanSitte?(8+Math.random()*10):(1.6+Math.random()*0.9), dir:Math.random()<0.5?1:-1};
+    var bg=buoyGull;
+    if(bg){
+      if(bg.zi>=nB || wlY<-30 || wlY>H+30){ buoyGull=null; }
+      else {
+        var gx=W*BPOS[bg.zi%BPOS.length], gyTop=wlY+Math.sin(bob*1.1+2+bg.zi)*1.5-mn*0.030;
+        var gw=mn*0.075, gh=gw*7/6, sx=gx+bg.dir*W*0.32, sy=gyTop-H*0.24, px,py,fr;
+        bg.t+=dt;
+        if(bg.st==="inn"){ var pi=Math.min(1,bg.t/1.7), ei=1-Math.pow(1-pi,2);
+          px=sx+(gx-sx)*ei; py=sy+(gyTop-sy)*ei; fr=2; if(pi>=1){bg.st="sitt"; bg.t=0;} }
+        else if(bg.st==="sitt"){ px=gx; py=gyTop; fr=kanSitte?-1:1; if(bg.t>=bg.sitT){bg.st="ut"; bg.t=0;} }
+        else { var pu=Math.min(1,bg.t/1.4), eu=pu*pu;
+          px=gx+(-bg.dir*W*0.36-0)*eu; py=gyTop-(H*0.28)*eu; fr=(bob*8|0)&3; if(pu>=1)buoyGull=null; }
+        var gim=fr<0?maakeSitImg:gullImg[fr];
+        if(buoyGull&&gim&&gim.complete&&gim.naturalWidth){ cx.save(); cx.translate(px,py);
+          if(bg.dir>0)cx.scale(-1,1); cx.drawImage(gim,-gw/2,-gh*0.71,gw,gh); cx.restore(); }
+      }
+    }
+  } else buoyGull=null;
   var colTop=Math.max(0,top);
   // små luftbobler som stiger opp gjennom vannet (fader ut før overflata)
   drawBubbles(dt, Math.max(0,wlY), wlY);
