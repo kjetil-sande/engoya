@@ -330,7 +330,8 @@ var Snd=(function(){
     bjeff2:{url:"spill/lyd/hund-bjeff-02.aac", vol:0.3},
     bjeff3:{url:"spill/lyd/hund-bjeff-03.aac", vol:0.3},
     knurr:{url:"spill/lyd/hund-knurring.aac", vol:0.22},
-    motor:{url:"spill/lyd/paahengsmotor.aac", vol:0.5} };
+    motor:{url:"spill/lyd/paahengsmotor.aac", vol:0.5},
+    stritter:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.65} };
   var motorNode=null, altClick=false; // påhengsmotoren styres separat (start/fade-stopp)
   function motorStart(){ var c=AC(); if(!c||muted)return; motorStop(0); var buf=buffers.motor; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; s.loop=true; var g=c.createGain(); g.gain.value=0.0001;
@@ -371,6 +372,7 @@ var Snd=(function(){
     bjeff:function(){ var c=["bjeff1","bjeff2","bjeff3"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); }, // hunden sier fra (lavt)
     gladDog:function(){ this.bjeff(); var self=this; setTimeout(function(){ self.bjeff(); },280); }, // gledesbjeff ×2
     sadDog:function(){ oneShot("knurr"); }, // lav, skuffet knurring
+    stritter:function(){ if(buffers.stritter)oneShot("stritter"); else { beep(140,0.35,"sawtooth",0.12,90); } }, // fisken stritter imot (utras)
     motorOn:function(){ loadAll(); motorStart(); },
     motorOff:function(fade){ motorStop(fade==null?0.8:fade); }
   };
@@ -590,7 +592,7 @@ function cast(){
     lureTargetY=Math.min(0.92,(lureTargetW-camBottom)/H); }        // sluk-posisjon på skjermen når vi er nede (brukes av napp-fisken)
   else { lureW=H*0.35; lureTargetW=H*0.6; camBottom=0; lureTargetY=[0.5,0.58,0.64][depth]; castNoGeom=true; }
   lureY=0.06;
-  setHint("Sluken synker…"); setAction("…",false);
+  setHint(""); setAction("…",false);
 }
 /* Rustens bestilling: dato-seedet «dagens art» — hele familien får samme, selges +50 % */
 function dailyFish(){ var d=new Date(), s=d.getFullYear()*372+d.getMonth()*31+d.getDate();
@@ -617,7 +619,6 @@ function startWait(){
   sceneFish={ f:cf, x:dir<0?1.2:-0.2, y:Math.min(0.92,lureTargetY+0.12), vx:-dir*(0.10+Math.random()*0.06),
     passes:0, t:0, budget:rnd(5,36), committing:false, biteChance:bc, tested:false, leaving:false,
     sizeLen:Math.round(rnd(cf.len[0],cf.len[1])) }; // størrelsen rulles NÅ — styrer tegning og fangst
-  setHint("Noe rører seg der nede…");
 }
 function approachStep(dt){
   var s=sceneFish; if(!s){ commitBite(); return; }
@@ -634,7 +635,7 @@ function approachStep(dt){
       if(!s.tested){ s.tested=true;
         if(Math.random()>=(s.biteChance||1)){ s.leaving=true; s.vx=Math.abs(s.vx)*(s.x>0.5?1:-1)*1.3;
           setHint("Den snuste på sluken … og gled unna."); return; } }
-      s.committing=true; setHint("Den snuser på sluken…"); return; } }
+      s.committing=true; return; } }
   if(s.x<0.08||s.x>0.92){ s.vx=-s.vx; s.passes++; s.x=Math.max(0.08,Math.min(0.92,s.x)); } // snur ved kanten
 }
 function commitBite(){
@@ -675,7 +676,7 @@ function reelStep(dt){
     if(runT<=0) setHint("Den roer seg — sveiv inn!"); }
   else if(f.fight && Math.random()<f.fight*dt*0.12*Math.min(1,Math.sqrt(21/reelSec))){ // langkampfisk raser sjeldnere …
     runT=1.2+Math.random()*1.6; runPow=Math.min(6, pRise*(3+f.fight*3)); // … og utraset stjeler en BEGRENSET andel av framdriften
-    setHint("Den stikker mot dypet — slipp litt! 🌀"); if(Math.random()<0.35)Snd.bjeff(); if(navigator.vibrate)navigator.vibrate(35); }
+    setHint("Den stikker mot dypet — slipp litt! 🌀"); Snd.stritter(); if(Math.random()<0.35)Snd.bjeff(); if(navigator.vibrate)navigator.vibrate(35); }
   if(tension<0)tension=0;
   $("#tensionBar").style.height=Math.min(100,tension)+"%";
   $("#progBar").style.height=Math.min(100,prog)+"%";
