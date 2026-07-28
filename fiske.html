@@ -156,7 +156,7 @@
   .mappin:not(.locked):hover,.mappin:not(.locked):active{outline:3px solid rgba(255,255,255,.85);outline-offset:-2px;border-radius:14px}
   a.exit{position:absolute;top:10px;right:10px;z-index:6}
   /* Sentrert beskjed-boks (à la «Hvem fisker?»-boksen) for viktige meldinger, f.eks. tom for bensin */
-  #notice{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.92);z-index:8;
+  #notice{z-index:30;position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.92);z-index:8;
     background:rgba(242,228,199,.97);border:3px solid var(--wood-dark);border-radius:16px;padding:16px 24px;
     max-width:82%;text-align:center;color:var(--ink);font-weight:700;font-size:17px;line-height:1.35;
     box-shadow:0 8px 0 rgba(0,0,0,.15);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
@@ -222,8 +222,11 @@
       </div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         <button class="btn sm" id="potBtn" style="display:none"></button>
+        <button class="btn sm" id="potPull" style="display:none"></button>
         <button class="btn sm" id="potBtnH" style="display:none"></button>
+        <button class="btn sm" id="potPullH" style="display:none"></button>
         <button class="btn sm" id="potBtnL" style="display:none"></button>
+        <button class="btn sm" id="potPullL" style="display:none"></button>
       </div>
       <button class="btn gold actionbtn" id="actionBtn">Kast ut</button>
     </div>
@@ -403,8 +406,26 @@ var LURES=[{n:"Gruntvann-sluk",zone:0,pris:15},{n:"Mellomdyp-sluk",zone:1,pris:5
 
 /* ---------- Lagring (per spiller) ---------- */
 var SAVE="storkveita-save-v1";
-function loadAll(){try{return JSON.parse(localStorage.getItem(SAVE))||{players:{},last:null}}catch(e){return{players:{},last:null}}}
+function loadAll(){ // brukerdata skal ALDRI gå tapt: god lagring sikkerhetskopieres, korrupt lagring faller tilbake til kopien
+  try{ var raw=localStorage.getItem(SAVE);
+    if(raw){ var d=JSON.parse(raw);
+      if(d&&d.players&&typeof d.players==="object"){ try{localStorage.setItem(SAVE+"-bak",raw)}catch(e){} return d; } }
+  }catch(e){}
+  try{ var r2=localStorage.getItem(SAVE); if(r2)localStorage.setItem(SAVE+"-korrupt",r2); }catch(e){} // bevar den korrupte for manuell berging
+  try{ var b=localStorage.getItem(SAVE+"-bak");
+    if(b){ var d2=JSON.parse(b); if(d2&&d2.players&&typeof d2.players==="object") return d2; } }catch(e){}
+  return {players:{},last:null};
+}
 function saveAll(){try{localStorage.setItem(SAVE,JSON.stringify(DB))}catch(e){}}
+window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen: flett inn så vi aldri nullstiller den
+  if(ev.key!==SAVE||!ev.newValue)return;
+  try{ var ny=JSON.parse(ev.newValue); if(!ny||!ny.players)return;
+    Object.keys(ny.players).forEach(function(nm){ if(famFarlig(nm))return; var np=ny.players[nm]; if(!np)return;
+      if(!DB.players[nm]){ DB.players[nm]=np; return; }
+      var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
+      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; }
+    });
+  }catch(e){} });
 /* ---------- Familierekorder på nett (Netlify Blobs via familiekode) ---------- */
 var FAM_URL="/.netlify/functions/familierekorder", famLast=0, famBusy=false, famInfo="";
 function famCode(){ try{return (localStorage.getItem("storkveita-familiekode")||"").trim()}catch(e){return ""} }
@@ -418,20 +439,23 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
 }
 function syncFam(force){ var code=famCode(); if(!code||!P||famBusy)return;
   var now=Date.now(); if(!force && now-famLast<45000)return; famBusy=true; famLast=now;
+  var famFail=setTimeout(function(){famBusy=false},15000); // hengende nett skal aldri låse synken
   fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({code:code, player:{name:P.name, kr:P.kr, caught:P.caught, ts:now}})})
   .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
-  .then(function(j){ famBusy=false; if(!j||!j.players)return;
+  .then(function(j){ clearTimeout(famFail); famBusy=false; if(!j||!j.players)return;
     Object.keys(j.players).forEach(function(nm){ if(famFarlig(nm))return;
       var rp=j.players[nm]||{};
       if(nm===P.name){ famFlett(P.caught, rp.caught); }             // egen fremgang fra andre enheter
       else if(DB.players[nm]&&!DB.players[nm].remote){ famFlett(DB.players[nm].caught, rp.caught); } // lokal navnebror
-      else { var lp=DB.players[nm]||newPlayer(nm); lp.remote=true; lp.kr=rp.kr||0; lp.caught=rp.caught||{}; DB.players[nm]=lp; } // familie fra andre enheter
+      else { var lp=DB.players[nm]||newPlayer(nm); lp.remote=true; // familie fra andre enheter — FLETT alltid, erstatt aldri (lokal fremgang kan ikke krympes)
+        if(+rp.ts>=(lp.ts||0)){ lp.kr=rp.kr||0; lp.ts=+rp.ts||0; }
+        lp.caught=lp.caught||{}; famFlett(lp.caught, rp.caught); DB.players[nm]=lp; }
     });
     saveAll(); famInfo="synket "+new Date().toTimeString().slice(0,5);
     var bm=document.querySelector("#bookModal");
     if(bm&&bm.classList.contains("on")&&$("#bookFam").style.display!=="none") renderFam();
-  }).catch(function(){ famBusy=false; famInfo="fikk ikke kontakt"; });
+  }).catch(function(){ clearTimeout(famFail); famBusy=false; famInfo="fikk ikke kontakt"; });
 }
 var DB=loadAll();
 function newPlayer(name){return{name:name,kr:40,fuel:24,fuelMax:24,rod:0,lures:{0:3,1:0,2:0},caught:{}}}
@@ -462,6 +486,8 @@ function chosen(name){P=DB.players[name]; if(!P.lures)P.lures={0:3,1:0,2:0};
   if(P.pots.ownedH==null)P.pots.ownedH=0; // hummerteiner (sesong: 1. okt–31. des)
   if(P.svc==null)P.svc=0; // turer siden forrige båtservice (Jensen Service AS, Ørnes)
   if(P.pots.lineOwned==null)P.pots.lineOwned=0; if(P.pots.lineAgn==null)P.pots.lineAgn=0; // bunnline på Dypt
+  var pp=P.pots; if(pp.owned==null)pp.owned=0; if(pp.bait==null)pp.bait=0; if(pp.cap==null)pp.cap=2; if(!Array.isArray(pp.out))pp.out=[]; if(pp.rescue==null)pp.rescue=false;
+  if(P.remote)delete P.remote; // valgt lokalt → lokalt autoritativ (synk fletter monotont, erstatter aldri)
   saveAll(); $("#playBtn").disabled=false; $("#playBtn").textContent="Dra på lopphavet → ("+name+")"}
 
 /* ---------- HUD ---------- */
@@ -554,7 +580,7 @@ function cast(){
   if(g){ lureW=g.wl+mn*0.05; lureTargetW=g.imgH*LTF[depth]-mn*0.04; // fra rett under overflata → like over bunn-dekoren
     camBottom=Math.min(g.maxScroll, Math.max(camHome(), lureTargetW-H*0.56));
     lureTargetY=Math.min(0.92,(lureTargetW-camBottom)/H); }        // sluk-posisjon på skjermen når vi er nede (brukes av napp-fisken)
-  else { lureW=H*0.35; lureTargetW=H*0.6; camBottom=0; lureTargetY=[0.5,0.58,0.64][depth]; }
+  else { lureW=H*0.35; lureTargetW=H*0.6; camBottom=0; lureTargetY=[0.5,0.58,0.64][depth]; castNoGeom=true; }
   lureY=0.06;
   setHint("Sluken synker…"); setAction("…",false);
 }
@@ -730,13 +756,15 @@ function nightOverlap(a,b){ if(b-a>=24*3600000)return true; // dekker soaket nat
 function potType(t){ return t.t||"k"; } // gamle saves mangler type → krabbeteine
 function freePots(ty){ var out=0; P.pots.out.forEach(function(t){ if(potType(t)===ty)out++; });
   return (ty==="h"?(P.pots.ownedH||0):ty==="l"?(P.pots.lineOwned||0):(P.pots.owned||0))-out; }
-function potInZone(z,ty){ ty=ty||"k"; for(var i=0;i<P.pots.out.length;i++)if(P.pots.out[i].zone===z&&potType(P.pots.out[i])===ty)return i; return -1; }
+function potInZone(z,ty){ ty=ty||"k"; var best=-1, eldst=Infinity; // eldste bruket av typen i sona (trekkes først)
+  for(var i=0;i<P.pots.out.length;i++){ var t=P.pots.out[i]; var sa=+t.setAt||0;
+    if(t.zone===z&&potType(t)===ty&&sa<eldst){ eldst=sa; best=i; } } return best; }
+function potsInZone(z,ty){ ty=ty||"k"; var n=0; P.pots.out.forEach(function(t){ if(t.zone===z&&potType(t)===ty)n++; }); return n; }
 function setPot(ty){ ty=ty||"k";
   if(phase!=="idle"||!P)return;
   if(ty==="h"&&depth!==0){ notice("Hummeren står på grunt vann ved skjæra — sett den på Grunt 🦞"); return; }
   if(ty==="h"&&!hummerSeason()){ notice("Hummeren er freda nå — sesongen er 1. okt til 31. des 🦞"); return; }
   if(ty==="l"&&depth!==2){ notice("Bunnlina hører hjemme på Dypt — der kveita står 🪢"); return; }
-  if(potInZone(depth,ty)>=0){ notice("Du har alt "+(ty==="l"?"ei line":"en slik teine")+" ute i denne sonen."); return; }
   if(freePots(ty)<1)return;
   if(ty==="l"){ if((P.pots.lineAgn||0)<1){ notice("Lina mangler agn — kjøp linagn i butikken 🛒"); return; } }
   else if((P.pots.bait||0)<1){ notice("Teina mangler agn — kjøp teineagn i butikken 🛒"); return; }
@@ -812,12 +840,13 @@ function pullPot(ty){ ty=ty||"k";
     notice((ty==="l"?"Lina":"Teina")+" har bare stått i "+fmtSoak(soak)+" — agnet var urørt, du tok den ombord."); return;
   }
   var res=(ty==="l"?lineOutcome(t,soak):ty==="h"?potOutcomeH(t,soak):potOutcome(t,soak)), extra="";
+  var brNavn = ty==="l"?"Lina":ty==="h"?"Hummerteina":"Teina";
   if(soak>72*3600000){ // slitt seg (3+ døgn) — Rusten berger den (aldri permanent tap)
     res={lines:[],total:0,early:false};
-    if(!P.pots.rescue){ P.pots.rescue=true; extra="Teina hadde slitt seg! Rusten berget den for deg — gratis denne gangen. ⚓"; }
-    else if(P.kr>=50){ P.kr-=50; extra="Teina hadde slitt seg! Rusten berget den — 50 kr i bergingslønn. ⚓"; }
-    else extra="Teina hadde slitt seg! Rusten berget den og spanderte — du var jo blakk. ⚓";
-  } else if(soak>48*3600000) extra="Teina sto over to døgn — lenger gir ikke mer, krabbene spiser opp agnet.";
+    if(!P.pots.rescue){ P.pots.rescue=true; extra=brNavn+" hadde slitt seg! Rusten berget den for deg — gratis denne gangen. ⚓"; }
+    else if(P.kr>=50){ P.kr-=50; extra=brNavn+" hadde slitt seg! Rusten berget den — 50 kr i bergingslønn. ⚓"; }
+    else extra=brNavn+" hadde slitt seg! Rusten berget den og spanderte — du var jo blakk. ⚓";
+  } else if(soak>48*3600000) extra=ty==="l"?"Lina sto over to døgn — noe har forsynt seg godt av agnet.":brNavn+" sto over to døgn — lenger gir ikke mer, krabbene spiser opp agnet.";
   var fikkKveite=false;
   if(ty==="l") res.lines.forEach(function(l){ if(!l.fk)return; // linefisk føres i fangstboka med rekord-sporing
     var rec=P.caught[l.fk]; if(!rec)rec=P.caught[l.fk]={count:0,bestLen:0,bestWt:0};
@@ -839,26 +868,35 @@ function pullPot(ty){ ty=ty||"k";
   if(res.total)Snd.coin();
   modal("potModal",true);
 }
-function potBtnState(b,ty,ready){ // felles knappe-logikk pr. brukstype
-  var idx=potInZone(depth,ty), emo=ty==="h"?"🦞":ty==="l"?"🪢":"🦀", nm=ty==="h"?"hummerteina":ty==="l"?"bunnlina":"teina";
-  if(idx>=0){ var soak=Math.max(0,Date.now()-P.pots.out[idx].setAt);
-    b.textContent=emo+" Trekk "+nm+" · ute i "+fmtSoak(soak)+(soak>=ready?" ✓":""); b.style.display="inline-block"; return; }
+function potSetState(b,ty){ // Sett-knapp: vises når du har ledig bruk og er i riktig sone
+  if(!b)return;
+  var emo=ty==="h"?"🦞":ty==="l"?"🪢":"🦀", settNavn=ty==="h"?"hummerteine":ty==="l"?"bunnline":"teine";
   var canZone = ty==="h" ? (depth===0&&hummerSeason()) : ty==="l" ? depth===2 : true;
   var harAgn = ty==="l" ? (P.pots.lineAgn||0)>0 : (P.pots.bait||0)>0;
-  var settNavn = ty==="h"?"hummerteine":ty==="l"?"bunnline":"teine";
-  if(freePots(ty)>0&&canZone){ b.textContent=harAgn?emo+" Sett "+settNavn+" (1 agn + 2 ⛽)":emo+" Sett "+settNavn+" — mangler agn"; b.style.display="inline-block"; return; }
+  var fri=freePots(ty);
+  if(fri>0&&canZone){ b.textContent=harAgn?emo+" Sett "+settNavn+(fri>1?" ("+fri+" igjen)":"")+" · 1 agn + 2 ⛽":emo+" Sett "+settNavn+" — mangler agn"; b.style.display="inline-block"; return; }
   b.style.display="none";
 }
+function potPullState(b,ty,ready){ // Trekk-knapp: vises når noe står ute i sona — trekker det eldste
+  if(!b)return;
+  var n=potsInZone(depth,ty);
+  if(n<1){ b.style.display="none"; return; }
+  var idx=potInZone(depth,ty), soak=Math.max(0,Date.now()-P.pots.out[idx].setAt);
+  var emo=ty==="h"?"🦞":ty==="l"?"🪢":"🦀", nm=ty==="h"?"hummerteine":ty==="l"?"bunnline":"teine";
+  b.textContent=emo+" Trekk "+nm+(n>1?" ("+n+" ute)":"")+" · "+fmtSoak(soak)+(soak>=ready?" ✓":"");
+  b.style.display="inline-block";
+}
 function updatePotBtn(){
-  var b=$("#potBtn"), bh=$("#potBtnH"), bl=$("#potBtnL"); if(!b||!P||!P.pots){ if(b)b.style.display="none"; if(bh)bh.style.display="none"; if(bl)bl.style.display="none"; return; }
-  if(!$("#sea").classList.contains("on")||phase!=="idle"){ b.style.display="none"; if(bh)bh.style.display="none"; if(bl)bl.style.display="none"; return; }
-  potBtnState(b,"k",3*3600000);
-  if(bh)potBtnState(bh,"h",8*3600000);
-  if(bl)potBtnState(bl,"l",10*3600000);
+  var alle=["#potBtn","#potPull","#potBtnH","#potPullH","#potBtnL","#potPullL"].map(function(id){return $(id)});
+  if(!P||!P.pots||!$("#sea").classList.contains("on")||phase!=="idle"){ alle.forEach(function(b){if(b)b.style.display="none"}); return; }
+  potSetState($("#potBtn"),"k");   potPullState($("#potPull"),"k",3*3600000);
+  potSetState($("#potBtnH"),"h");  potPullState($("#potPullH"),"h",8*3600000);
+  potSetState($("#potBtnL"),"l");  potPullState($("#potPullL"),"l",10*3600000);
 }
 setInterval(updatePotBtn,15000);
 
 /* ---------- Butikk ---------- */
+var shopLock=false;
 function openShop(){
   $("#shopKr").textContent="Du har "+P.kr+" kr.";
   var L=$("#shopList"); L.innerHTML="";
@@ -891,7 +929,8 @@ function addShop(L,title,desc,cost,owned,buy){
   var b=document.createElement("button"); b.className="btn sm gold";
   if(owned){b.textContent="Full"; b.disabled=true;}
   else{b.textContent=cost+" kr"; b.disabled=P.kr<cost || cost<=0 && title.indexOf("bensin")>-1 && P.fuel>=P.fuelMax;
-    b.onclick=function(){ if(P.kr<cost)return; P.kr-=cost; buy(); Snd.buy(); saveAll(); hud(); updateDepthLocks(); openShop(); };}
+    b.onclick=function(){ if(shopLock||P.kr<cost)return; shopLock=true; setTimeout(function(){shopLock=false},400); // dobbeltklikk-vern
+      P.kr-=cost; buy(); Snd.buy(); saveAll(); hud(); updateDepthLocks(); updatePotBtn(); openShop(); };}
   div.appendChild(b); L.appendChild(div);
 }
 
@@ -951,7 +990,7 @@ function renderFam(){
     : '<p class="muted center" style="margin-top:10px"><button class="btn sm gold" id="famKoble">👨‍👩‍👧 Koble familien sammen på nett</button><br><span class="muted" style="font-size:11px">Samme kode på alle enheter → felles rekorder på hytta og hjemme</span></p>');
   var kb=$("#famKoble")||$("#famBytt");
   if(kb)kb.onclick=function(){ var c=(prompt("Familiekode (4–40 tegn — finn på en hemmelig sammen!)", code||"")||"").trim();
-    if(!c)return; if(c.length<4){ alert("Minst 4 tegn 🙂"); return; }
+    if(!c)return; if(c.length<4){ alert("Minst 4 tegn 🙂"); return; } if(c.length>40){ alert("Maks 40 tegn 🙂"); return; }
     try{localStorage.setItem("storkveita-familiekode",c)}catch(e){}
     famInfo="kobler til …"; renderFam(); famLast=0; syncFam(true); };
 }
@@ -991,7 +1030,7 @@ updateDyptImg();
 var WLF=[0.332,0.179,0.118];   // vannlinjas andel av bildehøyden pr. nivå (målt)
 var DESC_DUR=[3.2,6,10];        // nedstigningstid i sek pr. nivå (dypere = lengre ferd)
 var LTF=[0.79,0.75,0.89];       // slukens måldybde (andel av bildet) — Grunt 10 % over bunn-dekoren, mellomdyp over berget
-var camY=0, camBottom=0, descend=0, lureW=0, lureTargetW=0; // kamera + sluk i verdenskoordinater (px i bildet)
+var camY=0, camBottom=0, descend=0, lureW=0, lureTargetW=0, castNoGeom=false; // kamera + sluk i verdenskoordinater (px i bildet)
 function colGeom(){ var img=waterImg[depth]; if(!img||!img.complete||!img.naturalWidth)return null;
   // tredje ledd: zoom nok til at vannlinja ALLTID kan ligge på 34 % skjermhøyde (høye mobilskjermer)
   var s=Math.max(W/img.naturalWidth, H/img.naturalHeight, (0.34*H)/(WLF[depth]*img.naturalHeight));
@@ -1111,11 +1150,14 @@ function loop(now){
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH); drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,3,lobbySpawn,0); } // måker over tittelen i lobbyen
   if($("#sea").classList.contains("on")) drawScene(dt);
   // fisketilstand — fryser bak åpne popups og utenfor sjøen (så fisken ikke glipper bak en modal / på menyen)
-  if(!$("#sea").classList.contains("on") || document.querySelector(".modal.on")){ requestAnimationFrame(loop); return; }
+  if(!$("#sea").classList.contains("on") || document.querySelector(".modal.on")){ if(phase==="reel")Snd.reelSound(false); requestAnimationFrame(loop); return; }
   if(phase==="sink"){ // kameraet følger sluken nedover: jevn ferd, varighet etter dybde
     descend+=dt/DESC_DUR[depth]; if(descend>1)descend=1;
     var de=descend*descend*(3-2*descend); // smoothstep
     var g0=colGeom();
+    if(g0&&castNoGeom){ castNoGeom=false; lureTargetW=g0.imgH*LTF[depth]-Math.min(W,H)*0.04; // bildet kom midt i senkinga → riktig geometri
+      camBottom=Math.min(g0.maxScroll, Math.max(camHome(), lureTargetW-H*0.56));
+      lureTargetY=Math.min(0.92,(lureTargetW-camBottom)/H); }
     if(g0){ lureW=(g0.wl+Math.min(W,H)*0.05)+(lureTargetW-(g0.wl+Math.min(W,H)*0.05))*de;
       camY=Math.min(camBottom, Math.max(camHome(), lureW-H*0.55)); }
     if(descend>=1){ lureW=lureTargetW; camY=camBottom; startWait(); }
@@ -1138,7 +1180,7 @@ function drawScene(dt){
   if(depth===2 && g && camY>g.imgH*0.35 && !serpent){ serpentCd-=dt;
     if(serpentCd<=0 && Math.random()<dt/240){ var sdir=Math.random()<0.5?1:-1;
       serpent={x:sdir>0?-0.35:1.35, wy:camY+H*(0.45+Math.random()*0.35), vx:0.013*sdir};
-      setHint("Var det … noe svært som rørte seg der ute? 🌊"); } }
+      if(phase!=="bite"&&phase!=="reel") setHint("Var det … noe svært som rørte seg der ute? 🌊"); } }
   if(serpent){ serpent.x+=serpent.vx*dt; var si=fishSil["lange"];
     if(si&&si.complete&&si.naturalWidth){ var sw=mn*0.95, sh=sw*si.naturalHeight/si.naturalWidth*0.5, sy=serpent.wy-camY;
       cx.save(); cx.globalAlpha=0.16; cx.translate(W*serpent.x,sy); if(serpent.vx>0)cx.scale(-1,1);
@@ -1163,7 +1205,8 @@ function drawScene(dt){
   // teiner i sona: blåse på vannlinja, grønt tau ned, teine ved bunnen av bildet
   if(P&&P.pots&&g){ var zi=0;
     P.pots.out.forEach(function(t){ if(t.zone!==depth)return;
-      var pbX=W*(0.13+zi*0.07), pbY=wlY+Math.sin(bob*1.1+2+zi)*1.5, potY=g.imgH*0.93-camY; zi++;
+      var BPOS=[0.08,0.92,0.16,0.84,0.24,0.87]; // annenhver side av båten — klar av motor og skrog
+      var pbX=W*BPOS[zi%BPOS.length], pbY=wlY+Math.sin(bob*1.1+2+zi)*1.5, potY=g.imgH*0.93-camY; zi++;
       cx.strokeStyle="rgba(63,125,78,.8)"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(pbX,Math.max(pbY,-10)); cx.lineTo(pbX,Math.min(potY,H+20)); cx.stroke();
       var ti=poteineImg[potType(t)]; // teine-sprite ved bunnen (når den er i bildet)
       if(ti&&ti.complete&&ti.naturalWidth&&potY>-40&&potY<H+40){ var tw2=mn*0.10, th2=tw2*ti.naturalHeight/ti.naturalWidth; cx.drawImage(ti,pbX-tw2/2,potY-th2,tw2,th2); }
@@ -1251,7 +1294,7 @@ function drawAmbient(dt,colTop){
 /* ---------- Input ---------- */
 $("#playBtn").onclick=startGame;
 $("#toMenu").onclick=function(){ Snd.ambienceOff(); phase="idle"; hooked=null; sceneFish=null; holding=false; $("#reelui").classList.remove("on"); show("menu"); renderPlayers(); Snd.themeOn(); };
-$("#openShop").onclick=openShop; $("#shopClose").onclick=function(){modal("shopModal",false)};
+$("#openShop").onclick=openShop; $("#shopClose").onclick=function(){modal("shopModal",false); updatePotBtn();};
 $("#openBook").onclick=function(){openBook("mine")}; $("#bookClose").onclick=function(){modal("bookModal",false)};
 $("#openMap").onclick=openMap; $("#mapClose").onclick=function(){modal("mapModal",false)};
 document.querySelectorAll(".mappin").forEach(function(p){ p.onclick=function(){ var d=+p.dataset.d;
@@ -1270,9 +1313,12 @@ $("#tabMine").onclick=function(){openBook("mine")}; $("#tabFam").onclick=functio
 $("#catchKeep").onclick=function(){resolveCatch(true)}; $("#catchRelease").onclick=function(){resolveCatch(false)};
 document.querySelectorAll("#depthsel button").forEach(function(b){ b.onclick=function(){ if(phase!=="idle")return; setDepth(+b.dataset.d); }; });
 $("#actionBtn").onclick=function(){ if(phase==="idle") cast(); else if(phase==="bite") tryHook(); };
-$("#potBtn").onclick=function(){ if(phase!=="idle")return; Snd.click(); if(potInZone(depth,"k")>=0)pullPot("k"); else setPot("k"); };
-$("#potBtnH").onclick=function(){ if(phase!=="idle")return; Snd.click(); if(potInZone(depth,"h")>=0)pullPot("h"); else setPot("h"); };
-$("#potBtnL").onclick=function(){ if(phase!=="idle")return; Snd.click(); if(potInZone(depth,"l")>=0)pullPot("l"); else setPot("l"); };
+$("#potBtn").onclick=function(){ if(phase!=="idle")return; Snd.click(); setPot("k"); };
+$("#potPull").onclick=function(){ if(phase!=="idle")return; Snd.click(); pullPot("k"); };
+$("#potBtnH").onclick=function(){ if(phase!=="idle")return; Snd.click(); setPot("h"); };
+$("#potPullH").onclick=function(){ if(phase!=="idle")return; Snd.click(); pullPot("h"); };
+$("#potBtnL").onclick=function(){ if(phase!=="idle")return; Snd.click(); setPot("l"); };
+$("#potPullL").onclick=function(){ if(phase!=="idle")return; Snd.click(); pullPot("l"); };
 $("#potTake").onclick=function(){ modal("potModal",false); updatePotBtn(); };
 // hold-to-reel
 var ab=$("#actionBtn");
@@ -1282,7 +1328,7 @@ function up(){ holding=false; }
 ab.addEventListener("pointerdown",down); window.addEventListener("pointerup",up);
 window.addEventListener("pointercancel",up); window.addEventListener("blur",up); // slipp SVEIV om nettleseren avbryter pekeren
 document.addEventListener("visibilitychange",function(){ if(document.hidden)up(); });
-window.addEventListener("keydown",function(e){ if(!$("#sea").classList.contains("on"))return; if(e.code==="Space"){ e.preventDefault();
+window.addEventListener("keydown",function(e){ if(!$("#sea").classList.contains("on")||document.querySelector(".modal.on"))return; if(e.code==="Space"){ e.preventDefault();
   if(phase==="idle")cast(); else if(phase==="bite")tryHook(); else if(phase==="reel")holding=true; } });
 window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("on"))return; if(e.code==="Space")holding=false; });
 
