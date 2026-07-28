@@ -144,6 +144,11 @@
   .tabs button.on{background:var(--wood);color:#fff}
   .fam{margin-top:8px}
   .fam .frow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;padding:7px 4px;border-bottom:1px dashed var(--paper-2)}
+  .fam .frow.rek{align-items:center;gap:8px;font-size:12px}
+  .fam .frow.rek>b{display:flex;align-items:center;gap:7px;min-width:0}
+  .fam .frow.rek>b canvas{position:static;width:40px;height:24px;flex:0 0 auto}
+  .fam .frow.rek>span{text-align:right}
+  .fam .frow.rek.mine{background:#fdf3d6;border-radius:8px;border-bottom-color:transparent}
   .muted{color:var(--ink-soft);font-size:12px}
   .center{text-align:center}
   .mapwrap{position:relative;width:100%;border-radius:10px;overflow:hidden;line-height:0}
@@ -253,8 +258,9 @@
   <!-- BOOK -->
   <div class="modal" id="bookModal"><div class="card">
     <h2>📖 Fangstboka</h2>
-    <div class="tabs"><button class="on" id="tabMine">Min bok</button><button id="tabFam">Familien</button></div>
+    <div class="tabs"><button class="on" id="tabMine">Min bok</button><button id="tabRek">Rekorder</button><button id="tabFam">Familien</button></div>
     <div id="bookMine"></div>
+    <div id="bookRek" class="fam" style="display:none"></div>
     <div id="bookFam" class="fam" style="display:none"></div>
     <div class="row"><span class="muted" id="bookCount"></span><button class="btn sm" id="bookClose">Lukk</button></div>
   </div></div>
@@ -421,7 +427,7 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
   if(ev.key!==SAVE||!ev.newValue)return;
   try{ var ny=JSON.parse(ev.newValue); if(!ny||!ny.players)return;
     Object.keys(ny.players).forEach(function(nm){ if(famFarlig(nm))return; var np=ny.players[nm]; if(!np)return;
-      if(!DB.players[nm]){ DB.players[nm]=np; return; }
+      if(!egen(DB.players,nm)){ DB.players[nm]=np; return; }
       var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
       if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; }
     });
@@ -430,6 +436,7 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
 var FAM_URL="/.netlify/functions/familierekorder", famLast=0, famBusy=false, famInfo="";
 function famCode(){ try{return (localStorage.getItem("storkveita-familiekode")||"").trim()}catch(e){return ""} }
 function famFarlig(n){ return n==="__proto__"||n==="constructor"||n==="prototype"; }
+function egen(o,k){ return Object.prototype.hasOwnProperty.call(o,k); } // aldri arvede egenskaper (spiller døpt «toString» må ikke treffe Object.prototype)
 function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinner
   Object.keys(andre||{}).forEach(function(k){ if(famFarlig(k)||!andre[k])return;
     var b=andre[k], a=mine[k];
@@ -447,14 +454,14 @@ function syncFam(force){ var code=famCode(); if(!code||!P||famBusy)return;
     Object.keys(j.players).forEach(function(nm){ if(famFarlig(nm))return;
       var rp=j.players[nm]||{};
       if(nm===P.name){ famFlett(P.caught, rp.caught); }             // egen fremgang fra andre enheter
-      else if(DB.players[nm]&&!DB.players[nm].remote){ famFlett(DB.players[nm].caught, rp.caught); } // lokal navnebror
-      else { var lp=DB.players[nm]||newPlayer(nm); lp.remote=true; // familie fra andre enheter — FLETT alltid, erstatt aldri (lokal fremgang kan ikke krympes)
+      else if(egen(DB.players,nm)&&!DB.players[nm].remote){ famFlett(DB.players[nm].caught, rp.caught); } // lokal navnebror
+      else { var lp=egen(DB.players,nm)?DB.players[nm]:newPlayer(nm); lp.remote=true; // familie fra andre enheter — FLETT alltid, erstatt aldri (lokal fremgang kan ikke krympes)
         if(+rp.ts>=(lp.ts||0)){ lp.kr=rp.kr||0; lp.ts=+rp.ts||0; }
         lp.caught=lp.caught||{}; famFlett(lp.caught, rp.caught); DB.players[nm]=lp; }
     });
     saveAll(); famInfo="synket "+new Date().toTimeString().slice(0,5);
     var bm=document.querySelector("#bookModal");
-    if(bm&&bm.classList.contains("on")&&$("#bookFam").style.display!=="none") renderFam();
+    if(bm&&bm.classList.contains("on")){ if($("#bookMine").style.display!=="none") renderMine(); if($("#bookFam").style.display!=="none") renderFam(); if($("#bookRek").style.display!=="none") renderRek(); }
   }).catch(function(){ clearTimeout(famFail); famBusy=false; famInfo="fikk ikke kontakt"; });
 }
 var DB=loadAll();
@@ -945,9 +952,14 @@ function openMap(){
 
 /* ---------- Fangstbok ---------- */
 function openBook(which){
-  var mine=$("#bookMine"), fam=$("#bookFam");
-  if(which==="fam"){ $("#tabMine").classList.remove("on"); $("#tabFam").classList.add("on"); mine.style.display="none"; fam.style.display="block"; renderFam(); syncFam(true); }
-  else { $("#tabMine").classList.add("on"); $("#tabFam").classList.remove("on"); mine.style.display="block"; fam.style.display="none"; renderMine(); }
+  which = which==="fam"||which==="rek" ? which : "mine";
+  [["tabMine","bookMine","mine"],["tabRek","bookRek","rek"],["tabFam","bookFam","fam"]].forEach(function(t){
+    $("#"+t[0]).classList.toggle("on", t[2]===which);
+    $("#"+t[1]).style.display = t[2]===which ? "block" : "none";
+  });
+  if(which==="fam"){ renderFam(); syncFam(true); }
+  else if(which==="rek"){ renderRek(); syncFam(true); }
+  else renderMine();
   var have=Object.keys(P.caught).length;
   var starSum=0; FISH.forEach(function(f){ var rec=P.caught[f.k]; if(!rec)return; var t=(rec.bestLen-f.len[0])/(f.len[1]-f.len[0]); starSum+=Math.round(Math.max(0,Math.min(1,t))*10)/2; });
   $("#bookCount").textContent=have+" / "+FISH.length+" arter · ★ "+starSum+" / "+(FISH.length*5)+(starSum>=FISH.length*5?" — MESTERFISKER!":"");
@@ -959,12 +971,13 @@ function starsHTML(bestLen,f){ // stjerner = hvor stor rekordfangsten er ift. ar
   return h+'</div>'; }
 function renderMine(){
   var g=document.createElement("div"); g.className="bookgrid";
+  var frec=famRecords(), flertall=Object.keys(DB.players).length>1;
   FISH.forEach(function(f){
     var rec=P.caught[f.k];
     var slot=document.createElement("div"); slot.className="slot"+(rec?"":" locked")+(f.trophy?" trophy":"");
     if(rec){
       var c=document.createElement("canvas"); slot.appendChild(c); drawFish(c,f,56,34,false);
-      slot.insertAdjacentHTML("beforeend",'<div class="nm">'+f.n+(rec.gold?' <span title="Gyllen fanget!">✨</span>':'')+'</div><div class="best">'+rec.bestLen+' cm · '+(rec.bestWt||"?")+' kg · '+rec.count+' stk</div>'+starsHTML(rec.bestLen,f)+'<span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>');
+      slot.insertAdjacentHTML("beforeend",'<div class="nm">'+f.n+(rec.gold?' <span title="Gyllen fanget!">✨</span>':'')+(flertall&&frec[f.k]&&frec[f.k].holders.indexOf(P.name)>=0?' <span title="Du har familierekorden!">🥇</span>':'')+'</div><div class="best">'+rec.bestLen+' cm · '+(rec.bestWt||"?")+' kg · '+rec.count+' stk</div>'+starsHTML(rec.bestLen,f)+'<span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>');
     } else {
       var c2=document.createElement("canvas"); slot.appendChild(c2); drawFish(c2,f,56,34,true);
       slot.insertAdjacentHTML("beforeend",'<div class="nm">'+(f.trophy?"???":f.n)+'</div><div class="best">ikke fanget</div>'+'<span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>');
@@ -993,6 +1006,41 @@ function renderFam(){
     if(!c)return; if(c.length<4){ alert("Minst 4 tegn 🙂"); return; } if(c.length>40){ alert("Maks 40 tegn 🙂"); return; }
     try{localStorage.setItem("storkveita-familiekode",c)}catch(e){}
     famInfo="kobler til …"; renderFam(); famLast=0; syncFam(true); };
+}
+function famRecords(){ // beste lengde per art på tvers av alle spillere (lokale + familie på nett)
+  var out={};
+  FISH.forEach(function(f){
+    var best=null;
+    Object.keys(DB.players).forEach(function(nm){
+      var pl=DB.players[nm], r=pl&&pl.caught&&pl.caught[f.k];
+      if(!r||!(r.bestLen>0))return;
+      if(!best||r.bestLen>best.len) best={len:r.bestLen,wt:r.bestWt||0,holders:[nm]};
+      else if(r.bestLen===best.len){ best.holders.push(nm); best.wt=Math.max(best.wt,r.bestWt||0); }
+    });
+    if(best)out[f.k]=best;
+  });
+  return out;
+}
+function renderRek(){
+  var box=$("#bookRek"); box.innerHTML="";
+  var rec=famRecords(), me=P?P.name:null;
+  box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Art</b><span>Familierekord</span></div>');
+  FISH.forEach(function(f){
+    var r=rec[f.k];
+    var row=document.createElement("div"); row.className="frow rek"+(r&&r.holders.indexOf(me)>=0?" mine":"");
+    var left=document.createElement("b");
+    var c=document.createElement("canvas"); left.appendChild(c); drawFish(c,f,40,24,!r);
+    left.insertAdjacentHTML("beforeend",'<span>'+((r||!f.trophy)?f.n:"???")+'</span>');
+    var right=document.createElement("span");
+    if(r){
+      var navn=r.holders.map(function(nm){return nm===me?"deg":esc(nm)});
+      var hvem=navn.length<=1?navn.join(""):navn.slice(0,-1).join(", ")+" og "+navn[navn.length-1];
+      right.innerHTML='🥇 '+hvem+' · <b>'+r.len+' cm</b>'+(r.wt?' · '+r.wt+' kg':'');
+    } else right.innerHTML='<span class="muted">ingen ennå</span>';
+    row.appendChild(left); row.appendChild(right); box.appendChild(row);
+  });
+  if(Object.keys(DB.players).length<2&&!famCode())
+    box.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin-top:10px;font-size:12px">Koble familien sammen i Familien-fanen, så kjemper dere om rekordene på tvers av enheter! 👨‍👩‍👧</p>');
 }
 
 /* ---------- Tegning: scene + fisk-sprites (plassholder) ---------- */
@@ -1309,7 +1357,7 @@ function toggleMute(){ Snd.setMuted(!Snd.isMuted()); if(!Snd.isMuted()&&$("#menu
 $("#muteBtn").onclick=toggleMute; $("#muteBtnMenu").onclick=toggleMute;
 (function(){ var ic=Snd.isMuted()?"🔇":"🔊"; $("#muteBtn").textContent=ic; $("#muteBtnMenu").textContent=ic; })();
 [].slice.call(document.querySelectorAll(".iconbtn, .depthsel button, #playBtn")).forEach(function(b){ b.addEventListener("click",function(){ if(b.matches("#depthsel button") && phase!=="idle")return; Snd.click(); }); });
-$("#tabMine").onclick=function(){openBook("mine")}; $("#tabFam").onclick=function(){openBook("fam")};
+$("#tabMine").onclick=function(){openBook("mine")}; $("#tabFam").onclick=function(){openBook("fam")}; $("#tabRek").onclick=function(){openBook("rek")};
 $("#catchKeep").onclick=function(){resolveCatch(true)}; $("#catchRelease").onclick=function(){resolveCatch(false)};
 document.querySelectorAll("#depthsel button").forEach(function(b){ b.onclick=function(){ if(phase!=="idle")return; setDepth(+b.dataset.d); }; });
 $("#actionBtn").onclick=function(){ if(phase==="idle") cast(); else if(phase==="bite") tryHook(); };
