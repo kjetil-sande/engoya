@@ -655,6 +655,9 @@ function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvas
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
     propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
     lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, tidMs:P.tidMs, smorTs:P.smorTs}; }
+function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
+  return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.ekko
+    && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
 function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE feltene — trygt å løfte inn overalt, kan aldri krympe noe
   if(g.rod!=null)lp.rod=Math.max(lp.rod||0,+g.rod||0); // kjøpt utstyr kan aldri nedgraderes av en gammel innsending
   if(g.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,+g.tidMs||0); // spilletid er også monoton
@@ -667,8 +670,12 @@ function famTaImot(j){ // flett serverens familiebilde inn lokalt — erstatt al
   if(!j||!j.players)return;
   Object.keys(j.players).forEach(function(nm){ if(famFarlig(nm))return;
     var rp=j.players[nm]||{};
-    if(P&&nm===P.name){ famFlett(P.caught, rp.caught); gearLoft(P, rp.gear); }            // egen fremgang fra andre enheter
-    else if(egen(DB.players,nm)&&!DB.players[nm].remote){ famFlett(DB.players[nm].caught, rp.caught); gearLoft(DB.players[nm], rp.gear); } // lokal navnebror: rekorder + monotont utstyr
+    if(P&&nm===P.name){ famFlett(P.caught, rp.caught); // egen fremgang fra andre enheter
+      if(gearFersk(P)&&rp.gear&&+rp.ts>=(P.ts||0)){ gearInn(P,rp.gear); P.ts=+rp.ts||0; } // fersk kopi henter ALT (typisk: ny maskin før mobilen rakk å sende)
+      else gearLoft(P, rp.gear); }
+    else if(egen(DB.players,nm)&&!DB.players[nm].remote){ var nb=DB.players[nm]; famFlett(nb.caught, rp.caught); // lokal navnebror: rekorder + utstyr
+      if(gearFersk(nb)&&rp.gear&&+rp.ts>=(nb.ts||0)){ gearInn(nb,rp.gear); nb.ts=+rp.ts||0; }
+      else gearLoft(nb, rp.gear); }
     else { var lp=egen(DB.players,nm)?DB.players[nm]:newPlayer(nm); lp.remote=true;
       if(+rp.ts>=(lp.ts||0)){ lp.kr=rp.kr||0; lp.ts=+rp.ts||0; gearInn(lp,rp.gear); }
       lp.caught=lp.caught||{}; famFlett(lp.caught, rp.caught); DB.players[nm]=lp; }
@@ -681,7 +688,7 @@ function syncFam(force){ var code=famCode(); if(!code||!P||famBusy)return;
   var now=Date.now(); if(!force && now-famLast<45000)return; famBusy=true; famLast=now;
   var famFail=setTimeout(function(){famBusy=false},15000); // hengende nett skal aldri låse synken
   fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({code:code, player:{name:P.name, kr:P.kr, caught:P.caught, ts:now, gear:gearUt()}})})
+    body:JSON.stringify({code:code, player:{name:P.name, kr:P.kr, caught:P.caught, ts:now, gear:gearFersk(P)?undefined:gearUt()}})}) // fersk kopi tier om utstyr til den har hentet sitt
   .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
   .then(function(j){ clearTimeout(famFail); famBusy=false;
     famTaImot(j); famInfo="synket "+new Date().toTimeString().slice(0,5);
