@@ -75,6 +75,9 @@
     font-size:22px;cursor:pointer;display:grid;place-items:center;box-shadow:0 2px 6px rgba(13,33,41,.22)}
   .iconbtn:active{transform:translateY(1px)}
   .butikkknapp{width:auto;min-width:46px;padding:0 7px}
+  .hudPenge{font-size:1.2em;line-height:1}
+  .hudBensin{height:22px;image-rendering:pixelated}
+  #muteBtn,#muteBtnMenu{font-size:24px}
 
   /* Sea controls */
   #sea .bottom{position:absolute;left:0;right:0;bottom:0;padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;
@@ -211,6 +214,7 @@
     #hud .fuel{width:60px}
     #hud .spacer{flex-basis:100%;height:0}
     .iconbtn{width:48px;height:48px;font-size:21px}
+    #muteBtn,#muteBtnMenu{font-size:23px}
     .hint{font-size:17px}
     #notice{font-size:18px}
   }
@@ -237,14 +241,14 @@
   <!-- SEA -->
   <section class="screen" id="sea">
     <div id="hud">
-      <div class="chip">💰 <b id="hudKr">0</b> kr</div>
-      <div class="chip">⛽ <div class="fuel"><i id="hudFuel"></i></div></div>
+      <div class="chip"><span class="hudPenge">💰</span> <b id="hudKr">0</b> kr</div>
+      <div class="chip"><img src="spill/assets/bensinkanne.png" alt="Bensin" class="hudBensin" onerror="this.outerHTML='⛽'"> <div class="fuel"><i id="hudFuel"></i></div></div>
       <button class="chip" id="hudLure" title="Sluksettet" style="pointer-events:auto;cursor:pointer;border:0">🪝 0</button>
       <div class="spacer"></div>
-      <button class="iconbtn butikkknapp" id="openShop" title="Butikk"><img src="spill/assets/rusten-mot-venstre.gif" alt="Butikk" style="max-height:38px;max-width:38px;image-rendering:pixelated" onerror="this.outerHTML='🛒'"></button>
-      <button class="iconbtn" id="openBook" title="Fangstbok">📖</button>
+      <button class="iconbtn butikkknapp" id="openShop" title="Butikk"><img src="spill/assets/rusten-mot-venstre.gif" alt="Butikk" style="max-height:32px;max-width:32px;image-rendering:pixelated" onerror="this.outerHTML='🛒'"></button>
+      <button class="iconbtn" id="openBook" title="Fangstbok"><span style="font-size:1.15em">📖</span></button>
       <button class="iconbtn" id="muteBtn" title="Lyd av/på">🔊</button>
-      <button class="iconbtn" id="toMenu" title="Hjem til naustet"><img src="spill/assets/knapp-naust.png" alt="Hjem" style="max-height:34px;max-width:34px;image-rendering:pixelated" onerror="this.outerHTML='✕'"></button>
+      <button class="iconbtn" id="toMenu" title="Hjem til naustet"><img src="spill/assets/knapp-naust.png" alt="Hjem" style="max-height:29px;max-width:29px;image-rendering:pixelated" onerror="this.outerHTML='✕'"></button>
     </div>
     <div id="notice"></div>
     <div class="bottom">
@@ -2000,7 +2004,7 @@ window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("o
 
 // logo hvis fila finnes
 (function(){ var im=new Image(); im.onload=function(){ $("#logoImg").src=im.src; $("#logoImg").style.display="block"; $("#logoFallback").style.display="none"; };
-  im.src="spill/assets/spill-logo.png"; })();
+  im.src="spill/assets/spill-logo-liten.gif"; })(); // optimalisert utgave (64 kB mot 627 kB png)
 
 /* ---------- Start ---------- */
 window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null,pilk:phase==="pilkfiske"?{t:+pilkT.toFixed(1),krav:+pilkKrav.toFixed(1),n:pilkFangst.length,hold:holding}:null}}};
