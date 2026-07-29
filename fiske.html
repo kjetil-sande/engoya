@@ -74,6 +74,7 @@
   .iconbtn{pointer-events:auto;background:rgba(255,255,255,.92);color:var(--ink);border:0;border-radius:11px;width:46px;height:46px;
     font-size:22px;cursor:pointer;display:grid;place-items:center;box-shadow:0 2px 6px rgba(13,33,41,.22)}
   .iconbtn:active{transform:translateY(1px)}
+  .butikkknapp{width:auto;min-width:46px;padding:0 7px}
 
   /* Sea controls */
   #sea .bottom{position:absolute;left:0;right:0;bottom:0;padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;
@@ -234,7 +235,7 @@
       <div class="chip">⛽ <div class="fuel"><i id="hudFuel"></i></div></div>
       <button class="chip" id="hudLure" title="Sluksettet" style="pointer-events:auto;cursor:pointer;border:0">🪝 0</button>
       <div class="spacer"></div>
-      <button class="iconbtn" id="openShop" title="Butikk">🛒</button>
+      <button class="iconbtn butikkknapp" id="openShop" title="Butikk"><img src="spill/assets/rusten-logo.gif" alt="Butikk" style="max-height:32px;max-width:88px;image-rendering:pixelated" onerror="this.outerHTML='🛒'"></button>
       <button class="iconbtn" id="openBook" title="Fangstbok">📖</button>
       <button class="iconbtn" id="muteBtn" title="Lyd av/på">🔊</button>
       <button class="iconbtn" id="toMenu" title="Meny">✕</button>
@@ -291,7 +292,7 @@
     <img src="spill/assets/knapp-lukk.png" id="shopClose" class="lukkx" alt="Lukk butikken">
     <div class="card">
     <img id="rustenPortrett" src="spill/assets/rusten-mot-venstre.gif" onerror="this.style.display='none'" alt="Rusten">
-    <img src="spill/assets/rustens-logo.png" alt="Rustens agn og redskap" style="display:none;margin:0 auto 4px;max-width:82%;max-height:74px;image-rendering:pixelated"
+    <img src="spill/assets/rusten-logo.gif" alt="Rustens agn og redskap" style="display:none;margin:0 auto 4px;max-width:86%;max-height:80px;image-rendering:pixelated"
       onload="this.style.display='block';this.nextElementSibling.style.display='none'">
     <h2 style="text-align:center">🛒 Rustens agn &amp; redskap</h2>
     <p class="muted" id="shopKr"></p>
@@ -985,27 +986,27 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"sjostjerne",e:"⭐",n:"Sjøstjerne — den har spist opp agnet",kr:0,w:26},
  {k:"strandkrabbe",e:"🦀",n:"Strandkrabbe (liten)",kr:5,w:22},
  {k:"berggylte",e:"🐟",n:"Berggylte i teina",kr:20,w:18,fimg:"berggylte"},
- {k:"stovel",e:"🥾",n:"Gul støvel",kr:0,w:16,img:"funn-stovel"},
- {k:"skinkeost",e:"🧴",n:"Skinkeosttube (tom)",kr:0,w:14,img:"funn-skinkeost"},
- {k:"bilnokler",e:"🔑",n:"Bilnøkler — noen fikk en dårlig dag",kr:0,w:13,img:"funn-bilnokler"},
- {k:"airpods",e:"🎧",n:"Airpods — venstre og høyre!",kr:0,w:12,img:"funn-airpods"},
- {k:"lommeur",e:"⏱️",n:"Lommeur — stoppet på halv fire",kr:0,w:11,img:"funn-lommeur"},
- {k:"kniv",e:"🔪",n:"Halvrusten kniv",kr:10,w:12,img:"funn-kniv"},
- {k:"skrujern",e:"🪛",n:"Skrujern",kr:25,w:10,img:"funn-skrujern"},
- {k:"skjelettarm",e:"🦴",n:"Skjelett av en arm …",kr:0,w:8,img:"funn-skjelettarm"},
- {k:"trepenis",e:"🪵",n:"Gammel trepenis — museet er varslet",kr:0,w:8,img:"funn-trepenis"},
+ {k:"stovel",e:"🥾",n:"Gul støvel",kr:0,w:16,img:"funn-stovel.gif"},
+ {k:"skinkeost",e:"🧴",n:"Skinkeosttube (tom)",kr:0,w:14,img:"funn-skinkeost.gif"},
+ {k:"bilnokler",e:"🔑",n:"Bilnøkler — noen fikk en dårlig dag",kr:0,w:13,img:"funn-bilnokler.gif"},
+ {k:"airpods",e:"🎧",n:"Airpods — venstre og høyre!",kr:0,w:12,img:"funn-airpods.gif"},
+ {k:"lommeur",e:"⏱️",n:"Lommeur — stoppet på halv fire",kr:0,w:11,img:"funn-lommeur.gif"},
+ {k:"kniv",e:"🔪",n:"Halvrusten kniv",kr:10,w:12,img:"funn-kniv.gif"},
+ {k:"skrujern",e:"🪛",n:"Skrujern",kr:25,w:10,img:"funn-skrujern.gif"},
+ {k:"skjelettarm",e:"🦴",n:"Skjelett av en arm …",kr:0,w:8,img:"funn-skjelettarm.gif"},
+ {k:"trepenis",e:"🪵",n:"Gammel trepenis — museet er varslet",kr:0,w:8,img:"funn-trepenis.gif"},
  {k:"glasskavl",e:"🔮",n:"Gammel glasskavl — en skatt!",kr:120,w:8},
- {k:"solvsmykke",e:"📿",n:"Sølvsmykke",kr:400,w:5,img:"funn-solvsmykke"},
- {k:"gullring",e:"💍",n:"Gullring",kr:1000,w:3.5,img:"funn-gullring"},
- {k:"rolex",e:"⌚",n:"EN ROLEX! Ta den med til Rusten",kr:0,w:2.5,img:"funn-rolex",rolexFunn:true},
- {k:"tannprotese",e:"😬",n:"Tannprotese — noen savner smilet sitt",kr:0,w:11,img:"funn-tannprotese"},
- {k:"mobil",e:"📱",n:"Eldgammel mobiltelefon — den VIRKER ennå",kr:0,w:10,img:"funn-mobil"},
- {k:"badeand",e:"🦆",n:"Badeand — langt hjemmefra",kr:0,w:10,img:"funn-badeand"},
- {k:"romersk-terning",e:"🎲",n:"Romersk terning i bein — noen tapte et veddemål her",kr:800,w:3,img:"funn-romersk-terning"},
- {k:"romersk-naal",e:"🧷",n:"ROMERSK DRAKTNÅL — en fibula!",kr:1500,w:2.5,img:"funn-romersk-naal"},
- {k:"romersk-mynt",e:"🪙",n:"ROMERSK SØLVDENAR — keiserens mynt!",kr:2000,w:2.2,img:"funn-romersk-mynt"},
- {k:"vikinghjelm",e:"⛑️",n:"VIKINGHJELM — et museumsstykke!",kr:4000,w:2,img:"funn-vikinghjelm"},
- {k:"diamantring",e:"💎",n:"DIAMANTRING!!",kr:10000,w:1,img:"funn-diamantring"}
+ {k:"solvsmykke",e:"📿",n:"Sølvsmykke",kr:400,w:5,img:"funn-solvsmykke.gif"},
+ {k:"gullring",e:"💍",n:"Gullring",kr:1000,w:3.5,img:"funn-gullring.gif"},
+ {k:"rolex",e:"⌚",n:"EN ROLEX! Ta den med til Rusten",kr:0,w:2.5,img:"funn-rolex.gif",rolexFunn:true},
+ {k:"tannprotese",e:"😬",n:"Tannprotese — noen savner smilet sitt",kr:0,w:11,img:"funn-tannprotese.gif"},
+ {k:"mobil",e:"📱",n:"Eldgammel mobiltelefon — den VIRKER ennå",kr:0,w:10,img:"funn-mobil.gif"},
+ {k:"badeand",e:"🦆",n:"Badeand — langt hjemmefra",kr:0,w:10,img:"funn-badeand.gif"},
+ {k:"romersk-terning",e:"🎲",n:"Romersk terning i bein — noen tapte et veddemål her",kr:800,w:3,img:"funn-romersk-terning.gif"},
+ {k:"romersk-naal",e:"🧷",n:"ROMERSK DRAKTNÅL — en fibula!",kr:1500,w:2.5,img:"funn-romersk-naal.gif"},
+ {k:"romersk-mynt",e:"🪙",n:"ROMERSK SØLVDENAR — keiserens mynt!",kr:2000,w:2.2,img:"funn-romersk-mynt.gif"},
+ {k:"vikinghjelm",e:"⛑️",n:"VIKINGHJELM — et museumsstykke!",kr:4000,w:2,img:"funn-vikinghjelm.gif"},
+ {k:"diamantring",e:"💎",n:"DIAMANTRING!!",kr:10000,w:1,img:"funn-diamantring.gif"}
 ];
 function potBycatch(rng){ var tot=0; FUNN.forEach(function(f){tot+=f.w});
   var r=rng()*tot, v=FUNN[0];
@@ -1111,7 +1112,7 @@ function pullPot(ty){ ty=ty||"k";
     L.innerHTML='<p class="muted center">'+tomMsg+'</p>';
   }
   else res.lines.forEach(function(l){ var fb=(l.img&&LIKNER[l.img])?'spill/assets/'+LIKNER[l.img]+'.png':'';
-    var ic=l.img?'<img src="spill/assets/'+l.img+'.png" data-fb="'+fb+'" onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.dataset.fb=\'\'}else this.style.display=\'none\'" style="height:26px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">':(l.e+" ");
+    var ic=l.img?'<img src="spill/assets/'+bildeFil(l.img)+'" data-fb="'+fb+'" onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.dataset.fb=\'\'}else this.style.display=\'none\'" style="height:26px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">':(l.e+" ");
     L.insertAdjacentHTML("beforeend",'<div class="statline">'+ic+esc(l.n)+(l.kr?' — <b>'+l.kr+' kr</b>':'')+'</div>'); });
   $("#potTotal").innerHTML=(res.total?'Solgt til Rusten: <b>'+res.total+' kr</b>':'')+(extra?'<div class="muted" style="margin-top:6px">'+extra+'</div>':'');
   var kLinjer=res.lines.filter(function(l){return l.img==="taskekrabbe"}), kn=kLinjer.length, kkr=0;
@@ -1155,26 +1156,32 @@ setInterval(updatePotBtn,15000);
 
 /* ---------- Butikk ---------- */
 var shopLock=false;
+var shopTab="utstyr";
 function openShop(){
   $("#shopKr").textContent="Du har "+P.kr+" kr.";
   var L=$("#shopList"); L.innerHTML="";
   var dk=dailyFish();
   L.insertAdjacentHTML("beforeend",'<p class="muted center" style="background:#fdf3d6;border:2px solid var(--gold);border-radius:9px;padding:7px 10px;margin:0 0 4px">📋 Rustens bestilling i dag: <b>'+dk.n+'</b> — betaler <b>+50 %</b></p>');
+  L.insertAdjacentHTML("beforeend",'<div class="tabs" style="margin:4px 0 8px"><button id="st-utstyr">Utstyr</button><button id="st-agn">Agn</button><button id="st-sluker">Sluker</button></div>');
+  ["utstyr","agn","sluker"].forEach(function(kf){ var b=$("#st-"+kf); b.classList.toggle("on",shopTab===kf);
+    b.onclick=function(){ shopTab=kf; Snd.click(); openShop(); }; });
+  if(shopTab==="utstyr"){
   var fillCost=(P.fuelMax-P.fuel)*2;
   addShop(L,"⛽ Fyll bensin","Fyll tanken helt opp.", fillCost, P.fuel>=P.fuelMax, function(){P.fuel=P.fuelMax;});
-  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:6px 0 2px;font-weight:700">— Sluker (anbefaling i parentes) —</p>');
-  SLUK.forEach(function(u){ if(u.k==="agnrigg"&&!P.vinsj)return; // agnriggen trenger vinsjen
+  }
+  if(shopTab==="sluker") SLUK.forEach(function(u){ if(u.k==="agnrigg"&&!P.vinsj)return; // agnriggen trenger vinsjen
     addShop(L,'<img src="spill/assets/'+bildeFil(u.img)+'" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\''+u.e+' \'" alt=""> '+u.n+' <span class="recchip">'+recTekst(u)+'</span>',
       "Har "+(P.lures[u.k]||0)+" stk. Ryker snøret, mister du den.",u.pris,false,function(){P.lures[u.k]=(P.lures[u.k]||0)+1; updateRigChip();}); });
+  if(shopTab==="utstyr"){
   if(P.rolex==="raa"){
-    addShop(L,'<img src="spill/assets/funn-rolex.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> Selg Rolexen som den er',"Saltvannsskadd, men ekte. Rusten kjenner en kar.",-3000,false,function(){P.rolex=null; notice("Rolexen solgt for 3000 kr ⌚");});
-    addShop(L,'<img src="spill/assets/funn-rolex.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> Puss opp Rolexen',"Urmakeren tar 35 000 kr — og FIRE UKER. Men da … 50 000. ⌚✨",35000,false,function(){P.rolex={ferdig:Date.now()+28*864e5}; notice("Rolexen er sendt til urmakeren — ferdig om fire uker ⌚");});
+    addShop(L,'<img src="spill/assets/funn-rolex.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> Selg Rolexen som den er',"Saltvannsskadd, men ekte. Rusten kjenner en kar.",-3000,false,function(){P.rolex=null; notice("Rolexen solgt for 3000 kr ⌚");});
+    addShop(L,'<img src="spill/assets/funn-rolex.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> Puss opp Rolexen',"Urmakeren tar 35 000 kr — og FIRE UKER. Men da … 50 000. ⌚✨",35000,false,function(){P.rolex={ferdig:Date.now()+28*864e5}; notice("Rolexen er sendt til urmakeren — ferdig om fire uker ⌚");});
   } else if(P.rolex&&P.rolex.ferdig){ var igjen=P.rolex.ferdig-Date.now();
     if(igjen<=0){ P.rolex="klar"; }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">⌚ Rolexen er hos urmakeren — ferdig om '+Math.ceil(igjen/864e5)+' dager.</p>');
   }
   if(P.rolex==="klar")
-    addShop(L,'<img src="spill/assets/funn-rolex.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> Selg den nyoppussede Rolexen',"Blank som en makrell i sola. Samleren betaler 50 000 kr!",-50000,false,function(){P.rolex=null; notice("SOLGT! 50 000 kr for Rolexen ⌚✨"); Snd.trophy();});
+    addShop(L,'<img src="spill/assets/funn-rolex.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> Selg den nyoppussede Rolexen',"Blank som en makrell i sola. Samleren betaler 50 000 kr!",-50000,false,function(){P.rolex=null; notice("SOLGT! 50 000 kr for Rolexen ⌚✨"); Snd.trophy();});
   if(P.svc>=200){ var fSvc=Date.now()<(P.forsTil||0);
     addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Båtservice — Ørnes',
       (P.svc>250?"Motoren hoster og sluker ekstra bensin! ":"")+"Full service ("+P.svc+" turer siden sist)."+(fSvc?" Forsikringspris! 🛡️":" (2500 med forsikring)"),
@@ -1198,8 +1205,8 @@ function openShop(){
   if(P.rod>=2){ addShop(L,"🪢 Bunnline","Settes ut på valgfritt dyp og står natta over — fangsten følger dypet, og kveita kan gå på. Har "+(P.pots.lineOwned||0)+".",800,(P.pots.lineOwned||0)>=1,function(){P.pots.lineOwned=1;});
     addShop(L,"🐟 Linagn (10 kroker)","1 sett per utsett av bunnlina. Har "+(P.pots.lineAgn||0)+".",60,false,function(){P.pots.lineAgn=(P.pots.lineAgn||0)+1;}); }
   if(P.pots.cap<4&&(P.pots.owned||0)>0) addShop(L,"⚓ Ekstra blåser og tau","Plass til 4 teiner ute samtidig (i dag: "+P.pots.cap+").",350,false,function(){P.pots.cap=4;});
-  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:6px 0 2px;font-weight:700">— Agn til stanga (velges i sluksettet 🧰) —</p>');
-  AGN.forEach(function(a){ if(a.kunFangst)return;
+  } // slutt Utstyr del 1
+  if(shopTab==="agn"){ AGN.forEach(function(a){ if(a.kunFangst)return;
     addShop(L,'<img src="spill/assets/'+bildeFil(agnImg(a))+'" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\''+a.e+' \'" alt=""> '+a.n+(a.pakke>1?" ("+a.pakke+" stk)":""),
       (a.superLegend?"Garanterer én legendarisk fisk på Djuphavet — og bedøver den: du sveiver inn på halve tida. 💎"
        :a.rar?"Rustens hemmelighet — 50 % større sjanse for sjelden og legendarisk fisk. ✨":"Har "+(P.agn[a.k]||0)+" stk.")+(a.k==="brunost"?" «Ikke spør. Det virker.» — Rusten":""),
@@ -1207,6 +1214,8 @@ function openShop(){
   addShop(L,'<img src="spill/assets/agn-rusten-spesial-3pk.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'✨ \'" alt=""> Rustens Spesialagn (3 stk)',
     "Tre bokser — du sparer 20 %! ✨ Har "+(P.agn.rustenspesial||0)+" stk.",480,false,
     function(){ P.agn.rustenspesial=(P.agn.rustenspesial||0)+3; updateRigChip(); });
+  } // slutt Agn
+  if(shopTab==="utstyr"){
   if(P.rod>=1&&!P.ekko) addShop(L,"📡 Ekkolodd","Ser stimene før de ser deg — 20 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
   if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,"🪛 Vinsj og dyphavsrigg","Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
@@ -1216,6 +1225,7 @@ function openShop(){
     L.insertAdjacentHTML("beforeend",'<p class="muted center">'+(kv
       ?'Rusten myser mot havet: «'+kv.bestLen+' cm, ja … Det går rykter om ei kveite på over to meter der ute. Ingen har landa den ennå.»'
       :'Rusten lener seg over disken: «Med det utstyret der er det bare storkveita som gjenstår. Den står djupt — og den venter.»')+'</p>'); }
+  } // slutt Utstyr del 2
   modal("shopModal",true);
 }
 function addShop(L,title,desc,cost,owned,buy){
