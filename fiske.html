@@ -1156,6 +1156,9 @@ function openShop(){
     addShop(L,'<img src="spill/assets/agn-'+(a.k==="rustenspesial"?"rusten-spesial":a.k)+'.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\''+a.e+' \'" alt=""> '+a.n+(a.pakke>1?" ("+a.pakke+" stk)":""),
       (a.rar?"Rustens hemmelighet — 50 % større sjanse for sjelden og legendarisk fisk. ✨":"Har "+(P.agn[a.k]||0)+" stk.")+(a.k==="brunost"?" «Ikke spør. Det virker.» — Rusten":""),
       a.pris,false,function(){ P.agn[a.k]=(P.agn[a.k]||0)+a.pakke; updateRigChip(); }); });
+  addShop(L,'<img src="spill/assets/agn-rusten-spesial-3pk.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'✨ \'" alt=""> Rustens Spesialagn (3 stk)',
+    "Tre bokser — du sparer 20 %! ✨ Har "+(P.agn.rustenspesial||0)+" stk.",480,false,
+    function(){ P.agn.rustenspesial=(P.agn.rustenspesial||0)+3; updateRigChip(); });
   if(P.rod>=1&&!P.ekko) addShop(L,"📡 Ekkolodd","Ser stimene før de ser deg — 20 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
   if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,"🪛 Vinsj og dyphavsrigg","Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
