@@ -22,6 +22,54 @@ const tall = (v, maks) => Math.max(0, Math.min(maks, Number(v) || 0));
 
 const egen = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // aldri arvede egenskaper (toString & co.)
 
+// Utstyr følger spilleren over nett (samme «siste innsending vinner»-regel som kroner),
+// slik at familien kan logge inn på en ny enhet og få igjen stang, vinsj, turbosnelle osv.
+const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs"];
+const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "motorOk"];
+const GEAR_TEKST = { motor: 10, rig: 24 };
+// Objektfeltene vaskes TYPET (aldri rå gjennomstrømming): nøkler må være pene id-er og
+// verdier tall/boolske — da finnes det ingen vei for skript eller rare typer inn i andres lagring.
+const PEN_NOKKEL = /^[a-z0-9_-]{1,24}$/;
+function vaskTelleObjekt(o, maksN) { // {slukId: antall} — lures/agn
+  if (!o || typeof o !== "object" || Array.isArray(o)) return undefined;
+  const ut = {};
+  for (const k of Object.keys(o).slice(0, maksN)) {
+    if (!PEN_NOKKEL.test(k) || FARLIGE.has(k)) continue;
+    const v = tall(o[k], 1e6); if (v) ut[k] = v;
+  }
+  return Object.keys(ut).length ? ut : undefined;
+}
+function vaskPots(p) {
+  if (!p || typeof p !== "object" || Array.isArray(p)) return undefined;
+  const ut = { owned: tall(p.owned, 99), ownedH: tall(p.ownedH, 99), bait: tall(p.bait, 999),
+    cap: tall(p.cap, 99), rescue: !!p.rescue, out: [] };
+  if (Array.isArray(p.out)) for (const o of p.out.slice(0, 12)) {
+    if (!o || typeof o !== "object") continue;
+    const t = typeof o.t === "string" && PEN_NOKKEL.test(o.t) ? o.t : "k";
+    ut.out.push({ zone: tall(o.zone, 3), setAt: tall(o.setAt, 9e15), seed: tall(o.seed, 1e9), t });
+  }
+  return ut;
+}
+function vaskRolex(r) {
+  if (!r || typeof r !== "object") return undefined;
+  if (r.ferdig != null) return { ferdig: tall(r.ferdig, 9e15) };
+  if (r.bud != null) return { bud: tall(r.bud, 1e6) };
+  return undefined;
+}
+function vaskGear(g) {
+  if (!g || typeof g !== "object") return undefined;
+  const ut = {};
+  for (const k of GEAR_TALL) if (g[k] != null) ut[k] = tall(g[k], 9e15);
+  for (const k of GEAR_JANEI) if (g[k] != null) ut[k] = !!g[k];
+  for (const k of Object.keys(GEAR_TEKST))
+    if (typeof g[k] === "string" && PEN_NOKKEL.test(g[k])) ut[k] = g[k].slice(0, GEAR_TEKST[k]);
+  const lures = vaskTelleObjekt(g.lures, 40); if (lures) ut.lures = lures;
+  const agn = vaskTelleObjekt(g.agn, 40); if (agn) ut.agn = agn;
+  const pots = vaskPots(g.pots); if (pots) ut.pots = pots;
+  const rolex = vaskRolex(g.rolex); if (rolex) ut.rolex = rolex;
+  return Object.keys(ut).length ? ut : undefined;
+}
+
 function flettSpiller(fam, p) {
   const navn = String(p.name || "").trim().slice(0, 14);
   // Klienten tillater alt (også emoji) — blokker kun kontrolltegn, ellers stopper synk for eksisterende navn
@@ -57,7 +105,17 @@ function flettSpiller(fam, p) {
   }
 
   const ts = Math.min(tall(p.ts, 4102444800000), Date.now() + 60_000); // gal klientklokke kan aldri fryse fremtidige oppdateringer
-  if (ts >= (cur.ts || 0)) { cur.kr = tall(p.kr, 1e9); cur.ts = ts; }
+  if (ts >= (cur.ts || 0)) {
+    cur.kr = tall(p.kr, 1e9); cur.ts = ts;
+    const g = vaskGear(p.gear);
+    if (g) { // gamle klienter uten gear lar forrige utstyr stå
+      const gml = cur.gear && typeof cur.gear === "object" ? cur.gear : {};
+      g.rod = Math.max(tall(gml.rod, 99), tall(g.rod, 99));         // kjøpt/opptjent kan aldri
+      g.tidMs = Math.max(tall(gml.tidMs, 9e15), tall(g.tidMs, 9e15)); // krympe, uansett klokkerot
+      for (const k of ["vinsj", "ekko", "turbo"]) if (gml[k]) g[k] = true;
+      cur.gear = g;
+    }
+  }
   fam.players[navn] = cur;
 }
 
