@@ -1395,7 +1395,10 @@ function drawScene(dt){
           px=gx+(-bg.dir*W*0.36-0)*eu; py=gyTop-(H*0.28)*eu; fr=(bob*8|0)&3; if(pu>=1)buoyGull=null; }
         var gim=fr<0?maakeSitImg:gullImg[fr];
         if(buoyGull&&gim&&gim.complete&&gim.naturalWidth){ cx.save(); cx.translate(px,py);
-          if(bg.dir>0)cx.scale(-1,1); cx.drawImage(gim,-gw/2,-gh*0.71,gw,gh); cx.restore(); }
+          if(bg.dir>0)cx.scale(-1,1);
+          var dw=gw, dh=gh, ank=0.71;
+          if(fr<0){ dw=mn*0.05; dh=dw*gim.naturalHeight/gim.naturalWidth; ank=0.94; } // sittemåka fyller hele flata si — mindre bredde, føttene nederst
+          cx.drawImage(gim,-dw/2,-dh*ank,dw,dh); cx.restore(); }
       }
     }
   } else buoyGull=null;
