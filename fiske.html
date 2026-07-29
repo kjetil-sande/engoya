@@ -710,20 +710,20 @@ function renderPlayers(){
     if(!Object.prototype.hasOwnProperty.call(DB.players,nm))DB.players[nm]=newPlayer(nm); DB.last=nm; chosen(nm); saveAll(); renderPlayers()};
   box.appendChild(add);
   if(!famCode()){ var lg=document.createElement("button"); lg.className="btn sm ghost"; // ny nettleser: hent familien med koden deres
-    lg.textContent="🔑 Logg inn med familiekode"; lg.onclick=famLogin; box.appendChild(lg); }
+    lg.textContent="🔑 Logg inn med kode"; lg.onclick=famLogin; box.appendChild(lg); }
 }
 function famLogin(){
-  var c=(prompt("Familiekoden deres (den dere fant på sammen)?")||"").trim();
+  var c=(prompt("Skriv koden — familiens felles kode, eller din egen personlige (4–40 tegn).")||"").trim();
   if(!c)return; if(c.length<4||c.length>40){ alert("Koden er 4–40 tegn 🙂"); return; }
   $("#plist").insertAdjacentHTML("beforeend",'<span class="muted">🌊 Leter etter familien …</span>');
   fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:c})}) // ren henting — skriver ingenting på serveren
   .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
   .then(function(j){
     var antall=(j&&j.players)?Object.keys(j.players).filter(function(n){return !famFarlig(n)}).length:0;
-    if(!antall){ renderPlayers(); alert("Fant ingen familie med den koden. Sjekk stavemåten 🙂"); return; } // en skrivefeil skal ikke lagres og splitte familien
+    if(!antall){ renderPlayers(); alert("Fant ingen med den koden. Sjekk stavemåten 🙂"); return; } // en skrivefeil skal ikke lagres og splitte familien
     try{localStorage.setItem("storkveita-familiekode",c)}catch(e){}
     famTaImot(j); famLast=0; renderPlayers();
-    alert("Velkommen! Fant "+antall+" i familien 👨‍👩‍👧 Trykk på navnet ditt og fisk i vei.");
+    alert(antall===1?"Velkommen tilbake! Trykk på navnet ditt og fisk i vei 🎣":"Velkommen! Fant "+antall+" i familien 👨‍👩‍👧 Trykk på navnet ditt og fisk i vei.");
   })
   .catch(function(){ renderPlayers(); alert("Fikk ikke kontakt med havet 🌊 Prøv igjen om litt."); });
 }
@@ -1688,7 +1688,7 @@ function renderFam(){
     ? '<p class="muted center" style="margin-top:10px;font-size:12px">👨‍👩‍👧 Familiekode: <b>'+esc(code)+'</b>'+(famInfo?' · '+esc(famInfo):'')+' <button class="btn sm" id="famBytt">Bytt</button></p>'
     : '<p class="muted center" style="margin-top:10px"><button class="btn sm gold" id="famKoble">👨‍👩‍👧 Koble familien sammen på nett</button><br><span class="muted" style="font-size:11px">Samme kode på alle enheter → felles rekorder på hytta og hjemme</span></p>');
   var kb=$("#famKoble")||$("#famBytt");
-  if(kb)kb.onclick=function(){ var c=(prompt("Familiekode (4–40 tegn — finn på en hemmelig sammen!)", code||"")||"").trim();
+  if(kb)kb.onclick=function(){ var c=(prompt("Kode (4–40 tegn) — familiens felles, eller din egen personlige. Hold den hemmelig!", code||"")||"").trim();
     if(!c)return; if(c.length<4){ alert("Minst 4 tegn 🙂"); return; } if(c.length>40){ alert("Maks 40 tegn 🙂"); return; }
     try{localStorage.setItem("storkveita-familiekode",c)}catch(e){}
     famInfo="kobler til …"; renderFam(); famLast=0; syncFam(true); };
