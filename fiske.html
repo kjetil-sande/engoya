@@ -106,6 +106,7 @@
   .card{background:var(--paper);border:4px solid var(--wood-dark);border-radius:16px;padding:18px;width:100%;max-width:440px;
     max-height:88%;overflow:auto;box-shadow:0 12px 0 rgba(0,0,0,.15)}
   .card h2{margin:.1em 0 .4em;color:var(--wood-dark);font-size:20px}
+  .lukkx{position:sticky;top:-10px;float:right;width:36px;height:36px;cursor:pointer;margin:-10px -10px 0 6px;z-index:2}
   .catch-fish{height:120px;display:grid;place-items:center;margin:6px 0}
   .catch-fish canvas{position:static;width:auto;height:110px}
   .statline{font-family:var(--mono);font-size:14px;margin:3px 0}
@@ -261,10 +262,10 @@
 
   <!-- SHOP -->
   <div class="modal" id="shopModal"><div class="card">
+    <img src="spill/assets/knapp-lukk.png" id="shopClose" class="lukkx" alt="Lukk butikken">
     <h2>🛒 Rustens agn &amp; redskap</h2>
     <p class="muted" id="shopKr"></p>
     <div id="shopList"></div>
-    <div class="row"><span></span><button class="btn sm" id="shopClose">Tilbake</button></div>
   </div></div>
 
   <!-- BOOK -->
@@ -1397,7 +1398,7 @@ function drawScene(dt){
         if(buoyGull&&gim&&gim.complete&&gim.naturalWidth){ cx.save(); cx.translate(px,py);
           if(bg.dir>0)cx.scale(-1,1);
           var dw=gw, dh=gh, ank=0.71;
-          if(fr<0){ dw=mn*0.05; dh=dw*gim.naturalHeight/gim.naturalWidth; ank=0.94; } // sittemåka fyller hele flata si — mindre bredde, føttene nederst
+          if(fr<0){ dw=mn*0.085; dh=dw*gim.naturalHeight/gim.naturalWidth; ank=0.94; } // samme kroppsstørrelse som flyvemåkene (de tegnes mn*0.095 med marger)
           cx.drawImage(gim,-dw/2,-dh*ank,dw,dh); cx.restore(); }
       }
     }
