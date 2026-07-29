@@ -418,15 +418,15 @@ var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
  {k:"hyse",n:"Hyse",z:1,pull:0.8,w:70,len:[32,62],kg:6,pris:170,col:"#9aa0a6",shape:"cod",rar:0,fight:0.15},
  {k:"blastal",n:"Blåstål",z:1,pull:0.8,w:26,len:[24,40],kg:6,pris:180,col:"#2f6ea0",shape:"deep",rar:1,fight:0.35},
  {k:"lysing",n:"Lysing",z:1,pull:1.2,w:8,len:[45,100],kg:7,pris:220,col:"#8b8f96",shape:"torpedo",rar:1,fight:0.45},
- {k:"uer",n:"Uer",z:2,zb:3,pull:1.1,w:55,len:[24,46],kg:10,pris:260,col:"#c0392b",shape:"deep",rar:1,fight:0.1},
+ {k:"uer",n:"Uer",z:2,zb:3,pull:1.1,w:55,len:[24,46],kg:10,pris:260,col:"#c0392b",shape:"deep",rar:0,fight:0.1},
  {k:"rodspette",n:"Rødspette",z:2,pull:0.8,w:45,len:[25,46],kg:9,pris:200,col:"#8a7d5a",shape:"flat",rar:1,fight:0.3},
  {k:"brungylt",n:"Brungylt",z:2,pull:0.9,w:22,len:[15,30],kg:5,pris:180,col:"#6b5540",shape:"deep",rar:1,fight:0.3},
- {k:"brosme",n:"Brosme",z:2,zb:3,pull:1.4,w:38,len:[42,82],kg:7,pris:300,col:"#7a6a4f",shape:"eel",rar:1,fight:0.2},
- {k:"lange",n:"Lange",z:2,zb:3,pull:1.8,w:26,len:[60,120],kg:8,pris:420,col:"#5c6b4a",shape:"eel",rar:1,fight:0.2},
+ {k:"brosme",n:"Brosme",z:2,zb:3,pull:1.4,w:38,len:[42,82],kg:7,pris:300,col:"#7a6a4f",shape:"eel",rar:0,fight:0.2},
+ {k:"lange",n:"Lange",z:2,zb:3,pull:1.8,w:26,len:[60,120],kg:8,pris:420,col:"#5c6b4a",shape:"eel",rar:0,fight:0.2},
  {k:"blaalange",n:"Blålange",z:2,zb:3,pull:1.7,w:8,len:[70,140],kg:7,pris:380,col:"#4a5a6b",shape:"eel",rar:1,fight:0.2},
  {k:"skate",n:"Storskate",z:2,zb:3,pull:2.1,w:8,len:[90,180],kg:12,pris:420,col:"#6b5d52",shape:"flat",rar:1,fight:0.6},
  {k:"haagjel",n:"Hågjel",z:3,pull:0.9,w:45,len:[40,68],kg:5,pris:70,col:"#7a7268",shape:"shark",rar:0,fight:0.35},
- {k:"havmus",n:"Havmus",z:3,pull:0.9,w:30,len:[55,100],kg:4,pris:90,col:"#8e8496",shape:"eel",rar:0,fight:0.3},
+ {k:"havmus",n:"Havmus",z:3,pull:0.9,w:30,len:[55,100],kg:4,pris:90,col:"#8e8496",shape:"eel",rar:1,fight:0.3},
  {k:"svarthaa",n:"Svarthå",z:3,pull:0.8,w:22,len:[30,55],kg:5,pris:75,col:"#3a3f4a",shape:"shark",rar:1,fight:0.4},
  {k:"blaakveite",n:"Blåkveite",z:3,pull:1.7,w:22,len:[55,100],kg:12,pris:700,col:"#4d5a66",shape:"flat",rar:1,fight:0.5},
  {k:"steinbit",n:"Steinbit",z:2,allZ:true,pull:1.5,w:18,len:[50,125],kg:11,pris:380,col:"#5b6570",shape:"eel",rar:1,fight:0.55}, // biter på ALLE dyp
@@ -672,7 +672,6 @@ function startWait(){
   var zf=FISH.filter(function(f){return (f.z===depth||f.zb===depth||f.allZ) && f.k!=="makrellstorje"}); // størja tas ALDRI på bunnsluk; allZ (steinbit) biter overalt; zb = art med to soner
   var t2=zf.filter(function(f){return f.rar===2}), t1=zf.filter(function(f){return f.rar===1}), t0=zf.filter(function(f){return !f.rar});
   var base=t0.length?t0:(t1.length?t1:zf); // sonens hverdagsfisk (i Dypt spiller de «sjeldne» hverdagsrollen)
-  if(depth===3){ base=base.concat(t1.filter(function(f){return f.zb===depth})); t1=t1.filter(function(f){return f.zb!==depth}); } // to-sone-artene (brosme/lange/uer m.fl.) er hverdagsfisk også i Djuphavet
   var roll=Math.random(), pool, bc, ek=P.ekko?1.2:1; // ekkoloddet ser stimene: +20 % sjanse for sjelden/legendarisk
   if(roll<ek/150 && t2.length){ pool=t2; bc=0.25; }
   else if(roll<ek/150+ek/75 && t1.length && t1!==base){ pool=t1; bc=0.5; }
