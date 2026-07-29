@@ -1546,7 +1546,7 @@ function openShop(){
     function(){ P.agn.rustenspesial=(P.agn.rustenspesial||0)+3; updateRigChip(); });
   } // slutt Agn
   if(shopTab==="utstyr"){
-  if(P.rod>=1&&!P.ekko) addShop(L,'<img src="spill/assets/ekkolodd.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Ekkolodd',"Ser stimene før de ser deg — 20 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
+  if(P.rod>=1&&!P.ekko) addShop(L,'<img src="spill/assets/ekkolodd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Ekkolodd',"Ser stimene før de ser deg — 20 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
   if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,'<img src="spill/assets/sluk-agnrigg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪛 \'" alt=""> Vinsj og dyphavsrigg',"Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
   if(P.rod<1) addShop(L,"🎣 Stang II","Låser opp mellomdypt vann (50–150 m): torsk, hyse, blåstål.",250,false,function(){P.rod=1;});
@@ -1565,12 +1565,12 @@ function openKjell(){
   var fors=Date.now()<(P.forsTil||0);
   // Bunnsmørning — pro-rata som bensin: full pris 300 ved 0 %
   var sp=smorPct(), sKost=Math.max(0,Math.round(300*(100-sp)/100));
-  addShop(L,'<img src="spill/assets/verksted-bunnsmoring.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🐚 \'" alt=""> Bunnsmørning',
+  addShop(L,'<img src="spill/assets/verksted-bunnsmoring.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🐚 \'" alt=""> Bunnsmørning',
     "Rent skrog glir lettere og sparer bensin — smørningen holder i 100 døgn. "+pctBar(sp)+(sp<=0?" <b>Begrodd — båten sluker ekstra bensin!</b>":""),
     sKost, sp>=100, function(){ P.smorTs=Date.now(); notice("Skroget er nysmurt — båten glir som en ål 🐚✨"); });
   // Båtservice — pro-rata, forsikringsrabatt; over 250 turer er havarifaren stor
   var vp=svcPct(), vKost=Math.max(0,Math.round((fors?2500:3500)*(100-vp)/100));
-  addShop(L,'<img src="spill/assets/verksted-service.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Båtservice',
+  addShop(L,'<img src="spill/assets/verksted-service.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Båtservice',
     (P.svc>250?"<b>Motoren hoster — STOR fare for havari!</b> ":"")+"Full service holder i 250 turer. "+pctBar(vp)+(fors?" Forsikringspris! 🛡️":" (billigere med forsikring)"),
     vKost, vp>=100, function(){ P.svc=0; notice("Motoren spinner som en katt igjen — takk, Propell-Kjell! ⚙️"); });
   if(!P.motorOk){
@@ -1585,7 +1585,7 @@ function openKjell(){
       fDekt?0:1900,false,function(){P.propOk=true; notice("Ny propell på plass — takk, Propell-Kjell! 🛠️");}); }
   var fDager=Math.max(0,Math.ceil(((P.forsTil||0)-Date.now())/864e5));
   var fPct=Math.max(0,Math.min(100,Math.round(((P.forsTil||0)-Date.now())/(30*864e5)*100)));
-  addShop(L,'<img src="spill/assets/verksted-forsikring.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🛡️ \'" alt=""> Båtforsikring (30 dager)',
+  addShop(L,'<img src="spill/assets/verksted-forsikring.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🛡️ \'" alt=""> Båtforsikring (30 dager)',
     (fDager>0?("Forsikret "+fDager+" dager til — kjøp for å forlenge. Gratis propell og forsikringspris på service. "):"Gratis propellbytte og billigere service. Lønner seg! ")+pctBar(fPct),
     900,false,function(){P.forsTil=Math.max(Date.now(),P.forsTil||0)+30*864e5; notice("Båten er forsikret 🛡️");});
   if(Date.now()>P.havnNeste)
