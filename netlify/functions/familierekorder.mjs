@@ -45,6 +45,12 @@ function flettSpiller(fam, p) {
       bestLen: Math.max(a.bestLen || 0, tall(b.bestLen, 500)),
       bestWt: Math.max(a.bestWt || 0, tall(b.bestWt, 1500)), // håkjerringa kan veie over tonnet
     };
+    if (tall(b.bestLen, 500) > (a.bestLen || 0)) { // rekorden bringer med seg redskapet og tidspunktet
+      const rk = String(b.redskap || "").replace(/\p{Cc}/gu, "").slice(0, 30);
+      if (rk) flettet.redskap = rk;
+      const rts = tall(b.rts, 4102444800000);
+      if (rts) flettet.rts = Math.min(rts, Date.now() + 60_000);
+    } else { if (a.redskap) flettet.redskap = a.redskap; if (a.rts) flettet.rts = a.rts; }
     const gold = Math.max(a.gold || 0, tall(b.gold, 1e6));
     if (gold) flettet.gold = gold;
     cur.caught[art] = flettet;

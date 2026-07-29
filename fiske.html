@@ -104,6 +104,8 @@
   .modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:16px;z-index:20;
     background:rgba(10,25,30,.55)}
   .modal.on{display:flex}
+  #catchModal{align-items:flex-end;padding:0;background:linear-gradient(to bottom,rgba(10,25,30,.08) 0%,rgba(10,25,30,.14) 45%,rgba(10,25,30,.55) 78%)}
+  #catchModal .card{max-height:min(46%,400px);overflow:auto;border-radius:16px 16px 0 0;border-bottom:0;box-shadow:0 -6px 0 rgba(0,0,0,.12);margin:0 auto}
   .card{background:var(--paper);border:4px solid var(--wood-dark);border-radius:16px;padding:18px;width:100%;max-width:440px;
     max-height:88%;overflow:auto;box-shadow:0 12px 0 rgba(0,0,0,.15)}
   .card h2{margin:.1em 0 .4em;color:var(--wood-dark);font-size:20px}
@@ -171,7 +173,7 @@
   .shopimg img{max-width:56px;max-height:44px;object-fit:contain}
   .shopimg img.shoplogo{height:auto;max-height:44px;margin:0;vertical-align:baseline}
   .shopimg img.shoplogo.rund{max-height:44px;border-radius:50%}
-  #rustenPortrett{display:block;margin:2px auto 6px;height:96px;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
+  #rustenPortrett{display:block;margin:2px auto 0;height:150px;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
   .fam .frow.rek{align-items:center;gap:8px;font-size:12px}
   .fam .frow.rek>b{display:flex;align-items:center;gap:7px;min-width:0}
   .fam .frow.rek>b canvas{position:static;width:40px;height:24px;flex:0 0 auto}
@@ -239,7 +241,7 @@
       <button class="iconbtn butikkknapp" id="openShop" title="Butikk"><img src="spill/assets/rusten-mot-venstre.gif" alt="Butikk" style="max-height:38px;max-width:38px;image-rendering:pixelated" onerror="this.outerHTML='🛒'"></button>
       <button class="iconbtn" id="openBook" title="Fangstbok">📖</button>
       <button class="iconbtn" id="muteBtn" title="Lyd av/på">🔊</button>
-      <button class="iconbtn" id="toMenu" title="Meny">✕</button>
+      <button class="iconbtn" id="toMenu" title="Hjem til naustet"><img src="spill/assets/knapp-naust.png" alt="Hjem" style="max-height:34px;max-width:34px;image-rendering:pixelated" onerror="this.outerHTML='✕'"></button>
     </div>
     <div id="notice"></div>
     <div class="bottom">
@@ -268,6 +270,12 @@
     </div>
   </section>
 
+  <!-- REKORDKORT (nyheter ved oppstart) -->
+  <div class="modal" id="rekModal"><div class="cardwrap" style="max-width:340px">
+    <img src="spill/assets/knapp-lukk.png" id="rekLukk" class="lukkx" alt="Lukk">
+    <div class="card center" id="rekKort" style="touch-action:pan-y"></div>
+  </div></div>
+
   <!-- SLUKSETTET -->
   <div class="modal" id="rigModal"><div class="cardwrap">
     <img src="spill/assets/knapp-lukk.png" id="rigClose" class="lukkx" alt="Lukk sluksettet">
@@ -293,7 +301,7 @@
     <img src="spill/assets/knapp-lukk.png" id="shopClose" class="lukkx" alt="Lukk butikken">
     <div class="card">
     <img id="rustenPortrett" src="spill/assets/rusten-mot-venstre.gif" onerror="this.style.display='none'" alt="Rusten">
-    <img src="spill/assets/rusten-logo.gif" alt="Rustens agn og redskap" style="display:none;margin:0 auto 4px;max-width:86%;max-height:80px;image-rendering:pixelated"
+    <img src="spill/assets/rusten-logo.gif" alt="Rustens agn og redskap" style="display:none;margin:-38px auto 4px;position:relative;z-index:2;max-width:86%;max-height:80px;image-rendering:pixelated"
       onload="this.style.display='block';this.nextElementSibling.style.display='none'">
     <h2 style="text-align:center">🛒 Rustens agn &amp; redskap</h2>
     <p class="muted" id="shopKr"></p>
@@ -366,7 +374,9 @@ var Snd=(function(){
   var buffers={}, loaded=false;
   var loops={ sea:{url:"spill/lyd/bolgeskvulp.aac",  vol:0.32,  want:false, node:null},   // bølgeskvulp når man fisker
               bird:{url:"spill/lyd/fuglelyder.aac",   vol:0.22, want:false, node:null},   // fugler lavt i bakgrunnen
-              reel:{url:"spill/lyd/fiskesnelle-loop.aac", vol:0.55, want:false, node:null} }; // snelle mens man sveiver
+              reel:{url:"spill/lyd/fiskesnelle-loop.aac", vol:0.55, want:false, node:null},   // snelle mens man sveiver
+              regn:{url:"spill/lyd/regn.aac", vol:0.4, want:false, node:null},                  // regnvær fra MET
+              vindL:{url:"spill/lyd/vind.aac", vol:0.28, want:false, node:null} };              // vind i gråvær
   var ONESHOT={ buy:{url:"spill/lyd/butikk-kjop.aac", vol:0.7},
     splash:{url:"spill/lyd/splash-sluk-treffer-vannet.aac", vol:0.7},
     napp:{url:"spill/lyd/napp.aac", vol:0.8},
@@ -385,11 +395,21 @@ var Snd=(function(){
     nys1:{url:"spill/lyd/nys-01.aac", vol:0.68},
     nys2:{url:"spill/lyd/nys-02.aac", vol:0.68},
     nys3:{url:"spill/lyd/nys-03.aac", vol:0.68},
-    hmm:{url:"spill/lyd/fisker-hmm.aac", vol:0.62},
-    imponert:{url:"spill/lyd/fisker-imponert.aac", vol:0.68},
-    surGrynt:{url:"spill/lyd/fisker-surt-grynt.aac", vol:0.68},
-    lettet:{url:"spill/lyd/fisker-lettet-stonn.aac", vol:0.68},
-    host:{url:"spill/lyd/fisker-host.aac", vol:0.6} };
+    hmm:{url:"spill/lyd/fisker-hmm.aac", vol:0.85},
+    imponert:{url:"spill/lyd/fisker-imponert.aac", vol:0.9},
+    surGrynt:{url:"spill/lyd/fisker-surt-grynt.aac", vol:0.9},
+    lettet:{url:"spill/lyd/fisker-lettet-stonn.aac", vol:0.9},
+    host:{url:"spill/lyd/fisker-host.aac", vol:0.8},
+    nys4:{url:"spill/lyd/nys-04.aac", vol:0.85},
+    fis:{url:"spill/lyd/fisker-fis.aac", vol:0.55},
+    stonnTungt:{url:"spill/lyd/fisker-stonn-tungt.aac", vol:0.9},
+    aha:{url:"spill/lyd/fisker-aha.aac", vol:0.85},
+    jubel:{url:"spill/lyd/fisker-jubel.aac", vol:0.9},
+    harking:{url:"spill/lyd/fisker-harking.aac", vol:0.8},
+    host2:{url:"spill/lyd/fisker-host-2.aac", vol:0.8},
+    torden1:{url:"spill/lyd/torden-01.aac", vol:0.7},
+    torden2:{url:"spill/lyd/torden-02.aac", vol:0.7},
+    torden3:{url:"spill/lyd/torden-03.aac", vol:0.7} };
   var motorNode=null, altClick=false; // påhengsmotoren styres separat (start/fade-stopp)
   function motorStart(){ var c=AC(); if(!c||muted)return; motorStop(0); var buf=buffers.motor; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; s.loop=true; var g=c.createGain(); g.gain.value=0.0001;
@@ -413,7 +433,9 @@ var Snd=(function(){
     isMuted:function(){return muted;},
     setMuted:function(m){ muted=m; try{localStorage.setItem("storkveita-muted",m?"1":"0")}catch(e){}; if(theme)theme.muted=m; if(m){stopAllLoops(); motorStop(0);} else restartWanted(); },
     ambienceOn:function(){ loadAll(); wantLoop("sea",true); wantLoop("bird",true); },
-    ambienceOff:function(){ wantLoop("sea",false); wantLoop("bird",false); wantLoop("reel",false); },
+    ambienceOff:function(){ wantLoop("sea",false); wantLoop("bird",false); wantLoop("reel",false); wantLoop("regn",false); wantLoop("vindL",false); },
+    vaerLyd:function(regnOn,vindOn){ loadAll(); wantLoop("regn",!!regnOn); wantLoop("vindL",!!vindOn); },
+    torden:function(){ var c=["torden1","torden2","torden3"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
     reelSound:function(on){ wantLoop("reel",!!on); },
     themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; theme.volume=0.45; } theme.muted=muted; theme.play().catch(function(){}); },
     themeOff:function(){ if(theme)theme.pause(); },
@@ -431,7 +453,12 @@ var Snd=(function(){
     gladDog:function(){ this.bjeff(); var self=this; setTimeout(function(){ self.bjeff(); },280); }, // gledesbjeff ×2
     sadDog:function(){ oneShot("knurr"); }, // lav, skuffet knurring
     stritter:function(){ if(buffers.stritter)oneShot("stritter"); else { beep(140,0.35,"sawtooth",0.12,90); } }, // fisken stritter imot (utras)
-    nys:function(){ var c=["nys1","nys2","nys3"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); }, // fiskeren nyser av og til
+    nys:function(){ var c=["nys1","nys2","nys3","nys4"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); }, // fiskeren nyser av og til
+    fiskerAha:function(){ oneShot("aha"); },
+    fiskerJubel:function(){ oneShot(buffers.jubel&&Math.random()<0.5?"jubel":"imponert"); },
+    fiskerFis:function(){ oneShot("fis"); },
+    fiskerHark:function(){ oneShot(buffers.harking&&Math.random()<0.5?"harking":(buffers.host2?"host2":"host")); },
+    fiskerSurPool:function(){ oneShot(buffers.stonnTungt&&Math.random()<0.4?"stonnTungt":"surGrynt"); },
     fiskerHmm:function(){ oneShot("hmm"); },           // «hmm?» — noe snuser på sluken
     fiskerImponert:function(){ oneShot("imponert"); }, // «ooo!» — gyllen/legendarisk fangst
     fiskerSur:function(){ oneShot("surGrynt"); },      // surt grynt — mistet fisk / propell
@@ -472,6 +499,7 @@ var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
  {k:"piggha",n:"Pigghå",z:2,pull:2.3,w:14,len:[60,100],kg:5,pris:340,col:"#7d8890",shape:"shark",rar:2,fight:0.5},
  {k:"makrellstorje",n:"Makrellstørje",z:0,pull:2.9,w:3,len:[150,300],kg:19,pris:2500,col:"#2b4a66",shape:"torpedo",rar:2,reelSec:1800,fight:1.0}, // ~45-60 min kamp
  {k:"breiflabb",n:"Breiflabb",z:1,pull:1.9,w:4,len:[60,150],kg:20,pris:900,col:"#5a4a3a",shape:"flat",rar:2,fight:0.25},
+ {k:"maanefisk",n:"Månefisk",z:0,pull:2.2,w:2,len:[80,200],kg:30,pris:3000,col:"#9aa4ad",shape:"deep",rar:2,reelSec:300,fight:0.3}, // sjelden sommergjest — diger, men godslig (~5 min kamp)
  {k:"haakjerring",n:"Håkjerring",z:3,pull:3.4,w:3,len:[220,450],kg:11,reelSec:900,pris:2200,col:"#5d564e",shape:"shark",rar:2,fight:0.9}, // dyphavets kjempe — ~30 min kamp, kan veie over 1000 kg
  {k:"kveite",n:"Kveite",z:2,bunn:true,pull:3.2,w:6,len:[80,138],kg:14,pris:6000,col:"#6d7c63",shape:"flat",trophy:true,rar:2,fight:0.85} // maks ~40 kg — større er urealistisk å få i båten
 ];
@@ -481,7 +509,7 @@ var byKey={}; FISH.forEach(function(f){byKey[f.k]=f});
 var FIMG={sei:"sei",lyr:"lyr",makrell:"makrell",berggylte:"berggylte",torsk:"torsk",hyse:"hyse",blastal:"blaastaal",uer:"uer",rodspette:"rodspette",brungylt:"brungylt",brosme:"brosme",lange:"lange",piggha:"pigghaa",kveite:"kveite"};
 var fishImg={}, fishSil={};
 var LIKNER={sandflyndre:"rodspette",skrubbe:"rodspette",lomre:"rodspette",skate:"rodspette",hvitting:"hyse",knurr:"uer",
-  lysing:"lyr",blaalange:"lange",haagjel:"pigghaa",svarthaa:"pigghaa",haakjerring:"pigghaa",havmus:"brosme",blaakveite:"kveite"}; // midlertidig lookalike til egen kunst er generert — egen PNG overtar automatisk
+  lysing:"lyr",blaalange:"lange",haagjel:"pigghaa",svarthaa:"pigghaa",haakjerring:"pigghaa",havmus:"brosme",blaakveite:"kveite",maanefisk:"breiflabb"}; // midlertidig lookalike til egen kunst er generert — egen PNG overtar automatisk
 FISH.forEach(function(f){ var base=FIMG[f.k]||f.k, fb=LIKNER[f.k];
   var im=new Image(); if(fb)im.onerror=function(){ im.onerror=null; im.src="spill/assets/"+fb+".png"; };
   im.src="spill/assets/"+base+".png"; fishImg[f.k]=im;
@@ -511,7 +539,8 @@ var SLUK=[
  {k:"kveitepilk",e:"🏆",n:"Kveitepilk",pris:250,rec:[2],img:"sluk-kveitepilk.gif",b:{kveite:1.6,blaakveite:1.4,steinbit:1.2}},
  {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{brosme:1.3,lange:1.3,haagjel:1.3,havmus:1.3}},
  {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpilk.gif",b:{blaakveite:1.4,skate:1.3,haakjerring:1.2}},
- {k:"kjeks",e:"🍪",n:"Kjekssluk",pris:10,rec:[0],img:"sluk-oreo.gif",dud:true,b:{}} // spøkesluk: fisk har IKKE søtsug — «Den er til kaffen.» — Rusten
+ {k:"kjeks",e:"🍪",n:"Kjekssluk",pris:10,rec:[0],img:"sluk-oreo.gif",dud:true,b:{}}, // spøkesluk: fisk har IKKE søtsug — «Den er til kaffen.» — Rusten
+ {k:"markpilk",e:"🪱",n:"Markpilk",pris:90,rec:[0,1],img:"sluk-markpilk",pilk:true,b:{}} // forsats med mange makker — pump og hent småfisk (juksa-teknikk)
 ];
 var slukDef={}; SLUK.forEach(function(u){slukDef[u.k]=u});
 function recTekst(u){ return u.rec.map(function(z){return ZONE[z].toUpperCase()}).join(" / "); }
@@ -546,6 +575,7 @@ function agnDagsStatus(){ // Rusten går tom for én type og setter en annen på
 function agnPris(a){ return agnDagsStatus().salg===a.k?Math.max(5,Math.round(a.pris*0.7/5)*5):a.pris; }
 function bildeFil(n){ return n.indexOf(".")>=0?n:n+".png"; } // gif-er oppgis med endelse
 function aktivAgn(){ return P&&P.rig&&P.rig!=="sluk"?agnDef[P.rig]:null; }
+function rigNavn(){ var a=aktivAgn(); if(a)return a.n; var u=aktivSluk(); return u?u.n:"Sluk"; }
 
 /* ---------- Lagring (per spiller) ---------- */
 var SAVE="storkveita-save-v1";
@@ -578,7 +608,8 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
   Object.keys(andre||{}).forEach(function(k){ if(famFarlig(k)||!andre[k])return;
     var b=andre[k], a=mine[k];
     if(!a){ a=mine[k]={count:0,bestLen:0,bestWt:0}; }
-    a.count=Math.max(a.count||0,b.count||0); a.bestLen=Math.max(a.bestLen||0,b.bestLen||0);
+    a.count=Math.max(a.count||0,b.count||0);
+    if((b.bestLen||0)>(a.bestLen||0)){ a.bestLen=b.bestLen; if(b.redskap)a.redskap=b.redskap; if(b.rts)a.rts=b.rts; }
     a.bestWt=Math.max(a.bestWt||0,b.bestWt||0); if(b.gold)a.gold=Math.max(a.gold||0,b.gold); });
 }
 function syncFam(force){ var code=famCode(); if(!code||!P||famBusy)return;
@@ -636,6 +667,9 @@ function chosen(name){P=DB.players[name]; if(!P.lures)P.lures={0:3,1:0,2:0};
   if(P.vinsj==null)P.vinsj=false; if(P.ekko==null)P.ekko=false; // djuphavsrigg + ekkolodd
   if(P.agn==null)P.agn={}; // agnbeholdning
   if(P.rolex===undefined||P.rolex==="raa"||P.rolex==="klar")P.rolex=(P.rolex==="klar")?{bud:50000}:null; // null | {ferdig:ts} | {bud:kr}
+  if(P.turbo==null)P.turbo=false; // turbosnelle (30 % raskere kamp)
+  if(!P.motor)P.motor="stor"; if(P.motorOk==null)P.motorOk=true; // stormotor følger båten
+  if(P.pots.lineKroker==null)P.pots.lineKroker=3; // bunnlinekroker (3 standard, 10 maks)
   if(P.lures&&P.lures[0]!=null){ var g0=P.lures; P.lures={blink:g0[0]||0,torskepilk:g0[1]||0,dyppilk:g0[2]||0,agnrigg:g0[3]||0}; } // gamle sone-sluker → nærmeste i katalogen
   if(P.lures==null)P.lures={blink:3};
   if(P.rig==="sluk"||!P.rig||( !slukDef[P.rig]&&!agnDef[P.rig] )){ P.rig=(P.lures.blink||0)>0?"blink":(SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0]||{k:"blink"}).k; }
@@ -675,6 +709,7 @@ function updateDepthLocks(){ var klar=vinsjKlar();
 function setDepth(d){
   if(!P)return;
   if(phase!=="idle")return; // ikke bytt dybde midt i fisking (gjelder også kart/pins)
+  if(d>=2&&P.motor!=="stor"){ setHint("Den lille motoren orker ikke "+ZONE[d].toLowerCase()+" — du trenger stormotoren fra Jensen ⚙️"); return; }
   if(d===3){ if(!vinsjKlar())return;
     if(!P.vinsj){ setHint("Vinsj og dyphavsrigg trengs for djuphavet (300–500 m) — kjøp i butikken 🛒"); return; } }
   else if(d>P.rod){ setHint(RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+") — kjøp i butikken 🛒"); return; }
@@ -685,8 +720,10 @@ function setDepth(d){
   if(typeof updatePotBtn==="function")updatePotBtn();
 }
 
-function toSea(){Snd.themeOff(); Snd.ambienceOn(); show("sea"); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
+function toSea(){Snd.themeOff(); Snd.ambienceOn(); show("sea"); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth((depth>=2&&P.motor!=="stor")?Math.min(1,P.rod):depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase==="idle")setHint("📋 Rusten betaler +50 % for "+dk.n.toLowerCase()+" i dag. "+ZONE[dk.z]+" ("+DEPM[dk.z]+")."); },1200);
+  setTimeout(visRekordKort, 2800); // familiens siste rekorder — én gang per økt, når båten har glidd inn
+  oppdaterVaerLyd();
   syncFam();
   var ht=hoytid(); if(ht){ try{ var hk="storkveita-hoytid", today=new Date().toISOString().slice(0,10);
     if(localStorage.getItem(hk)!==today){ localStorage.setItem(hk,today); setTimeout(function(){notice(ht)},3500); } }catch(e){} }}
@@ -731,6 +768,7 @@ function cast(){
     notice("Tom for bensin! Fyll opp i butikken 🛒"); return;
   }
   if(!P.propOk){ notice("Propellen er ødelagt — Jensen Service AS har ny 🛠️"); return; }
+  if(!P.motorOk){ notice("Motoren har havarert! Jensen Service AS venter på deg ⚙️💥"); return; }
   if(agnDef[P.rig]&&(P.agn[P.rig]||0)<1){ var tomN=agnDef[P.rig].n, fb=SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0];
     P.rig=fb?fb.k:"blink"; updateRigChip(); notice("Tomt for "+tomN+" — du fisker med "+(fb?fb.n.toLowerCase():"sluk")+" igjen 🪝"); }
   if(P.rig==="rustensuper"&&depth!==3){ notice("Superagnet er laget for djuphavet (300–500 m) — spar det til du er der nede 💎"); return; }
@@ -743,6 +781,10 @@ function cast(){
     P.propOk=false; saveAll(); Snd.fiskerSur(); dogShow(2,4);
     notice("KLONK! Propellen slo i noe og røk 🛠️ Jensen Service AS har ny.");
     if(navigator.vibrate)navigator.vibrate([40,30,80]); return; }
+  if(P.motorOk && Math.random()<(P.svc>250?1/150:1/500) && P.kr>=8000){ // havari kun når reparasjon er innen rekkevidde
+    P.motorOk=false; saveAll(); Snd.fiskerSur(); Snd.sadDog(); dogShow(2,5);
+    notice("MOTORHAVARI! 💥 Den hostet, smalt og døde. Jensen Service AS tar imot …");
+    if(navigator.vibrate)navigator.vibrate([90,60,90,60,140]); return; }
   flee=null; // evt. rømmende fisk ryddes ved nytt kast
   P.svc++;
   if(P.svc===250) notice("Motoren hoster… På tide med service hos Jensen Service AS på Ørnes ⚙️");
@@ -765,6 +807,45 @@ function starSumFor(pl){ var sum=0; FISH.forEach(function(f){ var rec=pl.caught&
   var t=(rec.bestLen-f.len[0])/(f.len[1]-f.len[0]); sum+=Math.round(Math.max(0,Math.min(1,t))*10)/2; }); return sum; }
 var goldCatch=false; // 1 av 40: gyllen fisk (×3 verdi, ✨ i boka)
 function storjeSeason(){ var m=new Date().getMonth(); return m>=6&&m<=9; } // størja følger makrellen nordover: juli–oktober
+var pilkT=0, pilkKrav=12, pilkFangst=[], pilkPrevHold=false;
+function startPilk(){ // juksa-teknikken: pump forsatsen gjennom stimen — min 10–15 s før småfisken hogger
+  phase="pilkfiske"; pilkT=0; pilkKrav=10+Math.random()*5; pilkFangst=[]; pilkPrevHold=false;
+  setAction("PILK (hold)",true);
+  setHint(erfaren()?"":"Pump pilken: hold inne for å dra opp, slipp for å la den synke. Småfisken hogger på makkene!");
+}
+function pilkStep(dt){
+  pilkT+=dt;
+  var g=colGeom(), topp=(g?g.wl:0)+H*0.14;
+  if(holding){ lureW=Math.max(lureW-H*0.24*dt, topp); Snd.reelSound(true); }
+  else { lureW=Math.min(lureW+H*0.17*dt, lureTargetW); Snd.reelSound(false); }
+  camY=Math.max(camHome(),Math.min(camBottom,lureW-H*0.55)); // kameraet følger pumpinga
+  if(pilkFangst.length>=5 || pilkT>32) pilkSlutt();
+}
+function pilkPump(){ // fullført pump (hold → slipp) — hendelsesdrevet, tåler lav bildefrekvens
+  if(pilkT>=pilkKrav && pilkFangst.length<5 && Math.random()<0.55){
+    var fk=["sei","lyr","makrell"][(Math.random()*3)|0], f=byKey[fk];
+    var ln=Math.round(f.len[0]+Math.random()*(f.len[1]-f.len[0])*0.45); // småfisk — nedre del av spennet
+    pilkFangst.push({f:f,len:ln}); Snd.bite(); if(navigator.vibrate)navigator.vibrate(45);
+    setHint("🐟 "+pilkFangst.length+" på krokene!"+(pilkFangst.length>=5?" FULLT HUS!":""));
+  }
+}
+function pilkSlutt(){
+  phase="idle"; Snd.reelSound(false); setAction("Kast ut");
+  var L2=$("#potList"); L2.innerHTML=""; var total=0;
+  if(!pilkFangst.length){ L2.innerHTML='<p class="muted center">Ikke et napp på makkene denne gangen — stimen sto nok dypere.</p>'; }
+  pilkFangst.forEach(function(pf){ var f=pf.f, t=(pf.len-f.len[0])/(f.len[1]-f.len[0]);
+    var wt=+((Math.pow(pf.len/100,3)*f.kg*1.02)).toFixed(1); if(wt<0.1)wt=0.1;
+    var kr=Math.max(1,Math.round(f.pris*(0.6+0.9*t)));
+    var rec=P.caught[f.k]; if(!rec)rec=P.caught[f.k]={count:0,bestLen:0,bestWt:0};
+    rec.count++; if(pf.len>rec.bestLen){rec.bestLen=pf.len; rec.redskap="Markpilk"; rec.rts=Date.now();} if(wt>(rec.bestWt||0))rec.bestWt=wt;
+    total+=kr;
+    L2.insertAdjacentHTML("beforeend",'<div class="statline"><img src="spill/assets/'+(FIMG[f.k]||f.k)+'.png" onerror="this.style.display=\'none\'" style="height:24px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">'+f.n+' '+pf.len+' cm ('+wt+' kg) — <b>'+kr+' kr</b></div>');
+  });
+  if(pilkFangst.length){ P.kr+=total; Snd.coin(); if(pilkFangst.length>=3)setTimeout(Snd.fiskerLettet,300); }
+  $("#potTitle").textContent="🎣 Pilkefangst";
+  $("#potTotal").innerHTML=total?('Solgt til Rusten: <b>'+total+' kr</b>'):'';
+  pilkFangst=[]; hud(); saveAll(); syncFam(); modal("potModal",true);
+}
 function startWait(){
   phase="wait";
   var agEff=aktivAgn(), suEff=(slukAnbefalt()&&aktivSluk())||null; // MÅ settes før rullene (agn styrer trekningen)
@@ -821,14 +902,14 @@ function tryHook(){
   if(phase!=="bite")return;
   hookFace=!!(sceneFish&&sceneFish.vx>0);
   phase="reel"; tension=0; prog=0; holding=false; slackT=0; fightT=0; storjeTried=false; runT=0; runPow=0;
-  dogShow(1,null); Snd.bjeff(); // hunden dukker gira opp når fisken er på
+  dogShow(1,null); Snd.bjeff(); if(Math.random()<0.4)setTimeout(Snd.fiskerAha,180); // hunden gira — og gubben: «aha!»
   $("#reelui").classList.add("on");
   setHint(erfaren()?"":"Hold inne SVEIV for å dra inn — men ikke spreng snøret!");
   setAction("SVEIV (hold)",true);
 }
 function miss(){
   if(sceneFish) flee={f:sceneFish.f, len:sceneFish.sizeLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
-  dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSur(); // hunden er lei seg
+  dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool(); // hunden er lei seg
   phase="idle"; hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
   setHint("Fisken slapp… prøv igjen."); setAction("Kast ut"); saveAll();
 }
@@ -836,6 +917,9 @@ function reelStep(dt){
   var f=hooked; fightT+=dt;
   // Spenn skalerer med fiskestørrelse: lett fisk → lite utslag (hold rolig inn); stor fisk → spenn skyter opp, må pulses.
   var reelSec = f.reelSec || (f.trophy ? 430 : (8 + 10*f.pull*f.pull)); // netto holde-sek (kveita ~13 min, størja ~50 min)
+  var stjSt=(f.len[1]>f.len[0])?Math.max(0,Math.min(1,(hookedLen-f.len[0])/(f.len[1]-f.len[0]))):0.5;
+  reelSec*=(0.7+0.9*stjSt); // stor fisk (mange stjerner) kjemper MYE hardere enn småfisk
+  if(P.turbo) reelSec*=0.7;  // turbosnella: 30 % raskere
   if(hookedSuper) reelSec*=0.5; // superagnet bedøver — halv kamptid
   var tRise = 3.4*f.pull;   // spenn opp/sek når man holder
   var tFall = 16;           // spenn ned/sek når man slipper
@@ -848,7 +932,7 @@ function reelStep(dt){
     if(runT<=0&&!erfaren()) setHint("Den roer seg — sveiv inn!"); }
   else if(f.fight && Math.random()<f.fight*dt*0.12*Math.min(1,Math.sqrt(21/reelSec))){ // langkampfisk raser sjeldnere …
     runT=1.2+Math.random()*1.6; runPow=Math.min(6, pRise*(3+f.fight*3)); // … og utraset stjeler en BEGRENSET andel av framdriften
-    if(!erfaren())setHint("Den stikker mot dypet — slipp litt! 🌀"); Snd.stritter(); if(Math.random()<0.35)Snd.bjeff(); if(navigator.vibrate)navigator.vibrate(35); }
+    if(!erfaren())setHint("Den stikker mot dypet — slipp litt! 🌀"); Snd.stritter(); if(Math.random()<0.35)Snd.bjeff(); if(navigator.vibrate)navigator.vibrate(70); }
   if(tension<0)tension=0;
   $("#tensionBar").style.height=Math.min(100,tension)+"%";
   $("#progBar").style.height=Math.min(100,prog)+"%";
@@ -873,14 +957,14 @@ function reelStep(dt){
 }
 function escape(){
   if(hooked) flee={f:hooked, len:hookedLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
-  dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSur();
+  dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool();
   phase="idle"; Snd.reelSound(false); $("#reelui").classList.remove("on"); hooked=null; sceneFish=null;
   setHint("Du ga for mye slakk — fisken glapp! (Sluken er i behold.)"); setAction("Kast ut"); saveAll();
   if(navigator.vibrate)navigator.vibrate(30);
 }
 function snap(){
   if(hooked) flee={f:hooked, len:hookedLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
-  dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSur();
+  dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool();
   phase="idle"; Snd.reelSound(false); $("#reelui").classList.remove("on"); Snd.snap();
   var mistet, su=aktivSluk();
   if(su){ if(P.lures[su.k]>0) P.lures[su.k]--; var left=P.lures[su.k]||0;
@@ -889,7 +973,7 @@ function snap(){
   hooked=null; sceneFish=null;
   setHint(mistet);
   setAction("Kast ut"); hud(); saveAll();
-  if(navigator.vibrate)navigator.vibrate([40,40,40]);
+  if(navigator.vibrate)navigator.vibrate([90,50,90]);
 }
 function land(){
   var f=hooked; phase="idle"; Snd.reelSound(false); $("#reelui").classList.remove("on");
@@ -902,7 +986,7 @@ function land(){
   var dk=dailyFish(), isDaily=(f.k===dk.k); if(isDaily)kr=Math.round(kr*1.5); // Rustens bestilling +50 %
   var rec=P.caught[f.k]; var isNew=!rec; var isRecord=false;
   if(!rec){rec=P.caught[f.k]={count:0,bestLen:0,bestWt:0}}
-  rec.count++; if(len>rec.bestLen){rec.bestLen=len; isRecord=true} if(wt>(rec.bestWt||0))rec.bestWt=wt; // spor vekt uavhengig
+  rec.count++; if(len>rec.bestLen){rec.bestLen=len; isRecord=true; rec.redskap=rigNavn(); rec.rts=Date.now();} if(wt>(rec.bestWt||0))rec.bestWt=wt; // spor vekt uavhengig + redskapet bak rekorden
   if(gold)rec.gold=(rec.gold||0)+1;
   // familierekord: bare hvis du slo den STØRSTE bestenoteringen blant de andre i familien
   var famBeat=null, famMax=null;
@@ -920,7 +1004,7 @@ function land(){
   $("#catchKr").innerHTML="Verdi: <b>"+kr+" kr</b>"+(isDaily?' <span class="newtag" title="Rustens bestilling i dag">BESTILLING +50%</span>':'')
     +(famBeat?'<div class="famrec">🏅 NY FAMILIEREKORD — du slo '+esc(famBeat.nm)+' ('+famBeat.len+' cm)!</div>':'');
   dogShow(0,7); Snd.gladDog(); // fisken er i båten — hunden bjeffer av glede
-  if(goldCatch||f.rar===2) setTimeout(Snd.fiskerImponert,400);      // fiskeren måper over storfangst
+  if(goldCatch||f.rar===2) setTimeout(Snd.fiskerJubel,400);      // fiskeren jubler over storfangst
   else if(fightT>45) setTimeout(Snd.fiskerLettet,400);              // puster ut etter lang kamp
   syncFam();
   saveAll(); modal("catchModal",true); (f.trophy||gold?Snd.trophy():(isRecord&&!isNew?Snd.trophy():Snd.land()));
@@ -934,6 +1018,70 @@ function resolveCatch(sell){
   pending=null; modal("catchModal",false); hud(); saveAll(); updateRigChip();
   setHint(sell==="agn"?("Skjært opp til agn — +3 "+agnDef[pc.agnAv].n.toLowerCase()+" i sluksettet 🧰"):sell===true?("Solgt for "+pc.kr+" kr."):"Sluppet ut."); setAction("Kast ut");
 }
+
+/* ---------- Vær: regn, vind, torden + motorrøyk ---------- */
+var regnImg=[1,2,3].map(function(i){ var im=new Image(); im.src="spill/assets/regn-sprite-0"+i+".png"; return im; });
+var roykImg=new Image(); roykImg.onerror=function(){}; roykImg.src="spill/assets/motorroyk.png"; // auto-plug når eier lager den
+var tordenCool=25, regnFase=0;
+function vxKode(){ return (window.__wx!=null?window.__wx:seaWx)||""; }
+function regnerNaa(){ return /rain|sleet/.test(vxKode()); }
+function tordenNaa(){ return /thunder/.test(vxKode()); }
+function oppdaterVaerLyd(){ if($("#sea").classList.contains("on")) Snd.vaerLyd(regnerNaa(), gloomyWx()); }
+function tegnVaer(dt){
+  var g=colGeom(), mn=Math.min(W,H), wlY=(g?g.wl:H*0.34)-camY;
+  if(P&&!P.motorOk&&boatIn>=1&&roykImg.complete&&roykImg.naturalWidth){ // det RYKER av havarert motor
+    var tbw=mn*0.5, tbh=(boatImg.complete&&boatImg.naturalWidth)?tbw*(boatImg.naturalHeight/boatImg.naturalWidth):tbw*0.4;
+    var mx2=W*0.52-tbw*0.44, my2=wlY-tbh*0.36-tbh*0.18;
+    for(var i=0;i<3;i++){ var ph=(bob*0.4+i*0.34)%1, stq=mn*(0.035+ph*0.06);
+      cx.save(); cx.globalAlpha=(1-ph)*0.55;
+      cx.drawImage(roykImg, mx2-stq/2+Math.sin(bob*1.8+i*2)*mn*0.012, my2-ph*mn*0.14-stq/2, stq, stq); cx.restore(); }
+  }
+  if(regnerNaa()&&regnImg[0].complete&&regnImg[0].naturalWidth){
+    regnFase+=dt*9; var rim=regnImg[(regnFase|0)%3], sH=H/rim.naturalHeight, tw2=rim.naturalWidth*sH;
+    cx.save(); cx.globalAlpha=0.42;
+    for(var rx=0;rx<W;rx+=tw2) cx.drawImage(rim,rx,0,tw2,H);
+    cx.restore();
+  }
+  if(tordenNaa()){ tordenCool-=dt; if(tordenCool<=0){ Snd.torden(); if(navigator.vibrate)navigator.vibrate(120); tordenCool=40+Math.random()*80; } }
+}
+
+/* ---------- Rekordkort: familiens nyeste rekorder ved oppstart ---------- */
+var rekKort=[], rekIdx=0, rekordVist=false;
+function tidSiden(ts){ var d=Date.now()-ts, t=Math.floor(d/864e5);
+  return t<1?"i dag":t<2?"i går":t+" dager siden"; }
+function visRekordKort(){
+  if(rekordVist||!P)return; rekordVist=true;
+  var sett=0; try{sett=+localStorage.getItem("storkveita-rekordsett")||0}catch(e){}
+  rekKort=[];
+  Object.keys(DB.players).forEach(function(nm){ var pl=DB.players[nm]; if(!pl||!pl.caught)return;
+    Object.keys(pl.caught).forEach(function(k){ if(famFarlig(k)||!byKey[k])return; var r=pl.caught[k];
+      if(r&&r.rts&&r.rts>sett) rekKort.push({nm:nm,k:k,len:r.bestLen,wt:r.bestWt,redskap:r.redskap,rts:r.rts,gold:r.gold}); }); });
+  rekKort.sort(function(a,b){return b.rts-a.rts}); rekKort=rekKort.slice(0,10);
+  if(!rekKort.length)return;
+  rekIdx=0; tegnRekKort(); modal("rekModal",true);
+  try{localStorage.setItem("storkveita-rekordsett",""+Date.now())}catch(e){}
+}
+function tegnRekKort(){
+  var r=rekKort[rekIdx], f=byKey[r.k], m=$("#rekKort"); m.innerHTML="";
+  m.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:0;font-size:12px">🏅 Siste nytt fra Lopphavet ('+(rekIdx+1)+'/'+rekKort.length+')</p>'
+    +'<h2 style="margin:.2em 0">'+((P&&r.nm===P.name)?"Du":esc(r.nm))+' tok rekord!</h2>');
+  var cv=document.createElement("canvas"); cv.style.cssText="display:block;margin:4px auto;width:150px;height:86px"; m.appendChild(cv);
+  drawFish(cv,f,150,86,false);
+  m.insertAdjacentHTML("beforeend",'<div class="statline"><b>'+f.n+'</b>'+(r.gold?' ✨':'')+'</div>'
+    +'<div class="statline">'+r.len+' cm · '+(r.wt||"?")+' kg</div>'
+    +(r.redskap?'<div class="statline muted">Tatt på: '+esc(r.redskap)+'</div>':'')
+    +'<div class="statline muted" style="font-size:12px">'+tidSiden(r.rts)+'</div>'
+    +'<div class="row" style="margin-top:10px">'
+    +(rekIdx>0?'<button class="btn sm ghost" id="rekForrige">← Forrige</button>':'<span></span>')
+    +'<button class="btn gold sm" id="rekNeste">'+(rekIdx<rekKort.length-1?"Neste →":"Ut og fisk! 🎣")+'</button></div>');
+  var fb=$("#rekForrige"); if(fb)fb.onclick=function(){ rekIdx--; Snd.click(); tegnRekKort(); };
+  $("#rekNeste").onclick=function(){ if(rekIdx<rekKort.length-1){ rekIdx++; Snd.click(); tegnRekKort(); } else modal("rekModal",false); };
+}
+var rekSvipX=null;
+document.addEventListener("touchstart",function(e){ if(document.querySelector("#rekModal.on")) rekSvipX=e.touches[0].clientX; },{passive:true});
+document.addEventListener("touchend",function(e){ if(rekSvipX==null||!document.querySelector("#rekModal.on"))return;
+  var dx=e.changedTouches[0].clientX-rekSvipX; rekSvipX=null;
+  if(dx<-40&&rekIdx<rekKort.length-1){ rekIdx++; tegnRekKort(); } else if(dx>40&&rekIdx>0){ rekIdx--; tegnRekKort(); } },{passive:true});
 
 /* ---------- Sluksettet: aktivt redskap ---------- */
 function updateRigChip(){ if(!P)return; var b=$("#hudLure"); var ag=aktivAgn(), su=aktivSluk();
@@ -1087,8 +1235,10 @@ function lineOutcome(t,soak){ // bunnline: kveitesjansen er BETRAKTELIG større 
     if(rng()<0.05*q) lines.push(lineFisk(rng,"kveite"));
     POOL=["torsk","sei","hyse","sandflyndre","skrubbe","lomre","steinbit","breiflabb"];
   }
-  var n=Math.floor(q*(1+rng()*4)); // 0–5 bunnfisk ved full tid
+  var krk=(P&&P.pots&&P.pots.lineKroker)||3;
+  var n=Math.min(krk, Math.floor(q*(1+rng()*4)*(krk/3))); // 0–5 bunnfisk ved 3 kroker — flere kroker, mer fangst
   for(var i=0;i<n;i++) lines.push(lineFisk(rng,POOL[(rng()*POOL.length)|0]));
+  if(rng()<0.03) lines.push(potBycatch(rng)); // rart og skatter setter seg på krokene også
   if(!lines.length&&rng()<0.5) lines.push({e:"🪝",n:"Krokene var slikket reine — noe har forsynt seg av agnet",kr:0});
   var total=0; lines.forEach(function(l){total+=l.kr});
   return {lines:lines,total:total,early:false};
@@ -1111,7 +1261,7 @@ function pullPot(ty){ ty=ty||"k";
   var fikkKveite=false;
   if(ty==="l") res.lines.forEach(function(l){ if(!l.fk)return; // linefisk føres i fangstboka med rekord-sporing
     var rec=P.caught[l.fk]; if(!rec)rec=P.caught[l.fk]={count:0,bestLen:0,bestWt:0};
-    rec.count++; if(l.len>rec.bestLen)rec.bestLen=l.len; if(l.wt>(rec.bestWt||0))rec.bestWt=l.wt;
+    rec.count++; if(l.len>rec.bestLen){rec.bestLen=l.len; rec.redskap="Bunnline"; rec.rts=Date.now();} if(l.wt>(rec.bestWt||0))rec.bestWt=l.wt;
     if(byKey[l.fk].trophy)fikkKveite=true; });
   var rolexLinje=res.lines.some(function(l){return l.rolexFunn}) && !P.rolex;
   if(res.lines.some(function(l){return l.rolexFunn}) && P.rolex){ // én om gangen — ny selges rett til Rusten
@@ -1212,6 +1362,13 @@ function openShop(){
     addShop(L,'<img src="spill/assets/funn-rolex-fikset-for-salg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> BUD på Rolexen: '+P.rolex.bud.toLocaleString("nb")+' kr',
       "Samleren så den nyoppussede klokka hos urmakeren og MÅ ha den. Slå til?",-P.rolex.bud,false,
       function(){ var b=P.rolex.bud; P.rolex=null; notice("SOLGT! "+b.toLocaleString("nb")+" kr for Rolexen ⌚✨"); Snd.trophy(); });
+  if(!P.motorOk){
+    addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Reparer motoren',"Jensen åpner den, banner litt, og får liv i den igjen.",8000,false,function(){P.motorOk=true; notice("Motoren durer igjen! ⚙️");});
+    addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Liten påhengsmotor',"Ny, men beskjeden — klarer Grunt og Mellomdyp.",12000,false,function(){P.motor="liten"; P.motorOk=true; updateDepthLocks(); notice("Liten motor montert — grunt og mellomdyp venter ⚙️");});
+    addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Stor påhengsmotor',"Kraftpakke som drar deg helt ut til djuphavet.",45000,false,function(){P.motor="stor"; P.motorOk=true; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
+  } else if(P.motor==="liten")
+    addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Stor påhengsmotor',"Bytt opp: kraftpakka som drar deg til Dypt og djuphavet.",45000,false,function(){P.motor="stor"; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
+  if(!P.turbo&&P.rod>=2) addShop(L,"🎛️ Turbosnelle","Girutveksling i toppklasse — 30 % raskere kamp mot alt som biter.",30000,false,function(){P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");});
   if(P.svc>=200){ var fSvc=Date.now()<(P.forsTil||0);
     addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Båtservice — Ørnes',
       (P.svc>250?"Motoren hoster og sluker ekstra bensin! ":"")+"Full service ("+P.svc+" turer siden sist)."+(fSvc?" Forsikringspris! 🛡️":" (2500 med forsikring)"),
@@ -1236,6 +1393,7 @@ function openShop(){
   if(!hummerSeason()){ var hb=L.lastElementChild.querySelector("button"); if(hb)hb.disabled=true; }
   addShop(L,'<img src="spill/assets/agn-makrellhode.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪱 \'" alt=""> Teineagn (3 stk)',"1 agn per utsett. Har "+(P.pots.bait||0)+" stk.",25,false,function(){P.pots.bait=(P.pots.bait||0)+3;});
   if(P.rod>=2){ addShop(L,'<img src="spill/assets/fiskesnore.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪢 \'" alt=""> Bunnline',"Settes ut på valgfritt dyp og står natta over — fangsten følger dypet, og kveita kan gå på. Har "+(P.pots.lineOwned||0)+".",800,(P.pots.lineOwned||0)>=1,function(){P.pots.lineOwned=1;});
+    if((P.pots.lineKroker||3)<10) addShop(L,"🪝 Ekstra linekrok","Bunnlina har "+(P.pots.lineKroker||3)+" kroker (maks 10) — flere kroker, mer fangst per sett.",400,false,function(){P.pots.lineKroker=(P.pots.lineKroker||3)+1;});
     addShop(L,'<img src="spill/assets/agn-sild.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🐟 \'" alt=""> Linagn (10 kroker)',"1 sett per utsett av bunnlina. Har "+(P.pots.lineAgn||0)+".",60,false,function(){P.pots.lineAgn=(P.pots.lineAgn||0)+1;}); }
   if(P.pots.cap<4&&(P.pots.owned||0)>0) addShop(L,'<img src="spill/assets/blaase-boye.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚓ \'" alt=""> Ekstra blåser og tau',"Plass til 4 teiner ute samtidig (i dag: "+P.pots.cap+").",350,false,function(){P.pots.cap=4;});
   } // slutt Utstyr del 1
@@ -1420,7 +1578,7 @@ waterImg[3].onload=function(){ if(waterImg[3].naturalHeight)WLF[3]=894/waterImg[
   if(window.P&&typeof updateDepthLocks==="function")updateDepthLocks(); };
 function vinsjKlar(){ return waterImg[3].complete&&waterImg[3].naturalWidth>0; } // sonen åpner først når bakgrunnsbildet finnes
 var seaWx=null, dyptCur=""; // vær-symbol fra MET (samme kilde som engoya.no) + valgt dybde-3-variant
-function gloomyWx(){ var c=seaWx||""; return /^cloudy|rain|sleet|snow|fog/.test(c); }
+function gloomyWx(){ var c=(window.__wx!=null?window.__wx:seaWx)||""; return /^cloudy|rain|sleet|snow|fog/.test(c)||/rain|sleet|snow|fog/.test(c); }
 function dyptVariant(){ if(window.__dv)return window.__dv; // test-override
   var h=new Date().getHours();
   if(h>=22||h<5)return "natt";
@@ -1436,6 +1594,7 @@ updateDyptImg();
   fetch("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=66.8706&lon=13.6733").then(function(r){return r.json()}).then(function(j){
     var t0=j.properties.timeseries[0], d=t0.data;
     seaWx=(d.next_1_hours&&d.next_1_hours.summary.symbol_code)||(d.next_6_hours&&d.next_6_hours.summary.symbol_code)||"";
+    oppdaterVaerLyd();
     try{localStorage.setItem("storkveita-vaer",JSON.stringify({t:Date.now(),code:seaWx}))}catch(e){}
     updateDyptImg();
   }).catch(function(){});
@@ -1563,11 +1722,16 @@ function loop(now){
   else if(fisherT<1) fisherT=Math.min(1,fisherT+dt/0.5);
   if(document.querySelector("#catchModal").classList.contains("on")) liftT+=dt; else liftT=0; // løft-fangst spilles ÉN gang, nullstilles mellom fangster
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH); drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,3,lobbySpawn,0); } // måker over tittelen i lobbyen
-  if($("#sea").classList.contains("on")){ drawScene(dt); $("#sea").classList.toggle("fishing", phase!=="idle");
-    if(boatIn>=1&&fisherT>=1){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/150){ if(Math.random()<0.35)Snd.fiskerHost(); else Snd.nys(); nysCool=60; } } } // frisk sjøluft — men han både nyser og hoster nå og da
+  if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); $("#sea").classList.toggle("fishing", phase!=="idle");
+    if(boatIn>=1&&fisherT>=1){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/140){ var rl=Math.random();
+      if(rl<0.06){ Snd.fiskerFis(); dogShow(1,3); }
+      else if(rl<0.40) Snd.fiskerHark();
+      else Snd.nys();
+      nysCool=60; } } } // frisk sjøluft — med gubbens fulle lydspor
   // fisketilstand — fryser bak åpne popups og utenfor sjøen (så fisken ikke glipper bak en modal / på menyen)
   if(!$("#sea").classList.contains("on") || document.querySelector(".modal.on")){ if(phase==="reel")Snd.reelSound(false); requestAnimationFrame(loop); return; }
-  if(phase==="sink"){ // kameraet følger sluken nedover: jevn ferd, varighet etter dybde
+  if(phase==="pilkfiske"){ pilkStep(dt); }
+  else if(phase==="sink"){ // kameraet følger sluken nedover: jevn ferd, varighet etter dybde
     descend+=dt/DESC_DUR[depth]; if(descend>1)descend=1;
     var de=descend*descend*(3-2*descend); // smoothstep
     var g0=colGeom();
@@ -1576,7 +1740,7 @@ function loop(now){
       lureTargetY=Math.min(0.92,(lureTargetW-camBottom)/H); }
     if(g0){ lureW=(g0.wl+Math.min(W,H)*0.05)+(lureTargetW-(g0.wl+Math.min(W,H)*0.05))*de;
       camY=Math.min(camBottom, Math.max(camHome(), lureW-H*0.55)); }
-    if(descend>=1){ lureW=lureTargetW; camY=camBottom; startWait(); }
+    if(descend>=1){ lureW=lureTargetW; camY=camBottom; var su0=aktivSluk(); if(su0&&su0.pilk)startPilk(); else startWait(); }
   }
   else if(phase==="wait"){ approachStep(dt); }
   else if(phase==="bite"){ hookWindow-=dt; if(sceneFish){var _t=(lureSX/W)||0.5; if(Math.abs(_t-sceneFish.x)>0.01)sceneFish.vx=Math.abs(sceneFish.vx||0.1)*(_t>sceneFish.x?1:-1); sceneFish.x+=(_t-sceneFish.x)*Math.min(1,dt*3);} if(hookWindow<=0) miss(); }
@@ -1759,6 +1923,7 @@ $("#muteBtn").onclick=toggleMute; $("#muteBtnMenu").onclick=toggleMute;
 $("#tabMine").onclick=function(){openBook("mine")}; $("#tabFam").onclick=function(){openBook("fam")}; $("#tabRek").onclick=function(){openBook("rek")};
 $("#hudLure").onclick=function(){ if(!$("#sea").classList.contains("on"))return; renderRig(); modal("rigModal",true); };
 $("#rigClose").onclick=function(){ modal("rigModal",false); };
+$("#rekLukk").onclick=function(){ modal("rekModal",false); };
 $("#catchKeep").onclick=function(){resolveCatch(true)}; $("#catchRelease").onclick=function(){resolveCatch(false)};
 $("#catchAgn").onclick=function(){resolveCatch("agn")};
 document.querySelectorAll("#depthsel button").forEach(function(b){ b.onclick=function(){ if(phase!=="idle")return; setDepth(+b.dataset.d); }; });
@@ -1773,21 +1938,21 @@ $("#potTake").onclick=function(){ modal("potModal",false); updatePotBtn(); };
 // hold-to-reel
 var ab=$("#actionBtn");
 function down(e){ if(phase==="bite"){ tryHook(); holding=true; e.preventDefault(); return; } // krok i det fingeren treffer — hele 1,6 s-vinduet
-  if(phase==="reel"){holding=true; e.preventDefault();} }
-function up(){ holding=false; }
+  if(phase==="reel"||phase==="pilkfiske"){holding=true; e.preventDefault();} }
+function up(){ if(holding&&phase==="pilkfiske")pilkPump(); holding=false; }
 ab.addEventListener("pointerdown",down); window.addEventListener("pointerup",up);
 window.addEventListener("pointercancel",up); window.addEventListener("blur",up); // slipp SVEIV om nettleseren avbryter pekeren
 document.addEventListener("visibilitychange",function(){ if(document.hidden)up(); });
 window.addEventListener("keydown",function(e){ if(!$("#sea").classList.contains("on")||document.querySelector(".modal.on"))return; if(e.code==="Space"){ e.preventDefault();
-  if(phase==="idle")cast(); else if(phase==="bite")tryHook(); else if(phase==="reel")holding=true; } });
-window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("on"))return; if(e.code==="Space")holding=false; });
+  if(phase==="idle")cast(); else if(phase==="bite")tryHook(); else if(phase==="reel"||phase==="pilkfiske")holding=true; } });
+window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("on"))return; if(e.code==="Space"){ if(holding&&phase==="pilkfiske")pilkPump(); holding=false; } });
 
 // logo hvis fila finnes
 (function(){ var im=new Image(); im.onload=function(){ $("#logoImg").src=im.src; $("#logoImg").style.display="block"; $("#logoFallback").style.display="none"; };
   im.src="spill/assets/spill-logo.png"; })();
 
 /* ---------- Start ---------- */
-window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null}}};
+window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null,pilk:phase==="pilkfiske"?{t:+pilkT.toFixed(1),krav:+pilkKrav.toFixed(1),n:pilkFangst.length,hold:holding}:null}}};
 renderPlayers(); resize(); requestAnimationFrame(loop);
 })();
 </script>
