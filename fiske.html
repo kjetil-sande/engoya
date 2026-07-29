@@ -867,13 +867,13 @@ function potOutcome(t,soak){ // krabbeteine — deterministisk av seed+soak: rel
     var r1=rng(), qd=Math.min(1,soak/(8*3600000));
     if(r1<0.10*qd){ var tt3=rng(); lines.push({e:"🦀",n:"TROLLKRABBE — dyphavets ridder!",kr:Math.round(450*(0.6+0.9*tt3)),img:"trollkrabbe"}); }
     else if(r1<0.35*qd){ lines.push({e:"🦀",n:"Taskekrabbe (langt hjemmefra)",kr:25+Math.round(rng()*5),img:"taskekrabbe"}); }
-    else if(r1<0.35*qd+0.25) lines.push(potBycatch(rng));
+    else if(r1<0.35*qd+0.04) lines.push(potBycatch(rng));
     /* ellers tom — «for dypt for taska» */
   }
   else{
     var n=Math.floor(q48*15*(0.35+0.65*rng()) + rng()*1.6); if(n>15)n=15; // få etter timer, mange etter et døgn+
     for(var i=0;i<n;i++){ var tt=rng(); lines.push({e:"🦀",n:"Taskekrabbe "+(tt>0.8?"(diger!)":tt>0.4?"(fin)":"(grei)"),kr:25+Math.round(tt*5),img:"taskekrabbe"}); }
-    if(rng()<0.30)lines.push(potBycatch(rng)); // litt rusk og rart oppå
+    if(rng()<0.04)lines.push(potBycatch(rng)); // skrap og sjeldne funn — under 5 % (eiers regel)
   }
   var total=0; lines.forEach(function(l){total+=l.kr});
   return {lines:lines,total:total,early:false};
@@ -891,7 +891,7 @@ function potOutcomeH(t,soak){ // hummerteine: best med natt (22–06) i soaket; 
     }
   } else if(r1<hc+0.30*q){ var n2=1+(rng()<0.4?1:0);
     for(var j=0;j<n2;j++){ var tt2=rng(); lines.push({e:"🦀",n:"Taskekrabbe i hummerteina "+(tt2>0.6?"(fin)":"(grei)"),kr:25+Math.round(tt2*5),img:"taskekrabbe"}); }
-  } else if(r1<hc+0.30*q+0.10) lines.push(potBycatch(rng));
+  } else if(r1<hc+0.30*q+0.04) lines.push(potBycatch(rng));
   var total=0; lines.forEach(function(l){total+=l.kr});
   return {lines:lines,total:total,early:false,night:night};
 }
