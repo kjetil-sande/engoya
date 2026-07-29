@@ -998,7 +998,7 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"glasskavl",e:"🔮",n:"Gammel glasskavl — en skatt!",kr:120,w:8},
  {k:"solvsmykke",e:"📿",n:"Sølvsmykke",kr:400,w:5,img:"funn-solvsmykke.gif"},
  {k:"gullring",e:"💍",n:"Gullring",kr:1000,w:3.5,img:"funn-gullring.gif"},
- {k:"rolex",e:"⌚",n:"EN ROLEX! Ta den med til Rusten",kr:0,w:2.5,img:"funn-rolex.gif",rolexFunn:true},
+ {k:"rolex",e:"⌚",n:"EN ROLEX! Ta den med til Rusten",kr:0,w:2.5,img:"funn-rolex-skadd.gif",rolexFunn:true},
  {k:"tannprotese",e:"😬",n:"Tannprotese — noen savner smilet sitt",kr:0,w:11,img:"funn-tannprotese.gif"},
  {k:"mobil",e:"📱",n:"Eldgammel mobiltelefon — den VIRKER ennå",kr:0,w:10,img:"funn-mobil.gif"},
  {k:"badeand",e:"🦆",n:"Badeand — langt hjemmefra",kr:0,w:10,img:"funn-badeand.gif"},
@@ -1111,7 +1111,7 @@ function pullPot(ty){ ty=ty||"k";
                           : "Tom teine denne gangen. Slik er teinefiske!";
     L.innerHTML='<p class="muted center">'+tomMsg+'</p>';
   }
-  else res.lines.forEach(function(l){ var fb=(l.img&&LIKNER[l.img])?'spill/assets/'+LIKNER[l.img]+'.png':'';
+  else res.lines.forEach(function(l){ var fb=(l.img&&LIKNER[l.img])?'spill/assets/'+LIKNER[l.img]+'.png':(l.img==='funn-rolex-skadd.gif'?'spill/assets/funn-rolex.gif':'');
     var ic=l.img?'<img src="spill/assets/'+bildeFil(l.img)+'" data-fb="'+fb+'" onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.dataset.fb=\'\'}else this.style.display=\'none\'" style="height:26px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">':(l.e+" ");
     L.insertAdjacentHTML("beforeend",'<div class="statline">'+ic+esc(l.n)+(l.kr?' — <b>'+l.kr+' kr</b>':'')+'</div>'); });
   $("#potTotal").innerHTML=(res.total?'Solgt til Rusten: <b>'+res.total+' kr</b>':'')+(extra?'<div class="muted" style="margin-top:6px">'+extra+'</div>':'');
@@ -1174,8 +1174,8 @@ function openShop(){
       "Har "+(P.lures[u.k]||0)+" stk. Ryker snøret, mister du den.",u.pris,false,function(){P.lures[u.k]=(P.lures[u.k]||0)+1; updateRigChip();}); });
   if(shopTab==="utstyr"){
   if(P.rolex==="raa"){
-    addShop(L,'<img src="spill/assets/funn-rolex.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> Selg Rolexen som den er',"Saltvannsskadd, men ekte. Rusten kjenner en kar.",-3000,false,function(){P.rolex=null; notice("Rolexen solgt for 3000 kr ⌚");});
-    addShop(L,'<img src="spill/assets/funn-rolex.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> Puss opp Rolexen',"Urmakeren tar 35 000 kr — og FIRE UKER. Men da … 50 000. ⌚✨",35000,false,function(){P.rolex={ferdig:Date.now()+28*864e5}; notice("Rolexen er sendt til urmakeren — ferdig om fire uker ⌚");});
+    addShop(L,'<img src="spill/assets/funn-rolex-skadd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.src=\'spill/assets/funn-rolex.gif\';this.onerror=null" alt=""> Selg Rolexen som den er',"Saltvannsskadd, men ekte. Rusten kjenner en kar.",-3000,false,function(){P.rolex=null; notice("Rolexen solgt for 3000 kr ⌚");});
+    addShop(L,'<img src="spill/assets/funn-rolex-skadd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.src=\'spill/assets/funn-rolex.gif\';this.onerror=null" alt=""> Puss opp Rolexen',"Urmakeren tar 35 000 kr — og FIRE UKER. Men da … 50 000. ⌚✨",35000,false,function(){P.rolex={ferdig:Date.now()+28*864e5}; notice("Rolexen er sendt til urmakeren — ferdig om fire uker ⌚");});
   } else if(P.rolex&&P.rolex.ferdig){ var igjen=P.rolex.ferdig-Date.now();
     if(igjen<=0){ P.rolex="klar"; }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">⌚ Rolexen er hos urmakeren — ferdig om '+Math.ceil(igjen/864e5)+' dager.</p>');
