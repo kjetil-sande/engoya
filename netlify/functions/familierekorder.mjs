@@ -24,7 +24,7 @@ const egen = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // aldri arve
 
 // Utstyr følger spilleren over nett (samme «siste innsending vinner»-regel som kroner),
 // slik at familien kan logge inn på en ny enhet og få igjen stang, vinsj, turbosnelle osv.
-const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs"];
+const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs"];
 const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "motorOk"];
 const GEAR_TEKST = { motor: 10, rig: 24 };
 // Objektfeltene vaskes TYPET (aldri rå gjennomstrømming): nøkler må være pene id-er og
@@ -60,6 +60,7 @@ function vaskGear(g) {
   if (!g || typeof g !== "object") return undefined;
   const ut = {};
   for (const k of GEAR_TALL) if (g[k] != null) ut[k] = tall(g[k], 9e15);
+  if (ut.smorTs != null) ut.smorTs = Math.min(ut.smorTs, Date.now() + 60_000); // smøring skjer alltid «nå» — gal klokke smitter ikke
   for (const k of GEAR_JANEI) if (g[k] != null) ut[k] = !!g[k];
   for (const k of Object.keys(GEAR_TEKST))
     if (typeof g[k] === "string" && PEN_NOKKEL.test(g[k])) ut[k] = g[k].slice(0, GEAR_TEKST[k]);
@@ -110,6 +111,7 @@ function flettSpiller(fam, p) {
     const g = vaskGear(p.gear);
     if (g) { // gamle klienter uten gear lar forrige utstyr stå
       const gml = cur.gear && typeof cur.gear === "object" ? cur.gear : {};
+      if (g.smorTs == null && gml.smorTs != null) g.smorTs = gml.smorTs; // gamle klienter uten feltet kan ikke viske ut betalt bunnsmørning
       g.rod = Math.max(tall(gml.rod, 99), tall(g.rod, 99));         // kjøpt/opptjent kan aldri
       g.tidMs = Math.max(tall(gml.tidMs, 9e15), tall(g.tidMs, 9e15)); // krympe, uansett klokkerot
       for (const k of ["vinsj", "ekko", "turbo"]) if (gml[k]) g[k] = true;

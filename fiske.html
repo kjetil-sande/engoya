@@ -110,10 +110,10 @@
   #catchModal{align-items:flex-end;padding:0;background:linear-gradient(to bottom,rgba(10,25,30,.08) 0%,rgba(10,25,30,.14) 45%,rgba(10,25,30,.55) 78%)}
   #catchModal .card{max-height:min(46%,400px);overflow-y:auto;overflow-x:hidden;border-radius:16px 16px 0 0;border-bottom:0;box-shadow:0 -6px 0 rgba(0,0,0,.12);margin:0 auto}
   #catchModal .card{position:relative} /* stempelet ankres til kortet, ikke skjermen */
-  #nyArtWrap{position:absolute;top:30px;right:6px;z-index:3;pointer-events:none;transform:rotate(-10deg);animation:nyArtPop .55s cubic-bezier(.2,1.6,.4,1) both}
+  #nyArtWrap{position:absolute;top:30px;right:6px;z-index:3;pointer-events:none;animation:nyArtPop .55s cubic-bezier(.2,1.6,.4,1) both} /* flatt, rett på — eierens ønske */
   #nyArtWrap img{max-height:72px;image-rendering:pixelated;display:none}
   #nyArtWrap span{display:inline-block;background:var(--red);color:#fff;font-weight:800;font-size:20px;padding:6px 14px;border-radius:10px;box-shadow:0 4px 0 rgba(0,0,0,.25);letter-spacing:1px}
-  @keyframes nyArtPop{0%{transform:rotate(-10deg) scale(0)}70%{transform:rotate(-10deg) scale(1.15)}100%{transform:rotate(-10deg) scale(1)}}
+  @keyframes nyArtPop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
   #rekModal{align-items:flex-end;padding:0 10px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(10,25,30,.08) 0%,rgba(10,25,30,.14) 45%,rgba(10,25,30,.55) 78%)}
   #rekModal .cardwrap{margin:0 auto}
   #rekModal .card{max-height:min(52%,420px);overflow:auto} /* flyter med samme bunnavstand som «Kast ut»-knappen */
@@ -123,7 +123,7 @@
   .cardwrap{position:relative;width:100%;max-width:440px;max-height:100%;display:flex}
   .cardwrap .card{width:100%;max-width:none;max-height:100%}
   .lukkx{position:absolute;top:-18px;right:-18px;width:36px;height:36px;cursor:pointer;z-index:3;filter:drop-shadow(0 2px 0 rgba(0,0,0,.18))}
-  #shopModal,#bookModal,#mapModal,#rigModal{align-items:flex-start;padding-top:72px} /* boksene starter under HUD-menyen; X-senteret ligger på boksehjørnet */
+  #shopModal,#kjellModal,#bookModal,#mapModal,#rigModal{align-items:flex-start;padding-top:72px} /* boksene starter under HUD-menyen; X-senteret ligger på boksehjørnet */
   .rigrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#fff8ea;border:2px solid var(--paper-2);border-radius:10px;padding:8px 10px;margin-bottom:6px;cursor:pointer;font-family:var(--font)}
   .rigrow.on{border-color:var(--wood);background:#fdf3d6;box-shadow:0 2px 0 var(--wood)}
   .rigrow img,.rigrow .emo{width:34px;height:26px;object-fit:contain;image-rendering:pixelated;font-size:22px;display:grid;place-items:center;flex:0 0 auto}
@@ -225,6 +225,10 @@
     .hint{font-size:17px}
     #notice{font-size:18px}
   }
+  @media (min-width:521px) and (max-width:620px){ /* 5 knapper + chips sprenger én rad her — bryt i to som på mobil */
+    #hud{flex-wrap:wrap}
+    #hud .spacer{flex-basis:100%;height:0}
+  }
 </style>
 </head>
 <body>
@@ -253,6 +257,7 @@
       <button class="chip" id="hudLure" title="Sluksettet" style="pointer-events:auto;cursor:pointer;border:0">🪝 0</button>
       <div class="spacer"></div>
       <button class="iconbtn butikkknapp" id="openShop" title="Butikk"><img src="spill/assets/rusten-mot-venstre.gif" alt="Butikk" style="max-height:32px;max-width:32px;image-rendering:pixelated" onerror="this.outerHTML='🛒'"></button>
+      <button class="iconbtn butikkknapp" id="openKjell" title="Propell-Kjell verksted"><img src="spill/assets/logoikon-propell-kjell.gif" alt="Verksted" style="max-height:34px;max-width:34px;image-rendering:pixelated" onerror="this.outerHTML='🔧'"></button>
       <button class="iconbtn" id="openBook" title="Fangstbok"><span style="font-size:1.15em">📖</span></button>
       <button class="iconbtn" id="muteBtn" title="Lyd av/på">🔊</button>
       <button class="iconbtn" id="toMenu" title="Hjem til naustet"><img src="spill/assets/knapp-naust.png" alt="Hjem" style="max-height:29px;max-width:29px;image-rendering:pixelated" onerror="this.outerHTML='✕'"></button>
@@ -321,6 +326,16 @@
     <h2 style="text-align:center">🛒 Rustens agn &amp; redskap</h2>
     <p class="muted" id="shopKr"></p>
     <div id="shopList"></div>
+  </div></div></div>
+
+  <!-- PROPELL-KJELL (verksted og slip) -->
+  <div class="modal" id="kjellModal"><div class="cardwrap">
+    <img src="spill/assets/knapp-lukk.png" id="kjellClose" class="lukkx" alt="Lukk verkstedet">
+    <div class="card">
+    <img src="spill/assets/logo-propell-kjell.gif" alt="Propell-Kjell" style="display:block;margin:0 auto 6px;max-width:88%;max-height:130px;image-rendering:pixelated" onerror="this.style.display='none'">
+    <h2 style="text-align:center">🔧 Propell-Kjell — verksted og slip</h2>
+    <p class="muted" id="kjellKr"></p>
+    <div id="kjellList"></div>
   </div></div></div>
 
   <!-- BOOK -->
@@ -416,6 +431,7 @@ var Snd=(function(){
     lettet:{url:"spill/lyd/fisker-lettet-stonn.aac", vol:0.9},
     host:{url:"spill/lyd/fisker-host.aac", vol:0.8},
     nys4:{url:"spill/lyd/nys-04.aac", vol:0.85},
+    nysGubbe:{url:"spill/lyd/nys-gubbe.aac", vol:0.9}, // eierens ekte gubbenys — hovednyset
     fis:{url:"spill/lyd/fisker-fis.aac", vol:0.55},
     stonnTungt:{url:"spill/lyd/fisker-stonn-tungt.aac", vol:0.9},
     aha:{url:"spill/lyd/fisker-aha.aac", vol:0.85},
@@ -473,7 +489,8 @@ var Snd=(function(){
     gladDog:function(){ this.bjeff(); var self=this; setTimeout(function(){ self.bjeff(); },280); }, // gledesbjeff ×2
     sadDog:function(){ oneShot("knurr"); }, // lav, skuffet knurring
     stritter:function(){ if(buffers.stritter)oneShot("stritter"); else { beep(140,0.35,"sawtooth",0.12,90); } }, // fisken stritter imot (utras)
-    nys:function(){ var c=["nys1","nys2","nys3","nys4"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); }, // fiskeren nyser av og til
+    nys:function(){ if(buffers.nysGubbe&&Math.random()<0.7){oneShot("nysGubbe");return;} // gubbenyset er hovednyset (70 %)
+      var c=["nys1","nys2","nys3","nys4","nysGubbe"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); }, // fiskeren nyser av og til
     fiskerAha:function(){ oneShot("aha"); },
     fiskerJubel:function(){ oneShot(buffers.jubel&&Math.random()<0.5?"jubel":"imponert"); },
     fiskerFis:function(){ oneShot("fis"); },
@@ -616,7 +633,7 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
     Object.keys(ny.players).forEach(function(nm){ if(famFarlig(nm))return; var np=ny.players[nm]; if(!np)return;
       if(!egen(DB.players,nm)){ DB.players[nm]=np; return; }
       var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
-      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); }
+      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.smorTs!=null)lp.smorTs=np.smorTs; }
     });
   }catch(e){} });
 /* ---------- Familierekorder på nett (Netlify Blobs via familiekode) ---------- */
@@ -635,13 +652,13 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
 function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvasker)
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
     propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
-    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, tidMs:P.tidMs}; }
+    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, tidMs:P.tidMs, smorTs:P.smorTs}; }
 function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE feltene — trygt å løfte inn overalt, kan aldri krympe noe
   if(g.rod!=null)lp.rod=Math.max(lp.rod||0,+g.rod||0); // kjøpt utstyr kan aldri nedgraderes av en gammel innsending
   if(g.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,+g.tidMs||0); // spilletid er også monoton
   ["vinsj","ekko","turbo"].forEach(function(k){ if(g[k])lp[k]=true; }); }
 function gearInn(lp,g){ if(!g||typeof g!=="object")return; // på fjernspeil: siste innsending vinner (ts-porten står utenfor)
-  ["fuel","fuelMax","svc","forsTil","havnNeste","propOk","motorOk","rolex","lures","pots","agn"].forEach(function(k){ if(g[k]!=null)lp[k]=g[k]; });
+  ["fuel","fuelMax","svc","forsTil","havnNeste","smorTs","propOk","motorOk","rolex","lures","pots","agn"].forEach(function(k){ if(g[k]!=null)lp[k]=g[k]; });
   gearLoft(lp,g);
   if(typeof g.motor==="string")lp.motor=g.motor; if(typeof g.rig==="string")lp.rig=g.rig; }
 function famTaImot(j){ // flett serverens familiebilde inn lokalt — erstatt aldri, lokal fremgang kan ikke krympes
@@ -671,7 +688,7 @@ function syncFam(force){ var code=famCode(); if(!code||!P||famBusy)return;
   }).catch(function(){ clearTimeout(famFail); famBusy=false; famInfo="fikk ikke kontakt"; });
 }
 var DB=loadAll();
-function newPlayer(name){return{name:name,kr:40,fuel:24,fuelMax:24,rod:0,lures:{blink:3},caught:{}}}
+function newPlayer(name){return{name:name,kr:40,fuel:24,fuelMax:24,rod:0,lures:{blink:3},caught:{},smorTs:Date.now()}} // ny båt er nysmurt
 var P=null; // aktiv spiller
 
 /* ---------- Skjermer ---------- */
@@ -716,7 +733,9 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.pots==null)P.pots={owned:0,bait:0,cap:2,out:[],rescue:false}; // teiner (fase 1: krabbeteine)
   if(P.pots.ownedH==null)P.pots.ownedH=0; // hummerteiner (sesong: 1. okt–31. des)
   if(P.tidMs==null)P.tidMs=0; // spilletid på havet, i millisekunder
-  if(P.svc==null)P.svc=0; // turer siden forrige båtservice («Den glade propell», Ørnes)
+  if(P.smorTs==null)P.smorTs=Date.now()-50*864e5; // eksisterende båter starter halvveis til begrodd
+  if(P.smorTs>Date.now())P.smorTs=Date.now(); // gal klientklokke skal ikke gi evig full smørning
+  if(P.svc==null)P.svc=0; // turer siden forrige båtservice (Propell-Kjell, Ørnes)
   if(P.propOk==null)P.propOk=true; if(P.forsTil==null)P.forsTil=0; // propell + båtforsikring
   if(P.havnNeste==null)P.havnNeste=Date.now()+30*864e5; // første havneavgift forfaller om en måned
   if(P.vinsj==null)P.vinsj=false; if(P.ekko==null)P.ekko=false; // djuphavsrigg + ekkolodd
@@ -769,7 +788,7 @@ function updateDepthLocks(){ var klar=vinsjKlar();
 function setDepth(d){
   if(!P)return;
   if(phase!=="idle")return; // ikke bytt dybde midt i fisking (gjelder også kart/pins)
-  if(d>=2&&P.motor!=="stor"){ setHint("Den lille motoren orker ikke "+ZONE[d].toLowerCase()+" — du trenger stormotoren fra Den glade propell ⚙️"); return; }
+  if(d>=2&&P.motor!=="stor"){ setHint("Den lille motoren orker ikke "+ZONE[d].toLowerCase()+" — du trenger stormotoren fra Propell-Kjell ⚙️"); return; }
   if(d===3){ if(!vinsjKlar())return;
     if(!P.vinsj){ setHint("Vinsj og dyphavsrigg trengs for djuphavet (300–500 m) — kjøp i butikken 🛒"); return; } }
   else if(d>P.rod){ setHint(RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+") — kjøp i butikken 🛒"); return; }
@@ -822,16 +841,26 @@ function startGame(){
 function cast(){
   if(phase!=="idle")return;
   if(document.querySelector(".modal.on"))return; // ikke kast bak en åpen popup
-  var needF = P.svc>250 ? 3 : 2; // hostende motor sluker ekstra bensin til den får service
+  var needF = (P.svc>250 ? 3 : 2) + (smorPct()<=0 ? 1 : 0); // hostende motor og begrodd skrog sluker ekstra bensin
   if(P.fuel<needF){
     if(P.kr<17){ P.fuel=Math.min(P.fuelMax,P.fuel+8); hud(); saveAll(); notice("Blakk og tom — naboen spanderte litt bensin ⛽"); return; } // aldri softlock
     var mangler=P.fuelMax-P.fuel, kan=Math.min(mangler,Math.floor(P.kr/17)), bpris=kan*17;
     noticeMedKnapp("Tom for bensin!","⛽ Fyll opp tanken ("+bpris+" kr)",function(){
+      if(!P.motorOk&&P.kr-bpris<8000){ notice("Spar pengene til motorreparasjonen hos Propell-Kjell — 8000 kr ⚙️"); return; } // aldri bensin-deg-til-softlock
       P.kr-=bpris; P.fuel+=kan; hud(); saveAll(); Snd.buy(); });
     return;
   }
-  if(!P.propOk){ notice("Propellen er ødelagt — Den glade propell har ny 🛠️"); return; }
-  if(!P.motorOk){ notice("Motoren har havarert! Den glade propell venter på deg ⚙️💥"); return; }
+  if(!P.propOk){ notice("Propellen er ødelagt — Propell-Kjell har ny 🛠️"); return; }
+  if(!P.motorOk){
+    // står spilleren HELT fast (ingen vei til inntekt), fikser Kjell motoren på krita — aldri softlock
+    var kanTjene = P.kr>=8000 || (P.pots.out||[]).length>0 || P.rolex
+      || ((P.pots.owned||0)>0 && ((P.pots.bait||0)>0 || P.kr>=25))
+      || ((P.pots.lineOwned||0)>0 && ((P.pots.lineAgn||0)>0 || P.kr>=60))
+      || (hummerSeason() && (P.pots.ownedH||0)>0 && ((P.pots.bait||0)>0 || P.kr>=25))
+      || P.kr>=175; // 175 = krabbeteine + agn hos Rusten
+    if(!kanTjene){ P.motorOk=true; saveAll(); hud(); Snd.fiskerLettet();
+      notice("Kjell så nøden og fikset motoren på krita — du skylder ham en tjeneste ⚙️🤝"); return; }
+    notice("Motoren har havarert! Propell-Kjell venter på deg ⚙️💥"); return; }
   if(agnDef[P.rig]&&(P.agn[P.rig]||0)<1){ var tomN=agnDef[P.rig].n, fb=SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0];
     P.rig=fb?fb.k:"blink"; updateRigChip(); notice("Tomt for "+tomN+" — du fisker med "+(fb?fb.n.toLowerCase():"sluk")+" igjen 🪝"); }
   if(P.rig==="rustensuper"&&depth!==3){ notice("Superagnet er laget for djuphavet (300–500 m) — spar det til du er der nede 💎"); return; }
@@ -842,17 +871,18 @@ function cast(){
   // (ruller bare når du har råd til ny eller er forsikret — aldri softlock)
   if(Math.random()<(P.svc>250?1/120:1/400) && (Date.now()<P.forsTil||P.kr>=1400)){
     P.propOk=false; saveAll(); Snd.fiskerSur(); dogShow(2,4);
-    notice("KLONK! Propellen slo i noe og røk 🛠️ Den glade propell har ny.");
+    notice("KLONK! Propellen slo i noe og røk 🛠️ Propell-Kjell har ny.");
     if(navigator.vibrate)navigator.vibrate([40,30,80]); return; }
-  if(P.motorOk && Math.random()<(P.svc>250?1/150:1/500) && P.kr>=8000){ // havari kun når reparasjon er innen rekkevidde
+  if(P.motorOk && Math.random()<(P.svc>250?1/60:1/500) && P.kr>=8000){ // over service = STOR havarifare; kun når reparasjon er innen rekkevidde
     P.motorOk=false; saveAll(); Snd.fiskerSur(); Snd.sadDog(); dogShow(2,5);
-    notice("MOTORHAVARI! 💥 Den hostet, smalt og døde. Den glade propell tar imot …");
+    notice("MOTORHAVARI! 💥 Den hostet, smalt og døde. Propell-Kjell tar imot …");
     if(navigator.vibrate)navigator.vibrate([90,60,90,60,140]); return; }
   flee=null; // evt. rømmende fisk ryddes ved nytt kast
   P.svc++;
-  if(P.svc===250) notice("Motoren hoster… På tide med service hos Den glade propell på Ørnes ⚙️");
-  else if(P.svc>250 && P.svc%15===0) notice("Motoren hakker og bruker mer bensin — bestill service hos Den glade propell ⚙️");
-  else if(Date.now()>P.havnNeste && P.svc%15===7) notice("Ørnes Båtforening purrer på havneavgiften ⚓ (betal i butikken)");
+  if(P.svc===250) notice("Motoren hoster… På tide med service hos Propell-Kjell på Ørnes ⚙️");
+  else if(P.svc>250 && P.svc%15===0) notice("Motoren hakker og bruker mer bensin — bestill service hos Propell-Kjell ⚙️");
+  else if(smorPct()<=0 && P.svc%15===11) notice("Skroget er begrodd og drar ekstra bensin — bunnsmørning hos Propell-Kjell 🐚");
+  else if(Date.now()>P.havnNeste && P.svc%15===7) notice("Ørnes Båtforening purrer på havneavgiften ⚓ (betal hos Propell-Kjell)");
   P.fuel-=needF; hud(); saveAll(); Snd.cast(); castT=0.45; // ETT kast-animasjon
   phase="sink"; descend=0;
   var g=colGeom(), mn=Math.min(W,H);
@@ -1097,7 +1127,12 @@ var roykImg=new Image(); roykImg.onerror=function(){}; roykImg.src="spill/assets
 var tordenCool=25, regnFase=0;
 function vxKode(){ return (window.__wx!=null?window.__wx:seaWx)||""; }
 function regnerNaa(){ return /rain|sleet/.test(vxKode()); }
+function snorNaa(){ return /snow/.test(vxKode()); } // snør det på Engøya, snør det i spillet
 function tordenNaa(){ return /thunder/.test(vxKode()); }
+var sno=[]; // snøfnugg: luftboblene snudd på hodet (eiers idé) — kun i lufta, aldri under vann
+function nySno(spred){ var mn=Math.min(W,H); return {x:Math.random()*W, y:spred?Math.random()*H*0.3:-mn*0.03,
+  vy:H*(0.035+Math.random()*0.05), sv:0.6+Math.random()*1.2, ph:Math.random()*6.28,
+  r:mn*(0.012+Math.random()*0.015), im:(Math.random()*8)|0, a:0.6+Math.random()*0.4}; }
 function oppdaterVaerLyd(){ if($("#sea").classList.contains("on")) Snd.vaerLyd(regnerNaa(), gloomyWx()); }
 function tegnVaer(dt){
   var g=colGeom(), mn=Math.min(W,H), wlY=(g?g.wl:H*0.34)-camY;
@@ -1121,6 +1156,18 @@ function tegnVaer(dt){
     }
     cx.restore();
   }
+  if(snorNaa()&&wlY>0){ // bare når himmelen er i bildet — under vann finnes ikke snø
+    if(sno.length===0){ for(var si=0;si<46;si++)sno.push(nySno(true)); }
+    for(var sj=0;sj<sno.length;sj++){ var s=sno[sj];
+      s.y+=s.vy*dt; s.ph+=dt*s.sv;
+      if(s.y>wlY-2){ sno[sj]=nySno(false); continue; } // fnugget lander på havflata → nytt ovenfra
+      var sim=bubbleImg[s.im]; if(!sim||!sim.complete||!sim.naturalWidth)continue;
+      var sfade=Math.max(0,Math.min(1,(wlY-s.y)/(mn*0.08))); // fader ut rett over vannflata
+      cx.save(); cx.globalAlpha=0.75*sfade*s.a;
+      cx.translate(s.x+Math.sin(s.ph)*mn*0.02, s.y); cx.rotate(Math.PI); // boblene opp-ned = snøkrystaller
+      cx.drawImage(sim,-s.r/2,-s.r/2,s.r,s.r); cx.restore();
+    }
+  } else if(sno.length) sno.length=0;
   if(tordenNaa()){ tordenCool-=dt; if(tordenCool<=0){ Snd.torden(); if(navigator.vibrate)navigator.vibrate(120); tordenCool=40+Math.random()*80; } }
 }
 
@@ -1440,8 +1487,13 @@ function tidTekst(ms){ var m=Math.round((+ms||0)/60000); if(m<60)return m+" min"
 
 /* ---------- Butikk ---------- */
 var shopLock=false;
-var shopTab="utstyr";
+function smorPct(){ return Math.max(0,Math.round(100*(1-(Date.now()-(P.smorTs||0))/(100*864e5)))); } // bunnsmørning holder 100 døgn
+function svcPct(){ return Math.max(0,Math.round(100*(1-(P.svc||0)/250))); } // full service holder 250 turer
+function pctBar(p){ var f=p<=20?"#c0392b":p<=50?"#d8642e":"#3f8f5f";
+  return '<span class="fuel" style="display:inline-block;vertical-align:-2px;width:70px"><i style="width:'+p+'%;background:'+f+'"></i></span> <b>'+p+' %</b>'; }
+var shopTab="utstyr", shopRefresh=null;
 function openShop(){
+  shopRefresh=openShop;
   $("#shopKr").textContent="Du har "+P.kr+" kr.";
   var L=$("#shopList"); L.innerHTML="";
   var dk=dailyFish();
@@ -1452,6 +1504,7 @@ function openShop(){
   if(shopTab==="utstyr"){
   var fillCost=(P.fuelMax-P.fuel)*17; // full tank ≈ 400 kr
   addShop(L,"⛽ Fyll bensin","Fyll tanken helt opp.", fillCost, P.fuel>=P.fuelMax, function(){P.fuel=P.fuelMax;});
+  addShop(L,'<img src="spill/assets/bensinkanne.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⛽ \'" alt=""> Ekstra bensinkanne',"Reserve på dekk: +4 bensin — to turer ekstra. Kan fylles over full tank.",75,P.fuel>P.fuelMax+4,function(){P.fuel=Math.min(P.fuelMax+8,P.fuel+4);});
   }
   if(shopTab==="sluker") SLUK.forEach(function(u){ if(u.k==="agnrigg"&&!P.vinsj)return; // agnriggen trenger vinsjen
     addShop(L,'<img src="spill/assets/'+bildeFil(u.img)+'" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\''+u.e+' \'" alt=""> '+u.n+' <span class="recchip">'+recTekst(u)+'</span>',
@@ -1465,29 +1518,7 @@ function openShop(){
     addShop(L,'<img src="spill/assets/funn-rolex-fikset-for-salg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> BUD på Rolexen: '+P.rolex.bud.toLocaleString("nb")+' kr',
       "Samleren så den nyoppussede klokka hos urmakeren og MÅ ha den. Slå til?",-P.rolex.bud,false,
       function(){ var b=P.rolex.bud; P.rolex=null; notice("SOLGT! "+b.toLocaleString("nb")+" kr for Rolexen ⌚✨"); Snd.trophy(); });
-  if(!P.motorOk){
-    addShop(L,'<img src="spill/assets/den-glade-propell.png" class="shoplogo" alt="" onerror="this.onerror=null;this.src=\'spill/assets/jensen-service-logo.png\'"> Reparer motoren',"Den glade propell åpner den, banner litt, og får liv i den igjen.",8000,false,function(){P.motorOk=true; notice("Motoren durer igjen! ⚙️");});
-    addShop(L,'<img src="spill/assets/den-glade-propell.png" class="shoplogo" alt="" onerror="this.onerror=null;this.src=\'spill/assets/jensen-service-logo.png\'"> Liten påhengsmotor',"Ny, men beskjeden — klarer Grunt og Mellomdyp.",12000,false,function(){P.motor="liten"; P.motorOk=true; updateDepthLocks(); notice("Liten motor montert — grunt og mellomdyp venter ⚙️");});
-    addShop(L,'<img src="spill/assets/den-glade-propell.png" class="shoplogo" alt="" onerror="this.onerror=null;this.src=\'spill/assets/jensen-service-logo.png\'"> Stor påhengsmotor',"Kraftpakke som drar deg helt ut til djuphavet.",45000,false,function(){P.motor="stor"; P.motorOk=true; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
-  } else if(P.motor==="liten")
-    addShop(L,'<img src="spill/assets/den-glade-propell.png" class="shoplogo" alt="" onerror="this.onerror=null;this.src=\'spill/assets/jensen-service-logo.png\'"> Stor påhengsmotor',"Bytt opp: kraftpakka som drar deg til Dypt og djuphavet.",45000,false,function(){P.motor="stor"; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
   if(!P.turbo&&P.rod>=2) addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — 30 % raskere kamp mot alt som biter.",30000,false,function(){P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");});
-  if(P.svc>=200){ var fSvc=Date.now()<(P.forsTil||0);
-    addShop(L,'<img src="spill/assets/den-glade-propell.png" class="shoplogo" alt="" onerror="this.onerror=null;this.src=\'spill/assets/jensen-service-logo.png\'"> Båtservice — Ørnes',
-      (P.svc>250?"Motoren hoster og sluker ekstra bensin! ":"")+"Full service ("+P.svc+" turer siden sist)."+(fSvc?" Forsikringspris! 🛡️":" (2500 med forsikring)"),
-      fSvc?2500:3500,false,function(){P.svc=0; notice("Motoren spinner som en katt igjen — takk, Den glade propell! ⚙️");}); }
-  if(!P.propOk){ var fDekt=Date.now()<(P.forsTil||0);
-    addShop(L,'<img src="spill/assets/den-glade-propell.png" class="shoplogo" alt="" onerror="this.onerror=null;this.src=\'spill/assets/jensen-service-logo.png\'"> Ny propell',
-      fDekt?"Propellen røk — men forsikringen dekker alt! 🛡️":"Propellen røk — Den glade propell setter på ny. (Gratis med forsikring!)",
-      fDekt?0:1900,false,function(){P.propOk=true; notice("Ny propell på plass — takk, Den glade propell! 🛠️");}); }
-  var fDager=Math.max(0,Math.ceil(((P.forsTil||0)-Date.now())/864e5));
-  addShop(L,"🛡️ Båtforsikring (30 dager)",
-    fDager>0?("Forsikret "+fDager+" dager til — kjøp for å forlenge. Gratis propell og forsikringspris på service."):"Gratis propellbytte og service til 2500 i stedet for 3500. Lønner seg!",
-    900,false,function(){P.forsTil=Math.max(Date.now(),P.forsTil||0)+30*864e5; notice("Båten er forsikret 🛡️");});
-  if(Date.now()>P.havnNeste)
-    addShop(L,'<img src="spill/assets/ornes-baatforening-logo.png" class="shoplogo rund" alt=""> Havneavgift',
-      "Kaiplass i Ørnes havn — Ørnes Båtforening (stifta 1964).",350,false,
-      function(){P.havnNeste=Date.now()+30*864e5; notice("Havneavgiften er betalt — trygg kaiplass ⚓");});
   addShop(L,'<img src="spill/assets/krabbeteine.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🦀 \'" alt=""> Krabbeteine',"Settes på grunt vann (0–50 m) og fisker mens du er borte. Har "+(P.pots.owned||0)+" (plass til "+P.pots.cap+").",150,(P.pots.owned||0)>=P.pots.cap,function(){P.pots.owned++;});
   addShop(L,'<img src="spill/assets/hummerteine.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🦞 \'" alt=""> Hummerteine',
     hummerSeason()?"Grunt vann (0–50 m). Hummeren går i teina om natta — la den stå over natta! Har "+(P.pots.ownedH||0)+"."
@@ -1515,8 +1546,8 @@ function openShop(){
     function(){ P.agn.rustenspesial=(P.agn.rustenspesial||0)+3; updateRigChip(); });
   } // slutt Agn
   if(shopTab==="utstyr"){
-  if(P.rod>=1&&!P.ekko) addShop(L,"📡 Ekkolodd","Ser stimene før de ser deg — 20 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
-  if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,"🪛 Vinsj og dyphavsrigg","Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
+  if(P.rod>=1&&!P.ekko) addShop(L,'<img src="spill/assets/ekkolodd.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Ekkolodd',"Ser stimene før de ser deg — 20 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
+  if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,'<img src="spill/assets/sluk-agnrigg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪛 \'" alt=""> Vinsj og dyphavsrigg',"Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
   if(P.rod<1) addShop(L,"🎣 Stang II","Låser opp mellomdypt vann (50–150 m): torsk, hyse, blåstål.",250,false,function(){P.rod=1;});
   else if(P.rod<2) addShop(L,"🎣 Stang III","Grovt djuphavsutstyr — låser opp dypt vann (150–300 m) og storkveita.",7500,false,function(){P.rod=2;});
@@ -1527,6 +1558,42 @@ function openShop(){
   } // slutt Utstyr del 2
   modal("shopModal",true);
 }
+function openKjell(){
+  shopRefresh=openKjell;
+  $("#kjellKr").textContent="Du har "+P.kr+" kr.";
+  var L=$("#kjellList"); L.innerHTML="";
+  var fors=Date.now()<(P.forsTil||0);
+  // Bunnsmørning — pro-rata som bensin: full pris 300 ved 0 %
+  var sp=smorPct(), sKost=Math.max(0,Math.round(300*(100-sp)/100));
+  addShop(L,'<img src="spill/assets/verksted-bunnsmoring.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🐚 \'" alt=""> Bunnsmørning',
+    "Rent skrog glir lettere og sparer bensin — smørningen holder i 100 døgn. "+pctBar(sp)+(sp<=0?" <b>Begrodd — båten sluker ekstra bensin!</b>":""),
+    sKost, sp>=100, function(){ P.smorTs=Date.now(); notice("Skroget er nysmurt — båten glir som en ål 🐚✨"); });
+  // Båtservice — pro-rata, forsikringsrabatt; over 250 turer er havarifaren stor
+  var vp=svcPct(), vKost=Math.max(0,Math.round((fors?2500:3500)*(100-vp)/100));
+  addShop(L,'<img src="spill/assets/verksted-service.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Båtservice',
+    (P.svc>250?"<b>Motoren hoster — STOR fare for havari!</b> ":"")+"Full service holder i 250 turer. "+pctBar(vp)+(fors?" Forsikringspris! 🛡️":" (billigere med forsikring)"),
+    vKost, vp>=100, function(){ P.svc=0; notice("Motoren spinner som en katt igjen — takk, Propell-Kjell! ⚙️"); });
+  if(!P.motorOk){
+    addShop(L,'<img src="spill/assets/verksted-motor-reparasjon.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🔧 \'" alt=""> Reparer motoren',"Kjell åpner den, banner litt, og får liv i den igjen.",8000,false,function(){P.motorOk=true; notice("Motoren durer igjen! ⚙️");});
+    addShop(L,'<img src="spill/assets/verksted-motor-liten.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Liten påhengsmotor',"Ny, men beskjeden — klarer Grunt og Mellomdyp.",12000,false,function(){P.motor="liten"; P.motorOk=true; updateDepthLocks(); notice("Liten motor montert — grunt og mellomdyp venter ⚙️");});
+    addShop(L,'<img src="spill/assets/verksted-motor-stor.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Stor påhengsmotor',"Kraftpakke som drar deg helt ut til djuphavet.",45000,false,function(){P.motor="stor"; P.motorOk=true; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
+  } else if(P.motor==="liten")
+    addShop(L,'<img src="spill/assets/verksted-motor-stor.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Stor påhengsmotor',"Bytt opp: kraftpakka som drar deg til Dypt og djuphavet.",45000,false,function(){P.motor="stor"; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
+  if(!P.propOk){ var fDekt=fors;
+    addShop(L,'<img src="spill/assets/verksted-propell.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🛠️ \'" alt=""> Ny propell',
+      fDekt?"Propellen røk — men forsikringen dekker alt! 🛡️":"Propellen røk — Kjell setter på ny. (Gratis med forsikring!)",
+      fDekt?0:1900,false,function(){P.propOk=true; notice("Ny propell på plass — takk, Propell-Kjell! 🛠️");}); }
+  var fDager=Math.max(0,Math.ceil(((P.forsTil||0)-Date.now())/864e5));
+  var fPct=Math.max(0,Math.min(100,Math.round(((P.forsTil||0)-Date.now())/(30*864e5)*100)));
+  addShop(L,'<img src="spill/assets/verksted-forsikring.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🛡️ \'" alt=""> Båtforsikring (30 dager)',
+    (fDager>0?("Forsikret "+fDager+" dager til — kjøp for å forlenge. Gratis propell og forsikringspris på service. "):"Gratis propellbytte og billigere service. Lønner seg! ")+pctBar(fPct),
+    900,false,function(){P.forsTil=Math.max(Date.now(),P.forsTil||0)+30*864e5; notice("Båten er forsikret 🛡️");});
+  if(Date.now()>P.havnNeste)
+    addShop(L,'<img src="spill/assets/ornes-baatforening-logo.png" class="shoplogo rund" alt=""> Havneavgift',
+      "Kaiplass i Ørnes havn — Ørnes Båtforening (stifta 1964).",350,false,
+      function(){P.havnNeste=Date.now()+30*864e5; notice("Havneavgiften er betalt — trygg kaiplass ⚓");});
+  modal("kjellModal",true);
+}
 function addShop(L,title,desc,cost,owned,buy){
   var div=document.createElement("div"); div.className="shopitem";
   var m=title.match(/^(<img[^>]*>)\s*([\s\S]*)$/); // bilde først i tittelen → egen stor kolonne over begge linjene
@@ -1535,7 +1602,8 @@ function addShop(L,title,desc,cost,owned,buy){
   if(owned){b.textContent="Full"; b.disabled=true;}
   else{b.textContent=(cost<0?"+"+(-cost):cost)+" kr"; b.disabled=P.kr<cost || cost<=0 && title.indexOf("bensin")>-1 && P.fuel>=P.fuelMax;
     b.onclick=function(){ if(shopLock||P.kr<cost)return; shopLock=true; setTimeout(function(){shopLock=false},400); // dobbeltklikk-vern
-      P.kr-=cost; buy(); Snd.buy(); saveAll(); hud(); updateDepthLocks(); updatePotBtn(); openShop(); };}
+      if(!P.motorOk && cost>0 && cost<8000 && P.kr-cost<8000){ notice("Spar pengene til motorreparasjonen hos Propell-Kjell — 8000 kr ⚙️"); return; } // aldri shoppe-seg-til-softlock (reparasjon/motorer slipper gjennom)
+      P.kr-=cost; buy(); Snd.buy(); saveAll(); hud(); updateDepthLocks(); updatePotBtn(); (shopRefresh||openShop)(); };}
   div.appendChild(b); L.appendChild(div);
 }
 
@@ -2015,7 +2083,10 @@ function drawAmbient(dt,colTop){
 /* ---------- Input ---------- */
 $("#playBtn").onclick=startGame;
 $("#toMenu").onclick=function(){ Snd.ambienceOff(); phase="idle"; hooked=null; sceneFish=null; holding=false; $("#reelui").classList.remove("on"); show("menu"); renderPlayers(); Snd.themeOn(); };
-$("#openShop").onclick=openShop; $("#shopClose").onclick=function(){modal("shopModal",false); updatePotBtn();};
+$("#openShop").onclick=function(){ if(document.querySelector(".modal.on"))return; openShop(); }; // butikker kan aldri stables (Tab+Enter-fella)
+$("#shopClose").onclick=function(){modal("shopModal",false); shopRefresh=null; updatePotBtn();};
+$("#openKjell").onclick=function(){ if(document.querySelector(".modal.on"))return; openKjell(); };
+$("#kjellClose").onclick=function(){modal("kjellModal",false); shopRefresh=null; updatePotBtn();};
 $("#openBook").onclick=function(){openBook("mine")}; $("#bookClose").onclick=function(){modal("bookModal",false)};
 $("#mapClose").onclick=function(){modal("mapModal",false)};
 document.querySelectorAll(".mappin").forEach(function(p){ p.onclick=function(){ var d=+p.dataset.d;
