@@ -437,9 +437,11 @@ var Snd=(function(){
     setMuted:function(m){ muted=m; try{localStorage.setItem("storkveita-muted",m?"1":"0")}catch(e){}; if(theme)theme.muted=m; if(m){stopAllLoops(); motorStop(0);} else restartWanted(); },
     ambienceOn:function(){ loadAll(); wantLoop("sea",true); wantLoop("bird",true); },
     ambienceOff:function(){ wantLoop("sea",false); wantLoop("bird",false); wantLoop("reel",false); wantLoop("regn",false); wantLoop("vindL",false); },
-    vaerLyd:function(regnOn,vindOn){ loadAll(); wantLoop("regn",!!regnOn); wantLoop("vindL",!!vindOn); },
+    vaerLyd:function(regnOn,vindOn){ loadAll(); wantLoop("regn",!!regnOn); wantLoop("vindL",!!vindOn);
+      this.settLoopVol("sea", regnOn?0.10:0.22); }, // regnet skal eie lydbildet i uvær
     torden:function(){ var c=["torden1","torden2","torden3"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
     reelSound:function(on){ wantLoop("reel",!!on); },
+    settLoopVol:function(name,vol){ var L=loops[name]; if(!L)return; L.vol=vol; if(L.node&&L.node.g)L.node.g.gain.value=vol; },
     themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; theme.volume=0.45; } theme.muted=muted; theme.play().catch(function(){}); },
     themeOff:function(){ if(theme)theme.pause(); },
     click:function(){ if(buffers.klikk1||buffers.klikk2){ altClick=!altClick; oneShot(altClick&&buffers.klikk1?"klikk1":"klikk2"); } else beep(430,0.05,"square",0.05,320); },
@@ -1378,7 +1380,7 @@ function openShop(){
     addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Stor påhengsmotor',"Kraftpakke som drar deg helt ut til djuphavet.",45000,false,function(){P.motor="stor"; P.motorOk=true; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
   } else if(P.motor==="liten")
     addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Stor påhengsmotor',"Bytt opp: kraftpakka som drar deg til Dypt og djuphavet.",45000,false,function(){P.motor="stor"; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
-  if(!P.turbo&&P.rod>=2) addShop(L,"🎛️ Turbosnelle","Girutveksling i toppklasse — 30 % raskere kamp mot alt som biter.",30000,false,function(){P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");});
+  if(!P.turbo&&P.rod>=2) addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — 30 % raskere kamp mot alt som biter.",30000,false,function(){P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");});
   if(P.svc>=200){ var fSvc=Date.now()<(P.forsTil||0);
     addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Båtservice — Ørnes',
       (P.svc>250?"Motoren hoster og sluker ekstra bensin! ":"")+"Full service ("+P.svc+" turer siden sist)."+(fSvc?" Forsikringspris! 🛡️":" (2500 med forsikring)"),
@@ -1581,7 +1583,10 @@ function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); var r=$("#stage")
 window.addEventListener("resize",resize);
 var boatImg=new Image(),boatReady=false; boatImg.onload=function(){boatReady=true}; boatImg.src="spill/assets/spill-baat-ny.png";
 var waterImg=[new Image(),new Image(),new Image(),new Image()];
-["nedstigning-1","nedstigning-2"].forEach(function(n,i){waterImg[i].src="spill/assets/"+n+".jpg"});
+["nedstigning-1","nedstigning-2"].forEach(function(n,i){
+  waterImg[i].onerror=function(){ this.onerror=null; this.src="spill/assets/"+n+".jpg"; }; // manglende variant → dagbildet
+  waterImg[i].src="spill/assets/"+n+".jpg";
+});
 var n4Fallback=false; // nivå 4: mangler skumring/natt-variant → fall tilbake til -dag (mangler alt → sonen skjules)
 waterImg[3].onerror=function(){ if(!n4Fallback){ n4Fallback=true; waterImg[3].src="spill/assets/nedstigning-4-dag.jpg"; } };
 waterImg[3].onload=function(){ if(waterImg[3].naturalHeight)WLF[3]=894/waterImg[3].naturalHeight; // samme toppblokk som nivå 3: vannlinja på rad 894
@@ -1594,10 +1599,14 @@ function dyptVariant(){ if(window.__dv)return window.__dv; // test-override
   if(h>=22||h<5)return "natt";
   if(h>=18||h<8)return "skumring";
   return gloomyWx()?"skumring":"dag"; } // gråvær demper dagen
-function updateDyptImg(){ var v=dyptVariant(); if(v===dyptCur)return; dyptCur=v; waterImg[2].src="spill/assets/nedstigning-3-"+v+".jpg";
+function updateDyptImg(){ var v=dyptVariant(); if(v===dyptCur)return; dyptCur=v;
+  ["nedstigning-1","nedstigning-2"].forEach(function(n,i){ // Grunt/Mellomdyp: dag = originalfila
+    var m=v==="dag"?"spill/assets/"+n+".jpg":"spill/assets/"+n+"-"+v+".jpg";
+    var pre=new Image(); pre.onload=function(){ waterImg[i]=pre; }; pre.onerror=function(){}; pre.src=m; });
+  waterImg[2].src="spill/assets/nedstigning-3-"+v+".jpg";
   var u="spill/assets/nedstigning-4-"+v+".jpg";
   if(!vinsjKlar()){ n4Fallback=false; waterImg[3].src=u; } // ingenting lastet ennå — direktelast (med dag-fallback)
-  else { var pre=new Image(); pre.onload=function(){ waterImg[3]=pre; if(pre.naturalHeight)WLF[3]=894/pre.naturalHeight; }; pre.src=u; } } // bytt aldri bort et lastet nivå-4-bilde før det nye er klart
+  else { var pre4=new Image(); pre4.onload=function(){ waterImg[3]=pre4; if(pre4.naturalHeight)WLF[3]=894/pre4.naturalHeight; }; pre4.src=u; } } // bytt aldri bort lastede bilder før de nye er klare
 updateDyptImg();
 (function(){ try{ var c=JSON.parse(localStorage.getItem("storkveita-vaer")||"null");
     if(c&&Date.now()-c.t<1800000){ seaWx=c.code; updateDyptImg(); return; } }catch(e){}
