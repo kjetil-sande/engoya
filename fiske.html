@@ -375,10 +375,10 @@ var Snd=(function(){
     s.connect(f); f.connect(ga); ga.connect(c.destination); s.start(); }
   // --- Ekte lyd-klipp: sjø + fugler + snelle (sømløse Web Audio-loops) + butikk-kjøp (one-shot) ---
   var buffers={}, loaded=false;
-  var loops={ sea:{url:"spill/lyd/bolgeskvulp.aac",  vol:0.32,  want:false, node:null},   // bølgeskvulp når man fisker
+  var loops={ sea:{url:"spill/lyd/bolgeskvulp.aac",  vol:0.22,  want:false, node:null},   // bølgeskvulp når man fisker
               bird:{url:"spill/lyd/fuglelyder.aac",   vol:0.22, want:false, node:null},   // fugler lavt i bakgrunnen
               reel:{url:"spill/lyd/fiskesnelle-loop.aac", vol:0.55, want:false, node:null},   // snelle mens man sveiver
-              regn:{url:"spill/lyd/regn.aac", vol:0.4, want:false, node:null},                  // regnvær fra MET
+              regn:{url:"spill/lyd/regn.aac", vol:0.55, want:false, node:null},                  // regnvær fra MET
               vindL:{url:"spill/lyd/vind.aac", vol:0.28, want:false, node:null} };              // vind i gråvær
   var ONESHOT={ buy:{url:"spill/lyd/butikk-kjop.aac", vol:0.7},
     splash:{url:"spill/lyd/splash-sluk-treffer-vannet.aac", vol:0.7},
