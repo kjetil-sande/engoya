@@ -1075,10 +1075,11 @@ function tidSiden(ts){ var d=Date.now()-ts, t=Math.floor(d/864e5);
 function visRekordKort(){
   if(rekordVist||!P)return; rekordVist=true;
   var sett=0; try{sett=+localStorage.getItem("storkveita-rekordsett")||0}catch(e){}
-  rekKort=[];
+  rekKort=[]; var fr=famRecords(); // kun FAMILIENS beste teller — ikke personlige notater
   Object.keys(DB.players).forEach(function(nm){ var pl=DB.players[nm]; if(!pl||!pl.caught)return;
     Object.keys(pl.caught).forEach(function(k){ if(famFarlig(k)||!byKey[k])return; var r=pl.caught[k];
-      if(r&&r.rts&&r.rts>sett) rekKort.push({nm:nm,k:k,len:r.bestLen,wt:r.bestWt,redskap:r.redskap,rts:r.rts,gold:r.gold}); }); });
+      if(r&&r.rts&&r.rts>sett&&fr[k]&&r.bestLen>=fr[k].len)
+        rekKort.push({nm:nm,k:k,len:r.bestLen,wt:r.bestWt,redskap:r.redskap,rts:r.rts,gold:r.gold}); }); });
   rekKort.sort(function(a,b){return b.rts-a.rts}); rekKort=rekKort.slice(0,10);
   if(!rekKort.length)return;
   rekIdx=0; tegnRekKort(); modal("rekModal",true);
@@ -1087,7 +1088,7 @@ function visRekordKort(){
 function tegnRekKort(){
   var r=rekKort[rekIdx], f=byKey[r.k], m=$("#rekKort"); m.innerHTML="";
   m.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:0;font-size:12px">🏅 Siste nytt fra Lopphavet ('+(rekIdx+1)+'/'+rekKort.length+')</p>'
-    +'<h2 style="margin:.2em 0">'+((P&&r.nm===P.name)?"Du":esc(r.nm))+' tok rekord!</h2>');
+    +'<h2 style="margin:.2em 0">'+((P&&r.nm===P.name)?"Du":esc(r.nm))+' tok familierekord!</h2>');
   var cv=document.createElement("canvas"); cv.style.cssText="position:static;display:block;margin:4px auto;width:150px;height:86px"; m.appendChild(cv);
   drawFish(cv,f,150,86,false);
   m.insertAdjacentHTML("beforeend",'<div class="statline"><b>'+f.n+'</b>'+(r.gold?' ✨':'')+'</div>'
