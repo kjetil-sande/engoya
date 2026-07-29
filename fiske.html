@@ -1040,7 +1040,7 @@ function tegnVaer(dt){
       cx.drawImage(roykImg, mx2-stq/2+Math.sin(bob*1.8+i*2)*mn*0.012, my2-ph*mn*0.14-stq/2, stq, stq); cx.restore(); }
   }
   if(regnerNaa()&&regnImg[0].complete&&regnImg[0].naturalWidth){
-    regnFase+=dt*9; var ts2=W/18; // rutenett ~18 kolonner — små, ekte dråper
+    regnFase+=dt*9; var ts2=W/13; // rutenett ~13 kolonner (eiers kalibrering — større dråper)
     cx.save();
     for(var ry=0; ry<wlY; ry+=ts2){
       var fade=Math.max(0,Math.min(1,(wlY-ry)/(ts2*3))); // fader ut de siste radene mot havflata
