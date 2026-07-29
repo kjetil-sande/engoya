@@ -116,6 +116,8 @@
   .rigrow b{font-size:14px}
   .rigrow .ant{margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--ink-soft)}
   .rigrow.tom{opacity:.45;cursor:default}
+  .recchip{font-size:9px;font-weight:800;letter-spacing:.4px;background:#e8ddc6;color:#7a5b3a;border-radius:5px;padding:1px 5px;vertical-align:1px}
+  .recchip.ok{background:#cfe4c7;color:#2f5d33} /* anbefalt for sona du står i */
   .catch-fish{height:120px;display:grid;place-items:center;margin:6px 0}
   .catch-fish canvas{position:static;width:auto;height:110px}
   .statline{font-family:var(--mono);font-size:14px;margin:3px 0}
@@ -263,7 +265,8 @@
   <div class="modal" id="rigModal"><div class="cardwrap">
     <img src="spill/assets/knapp-lukk.png" id="rigClose" class="lukkx" alt="Lukk sluksettet">
     <div class="card">
-    <h2>🧰 Sluksettet</h2>
+    <img src="spill/assets/sluksett-boks.png" onerror="this.style.display='none'" alt="" style="display:block;margin:0 auto 4px;height:64px;image-rendering:pixelated">
+    <h2 style="text-align:center">🧰 Sluksettet</h2>
     <p class="muted" style="margin:.2em 0 .6em">Velg hva du fisker med. Agn brukes opp når fisken tar det — sluken ryker bare når snøret ryker.</p>
     <div id="rigList"></div>
   </div></div></div>
@@ -479,7 +482,30 @@ FISH.forEach(function(f){ var base=FIMG[f.k]||f.k, fb=LIKNER[f.k];
 var ZONE=["Grunt","Mellomdyp","Dypt","Djuphavet"];
 var DEPM=["0–50 m","50–150 m","150–300 m","300–500 m"];
 var RODS=[{n:"Stang I",max:1.2},{n:"Stang II",max:2.3},{n:"Stang III",max:3.6}];
-var LURES=[{n:"Gruntvann-sluk",zone:0,pris:15},{n:"Mellomdyp-sluk",zone:1,pris:50},{n:"Djuphavs-sluk",zone:2,pris:120},{n:"Djuphavs-agnrigg",zone:3,pris:250}];
+/* 16 sluker — alle kan brukes overalt, men har ANBEFALTE soner (rec). Utenfor anbefalingen napper
+   fisken tregere (budsjett ×1.4) og sluk-bonusene gjelder ikke. img = eksisterende/ventende kunstfil. */
+var SLUK=[
+ {k:"blink",e:"🥄",n:"Blink",pris:15,rec:[0],img:"blink-sluk",b:{sei:1.3,lyr:1.3,makrell:1.4}},
+ {k:"spinner",e:"🌀",n:"Spinner",pris:25,rec:[0],img:"sluk-gruntvann",b:{makrell:1.4,lyr:1.3,sei:1.2}},
+ {k:"dupp",e:"🎈",n:"Dupp og mark",pris:20,rec:[0],img:"dupp",b:{berggylte:1.5,brungylt:1.4,skrubbe:1.3,sandflyndre:1.3}},
+ {k:"gummimakk",e:"🪱",n:"Gummimakk",pris:30,rec:[0,1],img:"gummimakk",b:{berggylte:1.4,knurr:1.3,hvitting:1.3,lomre:1.3}},
+ {k:"sildeforsats",e:"✨",n:"Sildeforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{makrell:1.6,sei:1.4,lyr:1.3}},
+ {k:"wobbler",e:"🐠",n:"Wobbler",pris:45,rec:[0,1],img:"sluk-wobbler",b:{lyr:1.4,sei:1.3,lysing:1.3}},
+ {k:"torskepilk",e:"🎣",n:"Torskepilk",pris:50,rec:[1],img:"torskepilk",b:{torsk:1.5,hyse:1.3}},
+ {k:"juksa",e:"🧵",n:"Juksa",pris:60,rec:[1],img:"sluk-juksa",b:{sei:1.5,torsk:1.3}},
+ {k:"gummijigg",e:"🦎",n:"Gummijigg",pris:55,rec:[1,2],img:"sluk-gummijigg",b:{lysing:1.4,torsk:1.3,lange:1.2}},
+ {k:"pirk",e:"⚓",n:"Pirk",pris:80,rec:[1,2],img:"sluk-mellomdyp",b:{torsk:1.4,uer:1.3,hyse:1.2}},
+ {k:"svenskepilk",e:"🇸🇪",n:"Svenskepilk",pris:90,rec:[1,2],img:"sluk-svenskepilk",b:{sei:1.4,torsk:1.3,uer:1.3}},
+ {k:"dyppilk",e:"🌑",n:"Djuphavspilk",pris:120,rec:[2],img:"sluk-djuphavs",b:{brosme:1.4,lange:1.4,uer:1.3}},
+ {k:"lysende",e:"💡",n:"Selvlysende pilk",pris:150,rec:[2,3],img:"sluk-lysende",b:{blaalange:1.4,svarthaa:1.4,haagjel:1.3,havmus:1.3}},
+ {k:"kveitepilk",e:"🏆",n:"Kveitepilk",pris:250,rec:[2],img:"sluk-kveitepilk",b:{kveite:1.6,blaakveite:1.4,steinbit:1.2}},
+ {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{brosme:1.3,lange:1.3,haagjel:1.3,havmus:1.3}},
+ {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpirk",b:{blaakveite:1.4,skate:1.3,haakjerring:1.2}}
+];
+var slukDef={}; SLUK.forEach(function(u){slukDef[u.k]=u});
+function recTekst(u){ return u.rec.map(function(z){return ZONE[z].toUpperCase()}).join(" / "); }
+function aktivSluk(){ return P&&slukDef[P.rig]?slukDef[P.rig]:null; }
+function slukAnbefalt(){ var u=aktivSluk(); return !u||u.rec.indexOf(depth)>=0; }
 /* Agn til stanga: b = artsvekt-bonus (hva agnet lokker), rar = ganger sjelden/legendarisk-sjansen.
    Pakke = antall per kjøp. kunFangst: fås ikke i butikken (krabbe fra teina). */
 var AGN=[
@@ -557,7 +583,7 @@ function syncFam(force){ var code=famCode(); if(!code||!P||famBusy)return;
   }).catch(function(){ clearTimeout(famFail); famBusy=false; famInfo="fikk ikke kontakt"; });
 }
 var DB=loadAll();
-function newPlayer(name){return{name:name,kr:40,fuel:24,fuelMax:24,rod:0,lures:{0:3,1:0,2:0},caught:{}}}
+function newPlayer(name){return{name:name,kr:40,fuel:24,fuelMax:24,rod:0,lures:{blink:3},caught:{}}}
 var P=null; // aktiv spiller
 
 /* ---------- Skjermer ---------- */
@@ -587,8 +613,10 @@ function chosen(name){P=DB.players[name]; if(!P.lures)P.lures={0:3,1:0,2:0};
   if(P.propOk==null)P.propOk=true; if(P.forsTil==null)P.forsTil=0; // propell + båtforsikring
   if(P.havnNeste==null)P.havnNeste=Date.now()+30*864e5; // første havneavgift forfaller om en måned
   if(P.vinsj==null)P.vinsj=false; if(P.ekko==null)P.ekko=false; // djuphavsrigg + ekkolodd
-  if(P.agn==null)P.agn={}; if(!P.rig||(P.rig!=="sluk"&&!agnDef[P.rig]))P.rig="sluk"; // agnbeholdning + aktivt redskap
-  if(P.lures[3]==null)P.lures[3]=0; // djuphavs-agnrigg
+  if(P.agn==null)P.agn={}; // agnbeholdning
+  if(P.lures&&P.lures[0]!=null){ var g0=P.lures; P.lures={blink:g0[0]||0,torskepilk:g0[1]||0,dyppilk:g0[2]||0,agnrigg:g0[3]||0}; } // gamle sone-sluker → nærmeste i katalogen
+  if(P.lures==null)P.lures={blink:3};
+  if(P.rig==="sluk"||!P.rig||( !slukDef[P.rig]&&!agnDef[P.rig] )){ P.rig=(P.lures.blink||0)>0?"blink":(SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0]||{k:"blink"}).k; }
   if(P.pots.lineOwned==null)P.pots.lineOwned=0; if(P.pots.lineAgn==null)P.pots.lineAgn=0; // bunnline på Dypt
   var pp=P.pots; if(pp.owned==null)pp.owned=0; if(pp.bait==null)pp.bait=0; if(pp.cap==null)pp.cap=2; if(!Array.isArray(pp.out))pp.out=[]; if(pp.rescue==null)pp.rescue=false;
   if(P.remote)delete P.remote; // valgt lokalt → lokalt autoritativ (synk fletter monotont, erstatter aldri)
@@ -681,9 +709,11 @@ function cast(){
     notice("Tom for bensin! Fyll opp i butikken 🛒"); return;
   }
   if(!P.propOk){ notice("Propellen er ødelagt — Jensen Service AS har ny 🛠️"); return; }
-  if(P.rig!=="sluk"&&(P.agn[P.rig]||0)<1){ var tomN=agnDef[P.rig]?agnDef[P.rig].n:"agnet";
-    P.rig="sluk"; updateRigChip(); notice("Tomt for "+tomN+" — du fisker med sluk igjen 🪝"); }
-  if(P.rig==="sluk"&&(P.lures[depth]||0)<1){ notice("Tom for "+LURES[depth].n+"! Kjøp ny i butikken 🛒"); return; }
+  if(agnDef[P.rig]&&(P.agn[P.rig]||0)<1){ var tomN=agnDef[P.rig].n, fb=SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0];
+    P.rig=fb?fb.k:"blink"; updateRigChip(); notice("Tomt for "+tomN+" — du fisker med "+(fb?fb.n.toLowerCase():"sluk")+" igjen 🪝"); }
+  if(slukDef[P.rig]&&(P.lures[P.rig]||0)<1){ var tomS=slukDef[P.rig].n, fb2=SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0];
+    if(fb2){ P.rig=fb2.k; updateRigChip(); notice("Tom for "+tomS+" — byttet til "+fb2.n+" 🧰"); }
+    else { notice("Tom for sluker! Kjøp nye i butikken 🛒"); return; } }
   // uhell på sjøen: propellen kan slå i noe — oftere når motoren skulle vært på service.
   // (ruller bare når du har råd til ny eller er forsikret — aldri softlock)
   if(Math.random()<(P.svc>250?1/120:1/400) && (Date.now()<P.forsTil||P.kr>=1400)){
@@ -724,15 +754,16 @@ function startWait(){
   if(roll<ek/150 && t2.length){ pool=t2; bc=0.25; }
   else if(roll<ek/150+ek/75 && t1.length && t1!==base){ pool=t1; bc=0.5; }
   else { pool=base; bc=1; }
-  var agEff=aktivAgn();
+  var agEff=aktivAgn(), suEff=(slukAnbefalt()&&aktivSluk())||null;
   function zvekt(f){ var w=(f.zb===depth&&f.zbw)?f.zbw:f.w;
-    if(agEff&&agEff.b&&agEff.b[f.k])w*=agEff.b[f.k]; return w; } // agnet lokker favorittene sine
+    if(agEff&&agEff.b&&agEff.b[f.k])w*=agEff.b[f.k];
+    if(suEff&&suEff.b&&suEff.b[f.k])w*=suEff.b[f.k]; return w; } // agn/sluk lokker favorittene sine
   var tot=0; pool.forEach(function(f){tot+=zvekt(f)}); var r=Math.random()*tot, acc=0, cf=pool[0];
   for(var i=0;i<pool.length;i++){acc+=zvekt(pool[i]); if(r<=acc){cf=pool[i];break;}}
   var dir=Math.random()<0.5?1:-1;
   // fisken kommer inn fra en side og snuser rundt sluken – kan svømme forbi, snu og komme igjen
   sceneFish={ f:cf, x:dir<0?1.2:-0.2, y:Math.min(0.92,lureTargetY+0.12), vx:-dir*(0.10+Math.random()*0.06),
-    passes:0, t:0, budget:rnd(5,36), committing:false, biteChance:bc, tested:false, leaving:false,
+    passes:0, t:0, budget:rnd(5,36)*(slukAnbefalt()?1:1.4), committing:false, biteChance:bc, tested:false, leaving:false, // feil sluk for sonen → tregere napp
     sizeLen:Math.round(rnd(cf.len[0],cf.len[1])) }; // størrelsen rulles NÅ — styrer tegning og fangst
 }
 function approachStep(dt){
@@ -826,9 +857,9 @@ function snap(){
   if(hooked) flee={f:hooked, len:hookedLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSur();
   phase="idle"; Snd.reelSound(false); $("#reelui").classList.remove("on"); Snd.snap();
-  var mistet;
-  if(P.rig==="sluk"){ if(P.lures[depth]>0) P.lures[depth]--; var left=P.lures[depth]||0;
-    mistet="Snøret røk — du mista "+LURES[depth].n+"! ("+left+" igjen"+(left<1?" — kjøp ny 🛒":"")+")"; }
+  var mistet, su=aktivSluk();
+  if(su){ if(P.lures[su.k]>0) P.lures[su.k]--; var left=P.lures[su.k]||0;
+    mistet="Snøret røk — du mista "+su.n+"! ("+left+" igjen"+(left<1?" — kjøp ny 🛒":"")+")"; }
   else mistet="Snøret røk — agnet og kroken forsvant i dypet!"; // agnet ble alt brukt ved nappet
   hooked=null; sceneFish=null;
   setHint(mistet);
@@ -881,7 +912,8 @@ function resolveCatch(sell){
 
 /* ---------- Sluksettet: aktivt redskap ---------- */
 function updateRigChip(){ if(!P)return; var b=$("#hudLure"); var ag=aktivAgn();
-  b.textContent = ag ? ag.e+" "+(P.agn[ag.k]||0) : "🪝 "+(P.lures[depth]||0); }
+  var su=aktivSluk();
+  b.textContent = ag ? ag.e+" "+(P.agn[ag.k]||0) : su ? su.e+" "+(P.lures[su.k]||0) : "🪝 0"; }
 function renderRig(){
   var L=$("#rigList"); L.innerHTML="";
   function rad(nokkel,emo,navn,antall,valgt,kanVelges,img){
@@ -891,8 +923,11 @@ function renderRig(){
     if(kanVelges)d.onclick=function(){ P.rig=nokkel; saveAll(); updateRigChip(); renderRig(); Snd.click(); };
     L.appendChild(d);
   }
-  rad("sluk","🪝",LURES[depth].n,(P.lures[depth]||0)+" stk",P.rig==="sluk",true,
-    ["sluk-gruntvann","sluk-mellomdyp","sluk-djuphavs","sluk-agnrigg"][depth]);
+  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0;font-weight:700;font-size:12px">— Sluker (ryker bare med snøret) —</p>');
+  SLUK.forEach(function(u){ var n=P.lures[u.k]||0;
+    rad(u.k,u.e,u.n+' <span class="recchip'+(u.rec.indexOf(depth)>=0?" ok":"")+'">'+recTekst(u)+'</span>',n+" stk",P.rig===u.k,n>0,u.img);
+  });
+  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:8px 0 2px;font-weight:700;font-size:12px">— Agn (brukes opp når fisken tar) —</p>');
   AGN.forEach(function(a){ var n=P.agn[a.k]||0;
     if(n<1&&P.rig!==a.k&&a.kunFangst)return; // krabbeagn vises først når man har fått noe fra teina
     rad(a.k,a.e,a.n+(a.rar?" ✨":""),n+" stk",P.rig===a.k,n>0,"agn-"+(a.k==="rustenspesial"?"rusten-spesial":a.k));
@@ -1083,9 +1118,10 @@ function openShop(){
   L.insertAdjacentHTML("beforeend",'<p class="muted center" style="background:#fdf3d6;border:2px solid var(--gold);border-radius:9px;padding:7px 10px;margin:0 0 4px">📋 Rustens bestilling i dag: <b>'+dk.n+'</b> — betaler <b>+50 %</b></p>');
   var fillCost=(P.fuelMax-P.fuel)*2;
   addShop(L,"⛽ Fyll bensin","Fyll tanken helt opp.", fillCost, P.fuel>=P.fuelMax, function(){P.fuel=P.fuelMax;});
-  LURES.forEach(function(lu,i){ if(i===3&&!P.vinsj)return; // agnriggen trenger vinsjen
-    var sImg=["sluk-gruntvann","sluk-mellomdyp","sluk-djuphavs","sluk-agnrigg"][i];
-    addShop(L,'<img src="spill/assets/'+sImg+'.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪝 \'" alt=""> '+lu.n,"Til "+DEPM[i]+" · har "+(P.lures[i]||0)+" stk. Ryker snøret, mister du én.",lu.pris,false,function(){P.lures[i]=(P.lures[i]||0)+1;}); });
+  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:6px 0 2px;font-weight:700">— Sluker (anbefaling i parentes) —</p>');
+  SLUK.forEach(function(u){ if(u.k==="agnrigg"&&!P.vinsj)return; // agnriggen trenger vinsjen
+    addShop(L,'<img src="spill/assets/'+u.img+'.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\''+u.e+' \'" alt=""> '+u.n+' <span class="recchip">'+recTekst(u)+'</span>',
+      "Har "+(P.lures[u.k]||0)+" stk. Ryker snøret, mister du den.",u.pris,false,function(){P.lures[u.k]=(P.lures[u.k]||0)+1; updateRigChip();}); });
   if(P.svc>=200){ var fSvc=Date.now()<(P.forsTil||0);
     addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Båtservice — Ørnes',
       (P.svc>250?"Motoren hoster og sluker ekstra bensin! ":"")+"Full service ("+P.svc+" turer siden sist)."+(fSvc?" Forsikringspris! 🛡️":" (2500 med forsikring)"),
@@ -1115,7 +1151,7 @@ function openShop(){
       (a.rar?"Rustens hemmelighet — 50 % større sjanse for sjelden og legendarisk fisk. ✨":"Har "+(P.agn[a.k]||0)+" stk.")+(a.k==="brunost"?" «Ikke spør. Det virker.» — Rusten":""),
       a.pris,false,function(){ P.agn[a.k]=(P.agn[a.k]||0)+a.pakke; updateRigChip(); }); });
   if(P.rod>=1&&!P.ekko) addShop(L,"📡 Ekkolodd","Ser stimene før de ser deg — 20 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
-  if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,"🪛 Vinsj og dyphavsrigg","Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures[3]=(P.lures[3]||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
+  if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,"🪛 Vinsj og dyphavsrigg","Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
   if(P.rod<1) addShop(L,"🎣 Stang II","Låser opp mellomdypt vann (50–150 m): torsk, hyse, blåstål.",250,false,function(){P.rod=1;});
   else if(P.rod<2) addShop(L,"🎣 Stang III","Grovt djuphavsutstyr — låser opp dypt vann (150–300 m) og storkveita.",7500,false,function(){P.rod=2;});
