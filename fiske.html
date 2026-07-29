@@ -506,7 +506,8 @@ var SLUK=[
  {k:"lysende",e:"💡",n:"Selvlysende pilk",pris:150,rec:[2,3],img:"sluk-lysende",b:{blaalange:1.4,svarthaa:1.4,haagjel:1.3,havmus:1.3}},
  {k:"kveitepilk",e:"🏆",n:"Kveitepilk",pris:250,rec:[2],img:"sluk-kveitepilk",b:{kveite:1.6,blaakveite:1.4,steinbit:1.2}},
  {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{brosme:1.3,lange:1.3,haagjel:1.3,havmus:1.3}},
- {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpirk",b:{blaakveite:1.4,skate:1.3,haakjerring:1.2}}
+ {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpirk",b:{blaakveite:1.4,skate:1.3,haakjerring:1.2}},
+ {k:"kjeks",e:"🍪",n:"Kjekssluk",pris:35,rec:[0],img:"sluk-kjeks",b:{hvitting:1.5,hyse:1.3,skrubbe:1.2}} // «Fisk har også søtsug.» — Rusten
 ];
 var slukDef={}; SLUK.forEach(function(u){slukDef[u.k]=u});
 function recTekst(u){ return u.rec.map(function(z){return ZONE[z].toUpperCase()}).join(" / "); }
