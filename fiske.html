@@ -1010,16 +1010,17 @@ function openShop(){
   addShop(L,"⛽ Fyll bensin","Fyll tanken helt opp.", fillCost, P.fuel>=P.fuelMax, function(){P.fuel=P.fuelMax;});
   LURES.forEach(function(lu,i){ if(i===3&&!P.vinsj)return; // agnriggen trenger vinsjen
     addShop(L,"🪝 "+lu.n,"Til "+DEPM[i]+" · har "+(P.lures[i]||0)+" stk. Ryker snøret, mister du én.",lu.pris,false,function(){P.lures[i]=(P.lures[i]||0)+1;}); });
-  if(P.svc>=200) addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Båtservice — Ørnes',
-    (P.svc>250?"Motoren hoster og sluker ekstra bensin! ":"")+"Full service på motoren ("+P.svc+" turer siden sist).",
-    2500,false,function(){P.svc=0; notice("Motoren spinner som en katt igjen — takk, Jensen! ⚙️");});
+  if(P.svc>=200){ var fSvc=Date.now()<(P.forsTil||0);
+    addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Båtservice — Ørnes',
+      (P.svc>250?"Motoren hoster og sluker ekstra bensin! ":"")+"Full service ("+P.svc+" turer siden sist)."+(fSvc?" Forsikringspris! 🛡️":" (2500 med forsikring)"),
+      fSvc?2500:3500,false,function(){P.svc=0; notice("Motoren spinner som en katt igjen — takk, Jensen! ⚙️");}); }
   if(!P.propOk){ var fDekt=Date.now()<(P.forsTil||0);
     addShop(L,'<img src="spill/assets/jensen-service-logo.png" class="shoplogo" alt=""> Ny propell',
-      fDekt?"Propellen røk — men forsikringen dekker alt! 🛡️":"Propellen røk — Jensen setter på ny mens du venter.",
-      fDekt?0:1400,false,function(){P.propOk=true; notice("Ny propell på plass — takk, Jensen! 🛠️");}); }
+      fDekt?"Propellen røk — men forsikringen dekker alt! 🛡️":"Propellen røk — Jensen setter på ny. (Gratis med forsikring!)",
+      fDekt?0:1900,false,function(){P.propOk=true; notice("Ny propell på plass — takk, Jensen! 🛠️");}); }
   var fDager=Math.max(0,Math.ceil(((P.forsTil||0)-Date.now())/864e5));
   addShop(L,"🛡️ Båtforsikring (30 dager)",
-    fDager>0?("Forsikret "+fDager+" dager til — kjøp for å forlenge. Dekker propell og uhell på sjøen."):"Dekker propellskade og uhell på sjøen. Tryggere båtliv!",
+    fDager>0?("Forsikret "+fDager+" dager til — kjøp for å forlenge. Gratis propell og forsikringspris på service."):"Gratis propellbytte og service til 2500 i stedet for 3500. Lønner seg!",
     900,false,function(){P.forsTil=Math.max(Date.now(),P.forsTil||0)+30*864e5; notice("Båten er forsikret 🛡️");});
   if(Date.now()>P.havnNeste)
     addShop(L,'<img src="spill/assets/ornes-baatforening-logo.png" class="shoplogo rund" alt=""> Havneavgift',
