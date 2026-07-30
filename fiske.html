@@ -89,11 +89,11 @@
   .depthsel{display:flex;gap:6px;background:rgba(18,58,71,.72);padding:5px;border-radius:12px;
     width:min(90%,340px);min-width:0;box-sizing:border-box;justify-content:space-between} /* samme bredde som «Kast ut» (min-width:0 hindrer at teksten sprenger boksen) */
   .depthsel button{border:0;background:transparent;color:#cfe6e2;font-weight:700;padding:9px 6px;border-radius:9px;cursor:pointer;font-size:17px;font-family:var(--font);line-height:1.1;
-    flex:1;min-width:0}
+    flex:1 1 auto;min-width:0;white-space:nowrap} /* auto-basis: bredden følger teksten, resten deles likt */
   .depthsel button small{display:block;font-size:12px;font-weight:600;opacity:.85;margin-top:2px}
   .depthsel button.on{background:var(--paper);color:var(--ink)}
   .depthsel button.locked{opacity:.4}
-  .depthsel.four button{padding:8px 7px;font-size:15px}
+  .depthsel.four button{padding:8px 8px;font-size:15px}
   .depthsel.four button small{font-size:11px}
   #sea.fishing #depthsel,#sea.fishing #potRow{display:none} /* snøret er ute — ned med valgene til fisken er i båten */
   #hud{transition:opacity .45s ease}
@@ -101,6 +101,25 @@
   #sea.fishing #notice{opacity:0;transition:opacity .3s}
   .actionbtn{width:min(90%,340px);box-sizing:border-box;text-align:center;padding-top:19px;padding-bottom:19px;font-size:18px}
   .hint{color:#eaf3ee;font-family:var(--mono);font-size:16px;font-weight:600;text-shadow:0 1px 3px #000a;min-height:20px;text-align:center}
+  /* Mens snøret står ute flytter beskjeden seg til midten av skjermen — smal spalte, klar av fisken nede ved sluken */
+  #hintMid{display:none}
+  #sea.fishing #hintMid{display:block;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(14em,72%);z-index:6;pointer-events:none;margin:0;font-size:16px;line-height:1.45;
+    text-shadow:0 2px 6px #000c,0 0 16px #000a}
+  #sea.fishing .bottom #hint{display:none}
+  /* NAPP-plakat: eierens grafikk spretter opp midt i bildet i det fisken hogger (tekst-fallback hvis fila mangler) */
+  #nappSplash{position:absolute;left:50%;top:50%;width:min(86%,460px);z-index:9;pointer-events:none;
+    opacity:0;transform:translate(-50%,-50%) scale(.55);image-rendering:pixelated;
+    filter:drop-shadow(0 7px 9px rgba(0,0,0,.38))} /* mild skygge så plakaten løfter seg fra vannet */
+  #nappSplash.on{animation:nappPop 1.25s cubic-bezier(.2,1.4,.4,1) forwards}
+  @keyframes nappPop{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}
+    22%{opacity:1;transform:translate(-50%,-50%) scale(1.09)}
+    34%{transform:translate(-50%,-50%) scale(1)}
+    72%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.06)}}
+  @media (prefers-reduced-motion:reduce){ #nappSplash.on{animation-duration:1.25s;animation-name:nappFade} }
+  @keyframes nappFade{0%{opacity:0}15%{opacity:1;transform:translate(-50%,-50%) scale(1)}72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
 
   /* Kamp-UI: rund snelle midt på, spenn til venstre og dybde til høyre — i skjermkantene */
   :root{--snelle:min(28vw,117px)} /* snella er nedjustert tre ganger etter tilbakemelding (fra 46vw/190px) */
@@ -205,6 +224,7 @@
     #sea .bottom{gap:4px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
     #rekModal,#catchModal{padding-bottom:calc(6px + env(safe-area-inset-bottom))}
     .hint{font-size:13px;margin:0}
+    #sea.fishing #hintMid{font-size:15px}
     .actionbtn{padding:11px 18px;font-size:15px} }
   .slot.locked{opacity:.72}
   .slot.locked .nm{color:var(--ink-soft)}
@@ -250,9 +270,9 @@
   /* Mobil: HUD fikk ikke plass til 4 chips + 5 ikoner på én rad → chips rad 1, ikoner rad 2 */
   @media (max-width:520px){
     .depthsel{gap:4px} /* bredden styres av basisregelen — lik «Kast ut» */
-    .depthsel button{flex:1;font-size:19px;padding:12px 3px}
-    .depthsel.four button{font-size:15px;padding:12px 1px}
-    .depthsel.four button small{font-size:13px}
+    .depthsel button{flex:1 1 auto;font-size:19px;padding:12px 8px}
+    .depthsel.four button{font-size:14px;padding:12px 6px}
+    .depthsel.four button small{font-size:12px}
     .depthsel button small{font-size:14px;margin-top:2px}
     #hud{flex-wrap:wrap;gap:6px;padding:8px 8px}
     #hud .chip{padding:8px 11px;font-size:14px}
@@ -264,6 +284,11 @@
     #notice{font-size:18px}
   }
   @media (max-width:389px){ /* 🔥-brikken skal ikke tvinge en tredje HUD-rad på smale telefoner */
+    .depthsel{gap:3px;padding:4px}
+    .depthsel button{font-size:16px;padding:12px 6px}
+    .depthsel button small{font-size:13px}
+    .depthsel.four button{font-size:12px;padding:12px 4px}
+    .depthsel.four button small{font-size:11px}
     #hud .chip{padding:8px 8px}
     #hud .fuel{width:40px}
     #hud #hudStreakChip{padding:0 2px;gap:2px;background:none;box-shadow:none;backdrop-filter:none;
@@ -309,6 +334,8 @@
       <button class="iconbtn" id="toMenu" title="Hjem til naustet"><img src="spill/assets/knapp-naust.png" alt="Hjem" style="max-height:29px;max-width:29px;image-rendering:pixelated" onerror="this.outerHTML='✕'"></button>
     </div>
     <div id="notice"></div>
+    <p class="hint" id="hintMid"></p>
+    <img id="nappSplash" alt="" src="spill/assets/splash-napp.png" onerror="this.dataset.mangler='1'">
     <div class="bottom">
       <p class="hint" id="hint">Velg dybde og kast ut.</p>
       <div id="reelui">
@@ -507,7 +534,8 @@ var Snd=(function(){
   function startLoop(name){ var c=AC(),L=loops[name]; if(!c||!L||L.node||muted||!L.want)return; var buf=buffers[name]; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; s.loop=true; var g=c.createGain(); g.gain.value=L.vol; s.connect(g); g.connect(c.destination); try{s.start()}catch(e){} L.node={s:s,g:g}; }
   function stopLoop(name){ var L=loops[name]; if(L&&L.node){ try{L.node.s.stop()}catch(e){} L.node=null; } }
-  var regnNa=false, dykket=false; // vær- og dykketilstand styrer miksen
+  var regnNa=false, dykket=false, dypNa=0; // vær- og dykketilstand styrer miksen (dypNa: hvor langt nede sluken er, 0–1)
+  var HAV=0.187, HAV_REGN=0.085; // bølgeskvulpet over vann — dempet 15 % etter tilbakemelding
   function wantLoop(name,on){ var L=loops[name]; if(!L)return; L.want=on; if(on)startLoop(name); else stopLoop(name); }
   function oneShot(name){ var c=AC(),o=ONESHOT[name]; if(!c||!o||muted)return; var buf=buffers[name]; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; var g=c.createGain(); g.gain.value=o.vol; s.connect(g); g.connect(c.destination); try{s.start()}catch(e){} }
@@ -521,10 +549,10 @@ var Snd=(function(){
     unlock:function(){ var c=AC(); if(c&&c.state!=="running"){try{c.resume()}catch(e){}} loadAll(); },
     isMuted:function(){return muted;},
     setMuted:function(m){ muted=m; try{localStorage.setItem("storkveita-muted",m?"1":"0")}catch(e){}; if(theme)theme.muted=m; if(m){stopAllLoops(); motorStop(0);} else restartWanted(); },
-    ambienceOn:function(){ loadAll(); dykket=false; this.settLoopVol("sea",regnNa?0.10:0.22); this.settLoopVol("bird",0.22); wantLoop("sea",true); wantLoop("bird",true); },
+    ambienceOn:function(){ loadAll(); dykket=false; dypNa=0; this.settLoopVol("sea",regnNa?HAV_REGN:HAV); this.settLoopVol("bird",0.22); wantLoop("sea",true); wantLoop("bird",true); },
     ambienceOff:function(){ dykket=false; wantLoop("sea",false); wantLoop("bird",false); wantLoop("undervann",false); wantLoop("reel",false); wantLoop("regn",false); wantLoop("vindL",false); },
     vaerLyd:function(regnOn,vindOn){ loadAll(); wantLoop("regn",!!regnOn); wantLoop("vindL",!!vindOn); regnNa=!!regnOn;
-      if(!dykket)this.settLoopVol("sea", regnOn?0.10:0.22); }, // regnet skal eie lydbildet i uvær (men undervann eier det enda mer)
+      if(!dykket)this.settLoopVol("sea", regnOn?HAV_REGN:HAV); }, // regnet skal eie lydbildet i uvær (men undervann eier det enda mer)
     torden:function(){ var c=["torden1","torden2","torden3"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
     munnspill:function(){ var c=["munnspill1","munnspill2"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
     reelSound:function(on){ wantLoop("reel",!!on); },
@@ -532,14 +560,23 @@ var Snd=(function(){
     settLoopVol:function(name,vol){ var L=loops[name]; if(!L)return; L.vol=vol; if(L.node&&L.node.g)L.node.g.gain.value=vol; },
     fadeLoopVol:function(name,vol,sek){ var L=loops[name], c=AC(); if(!L)return; L.vol=vol;
       if(L.node&&L.node.g&&c){ try{ L.node.g.gain.setTargetAtTime(vol,c.currentTime,Math.max(0.08,sek||0.8)/3); }catch(e){ L.node.g.gain.value=vol; } } },
-    dykk:function(ned){ ned=!!ned; if(ned===dykket)return; dykket=ned; loadAll(); // sluken går i vannet: over vann tones ned, undervannslyden opp
-      this.fadeLoopVol("sea",  ned?0.05:(regnNa?0.10:0.22), 1.0);
-      this.fadeLoopVol("bird", ned?0.02:0.22, 1.0);
-      if(ned){ wantLoop("undervann",true); var L=loops.undervann, c=AC();
-        if(L.node&&L.node.g&&c){ try{ L.node.g.gain.setValueAtTime(0.0001,c.currentTime); }catch(e){} }
-        this.fadeLoopVol("undervann",0.34,1.4); }
-      else { this.fadeLoopVol("undervann",0.0001,0.9);
-        setTimeout(function(){ if(!dykket)wantLoop("undervann",false); },1200); } },
+    // Sluken synker: overflatelyden tones ned og undervannslyden opp — jevnt med dybden, ikke som en bryter.
+    // Måkene er HELT borte (loopen stoppes) når sluken er drøyt halvveis nede; de kommer tilbake når du sveiver opp.
+    dykk:function(ned,dyp){ ned=!!ned;
+      dyp = ned ? Math.max(0,Math.min(1, dyp||0)) : 0;
+      if(ned!==dykket){ dykket=ned; loadAll(); dypNa=-1;
+        if(ned){ wantLoop("undervann",true); var L=loops.undervann, c=AC();
+          if(L.node&&L.node.g&&c){ try{ L.node.g.gain.setValueAtTime(0.0001,c.currentTime); }catch(e){} } }
+        else { this.fadeLoopVol("undervann",0.0001,0.9);
+          setTimeout(function(){ if(!dykket)wantLoop("undervann",false); },1200); } }
+      if(Math.abs(dyp-dypNa)<0.02)return;
+      dypNa=dyp;
+      var over=Math.max(0,1-dyp/0.55), maake=0.22*over*over;
+      var havOver=regnNa?HAV_REGN:HAV;
+      this.fadeLoopVol("sea", havOver+(0.045-havOver)*dyp, 0.5);
+      this.fadeLoopVol("bird", maake, 0.5);
+      wantLoop("bird", maake>0.004);
+      if(ned)this.fadeLoopVol("undervann", 0.05+0.29*dyp, 0.6); },
     themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; theme.volume=0.45; } theme.muted=muted; theme.play().catch(function(){}); },
     themeOff:function(){ if(theme)theme.pause(); },
     click:function(){ if(buffers.klikk1||buffers.klikk2){ altClick=!altClick; oneShot(altClick&&buffers.klikk1?"klikk1":"klikk2"); } else beep(430,0.05,"square",0.05,320); },
@@ -679,9 +716,15 @@ function agnDagsStatus(){ // Rusten går tom for én type og setter en annen på
 function agnPris(a){ return agnDagsStatus().salg===a.k?Math.max(5,Math.round(a.pris*0.7/5)*5):a.pris; }
 function bildeFil(n){ return n.indexOf(".")>=0?n:n+".png"; } // gif-er oppgis med endelse
 var rigImg={}; // sluk-/agnbilder til tegning på snøret (lastes ved behov)
+// Rusten selger agnet i boks og krukke — men det er innholdet som skal henge på kroken.
+// Mangler kroken-varianten, faller vi tilbake til butikkbildet (auto-plugg når eier lager fila).
+var KROKAGN={rustenspesial:"agn-rusten-spesial-paa-kroken",rustensuper:"agn-rusten-super-paa-kroken"};
 function rigBilde(){ var a=(typeof aktivAgn==="function")&&aktivAgn(), u=(typeof aktivSluk==="function")&&aktivSluk();
-  var fil=a?bildeFil(agnImg(a)):(u?bildeFil(u.img):null); if(!fil)return null;
-  if(!rigImg[fil]){ var im=new Image(); im.src="spill/assets/"+fil; rigImg[fil]=im; }
+  var fil=a?bildeFil(KROKAGN[a.k]||agnImg(a)):(u?bildeFil(u.img):null); if(!fil)return null;
+  if(!rigImg[fil]){ var im=new Image();
+    if(a&&KROKAGN[a.k]){ var res="spill/assets/"+bildeFil(agnImg(a));
+      im.onerror=function(){ this.onerror=null; this.src=res; }; }
+    im.src="spill/assets/"+fil; rigImg[fil]=im; }
   var b=rigImg[fil]; return (b.complete&&b.naturalWidth)?b:null; }
 function aktivAgn(){ return P&&P.rig&&P.rig!=="sluk"?agnDef[P.rig]:null; }
 function rigNavn(){ var a=aktivAgn(); if(a)return a.n; var u=aktivSluk(); return u?u.n:"Sluk"; }
@@ -853,7 +896,13 @@ var boatIn=1, fisherT=1; // intro i sjøen: båten glir på plass (0→1), så k
 var flee=null; // mistet fisk som stikker av før kameraet går hjem
 var serpent=null, serpentCd=0; // påskeegg: sjøormen — et ultrasjeldent glimt langt der nede i Dypt
 
-function setHint(t){msg=t; $("#hint").textContent=t}
+function setHint(t){msg=t; $("#hint").textContent=t; var m=$("#hintMid"); if(m)m.textContent=t;}
+function nappKlar(){ var i=$("#nappSplash"); return !!(i && !i.dataset.mangler && i.complete && i.naturalWidth); }
+var nappT=null;
+function visNapp(){ var i=$("#nappSplash"); if(!i)return;
+  i.classList.remove("on"); void i.offsetWidth;
+  i.classList.add("on"); clearTimeout(nappT);
+  nappT=setTimeout(function(){ i.classList.remove("on"); },1300); }
 var nysCool=20; // første nys tidligst etter 20 s i båten
 function erfaren(){ if(!P||!P.caught)return false; var n=0; for(var k in P.caught){ n+=(P.caught[k]&&P.caught[k].count)||0; if(n>=20)return true; } return false; }
 var noticeT=null;
@@ -880,7 +929,7 @@ function setDepth(d){
   if(d===3){ if(!vinsjKlar())return;
     if(!P.vinsj){ setHint("Vinsj og dyphavsrigg trengs for djuphavet (300–500 m) — kjøp i butikken 🛒"); return; } }
   else if(d>P.rod){ setHint(RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+") — kjøp i butikken 🛒"); return; }
-  depth=d; camY=camHome(); // ny sone → vannlinja på samme skjermhøyde
+  depth=d; camY=camHome(); maneter.length=0; silh=null; silhKlar=null; // ny sone → vannlinja på samme skjermhøyde, og drivgodset hører til forrige sone
   updateRigChip();
   document.querySelectorAll("#depthsel button").forEach(function(x){x.classList.toggle("on",+x.dataset.d===d)});
   if(phase==="idle") setHint(erfaren()?"":ZONE[d]+" "+DEPM[d]+" valgt. Kast ut.");
@@ -974,7 +1023,7 @@ function cast(){
   else if(smorPct()<=0 && P.svc%45===11) notice("Skroget er begrodd og drar ekstra bensin — bunnsmørning hos Propell-Kjell 🐚");
   else if(Date.now()>P.havnNeste && P.svc%45===22) notice("Ørnes Båtforening purrer på havneavgiften ⚓ (betal hos Propell-Kjell)");
   P.fuel-=needF; hud(); saveAll(); Snd.cast(); castT=0.45; // ETT kast-animasjon
-  phase="sink"; descend=0;
+  phase="sink"; descend=0; rullSilhuett();
   var g=colGeom(), mn=Math.min(W,H);
   if(g){ lureW=g.wl+mn*0.05; lureTargetW=g.imgH*LTF[depth]-mn*0.04; // fra rett under overflata → like over bunn-dekoren
     camBottom=Math.min(g.maxScroll, Math.max(camHome(), lureTargetW-H*0.56));
@@ -1116,7 +1165,9 @@ function commitBite(){
   var ag=aktivAgn(); if(ag){ P.agn[ag.k]=Math.max(0,(P.agn[ag.k]||0)-1); updateRigChip(); hookedSuper=!!ag.superLegend; } else hookedSuper=false; // fisken tok agnet — brukt uansett utfall
   hooked=cf; hookedLen=(sceneFish&&sceneFish.sizeLen)||Math.round(rnd(cf.len[0],cf.len[1])); phase="bite"; hookWindow=1.6;
   if(!sceneFish)sceneFish={f:cf,x:(lureSX/W)||0.5,y:lureTargetY}; else sceneFish.committing=true;
-  setHint(erfaren()?"":"NAPP! Hold inne snella og dra inn! 🐟"); setAction("SVEIV (hold)",true); Snd.bite();
+  if(nappKlar()){ visNapp(); setHint(""); }
+  else setHint(erfaren()?"":"NAPP! Hold inne snella og dra inn! 🐟");
+  setAction("SVEIV (hold)",true); Snd.bite();
   if(navigator.vibrate)navigator.vibrate(30);
 }
 var hookFace=false, storjeTried=false, runT=0, runPow=0, hookedLen=0, hookedSuper=false; // + utras + kroket lengde + superagn-bedøvelse
@@ -2148,6 +2199,17 @@ var buoyGull=null; // måke som tar seg en pust på en av blåsene
 var bubbleImg=[]; for(var _bi=1;_bi<=8;_bi++){ var _bm=new Image(); _bm.src="spill/assets/luftboble-"+_bi+".png"; bubbleImg.push(_bm); }
 var bubbles=[]; // små luftbobler som stiger (som snø, motsatt vei)
 var dogImg=[]; ["glad","kikker","tenker"].forEach(function(n){ var im=new Image(); im.src="spill/assets/hund-blindpassasjer-"+n+".png"; dogImg.push(im); });
+// DRIVENDE MANETER + FJERNE SILHUETTER: rein stemning, ingen spillmekanikk (kan aldri kroke eller skremme fisk)
+var MANET=[{k:"drift-glassmanet",z:[0,1,2,3],w:1.0,br:0.058,puls:0.08},
+           {k:"drift-brennmanet",z:[0,1,2],  w:0.55,br:0.050,puls:0.05}];
+var manetImg={};
+MANET.forEach(function(m){ var im=new Image(); im.onerror=function(){}; im.src="spill/assets/"+m.k+".png"; manetImg[m.k]=im; });
+var maneter=[];
+var SILH=[{k:"silhuett-ubaat",z:[2,3],br:0.50,op:0.34,sjanse:1/1000,hoyre:true},
+          {k:"silhuett-hval", z:[2,3],br:0.62,op:0.26,sjanse:1/250}];
+var silhImg={};
+SILH.forEach(function(x){ var im=new Image(); im.onerror=function(){}; im.src="spill/assets/"+x.k+".png"; silhImg[x.k]=im; });
+var silh=null, silhKlar=null;
 function newFlyGull(yMin,yMax){ var dir=Math.random()<0.5?1:-1, far=Math.random()<0.5; // «far» = mindre + svakere opasitet → ser lengre bak ut (dybde)
   return {x:dir<0?1.15:-0.15, y:yMin+Math.random()*(yMax-yMin), vx:dir*(0.025+Math.random()*0.04), sc:far?0.4+Math.random()*0.2:0.6+Math.random()*0.35, op:far?0.45+Math.random()*0.25:0.92+Math.random()*0.08, ph:Math.random()*8, fr:6+Math.random()*4, glideT:0, flapT:3+Math.random()*5}; }
 function gullFrame(g,dt){ // 4-frames vingeslag, men glir 2–4 s på frame 03 (index 2) av og til
@@ -2233,7 +2295,7 @@ function loop(now){
   else if(fisherT<1) fisherT=Math.min(1,fisherT+dt/0.5);
   if(document.querySelector("#catchModal").classList.contains("on")) liftT+=dt; else liftT=0; // løft-fangst spilles ÉN gang, nullstilles mellom fangster
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH); drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,3,lobbySpawn,0); } // måker over tittelen i lobbyen
-  if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); snelleSpinn(dt); Snd.dykk(phase!=="idle"); $("#sea").classList.toggle("fishing", phase!=="idle");
+  if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); snelleSpinn(dt); Snd.dykk(phase!=="idle", dykkAndel()); $("#sea").classList.toggle("fishing", phase!=="idle");
     if(boatIn>=1&&fisherT>=1){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/140){ var rl=Math.random();
       if(rl<0.06){ Snd.fiskerFis(); dogShow(1,3); }
       else if(rl<0.40) Snd.fiskerHark();
@@ -2342,10 +2404,14 @@ function drawScene(dt){
     }
   } else buoyGull=null;
   var colTop=Math.max(0,top);
+  // hval/ubåt langt der bak — bakerst av alt i vannet
+  drawSilhuett(dt);
   // små luftbobler som stiger opp gjennom vannet (fader ut før overflata)
   drawBubbles(dt, Math.max(0,wlY), wlY);
   // ambient silhuett-fisk som krysser skjermen (1–5, 40–80 % opasitet)
   drawAmbient(dt,colTop);
+  // maneter driver forbi foran fiskestimen
+  drawManeter(dt);
   if(flee) drawSwim(W*flee.x, flee.wy-camY, flee.f, 0, flee.vx>0, false, flee.len); // den tapte fisken stikker av
   // sluk-posisjon: verdenskoordinat minus kamera (sink/wait/bite/reel); hviler under båten ellers
   var ey;
@@ -2425,6 +2491,11 @@ function drawSwim(x,y,f,angle,flip,gold,len,munnPivot){ var im=fishImg[f.k], tw=
   cx.beginPath(); cx.moveTo(s*0.85,0); cx.lineTo(s*1.15,-s*0.35); cx.lineTo(s*1.15,s*0.35); cx.closePath(); cx.fill();
   cx.fillStyle="#fff"; cx.beginPath(); cx.arc(-s*0.55,-s*0.1,s*0.09,0,7); cx.fill();
   cx.fillStyle="#111"; cx.beginPath(); cx.arc(-s*0.57,-s*0.1,s*0.045,0,7); cx.fill(); cx.restore(); }
+function dykkAndel(){
+  if(phase==="idle")return 0;
+  var g=colGeom(); if(!g||!(lureTargetW>g.wl))return 1;
+  return Math.max(0, Math.min(1, (lureW-g.wl)/(lureTargetW-g.wl)));
+}
 function pickAmbient(){
   var kveiteFinnes=(hooked&&hooked.trophy)||(sceneFish&&sceneFish.f.trophy)||ambient.some(function(a){return a.f&&a.f.trophy});
   var tot=0, ws=FISH.map(function(f){ var k=(f.trophy&&kveiteFinnes)?0:(f.rar===2?0.06:f.rar===1?0.35:1)*f.w; tot+=k; return k; });
@@ -2443,6 +2514,62 @@ function drawAmbient(dt,colTop){
     cx.save(); cx.globalAlpha=a.op; cx.translate(ax,ay); if(a.vx>0)cx.scale(-1,1);
     cx.drawImage(im,-tw/2,-th/2,tw,th); cx.restore();
   });
+}
+function nyManet(){
+  var kand=MANET.filter(function(m){ return m.z.indexOf(depth)>=0 && manetImg[m.k].complete && manetImg[m.k].naturalWidth; });
+  if(!kand.length)return null;
+  var tot=0; kand.forEach(function(m){ tot+=m.w; });
+  var r=Math.random()*tot, m=kand[kand.length-1];
+  for(var i=0;i<kand.length;i++){ r-=kand[i].w; if(r<=0){ m=kand[i]; break; } }
+  var g=colGeom(), dir=Math.random()<0.5?1:-1;
+  var top=Math.max(g?g.wl+30:H*0.35, camY), bot=camY+H;
+  return {m:m, x:dir<0?1.18:-0.18, wy:top+(bot-top)*(0.12+Math.random()*0.76),
+    vx:dir*(0.006+Math.random()*0.012), vy:(Math.random()-0.5)*9,
+    op:0.20+Math.random()*0.18, sc:0.8+Math.random()*0.45, ph:Math.random()*7, t:Math.random()*7};
+}
+function drawManeter(dt){
+  // driver saktere enn fisken, pulserer med klokka og svaier med strømmen
+  if(maneter.length<3 && Math.random()<dt*(maneter.length?0.05:0.22)){ var nm=nyManet(); if(nm)maneter.push(nm); }
+  var mn2=Math.min(W,H);
+  for(var i=maneter.length-1;i>=0;i--){
+    var a=maneter[i]; a.t+=dt; a.x+=a.vx*dt; a.wy+=a.vy*dt;
+    if(a.x<-0.32||a.x>1.32||a.wy<camY-90||a.wy>camY+H+90){ maneter.splice(i,1); continue; }
+    var im=manetImg[a.m.k]; if(!im.complete||!im.naturalWidth)continue;
+    var pu=Math.sin(a.t*1.5+a.ph)*a.m.puls, br=mn2*a.m.br*a.sc;
+    var tw=br*(1+pu*0.5), th=br*(im.naturalHeight/im.naturalWidth)*(1-pu);
+    cx.save(); cx.globalAlpha=a.op; cx.translate(W*a.x+Math.sin(a.t*0.6+a.ph)*6, a.wy-camY);
+    cx.drawImage(im,-tw/2,-th/2,tw,th); cx.restore();
+  }
+}
+function rullSilhuett(){
+  // ETT terningkast per utkast: ubåt 1 av 1000, hval 1 av 250 — begge kun på Dypt og Djuphavet.
+  // Trekningen armeres her og vises først når sluken har nådd bunnen (fase «wait»).
+  if(silh){ silhKlar=null; return; }
+  silhKlar=null;
+  for(var i=0;i<SILH.length;i++){
+    var x=SILH[i];
+    if(x.z.indexOf(depth)<0)continue;
+    if(Math.random()<x.sjanse){ silhKlar=x; break; }
+  }
+}
+function drawSilhuett(dt){
+  var fisker=(phase==="wait"||phase==="pilkfiske"||phase==="bite");
+  if(!silh){
+    if(!fisker||!silhKlar)return;
+    var im0=silhImg[silhKlar.k];
+    if(!im0.complete||!im0.naturalWidth)return;
+    var s2=silhKlar, dir=Math.random()<0.5?1:-1;
+    silhKlar=null;
+    silh={s:s2, x:dir<0?1.5:-0.5, vx:dir*(0.035+Math.random()*0.025), wy:camY+H*(0.62+Math.random()*0.26)};
+    return;
+  }
+  silh.x+=silh.vx*dt;
+  if(silh.x<-0.8||silh.x>1.8||silh.wy<camY-H*1.6||silh.wy>camY+H*2.6){ silh=null; return; }
+  var im2=silhImg[silh.s.k]; if(!im2.complete||!im2.naturalWidth)return;
+  var mn3=Math.min(W,H), tw2=mn3*silh.s.br, th2=tw2*im2.naturalHeight/im2.naturalWidth;
+  cx.save(); cx.globalAlpha=silh.s.op; cx.translate(W*silh.x, silh.wy-camY);
+  if((silh.vx>0)!==!!silh.s.hoyre)cx.scale(-1,1);
+  cx.drawImage(im2,-tw2/2,-th2/2,tw2,th2); cx.restore();
 }
 
 /* ---------- Input ---------- */
