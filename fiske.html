@@ -174,7 +174,7 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* svak, tynn strek skiller fiskene; lange agnnavn kuttes pent */
   .bookgrid .slot .nm{border-top:1px solid rgba(93,78,55,.14);padding-top:3px;margin-top:2px;width:88%}
   .slot canvas{position:static;width:56px;height:34px}
-  .slot .nm{font-size:11px;font-weight:700;line-height:1.1}
+  .slot .nm{font-size:11px;font-weight:700;line-height:1.1;overflow-wrap:anywhere} /* lange funnnavn brekkes i stedet for å kuttes */
   .slot .best{font-family:var(--mono);font-size:10px;color:var(--ink-soft)}
   .slot .stars{display:flex;gap:1px;justify-content:center;margin-top:2px}
   .stars img{width:12px;height:12px;image-rendering:pixelated} /* gjelder også utenfor kortene (artsdetaljen) */
@@ -1401,11 +1401,11 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"rolex",e:"⌚",n:"EN ROLEX! Ta den med til Rusten",kr:0,w:2.5,img:"funn-rolex-rusten.png",rolexFunn:true},
  // ——— KUN PÅ DJUPHAVSLINA (djup:true): rariteter fra 500 meter ———
  {k:"galionsfigur",e:"🛶",n:"GALIONSFIGUR fra et vikingskip — Njord selv, i eik",kr:0,w:1.6,img:"funn-galionsfigur.png",djup:true,trofeKun:true},
- {k:"dildo",e:"🍆",n:"En kjempesvær rosa gummidildo (50 cm). Ingen kommentar.",kr:0,w:2.2,img:"funn-dildo.png",djup:true,trofeKun:true},
+ {k:"sjomannsbrud",e:"💗",n:"«Sjømannsbrud» — 50 cm rosa gummi. Ingen kommentar.",kr:0,w:2.2,img:"funn-sjomannsbrud.png",djup:true,trofeKun:true},
  {k:"narhval",e:"🦄",n:"ENHJØRNINGHORN! (Rusten mistenker narhval)",kr:500,w:1.4,img:"funn-narhval.png",djup:true,trofeSelg:500},
  {k:"champagne",e:"🍾",n:"KASSE MED CHAMPAGNE fra 1600-tallsforliset",kr:0,w:1.1,img:"funn-champagne.png",djup:true,auksjon:true},
  {k:"gullmynter",e:"🪙",n:"POSE MED GULLMYNTER fra vikingtida",kr:0,w:1.0,img:"funn-gullmynter.png",djup:true,museum:1000},
- {k:"whisky",e:"🥃",n:"Striesekk med japansk whisky fra 1890-åra",kr:2000,w:1.5,img:"funn-whisky.png",djup:true,trofeSelg:2000},
+ {k:"whisky",e:"🥃",n:"Striesekk med japansk whisky fra 1890-åra",kr:2000,w:1.5,img:"funn-whiskey.png",djup:true,trofeSelg:2000},
  {k:"bolebukse",e:"👖",n:"Fillete bolebukse fra 90-tallet",kr:0,w:3.2,img:"funn-bolebukse.png",djup:true,trofeKun:true},
  {k:"familiebilde",e:"🖼️",n:"Et familiebilde — hvem var de?",kr:0,w:3.0,img:"funn-familiebilde.png",djup:true,trofeKun:true},
  {k:"raggsokk",e:"🧦",n:"Én raggsokk. Den andre er der nede et sted.",kr:0,w:3.4,img:"funn-raggsokk.png",djup:true,trofeKun:true},
@@ -1896,7 +1896,7 @@ function renderTrofe(){
   var g=document.createElement("div"); g.className="bookgrid";
   liste.forEach(function(t){ var d=trofeDef(t.k);
     var slot=document.createElement("div"); slot.className="slot";
-    var navn=d?d.n.replace(/ —.*$/,"").replace(/!$/,""):t.k;
+    var navn=d?d.n.replace(/ —.*$/,"").replace(/\s*\([^)]*\)\s*$/,"").replace(/[!.]$/,""):t.k; // kort og pen tittel i skapet
     slot.innerHTML=(d&&d.img?'<img src="spill/assets/'+bildeFil(d.img)+'" alt="" style="height:46px;image-rendering:pixelated" onerror="this.outerHTML=\'<div style=&quot;font-size:34px&quot;>'+(d.e||"🏺")+'</div>\'">':'<div style="font-size:34px">'+((d&&d.e)||"🏺")+'</div>')
       +'<div class="nm">'+esc(navn)+'</div><div class="best">'+tidSiden(t.ts)+'</div>';
     slot.title=d?d.n:t.k;
