@@ -341,6 +341,7 @@
     <div class="catch-fish" id="catchFish"></div>
     <div class="statline" id="catchName"></div>
     <div class="statline" id="catchSize"></div>
+    <div class="statline muted" id="catchRig" style="font-size:14px"></div>
     <div class="statline" id="catchKr"></div>
     <div class="row"><button class="btn ghost sm" id="catchRelease">Slipp ut</button><button class="btn sm" id="catchAgn" style="display:none">🧰 Bruk som agn</button><button class="btn gold" id="catchKeep">Selg fangst</button></div>
   </div></div>
@@ -959,6 +960,7 @@ function starSumFor(pl){ var sum=0; FISH.forEach(function(f){ var rec=pl.caught&
   var t=(rec.bestLen-f.len[0])/(f.len[1]-f.len[0]); sum+=Math.round(Math.max(0,Math.min(1,t))*10)/2; }); return sum; }
 var goldCatch=false; // 1 av 40: gyllen fisk (×3 verdi, ✨ i boka)
 function storjeSeason(){ var m=new Date().getMonth(); return m>=6&&m<=9; } // størja følger makrellen nordover: juli–oktober
+var lokkT=0, lokkOpp=0; // «lokking»: dra sluken litt opp mens fisken snuser — øker nappesjansen
 var pilkT=0, pilkKrav=12, pilkFangst=[], pilkHoldT=0; // pilkHoldT: hvor lenge dette draget har vart
 function startPilk(){ // juksa-teknikken: pump forsatsen gjennom stimen — min 10–15 s før småfisken hogger
   phase="pilkfiske"; pilkT=0; pilkKrav=10+Math.random()*5; pilkFangst=[]; pilkHoldT=0;
@@ -1002,7 +1004,9 @@ function pilkSlutt(){
   if(fikk)streakTikk(); // etter oppgjøret — kortet venter til det er lukket
 }
 function startWait(){
-  phase="wait";
+  phase="wait"; lokkT=0; lokkOpp=0; setAction("LOKK (hold)",true);
+  $("#reelui").classList.add("on"); // snella er tilgjengelig så snart sluken er nede
+  if(!erfaren())setHint("Hold inne snella for å lokke — dra sluken små rykk oppover 🎣");
   var agEff=aktivAgn(), suEff=(slukAnbefalt()&&aktivSluk())||null; // MÅ settes før rullene (agn styrer trekningen)
   goldCatch=Math.random()<0.025;
   // 1 av 150 er legendarisk, 1 av 75 er sjelden — og de biter ikke alltid (25 % / 50 %)
@@ -1033,14 +1037,14 @@ function startWait(){
     else { pool=t2.length?t2:base; bc=1; } }
   else if(roll<pL && t2.length){ pool=t2; bc=0.25; }
   else if(roll<pL+pR && t1.length && t1!==base){ pool=t1; bc=0.5; }
-  else { pool=base; bc=1; }
+  else { pool=base; bc=slukAnbefalt()?0.86:0.62; } // også hverdagsfisk kan snuse og gli unna — oftere på feil sluk
   var vekter=poolVekter(pool), tot=0; vekter.forEach(function(w){tot+=w});
   var r=Math.random()*tot, acc=0, cf=pool[0];
   for(var i=0;i<pool.length;i++){acc+=vekter[i]; if(r<=acc){cf=pool[i];break;}}
-  var dir=Math.random()<0.5?1:-1;
-  // fisken kommer inn fra en side og snuser rundt sluken – kan svømme forbi, snu og komme igjen
-  sceneFish={ f:cf, x:dir<0?1.2:-0.2, y:Math.min(0.92,lureTargetY+0.12), vx:-dir*(0.10+Math.random()*0.06),
-    passes:0, t:0, budget:rnd(5,36)*(slukAnbefalt()?1:1.4)*((aktivSluk()&&aktivSluk().dud)?2.5:1), committing:false, biteChance:bc, tested:false, leaving:false, // feil sluk → tregere napp; spøkesluk → nesten ingen
+  var dir=Math.random()<0.5?1:-1, lxf0=(lureSX/W)||0.5;
+  // fisken stiger opp FRA DJUPET litt til siden for sluken, snuser rundt den, kan svømme forbi og komme igjen
+  sceneFish={ f:cf, x:Math.max(0.06,Math.min(0.94, lxf0+dir*(0.12+Math.random()*0.26))), y:1.10, vx:-dir*(0.10+Math.random()*0.06),
+    passes:0, t:0, mal:null, fart:0.11, budget:rnd(5,30)*(slukAnbefalt()?1:1.4)*((aktivSluk()&&aktivSluk().dud)?2.5:1), committing:false, biteChance:bc, tested:false, leaving:false, // feil sluk → tregere napp; spøkesluk → nesten ingen
     sizeLen:Math.round(agEff&&agEff.superLegend ? cf.len[0]+(0.6+0.4*Math.random())*(cf.len[1]-cf.len[0]) : rnd(cf.len[0],cf.len[1])) }; // størrelsen rulles NÅ; superagnet lokker de STØRSTE
 }
 function approachStep(dt){
@@ -1049,17 +1053,32 @@ function approachStep(dt){
   if(s.leaving){ s.x+=s.vx*dt*1.6; if(s.x<-0.25||s.x>1.25) startWait(); return; } // vraket sluken → ny fisk kommer
   if(s.committing){ // bestemt seg → svøm rett mot sluken, så napp
     if(Math.abs(lxf-s.x)>0.01) s.vx=Math.abs(s.vx)*(lxf>s.x?1:-1); // vend nesa mot sluken (biter med munnen)
-    s.x+=(lxf-s.x)*Math.min(1,dt*2.4); s.y+=(lureTargetY-s.y)*Math.min(1,dt*2.4);
+    var lyf2=(H>0&&typeof lureSY==="number")?Math.max(0.05,Math.min(0.98,lureSY/H)):lureTargetY;
+    s.x+=(lxf-s.x)*Math.min(1,dt*1.5); s.y+=(lyf2-s.y)*Math.min(1,dt*1.6); // siste innsvinget er rolig
     if(Math.abs(s.x-lxf)<0.03) commitBite(); return;
   }
-  s.x+=s.vx*dt; s.y+=(lureTargetY-s.y)*Math.min(1,dt*0.35);
-  if(Math.abs(s.x-lxf)<0.06){ var ch=0.16+s.passes*0.14+s.t/45; if(s.t>s.budget)ch=1; // tar den til slutt
+  if(s.mal==null)nyttSving(s,lxf);
+  var d=s.mal-s.x, brems=Math.min(1,Math.abs(d)/0.09); // bremser ned mot vendepunktet — ingen hard sprett i kanten
+  s.vx=(d>0?1:-1)*s.fart*(0.22+0.78*brems);
+  s.x+=s.vx*dt;
+  var lyf=(H>0&&typeof lureSY==="number")?Math.max(0.05,Math.min(0.98,lureSY/H)):lureTargetY; // fisken følger sluken i høyden
+  s.y+=(lyf-s.y)*Math.min(1,dt*(s.y>0.99?0.9:0.35)); // stiger raskt inn i bildet, snuser rolig etterpå
+  if(Math.abs(s.x-lxf)<0.06){ // nysgjerrigheten vokser for hver runde rundt sluken (ikke bare med tida)
+    var ch=[0.004,0.02,0.07,0.16,0.30][Math.min(s.passes,4)] + Math.max(0,(s.t-14)/70);
+    if(lokkT>0)ch*=2.2; // lokkinga virker: rykk i sluken trigger nappet
+    if(s.t>s.budget)ch=1; // tar den til slutt
     if(Math.random()<ch*dt*4){
       if(!s.tested){ s.tested=true;
         if(Math.random()>=(s.biteChance||1)){ s.leaving=true; s.vx=Math.abs(s.vx)*(s.x>0.5?1:-1)*1.3;
           setHint("Den snuste på sluken … og gled unna."); return; } }
       s.committing=true; if(Math.random()<0.5)Snd.fiskerHmm(); return; } }
-  if(s.x<0.08||s.x>0.92){ s.vx=-s.vx; s.passes++; s.x=Math.max(0.08,Math.min(0.92,s.x)); } // snur ved kanten
+  if(Math.abs(d)<0.012){ s.passes++; nyttSving(s,lxf); } // vendte — nytt mønster, litt roligere runde
+}
+function nyttSving(s,lxf){ // fisken svømmer FORBI sluken, snur mykt og kommer igjen — ulik lengde hver gang
+  var over=0.10+Math.random()*0.35;                       // 10-45 % av skjermen forbi sluken
+  var retn=(s.x>lxf)?-1:1;                                // alltid mot og forbi sluken
+  s.mal=Math.max(0.05,Math.min(0.95, lxf+retn*over));
+  s.fart=(s.passes===0?0.17:0.085)*Math.max(0.5,1-Math.max(0,s.passes-1)*0.12)+Math.random()*0.03; // kommer raskt inn, snuser saktere for hver runde
 }
 function commitBite(){
   var cf=sceneFish?sceneFish.f:FISH.filter(function(f){return (f.z===depth||f.zb===depth||f.allZ) && f.k!=="makrellstorje"})[0];
@@ -1176,6 +1195,7 @@ function land(){
   visNyArt(isNew&&!f.trophy); // stempel over plansjen ved førstegangsfangst (storkveita har sin egen fest)
   $("#catchName").innerHTML="<b>"+f.n+"</b>"+(gold?' ✨':'')+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>'+(isNew?'<span class="newtag">NY</span>':'')+(isRecord&&!isNew?'<span class="newtag">REKORD</span>':'');
   $("#catchSize").innerHTML="Lengde <b>"+len+" cm</b> · vekt <b>"+wt+" kg</b>";
+  $("#catchRig").textContent="Tatt på: "+rigNavn(); // samme opplysning som på rekordkortene
   $("#catchKr").innerHTML="Verdi: <b>"+kr+" kr</b>"+(isDaily?' <span class="newtag" title="Rustens bestilling i dag">BESTILLING +50%</span>':'')
     +(famBeat?'<div class="famrec">🏅 NY FAMILIEREKORD — du slo '+esc(famBeat.nm)+' ('+famBeat.len+' cm)!</div>':'');
   dogShow(0,7); Snd.gladDog(); // fisken er i båten — hunden bjeffer av glede
@@ -2065,7 +2085,12 @@ function loop(now){
       camY=Math.min(camBottom, Math.max(camHome(), lureW-H*0.55)); }
     if(descend>=1){ lureW=lureTargetW; camY=camBottom; var su0=aktivSluk(); if(su0&&su0.pilk)startPilk(); else startWait(); }
   }
-  else if(phase==="wait"){ approachStep(dt); }
+  else if(phase==="wait"){
+    var tak=Math.min(H*0.30, (lureTargetW-camBottom)*0.55); // du kan lokke sluken et stykke opp, men ikke hele veien inn
+    if(holding){ lokkOpp=Math.min(tak, lokkOpp+H*0.16*dt); lokkT=1.1; Snd.reelSound(true); }
+    else { lokkOpp=Math.max(0, lokkOpp-H*0.10*dt); Snd.reelSound(false); }
+    lureW=lureTargetW-lokkOpp; if(lokkT>0)lokkT-=dt;
+    approachStep(dt); }
   else if(phase==="bite"){ hookWindow-=dt; if(sceneFish){var _t=(lureSX/W)||0.5; if(Math.abs(_t-sceneFish.x)>0.01)sceneFish.vx=Math.abs(sceneFish.vx||0.1)*(_t>sceneFish.x?1:-1); sceneFish.x+=(_t-sceneFish.x)*Math.min(1,dt*3);} if(hookWindow<=0) miss(); }
   else if(phase==="reel"){ reelStep(dt); }
   else if(phase==="idle"){
@@ -2158,12 +2183,14 @@ function drawScene(dt){
   if(active) ey=lureW-camY;
   else ey=wlY+mn*0.07;
   lureSX=lineX; lureSY=ey;
+  var rigDy=0; // hvor langt NED på sluken kroken sitter — der fisken skal bite
   // snøret går fra stang-tuppen (også når den er rullet ut av bildet) og ned til sluken — venter til fiskeren er ombord
   if(fisherT>=1){
     cx.strokeStyle="rgba(255,255,255,.55)"; cx.lineWidth=1.5; cx.beginPath(); cx.moveTo(lineX,top); cx.lineTo(lineX,ey); cx.stroke();
     var rb=rigBilde(); // sluken/agnet henger i enden av snøret
     if(rb){ var vw=rb.naturalWidth, vh=rb.naturalHeight, lang=mn*0.05; // spritene har ulike proporsjoner:
       var sk=lang/Math.max(vw,vh), rw=vw*sk, rh=vh*sk;                  // skaler etter LENGSTE side
+      rigDy=lang*0.55; // kroken henger nede på sluken
       cx.save(); cx.translate(lineX, ey+lang*0.4);
       cx.rotate((vh>=vw?0:Math.PI/2) + Math.sin(bob*1.6)*0.08);          // liggende kunst legges loddrett; alt vugger så vidt
       cx.drawImage(rb,-rw/2,-rh/2,rw,rh); cx.restore(); }
@@ -2173,14 +2200,14 @@ function drawScene(dt){
   if(active){
     if(phase!=="reel" && sceneFish){
       var biter=(phase==="bite"); // har tatt sluken: munnen skal sitte PÅ kroken
-      var fx=biter?lineX:W*sceneFish.x, fy=(phase==="wait")?(colTop+(H-colTop)*sceneFish.y):ey;
+      var fx=biter?lineX:W*sceneFish.x, fy=(phase==="wait")?(colTop+(H-colTop)*sceneFish.y):(ey+rigDy);
       drawSwim(fx,fy,sceneFish.f,0, sceneFish.vx>0, goldCatch, sceneFish.sizeLen, biter);
     }
     if(phase==="reel"&&hooked){ // fisken snur seg etter kroking: biter med munnen, halen ned, munnen opp mot kroken
       var r=Math.min(1,fightT/1.6), runFlat=(runT>0?0.45:1), tw=fishScale(hooked,hookedLen);
       var sprell=(runT>0)?Math.sin(bob*17)*0.34:0, sX=(runT>0)?Math.sin(bob*23)*tw*0.07:0; // spreller når den gjør motstand
       var ang=(1.35*r*runFlat + 0.06*Math.sin(bob*5)*r + sprell)*(hookFace?-1:1);
-      drawSwim(lineX+sX, ey, hooked, ang, hookFace, goldCatch, hookedLen, true); // munnen i kroken, kroppen henger etter
+      drawSwim(lineX+sX, ey+rigDy, hooked, ang, hookFace, goldCatch, hookedLen, true); // munnen i kroken nede på sluken
     }
   }
 }
@@ -2203,10 +2230,15 @@ function fishScale(f,len){ var L=len||((f.len[0]+f.len[1])/2); // individuell le
   return Math.min(W,H)*Math.max(0.042,Math.min(0.288, L*0.00102)); }
 var snelleGrad=0; // snella roteres jevnt (ett PNG — mye mykere enn sprite-hakking)
 function snelleSpinn(dt){
-  var im=$("#snelleImg"); if(!im)return;
+  var im=$("#snelleImg"), ab=$("#actionBtn"); if(!im)return;
+  var rund=!!(ab&&ab.classList.contains("snellebtn"));
+  im.style.visibility=rund?"":"hidden"; // snella vises BARE når den runde knappen er aktiv (aldri oppå «HUGG!»)
+  var tb=document.querySelector("#reelui .vbar.tension");
+  if(tb)tb.style.visibility=(phase==="reel")?"":"hidden"; // spenn er meningsløst før fisken sitter
   var fart=0; // sveiver du, går snella framover; tar fisken ut line, spinner den bakover
   if(phase==="reel"){ fart = runT>0 ? -520 : (holding?400:0); }
   else if(phase==="pilkfiske"){ fart = holding?330:-190; }
+  else if(phase==="wait"){ fart = holding?260:0; } // lokking: snella går sakte rundt
   if(!fart)return;
   snelleGrad=(snelleGrad+fart*dt)%360;
   im.style.transform="rotate("+snelleGrad.toFixed(1)+"deg)";
@@ -2284,13 +2316,13 @@ $("#potTake").onclick=function(){ modal("potModal",false); updatePotBtn(); };
 // hold-to-reel
 var ab=$("#actionBtn");
 function down(e){ if(phase==="bite"){ tryHook(); holding=true; e.preventDefault(); return; } // krok i det fingeren treffer — hele 1,6 s-vinduet
-  if(phase==="reel"||phase==="pilkfiske"){holding=true; e.preventDefault();} }
+  if(phase==="reel"||phase==="pilkfiske"||phase==="wait"){holding=true; e.preventDefault();} }
 function up(){ if(holding&&phase==="pilkfiske")pilkPump(); holding=false; }
 ab.addEventListener("pointerdown",down); window.addEventListener("pointerup",up);
 window.addEventListener("pointercancel",up); window.addEventListener("blur",up); // slipp SVEIV om nettleseren avbryter pekeren
 document.addEventListener("visibilitychange",function(){ if(document.hidden)up(); });
 window.addEventListener("keydown",function(e){ if(!$("#sea").classList.contains("on")||document.querySelector(".modal.on"))return; if(e.code==="Space"){ e.preventDefault();
-  if(phase==="idle")cast(); else if(phase==="bite")tryHook(); else if(phase==="reel"||phase==="pilkfiske")holding=true; } });
+  if(phase==="idle")cast(); else if(phase==="bite")tryHook(); else if(phase==="reel"||phase==="pilkfiske"||phase==="wait")holding=true; } });
 window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("on"))return; if(e.code==="Space"){ if(holding&&phase==="pilkfiske")pilkPump(); holding=false; } });
 
 // logo hvis fila finnes
