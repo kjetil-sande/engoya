@@ -116,6 +116,8 @@
   #nyArtWrap img{max-height:72px;image-rendering:pixelated;display:none}
   #nyArtWrap span{display:inline-block;background:var(--red);color:#fff;font-weight:800;font-size:20px;padding:6px 14px;border-radius:10px;box-shadow:0 4px 0 rgba(0,0,0,.25);letter-spacing:1px}
   @keyframes nyArtPop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+  #streakModal{align-items:flex-end;padding:0 10px calc(14px + env(safe-area-inset-bottom))}
+  #streakModal .card{max-height:min(60%,460px);overflow:auto}
   #rekModal{align-items:flex-end;padding:0 10px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(10,25,30,.08) 0%,rgba(10,25,30,.14) 45%,rgba(10,25,30,.55) 78%)}
   #rekModal .cardwrap{margin:0 auto}
   #rekModal .card{max-height:min(52%,420px);overflow:auto} /* flyter med samme bunnavstand som «Kast ut»-knappen */
@@ -151,10 +153,14 @@
   /* Book */
   .bookgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:8px}
   .slot{background:#fff8ea;border:2px solid var(--paper-2);border-radius:10px;padding:6px 4px;text-align:center;min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .slot .redsk{border-top:1px solid rgba(93,78,55,.16);padding-top:2px;margin-top:1px;width:88%;font-size:9px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* svak, tynn strek skiller fiskene; lange agnnavn kuttes pent */
+  .bookgrid .slot .nm{border-top:1px solid rgba(93,78,55,.14);padding-top:3px;margin-top:2px;width:88%}
   .slot canvas{position:static;width:56px;height:34px}
   .slot .nm{font-size:11px;font-weight:700;line-height:1.1}
   .slot .best{font-family:var(--mono);font-size:10px;color:var(--ink-soft)}
   .slot .stars{display:flex;gap:1px;justify-content:center;margin-top:2px}
+  .stars img{width:12px;height:12px;image-rendering:pixelated} /* gjelder også utenfor kortene (artsdetaljen) */
   .slot .stars img{width:12px;height:12px;image-rendering:pixelated}
   .famrec{margin-top:8px;padding:6px 10px;background:#fdf3d6;border:2px solid var(--gold);border-radius:9px;font-weight:700;font-size:13px}
   .curtain{position:absolute;top:0;height:100%;width:53%;object-fit:cover;z-index:60;pointer-events:none;image-rendering:pixelated;display:none}
@@ -227,6 +233,13 @@
     .hint{font-size:17px}
     #notice{font-size:18px}
   }
+  @media (max-width:389px){ /* 🔥-brikken skal ikke tvinge en tredje HUD-rad på smale telefoner */
+    #hud .chip{padding:8px 8px}
+    #hud .fuel{width:40px}
+    #hud #hudStreakChip{padding:0 2px;gap:2px;background:none;box-shadow:none;backdrop-filter:none;
+      color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.75)} /* bar flamme-badge, ikke egen brikke */
+    #hud #hudStreakChip b{color:#fff}
+  }
   @media (min-width:521px) and (max-width:620px){ /* 5 knapper + chips sprenger én rad her — bryt i to som på mobil */
     #hud{flex-wrap:wrap}
     #hud .spacer{flex-basis:100%;height:0}
@@ -257,6 +270,7 @@
       <div class="chip"><span class="hudPenge">💰</span> <b id="hudKr">0</b> kr</div>
       <div class="chip"><img src="spill/assets/bensinkanne.png" alt="Bensin" class="hudBensin" onerror="this.outerHTML='⛽'"> <div class="fuel"><i id="hudFuel"></i></div></div>
       <button class="chip" id="hudLure" title="Sluksettet" style="pointer-events:auto;cursor:pointer;border:0">🪝 0</button>
+      <div class="chip" id="hudStreakChip" title="Dager på rad med fangst" style="display:none">🔥 <b id="hudStreak">0</b></div>
       <div class="spacer"></div>
       <button class="iconbtn butikkknapp" id="openShop" title="Butikk"><img src="spill/assets/rusten-mot-venstre.gif" alt="Butikk" style="max-height:32px;max-width:32px;image-rendering:pixelated" onerror="this.outerHTML='🛒'"></button>
       <button class="iconbtn butikkknapp" id="openKjell" title="Propell-Kjell verksted"><img src="spill/assets/logoikon-propell-kjell.gif" alt="Verksted" style="max-height:29px;max-width:29px;image-rendering:pixelated" onerror="this.outerHTML='🔧'"></button>
@@ -329,6 +343,12 @@
     <p class="muted" id="shopKr"></p>
     <div id="shopList"></div>
   </div></div></div>
+
+  <!-- STREAK: dagens belønning -->
+  <div class="modal" id="streakModal"><div class="cardwrap" style="max-width:340px">
+    <img src="spill/assets/knapp-lukk.png" id="streakLukk" class="lukkx" alt="Lukk">
+    <div class="card center" id="streakKort"></div>
+  </div></div>
 
   <!-- PROPELL-KJELL (verksted og slip) -->
   <div class="modal" id="kjellModal"><div class="cardwrap">
@@ -635,7 +655,7 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
     Object.keys(ny.players).forEach(function(nm){ if(famFarlig(nm))return; var np=ny.players[nm]; if(!np)return;
       if(!egen(DB.players,nm)){ DB.players[nm]=np; return; }
       var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
-      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.smorTs!=null)lp.smorTs=np.smorTs; }
+      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; }
     });
   }catch(e){} });
 /* ---------- Familierekorder på nett (Netlify Blobs via familiekode) ---------- */
@@ -654,16 +674,17 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
 function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvasker)
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
     propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
-    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, tidMs:P.tidMs, smorTs:P.smorTs}; }
+    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, tidMs:P.tidMs, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd}; }
 function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
   return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.ekko
     && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
 function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE feltene — trygt å løfte inn overalt, kan aldri krympe noe
   if(g.rod!=null)lp.rod=Math.max(lp.rod||0,+g.rod||0); // kjøpt utstyr kan aldri nedgraderes av en gammel innsending
   if(g.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,+g.tidMs||0); // spilletid er også monoton
+  if(g.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,+g.streakBest||0); // rekordstreaken er monoton
   ["vinsj","ekko","turbo"].forEach(function(k){ if(g[k])lp[k]=true; }); }
 function gearInn(lp,g){ if(!g||typeof g!=="object")return; // på fjernspeil: siste innsending vinner (ts-porten står utenfor)
-  ["fuel","fuelMax","svc","forsTil","havnNeste","smorTs","propOk","motorOk","rolex","lures","pots","agn"].forEach(function(k){ if(g[k]!=null)lp[k]=g[k]; });
+  ["fuel","fuelMax","svc","forsTil","havnNeste","smorTs","propOk","motorOk","rolex","lures","pots","agn","streak","streakDag","naadeMnd"].forEach(function(k){ if(g[k]!=null)lp[k]=g[k]; });
   gearLoft(lp,g);
   if(typeof g.motor==="string")lp.motor=g.motor; if(typeof g.rig==="string")lp.rig=g.rig; }
 function famTaImot(j){ // flett serverens familiebilde inn lokalt — erstatt aldri, lokal fremgang kan ikke krympes
@@ -742,6 +763,8 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.pots==null)P.pots={owned:0,bait:0,cap:2,out:[],rescue:false}; // teiner (fase 1: krabbeteine)
   if(P.pots.ownedH==null)P.pots.ownedH=0; // hummerteiner (sesong: 1. okt–31. des)
   if(P.tidMs==null)P.tidMs=0; // spilletid på havet, i millisekunder
+  if(P.streak==null){P.streak=0; P.streakDag=0; P.streakBest=0;} // dager på rad med fangst
+  if(P.streakBest==null)P.streakBest=P.streak||0; if(P.naadeMnd==null)P.naadeMnd="";
   if(P.smorTs==null)P.smorTs=Date.now()-50*864e5; // eksisterende båter starter halvveis til begrodd
   if(P.smorTs>Date.now())P.smorTs=Date.now(); // gal klientklokke skal ikke gi evig full smørning
   if(P.svc==null)P.svc=0; // turer siden forrige båtservice (Propell-Kjell, Ørnes)
@@ -765,6 +788,7 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
 function hud(){
   $("#hudKr").textContent=P.kr;
   $("#hudFuel").style.width=Math.max(0,Math.min(100,P.fuel/P.fuelMax*100))+"%";
+  var sc=$("#hudStreakChip"); if(sc){ sc.style.display=(P.streak||0)>=2?"flex":"none"; $("#hudStreak").textContent=P.streak||0; }
   updateRigChip();
 }
 
@@ -811,6 +835,7 @@ function setDepth(d){
 function toSea(){Snd.themeOff(); Snd.ambienceOn(); show("sea"); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth((depth>=2&&P.motor!=="stor")?Math.min(1,P.rod):depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase==="idle")setHint("📋 Rusten betaler +50 % for "+dk.n.toLowerCase()+" i dag. "+ZONE[dk.z]+" ("+DEPM[dk.z]+")."); },1200);
   setTimeout(visRekordKort, 2800); // familiens siste rekorder — én gang per økt, når båten har glidd inn
+  setTimeout(streakVis, 4200);   // uhentet streak-gave (lukket med X) ligger klar til neste tur — aldri tapt
   oppdaterVaerLyd();
   syncFam();
   var ht=hoytid(); if(ht){ try{ var hk="storkveita-hoytid", today=new Date().toISOString().slice(0,10);
@@ -949,7 +974,8 @@ function pilkSlutt(){
   if(pilkFangst.length){ P.kr+=total; Snd.coin(); if(pilkFangst.length>=3)setTimeout(Snd.fiskerLettet,300); }
   $("#potTitle").textContent="🎣 Pilkefangst";
   $("#potTotal").innerHTML=total?('Solgt til Rusten: <b>'+total+' kr</b>'):'';
-  pilkFangst=[]; hud(); saveAll(); syncFam(); modal("potModal",true);
+  var fikk=pilkFangst.length>0; pilkFangst=[]; hud(); saveAll(); syncFam(); modal("potModal",true);
+  if(fikk)streakTikk(); // etter oppgjøret — kortet venter til det er lukket
 }
 function startWait(){
   phase="wait";
@@ -1114,6 +1140,7 @@ function land(){
   else if(fightT>45) setTimeout(Snd.fiskerLettet,400);              // puster ut etter lang kamp
   syncFam();
   saveAll(); modal("catchModal",true); (f.trophy||gold?Snd.trophy():(isRecord&&!isNew?Snd.trophy():Snd.land()));
+  streakTikk(); // sist: streak-kortet venter til fangstplansjen er lukket
   if(navigator.vibrate)navigator.vibrate(f.trophy?[80,50,80,50,120]:60);
 }
 var nyArtOK=null; // null=ikke prøvd ennå; eiers ny-art.png plugges automatisk inn når den lander i assets
@@ -1427,6 +1454,7 @@ function pullPot(ty){ ty=ty||"k";
   P.pots.out.splice(idx,1); P.kr+=res.total; hud(); saveAll(); updatePotBtn(); if(ty==="l")syncFam();
   if(fikkKveite){ Snd.trophy(); notice("STORKVEITA GIKK PÅ LINA! 🏆"); dogShow(0,7); Snd.gladDog(); }
   else if(res.lines.some(function(l){return l.fk==="haakjerring"})){ Snd.trophy(); notice("HÅKJERRINGA GIKK PÅ LINA! 🦈 Havets eldste!"); dogShow(0,7); Snd.gladDog(); setTimeout(Snd.fiskerImponert,500); }
+  if(res.lines.length)setTimeout(streakTikk,0); // etter at trekk-boksen er åpnet
   $("#potTitle").textContent = ty==="l"?"🪢 Linetrekk":ty==="h"?"🦞 Hummerteinetrekk":"🦀 Teinetrekk";
   var L=$("#potList"); L.innerHTML="";
   if(!res.lines.length){
@@ -1628,6 +1656,63 @@ function openMap(){
   modal("mapModal",true);
 }
 
+/* ---------- Streak: dager på rad med fangst ---------- */
+// Dagen snus 04:00, ikke midnatt — kveldsfiske etter midnatt teller til «i går».
+function dagNr(t){ return Math.floor((((t||Date.now())-4*3600000)/864e5)); }
+function maksSone(){ return P.vinsj?3:(P.rod>=2?2:(P.rod>=1?1:0)); }
+function gaveTrekk(dag,n){ // stabil «tilfeldighet» per spiller og dag — ingen omtrilling ved å lukke kortet
+  var s=(P.streakDag||0)*7919 + dag*104729 + 13;
+  for(var i=0;i<(P.name||"").length;i++)s=(s*31 + P.name.charCodeAt(i))>>>0;
+  s^=s<<13; s>>>=0; s^=s>>17; s^=s<<5; s>>>=0;
+  return s%n; }
+function streakGave(dag){
+  var uke=Math.floor((dag-1)/7);
+  if(dag>=30 && dag%30===0) return {e:"🏆",t:"5000 kr og gratis service hos Kjell!",gi:function(){P.kr+=5000; P.svc=0;}};
+  if(dag>=14 && dag%14===0) return {e:"✨",t:"1500 kr og en boks Rustens Spesialagn!",gi:function(){P.kr+=1500; P.agn.rustenspesial=(P.agn.rustenspesial||0)+1;}};
+  switch(((dag-1)%7)+1){
+    case 1: if(dag===1)return null; var k1=Math.min(300,100+50*uke); // bare aller første dag er uten gave
+      return {e:"💰",t:k1+" kr",gi:function(){P.kr+=k1;}};
+    case 2: return {e:"🪱",t:"3 teineagn fra Rusten",gi:function(){P.pots.bait=(P.pots.bait||0)+3;}};
+    case 3: return {e:"⛽",t:"Halv tank bensin",gi:function(){P.fuel=Math.min(P.fuelMax,P.fuel+Math.round(P.fuelMax/2));}};
+    case 4: var k4=Math.min(400,150+50*uke); return {e:"💰",t:k4+" kr",gi:function(){P.kr+=k4;}};
+    case 5: var pool=AGN.filter(function(a){return !a.kunFangst&&!a.superLegend&&!a.rar}), a5=pool[gaveTrekk(dag,pool.length)];
+      return {e:a5.e,t:"En boks "+a5.n.toLowerCase(),gi:function(){P.agn[a5.k]=(P.agn[a5.k]||0)+(a5.pakke||1);}};
+    case 6: return {e:"⛽",t:"Full tank bensin",gi:function(){P.fuel=P.fuelMax;}};
+    default: var k7=Math.min(1500,500+250*uke), ms=maksSone();
+      var kand=SLUK.filter(function(u){ return !(P.lures[u.k]>0) && !u.dud && u.k!=="agnrigg" && u.rec.some(function(d){return d<=ms}); });
+      var u7=kand.length?kand[gaveTrekk(dag+1,kand.length)]:null;
+      return {e:"🎣",t:"UKESBONUS: "+k7+" kr"+(u7?" og en "+u7.n.toLowerCase():" (og full tank!)"),
+        gi:function(){P.kr+=k7; if(u7)P.lures[u7.k]=(P.lures[u7.k]||0)+1; else P.fuel=P.fuelMax;}};
+  }
+}
+function streakTikk(){ // kalles når du faktisk har fått noe i båten
+  if(!P)return; var d=dagNr(), sist=P.streakDag||0;
+  if(sist===d)return;                                  // dagen er alt registrert
+  var mnd=new Date().toISOString().slice(0,7), brutt=false;
+  if(sist===d-1) P.streak=(P.streak||0)+1;
+  else if(sist===d-2 && sist>0 && P.naadeMnd!==mnd){ P.naadeMnd=mnd; P.streak=(P.streak||0)+1; } // én nådedag i måneden
+  else { brutt=(P.streak||0)>1; P.streak=1; }
+  P.streakDag=d; if(P.streak>(P.streakBest||0))P.streakBest=P.streak;
+  P.streakGave=P.streak; P.streakBrutt=brutt; saveAll(); hud(); streakVis();
+}
+function streakVis(){
+  if(!P||!P.streakGave)return;
+  if(document.querySelector(".modal.on")){ setTimeout(streakVis,900); return; } // vent til fangstkortet er lukket
+  var dag=P.streakGave, g=streakGave(dag), m=$("#streakKort");
+  m.innerHTML='<div style="font-size:42px;line-height:1">🔥</div>'
+    +'<h2 style="margin:2px 0">'+(dag===1?(P.streakBrutt?"Ny start!":"Streak i gang!"):dag+" dager på rad!")+'</h2>'
+    +'<p class="muted" style="margin:0 0 10px">'+(P.streakBrutt&&dag===1?"Streaken røk — men her er dag 1 igjen. "
+      :dag===1?"Fisk minst én fisk hver dag, så vokser streaken. ":"")+"Beste noensinne: "+(P.streakBest||dag)+" dager."+'</p>';
+  if(g) m.insertAdjacentHTML("beforeend",'<div class="statline" style="font-size:17px"><span style="font-size:26px;vertical-align:-3px">'+g.e+'</span> <b>'+g.t+'</b></div>');
+  m.insertAdjacentHTML("beforeend",'<div class="row" style="justify-content:center;margin-top:10px"><button class="btn gold" id="streakHent">'+(g?"Hent belønningen 🎁":"Ut og fisk! 🎣")+'</button></div>');
+  $("#streakHent").onclick=function(){
+    if(g){ g.gi(); Snd.coin(); if(dag%7===0)setTimeout(Snd.fiskerJubel,250); }
+    P.streakGave=0; P.streakBrutt=false; saveAll(); hud(); updateRigChip(); updatePotBtn();
+    modal("streakModal",false); if(g)notice("🔥 Dag "+dag+": "+g.t);
+  };
+  modal("streakModal",true);
+}
+
 /* ---------- Fangstbok ---------- */
 function openBook(which){
   which = which==="fam"||which==="rek" ? which : "mine";
@@ -1649,14 +1734,13 @@ function starsHTML(bestLen,f){ // stjerner = hvor stor rekordfangsten er ift. ar
   return h+'</div>'; }
 function renderMine(){
   var g=document.createElement("div"); g.className="bookgrid";
-  var frec=famRecords(), flertall=Object.keys(DB.players).length>1;
   FISH.forEach(function(f){
     var rec=P.caught[f.k];
     var slot=document.createElement("div"); slot.className="slot"+(rec?"":" locked")+(f.trophy?" trophy":"");
-    slot.style.cursor="pointer"; slot.onclick=function(){ renderArtDetalj(f); }; // hvem i familien har den største?
+    slot.style.cursor="pointer"; slot.onclick=function(){ renderArtDetalj(f); }; // min egen side om arten
     if(rec){
       var c=document.createElement("canvas"); slot.appendChild(c); drawFish(c,f,56,34,false);
-      slot.insertAdjacentHTML("beforeend",'<div class="nm">'+f.n+(rec.gold?' <span title="Gyllen fanget!">✨</span>':'')+(flertall&&frec[f.k]&&frec[f.k].holders.indexOf(P.name)>=0?' <span title="Du har familierekorden!">🥇</span>':'')+'</div><div class="best">'+rec.bestLen+' cm · '+(rec.bestWt||"?")+' kg · '+rec.count+' stk</div>'+starsHTML(rec.bestLen,f)+'<span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>');
+      slot.insertAdjacentHTML("beforeend",'<div class="nm">'+f.n+(rec.gold?' <span title="Gyllen fanget!">✨</span>':'')+'</div><div class="best">'+rec.bestLen+' cm · '+(rec.bestWt||"?")+' kg · '+rec.count+' stk</div>'+(rec.redskap?'<div class="best redsk" title="'+esc(rec.redskap)+'">🪝 '+esc(rec.redskap)+'</div>':'')+starsHTML(rec.bestLen,f)+'<span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>');
     } else {
       var c2=document.createElement("canvas"); slot.appendChild(c2); drawFish(c2,f,56,34,true);
       slot.insertAdjacentHTML("beforeend",'<div class="nm">'+(f.trophy?"???":f.n)+'</div><div class="best">ikke fanget</div>'+'<span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>');
@@ -1665,36 +1749,40 @@ function renderMine(){
   });
   var m=$("#bookMine"); m.innerHTML=""; m.appendChild(g);
 }
-function renderArtDetalj(f){ // familiens toppliste for én art (klikk i Min bok)
+function renderArtDetalj(f){ // MIN side om arten (familiens tall står i Rekorder og Familien)
   var m=$("#bookMine"); m.innerHTML="";
-  var rad=[];
-  Object.keys(DB.players).forEach(function(nm){ var pl=DB.players[nm], r=pl&&pl.caught&&pl.caught[f.k];
-    if(r&&r.bestLen>0)rad.push({nm:nm,r:r}); });
-  rad.sort(function(a,b){return b.r.bestLen-a.r.bestLen});
-  var vis=(rad.length||!f.trophy)?f.n:"???";
+  var r=P.caught[f.k], vis=(r||!f.trophy)?f.n:"???";
   m.insertAdjacentHTML("beforeend",'<button class="btn sm ghost" id="artTilbake">← Alle artene</button>');
   var cv=document.createElement("canvas"); cv.style.cssText="position:static;display:block;margin:6px auto;width:140px;height:80px"; m.appendChild(cv);
-  drawFish(cv,f,140,80,rad.length===0);
+  drawFish(cv,f,140,80,!r);
   m.insertAdjacentHTML("beforeend",'<h2 style="text-align:center;margin:0">'+vis+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span></h2>'
     +'<p class="muted center" style="margin:2px 0 8px;font-size:12px">Arten blir '+f.len[0]+'–'+f.len[1]+' cm</p>');
   var box=document.createElement("div"); box.className="fam"; m.appendChild(box);
-  if(!rad.length) box.innerHTML='<p class="muted center">Ingen i familien har fanget denne ennå — bli den første! 🎣</p>';
-  else rad.forEach(function(x,i){ var hvem=(P&&x.nm===P.name)?"deg":x.nm;
-    box.insertAdjacentHTML("beforeend",'<div class="frow"><b>'+(i===0?"🥇 ":i===1?"🥈 ":i===2?"🥉 ":"&nbsp;&nbsp;&nbsp;")+esc(hvem)+'</b><span>'
-      +x.r.bestLen+' cm · '+(x.r.bestWt||"?")+' kg · '+x.r.count+' stk'+(x.r.gold?' ✨':'')+'</span></div>'); });
+  if(!r) box.innerHTML='<p class="muted center">Denne har du ikke fått ennå — lykke til! 🎣</p>';
+  else{
+    box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Min beste</b><span><b>'+r.bestLen+' cm</b>'+(r.bestWt?' · '+r.bestWt+' kg':'')+'</span></div>');
+    box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Antall</b><span>'+r.count+' stk'+(r.gold?' · '+r.gold+' gyllen ✨':'')+'</span></div>');
+    if(r.redskap) box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Tatt på</b><span>🪝 '+esc(r.redskap)+'</span></div>');
+    if(r.rts) box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Rekorden er fra</b><span>'+tidSiden(r.rts)+'</span></div>');
+    box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Stjerner</b><span>'+starsHTML(r.bestLen,f)+'</span></div>');
+  }
   $("#artTilbake").onclick=function(){ renderMine(); };
 }
 function renderFam(){
   var box=$("#bookFam"); box.innerHTML="";
   var names=Object.keys(DB.players);
   var rows=names.map(function(nm){var pl=DB.players[nm]; var kv=pl.caught["kveite"];
-    return {nm:nm, arter:Object.keys(pl.caught).length, kveite: kv?kv.bestLen:0, kr:pl.kr, stars:starSumFor(pl), tid:pl.tidMs||0}});
+    return {nm:nm, arter:Object.keys(pl.caught).length, kveite: kv?kv.bestLen:0, kr:pl.kr, stars:starSumFor(pl), tid:pl.tidMs||0, streak:pl.streak||0}});
   rows.sort(function(a,b){return b.stars-a.stars || b.arter-a.arter || b.kveite-a.kveite});
-  box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Spiller</b><span>★ · Arter · Kveite · Tid</span></div>');
+  box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Spiller</b><span>★ · Arter · Kveite · Tid · 🔥</span></div>');
   var code=famCode();
   rows.forEach(function(r){
-    box.insertAdjacentHTML("beforeend",'<div class="frow"><b>'+esc(r.nm)+'</b><span>★ '+r.stars+' · '+r.arter+' arter'+(r.kveite?' · 🏆 '+r.kveite+' cm':'')+(r.tid?' · 🕐 '+tidTekst(r.tid):'')+'</span></div>');
+    box.insertAdjacentHTML("beforeend",'<div class="frow"><b>'+esc(r.nm)+'</b><span>★ '+r.stars+' · '+r.arter+' arter'+(r.kveite?' · 🏆 '+r.kveite+' cm':'')+(r.tid?' · 🕐 '+tidTekst(r.tid):'')+(r.streak>1?' · 🔥 '+r.streak:'')+'</span></div>');
   });
+  var beste=names.map(function(nm){return {nm:nm, b:DB.players[nm].streakBest||0}}).filter(function(x){return x.b>0})
+    .sort(function(a,b){return b.b-a.b}).slice(0,3);
+  if(beste.length) box.insertAdjacentHTML("beforeend",'<div class="frow"><b>🔥 Lengste streak</b><span>'
+    +beste.map(function(x){return (P&&x.nm===P.name?"deg":esc(x.nm))+' '+x.b+' d'}).join(' · ')+'</span></div>');
   if(!rows.length)box.innerHTML='<p class="muted center">Ingen spillere ennå.</p>';
   box.insertAdjacentHTML("beforeend", code
     ? '<p class="muted center" style="margin-top:10px;font-size:12px">👨‍👩‍👧 Familiekode: <b>'+esc(code)+'</b>'+(famInfo?' · '+esc(famInfo):'')+' <button class="btn sm" id="famBytt">Bytt</button></p>'
@@ -1712,8 +1800,8 @@ function famRecords(){ // beste lengde per art på tvers av alle spillere (lokal
     Object.keys(DB.players).forEach(function(nm){
       var pl=DB.players[nm], r=pl&&pl.caught&&pl.caught[f.k];
       if(!r||!(r.bestLen>0))return;
-      if(!best||r.bestLen>best.len) best={len:r.bestLen,wt:r.bestWt||0,holders:[nm]};
-      else if(r.bestLen===best.len){ best.holders.push(nm); best.wt=Math.max(best.wt,r.bestWt||0); }
+      if(!best||r.bestLen>best.len) best={len:r.bestLen,wt:r.bestWt||0,holders:[nm],redskap:r.redskap||""};
+      else if(r.bestLen===best.len){ best.holders.push(nm); best.wt=Math.max(best.wt,r.bestWt||0); if(!best.redskap&&r.redskap)best.redskap=r.redskap; }
     });
     if(best)out[f.k]=best;
   });
@@ -1733,7 +1821,7 @@ function renderRek(){
     if(r){
       var navn=r.holders.map(function(nm){return nm===me?"deg":esc(nm)});
       var hvem=navn.length<=1?navn.join(""):navn.slice(0,-1).join(", ")+" og "+navn[navn.length-1];
-      right.innerHTML='🥇 '+hvem+' · <b>'+r.len+' cm</b>'+(r.wt?' · '+r.wt+' kg':'');
+      right.innerHTML='🥇 '+hvem+' · <b>'+r.len+' cm</b>'+(r.wt?' · '+r.wt+' kg':'')+(r.redskap?'<br><span class="muted">🪝 '+esc(r.redskap)+'</span>':'');
     } else right.innerHTML='<span class="muted">ingen ennå</span>';
     row.appendChild(left); row.appendChild(right); box.appendChild(row);
   });
@@ -2119,6 +2207,7 @@ $("#tabMine").onclick=function(){openBook("mine")}; $("#tabFam").onclick=functio
 $("#hudLure").onclick=function(){ if(!$("#sea").classList.contains("on"))return; renderRig(); modal("rigModal",true); };
 $("#rigClose").onclick=function(){ modal("rigModal",false); };
 $("#rekLukk").onclick=function(){ modal("rekModal",false); };
+$("#streakLukk").onclick=function(){ modal("streakModal",false); }; // lukker man uten å hente, ligger gaven klar til neste fangst
 $("#catchKeep").onclick=function(){resolveCatch(true)}; $("#catchRelease").onclick=function(){resolveCatch(false)};
 $("#catchAgn").onclick=function(){resolveCatch("agn")};
 document.querySelectorAll("#depthsel button").forEach(function(b){ b.onclick=function(){ if(phase!=="idle")return; setDepth(+b.dataset.d); }; });
@@ -2147,7 +2236,7 @@ window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("o
   im.src="spill/assets/spill-logo-liten.gif"; })(); // optimalisert utgave (64 kB mot 627 kB png)
 
 /* ---------- Start ---------- */
-window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null,pilk:phase==="pilkfiske"?{t:+pilkT.toFixed(1),krav:+pilkKrav.toFixed(1),n:pilkFangst.length,hold:holding}:null}}};
+window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,streak:streakTikk,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null,pilk:phase==="pilkfiske"?{t:+pilkT.toFixed(1),krav:+pilkKrav.toFixed(1),n:pilkFangst.length,hold:holding}:null}}};
 renderPlayers(); resize(); requestAnimationFrame(loop);
 })();
 </script>

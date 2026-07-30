@@ -24,9 +24,9 @@ const egen = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // aldri arve
 
 // Utstyr følger spilleren over nett (samme «siste innsending vinner»-regel som kroner),
 // slik at familien kan logge inn på en ny enhet og få igjen stang, vinsj, turbosnelle osv.
-const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs"];
+const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs", "streak", "streakDag", "streakBest"];
 const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "motorOk"];
-const GEAR_TEKST = { motor: 10, rig: 24 };
+const GEAR_TEKST = { motor: 10, rig: 24, naadeMnd: 7 };
 // Objektfeltene vaskes TYPET (aldri rå gjennomstrømming): nøkler må være pene id-er og
 // verdier tall/boolske — da finnes det ingen vei for skript eller rare typer inn i andres lagring.
 const PEN_NOKKEL = /^[a-z0-9_-]{1,24}$/;
@@ -112,8 +112,11 @@ function flettSpiller(fam, p) {
     if (g) { // gamle klienter uten gear lar forrige utstyr stå
       const gml = cur.gear && typeof cur.gear === "object" ? cur.gear : {};
       if (g.smorTs == null && gml.smorTs != null) g.smorTs = gml.smorTs; // gamle klienter uten feltet kan ikke viske ut betalt bunnsmørning
+      for (const k of ["streak", "streakDag", "naadeMnd"]) // samme vern for streaken
+        if (g[k] == null && gml[k] != null) g[k] = gml[k];
       g.rod = Math.max(tall(gml.rod, 99), tall(g.rod, 99));         // kjøpt/opptjent kan aldri
       g.tidMs = Math.max(tall(gml.tidMs, 9e15), tall(g.tidMs, 9e15)); // krympe, uansett klokkerot
+      g.streakBest = Math.max(tall(gml.streakBest, 9e15), tall(g.streakBest, 9e15)); // beste streak er en rekord — aldri ned
       for (const k of ["vinsj", "ekko", "turbo"]) if (gml[k]) g[k] = true;
       cur.gear = g;
     }
