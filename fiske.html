@@ -456,6 +456,7 @@ var Snd=(function(){
   // --- Ekte lyd-klipp: sjø + fugler + snelle (sømløse Web Audio-loops) + butikk-kjøp (one-shot) ---
   var buffers={}, loaded=false;
   var loops={ sea:{url:"spill/lyd/bolgeskvulp.aac",  vol:0.22,  want:false, node:null},   // bølgeskvulp når man fisker
+              undervann:{url:"spill/lyd/undervann.aac", vol:0.34, want:false, node:null}, // bobler og djuphavsdur når sluken synker
               bird:{url:"spill/lyd/fuglelyder.aac",   vol:0.22, want:false, node:null},   // fugler lavt i bakgrunnen
               reel:{url:"spill/lyd/fiskesnelle-loop.aac", vol:0.55, want:false, node:null},   // snelle mens man sveiver
               regn:{url:"spill/lyd/regn.aac", vol:0.55, want:false, node:null},                  // regnvær fra MET
@@ -506,6 +507,7 @@ var Snd=(function(){
   function startLoop(name){ var c=AC(),L=loops[name]; if(!c||!L||L.node||muted||!L.want)return; var buf=buffers[name]; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; s.loop=true; var g=c.createGain(); g.gain.value=L.vol; s.connect(g); g.connect(c.destination); try{s.start()}catch(e){} L.node={s:s,g:g}; }
   function stopLoop(name){ var L=loops[name]; if(L&&L.node){ try{L.node.s.stop()}catch(e){} L.node=null; } }
+  var regnNa=false, dykket=false; // vær- og dykketilstand styrer miksen
   function wantLoop(name,on){ var L=loops[name]; if(!L)return; L.want=on; if(on)startLoop(name); else stopLoop(name); }
   function oneShot(name){ var c=AC(),o=ONESHOT[name]; if(!c||!o||muted)return; var buf=buffers[name]; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; var g=c.createGain(); g.gain.value=o.vol; s.connect(g); g.connect(c.destination); try{s.start()}catch(e){} }
@@ -519,15 +521,25 @@ var Snd=(function(){
     unlock:function(){ var c=AC(); if(c&&c.state!=="running"){try{c.resume()}catch(e){}} loadAll(); },
     isMuted:function(){return muted;},
     setMuted:function(m){ muted=m; try{localStorage.setItem("storkveita-muted",m?"1":"0")}catch(e){}; if(theme)theme.muted=m; if(m){stopAllLoops(); motorStop(0);} else restartWanted(); },
-    ambienceOn:function(){ loadAll(); wantLoop("sea",true); wantLoop("bird",true); },
-    ambienceOff:function(){ wantLoop("sea",false); wantLoop("bird",false); wantLoop("reel",false); wantLoop("regn",false); wantLoop("vindL",false); },
-    vaerLyd:function(regnOn,vindOn){ loadAll(); wantLoop("regn",!!regnOn); wantLoop("vindL",!!vindOn);
-      this.settLoopVol("sea", regnOn?0.10:0.22); }, // regnet skal eie lydbildet i uvær
+    ambienceOn:function(){ loadAll(); dykket=false; this.settLoopVol("sea",regnNa?0.10:0.22); this.settLoopVol("bird",0.22); wantLoop("sea",true); wantLoop("bird",true); },
+    ambienceOff:function(){ dykket=false; wantLoop("sea",false); wantLoop("bird",false); wantLoop("undervann",false); wantLoop("reel",false); wantLoop("regn",false); wantLoop("vindL",false); },
+    vaerLyd:function(regnOn,vindOn){ loadAll(); wantLoop("regn",!!regnOn); wantLoop("vindL",!!vindOn); regnNa=!!regnOn;
+      if(!dykket)this.settLoopVol("sea", regnOn?0.10:0.22); }, // regnet skal eie lydbildet i uvær (men undervann eier det enda mer)
     torden:function(){ var c=["torden1","torden2","torden3"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
     munnspill:function(){ var c=["munnspill1","munnspill2"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
     reelSound:function(on){ wantLoop("reel",!!on); },
     utrasLyd:function(on){ wantLoop("strittL",!!on); }, // snella hviner så lenge fisken tar ut line
     settLoopVol:function(name,vol){ var L=loops[name]; if(!L)return; L.vol=vol; if(L.node&&L.node.g)L.node.g.gain.value=vol; },
+    fadeLoopVol:function(name,vol,sek){ var L=loops[name], c=AC(); if(!L)return; L.vol=vol;
+      if(L.node&&L.node.g&&c){ try{ L.node.g.gain.setTargetAtTime(vol,c.currentTime,Math.max(0.08,sek||0.8)/3); }catch(e){ L.node.g.gain.value=vol; } } },
+    dykk:function(ned){ ned=!!ned; if(ned===dykket)return; dykket=ned; loadAll(); // sluken går i vannet: over vann tones ned, undervannslyden opp
+      this.fadeLoopVol("sea",  ned?0.05:(regnNa?0.10:0.22), 1.0);
+      this.fadeLoopVol("bird", ned?0.02:0.22, 1.0);
+      if(ned){ wantLoop("undervann",true); var L=loops.undervann, c=AC();
+        if(L.node&&L.node.g&&c){ try{ L.node.g.gain.setValueAtTime(0.0001,c.currentTime); }catch(e){} }
+        this.fadeLoopVol("undervann",0.34,1.4); }
+      else { this.fadeLoopVol("undervann",0.0001,0.9);
+        setTimeout(function(){ if(!dykket)wantLoop("undervann",false); },1200); } },
     themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; theme.volume=0.45; } theme.muted=muted; theme.play().catch(function(){}); },
     themeOff:function(){ if(theme)theme.pause(); },
     click:function(){ if(buffers.klikk1||buffers.klikk2){ altClick=!altClick; oneShot(altClick&&buffers.klikk1?"klikk1":"klikk2"); } else beep(430,0.05,"square",0.05,320); },
@@ -2221,7 +2233,7 @@ function loop(now){
   else if(fisherT<1) fisherT=Math.min(1,fisherT+dt/0.5);
   if(document.querySelector("#catchModal").classList.contains("on")) liftT+=dt; else liftT=0; // løft-fangst spilles ÉN gang, nullstilles mellom fangster
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH); drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,3,lobbySpawn,0); } // måker over tittelen i lobbyen
-  if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); snelleSpinn(dt); $("#sea").classList.toggle("fishing", phase!=="idle");
+  if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); snelleSpinn(dt); Snd.dykk(phase!=="idle"); $("#sea").classList.toggle("fishing", phase!=="idle");
     if(boatIn>=1&&fisherT>=1){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/140){ var rl=Math.random();
       if(rl<0.06){ Snd.fiskerFis(); dogShow(1,3); }
       else if(rl<0.40) Snd.fiskerHark();
