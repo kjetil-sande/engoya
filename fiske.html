@@ -100,7 +100,7 @@
   .hint{color:#eaf3ee;font-family:var(--mono);font-size:16px;font-weight:600;text-shadow:0 1px 3px #000a;min-height:20px;text-align:center}
 
   /* Kamp-UI: rund snelle midt på, spenn til venstre og dybde til høyre — i skjermkantene */
-  :root{--snelle:min(46vw,190px)}
+  :root{--snelle:min(39vw,162px)} /* 15 % mindre enn før (46vw/190px) — folk syntes snella tok for mye plass */
   #reelui{display:none}
   #reelui.on{display:flex;position:absolute;left:10px;right:10px;bottom:calc(14px + env(safe-area-inset-bottom));
     justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:6}
@@ -948,8 +948,9 @@ function cast(){
   var g=colGeom(), mn=Math.min(W,H);
   if(g){ lureW=g.wl+mn*0.05; lureTargetW=g.imgH*LTF[depth]-mn*0.04; // fra rett under overflata → like over bunn-dekoren
     camBottom=Math.min(g.maxScroll, Math.max(camHome(), lureTargetW-H*0.56));
-    lureTargetY=Math.min(0.92,(lureTargetW-camBottom)/H); }        // sluk-posisjon på skjermen når vi er nede (brukes av napp-fisken)
-  else { lureW=H*0.35; lureTargetW=H*0.6; camBottom=0; lureTargetY=[0.5,0.58,0.64,0.7][depth]; castNoGeom=true; }
+    var tk=slukTak(); if(lureTargetW-camBottom>tk*H)lureTargetW=camBottom+tk*H; // aldri bak snella
+    lureTargetY=Math.min(tk,(lureTargetW-camBottom)/H); }        // sluk-posisjon på skjermen når vi er nede (brukes av napp-fisken)
+  else { lureW=H*0.35; lureTargetW=H*0.6; camBottom=0; lureTargetY=Math.min(slukTak(),[0.5,0.58,0.64,0.7][depth]); castNoGeom=true; }
   lureY=0.06;
   setHint(""); setAction("…",false);
 }
@@ -1762,7 +1763,9 @@ function streakVis(){
   if(!P||!P.streakGave)return;
   if(document.querySelector(".modal.on")){ setTimeout(streakVis,900); return; } // vent til fangstkortet er lukket
   var dag=P.streakGave, g=streakGave(dag), m=$("#streakKort");
-  m.innerHTML='<div style="line-height:1"><img src="spill/assets/streak-flamme.png" alt="" style="height:52px;image-rendering:pixelated" onerror="this.outerHTML=\'<span style=&quot;font-size:42px&quot;>🔥</span>\'"></div>'
+  var milepel=(dag%7===0); // ukesmerke på dag 7, 14, 21, 30 …
+  m.innerHTML='<div style="line-height:1"><img src="spill/assets/streak-flamme.png" alt="" style="height:52px;image-rendering:pixelated" onerror="this.outerHTML=\'<span style=&quot;font-size:42px&quot;>🔥</span>\'">'
+    +(milepel?'<img src="spill/assets/streak-uke.png" alt="" style="height:46px;margin-left:6px;vertical-align:6px;image-rendering:pixelated" onerror="this.style.display=\'none\'">':'')+'</div>'
     +'<h2 style="margin:2px 0">'+(dag===1?(P.streakBrutt?"Ny start!":"Streak i gang!"):dag+" dager på rad!")+'</h2>'
     +'<p class="muted" style="margin:0 0 10px">'+(P.streakBrutt&&dag===1?"Streaken røk — men her er dag 1 igjen. "
       :dag===1?"Fisk minst én fisk hver dag, så vokser streaken. ":"")+"Beste noensinne: "+(P.streakBest||dag)+" dager."+'</p>';
@@ -1902,7 +1905,8 @@ function resize(){ DPR=Math.min(2,window.devicePixelRatio||1); var r=$("#stage")
   if(typeof phase!=="undefined" && P && phase!=="idle"){ var g=colGeom(); // rotasjon midt i kamp → reberegn kamera/sluk-geometri
     if(g){ lureTargetW=g.imgH*LTF[depth]-Math.min(W,H)*0.04;
       camBottom=Math.min(g.maxScroll, Math.max(camHome(), lureTargetW-H*0.56));
-      lureTargetY=Math.min(0.92,(lureTargetW-camBottom)/H);
+      var tk2=slukTak(); if(lureTargetW-camBottom>tk2*H)lureTargetW=camBottom+tk2*H; // aldri bak snella
+      lureTargetY=Math.min(tk2,(lureTargetW-camBottom)/H);
       if(phase==="wait"||phase==="bite"){ lureW=lureTargetW; camY=camBottom; } } } }
 window.addEventListener("resize",resize);
 var boatImg=new Image(),boatReady=false; boatImg.onload=function(){boatReady=true}; boatImg.src="spill/assets/spill-baat-ny.png";
@@ -1945,6 +1949,9 @@ updateDyptImg();
 var WLF=[0.332,0.179,0.118,0.089]; // vannlinjas andel av bildehøyden pr. nivå (målt; nivå 4 automåles ved lasting)
 var DESC_DUR=[3.2,6,10,14];        // nedstigningstid i sek pr. nivå (dypere = lengre ferd)
 var LTF=[0.79,0.75,0.89,0.93];     // slukens måldybde (andel av bildet) — Grunt 10 % over bunn-dekoren, mellomdyp over berget
+function slukTak(){ // sluken skal ALDRI havne bak snella nederst på skjermen
+  var sn=$("#snelleImg"), h=(sn&&sn.getBoundingClientRect().height)||Math.min(W*0.39,162);
+  return Math.max(0.45, Math.min(0.9, 1-(h+30)/H)); }
 var camY=0, camBottom=0, descend=0, lureW=0, lureTargetW=0, castNoGeom=false; // kamera + sluk i verdenskoordinater (px i bildet)
 function colGeom(){ var img=waterImg[depth]; if(!img||!img.complete||!img.naturalWidth)return null;
   // tredje ledd: zoom nok til at vannlinja ALLTID kan ligge på 34 % skjermhøyde (høye mobilskjermer)
@@ -2080,7 +2087,8 @@ function loop(now){
     var g0=colGeom();
     if(g0&&castNoGeom){ castNoGeom=false; lureTargetW=g0.imgH*LTF[depth]-Math.min(W,H)*0.04; // bildet kom midt i senkinga → riktig geometri
       camBottom=Math.min(g0.maxScroll, Math.max(camHome(), lureTargetW-H*0.56));
-      lureTargetY=Math.min(0.92,(lureTargetW-camBottom)/H); }
+      var tk3=slukTak(); if(lureTargetW-camBottom>tk3*H)lureTargetW=camBottom+tk3*H; // aldri bak snella
+      lureTargetY=Math.min(tk3,(lureTargetW-camBottom)/H); }
     if(g0){ lureW=(g0.wl+Math.min(W,H)*0.05)+(lureTargetW-(g0.wl+Math.min(W,H)*0.05))*de;
       camY=Math.min(camBottom, Math.max(camHome(), lureW-H*0.55)); }
     if(descend>=1){ lureW=lureTargetW; camY=camBottom; var su0=aktivSluk(); if(su0&&su0.pilk)startPilk(); else startWait(); }
