@@ -25,7 +25,7 @@ const egen = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // aldri arve
 // Utstyr følger spilleren over nett (samme «siste innsending vinner»-regel som kroner),
 // slik at familien kan logge inn på en ny enhet og få igjen stang, vinsj, turbosnelle osv.
 const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs", "streak", "streakDag", "streakBest"];
-const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "motorOk"];
+const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "motorOk", "sattDekk"];
 const GEAR_TEKST = { motor: 10, rig: 24, naadeMnd: 7 };
 // Objektfeltene vaskes TYPET (aldri rå gjennomstrømming): nøkler må være pene id-er og
 // verdier tall/boolske — da finnes det ingen vei for skript eller rare typer inn i andres lagring.
@@ -37,6 +37,21 @@ function vaskTelleObjekt(o, maksN) { // {slukId: antall} — lures/agn
     if (!PEN_NOKKEL.test(k) || FARLIGE.has(k)) continue;
     const v = tall(o[k], 1e6); if (v) ut[k] = v;
   }
+  return Object.keys(ut).length ? ut : undefined;
+}
+// Spilletid per døgn: {"20260731": ms}. Monotont per dag, akkurat som artsrekordene,
+// så to enheter samtidig kan aldri viske ut hverandres timer.
+const DAG_NOKKEL = /^\d{8}$/;
+function vaskDager(o, gml) {
+  if (!o || typeof o !== "object" || Array.isArray(o)) return gml;
+  const ut = gml && typeof gml === "object" ? { ...gml } : {};
+  for (const k of Object.keys(o)) {
+    if (!DAG_NOKKEL.test(k) || FARLIGE.has(k)) continue;
+    const v = tall(o[k], 86_400_000);
+    if (v > (ut[k] || 0)) ut[k] = v;
+  }
+  const n = Object.keys(ut).sort();          // ett år og litt til er nok historikk
+  if (n.length > 400) for (const k of n.slice(0, n.length - 400)) delete ut[k];
   return Object.keys(ut).length ? ut : undefined;
 }
 function vaskPots(p) {
@@ -68,6 +83,11 @@ function vaskGear(g) {
   const agn = vaskTelleObjekt(g.agn, 40); if (agn) ut.agn = agn;
   const pots = vaskPots(g.pots); if (pots) ut.pots = pots;
   const rolex = vaskRolex(g.rolex); if (rolex) ut.rolex = rolex;
+  const dager = vaskDager(g.dager, undefined); if (dager) ut.dager = dager; // manglet i hvitelista — døgnloggen ble kastet
+  if (typeof g.tidligereNavn === "string") {
+    const tn = g.tidligereNavn.replace(/\p{Cc}/gu, "").trim().slice(0, 14);
+    if (tn && !FARLIGE.has(tn)) ut.tidligereNavn = tn;
+  }
   return Object.keys(ut).length ? ut : undefined;
 }
 
@@ -114,10 +134,12 @@ function flettSpiller(fam, p) {
       if (g.smorTs == null && gml.smorTs != null) g.smorTs = gml.smorTs; // gamle klienter uten feltet kan ikke viske ut betalt bunnsmørning
       for (const k of ["streak", "streakDag", "naadeMnd"]) // samme vern for streaken
         if (g[k] == null && gml[k] != null) g[k] = gml[k];
+      g.dager = vaskDager(vaskDager(g.dager, undefined), gml.dager); // døgnene flettes, aldri overskrives
+      if (g.tidligereNavn == null && gml.tidligereNavn != null) g.tidligereNavn = gml.tidligereNavn;
       g.rod = Math.max(tall(gml.rod, 99), tall(g.rod, 99));         // kjøpt/opptjent kan aldri
       g.tidMs = Math.max(tall(gml.tidMs, 9e15), tall(g.tidMs, 9e15)); // krympe, uansett klokkerot
       g.streakBest = Math.max(tall(gml.streakBest, 9e15), tall(g.streakBest, 9e15)); // beste streak er en rekord — aldri ned
-      for (const k of ["vinsj", "ekko", "turbo"]) if (gml[k]) g[k] = true;
+      for (const k of ["vinsj", "ekko", "turbo", "sattDekk"]) if (gml[k]) g[k] = true; // sette flagg kan aldri tas tilbake
       cur.gear = g;
     }
   }
