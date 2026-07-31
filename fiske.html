@@ -1381,9 +1381,16 @@ function tegnStjerner(dt,wlY){
   // månen bakerst, halv opasitet så den hviler i himmelen
   var mim=maaneBilde();
   if(mim&&mim.complete&&mim.naturalWidth&&g0){
-    var my=(camHome()+(g0.wl-camHome())*0.42)-camY, msz=mn*0.13; // under HUD-raden, godt over horisonten
-    if(my>-msz&&my<wlY){ cx.save(); cx.globalAlpha=0.5;
-      cx.drawImage(mim, W*0.80-msz/2, my-msz/2, msz, msz); cx.restore(); }
+    // Målt fjellprofil: Mellomdyp har rygg allerede 18-28 % nede i himmelen (de andre sonene 47-54 %),
+    // og fjellene er høyest mot høyre. Derfor står månen høyt og til venstre for midten.
+    var my=(camHome()+(g0.wl-camHome())*0.17)-camY, msz=mn*0.13, mx=W*0.42;
+    if(my>-msz&&my<wlY){
+      cx.save();
+      var gl=cx.createRadialGradient(mx,my,msz*0.34,mx,my,msz*1.15);
+      gl.addColorStop(0,"rgba(255,236,180,.20)"); gl.addColorStop(1,"rgba(255,236,180,0)");
+      cx.fillStyle=gl; cx.beginPath(); cx.arc(mx,my,msz*1.15,0,7); cx.fill();
+      cx.globalAlpha=0.5; cx.drawImage(mim, mx-msz/2, my-msz/2, msz, msz);
+      cx.restore(); }
   }
   if(!stjImg[3].complete||!stjImg[3].naturalWidth)return;
   if(!stjerner){ stjerner=nyStjerner(); if(!stjerner)return; }
