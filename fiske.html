@@ -127,6 +127,17 @@
   #reelui.on{display:flex;position:absolute;left:10px;right:10px;bottom:calc(14px + env(safe-area-inset-bottom));
     justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:6}
   #reelui.on .vbar{height:var(--snelle)}
+  /* Gnist bak turbosnella: sprite-ark (4 rammer) sentrert på snella, styrt av spennet i JS */
+  #gnist{position:absolute;left:50%;bottom:calc(var(--snelle) * -0.28);
+    width:calc(var(--snelle) * 1.56);height:calc(var(--snelle) * 1.56);transform:translateX(-50%);
+    background-image:url("spill/assets/gnist-ark.png");background-size:400% 100%;background-repeat:no-repeat;
+    image-rendering:pixelated;opacity:0;pointer-events:none;transition:opacity .12s linear}
+  /* Mynta i pengebrikka snurrer et lite øyeblikk når kassa vokser */
+  .hudPenge.mynt{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;color:transparent;
+    background-image:url("spill/assets/mynt-ark.png");background-size:800% 100%;background-position:0 0;
+    background-repeat:no-repeat;image-rendering:pixelated}
+  .hudPenge.mynt.snurr{animation:myntSnurr .72s steps(8) 2}
+  @keyframes myntSnurr{from{background-position-x:0%}to{background-position-x:100%}}
   #snelleImg{width:var(--snelle);height:var(--snelle);object-fit:contain;image-rendering:pixelated;
     will-change:transform;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))} /* roteres jevnt av snelleSpinn */
   /* snella ER knappen når snøret er ute: ren sprite, ingen gullflate eller ramme */
@@ -339,6 +350,7 @@
     <div class="bottom">
       <p class="hint" id="hint">Velg dybde og kast ut.</p>
       <div id="reelui">
+        <div id="gnist"></div>
         <div class="vbar tension"><span class="lab">SPENN</span><i id="tensionBar"></i></div>
         <img id="snelleImg" src="spill/assets/fiskesnelle-ny.png" alt="" onerror="this.style.visibility='hidden'">
         <div class="vbar prog"><span class="lab">DYBDE</span><i id="progBar"></i></div>
@@ -879,7 +891,15 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   saveAll(); $("#playBtn").disabled=false; $("#playBtn").textContent="Dra på lopphavet → ("+name+")"}
 
 /* ---------- HUD ---------- */
+var sisteKr=null, myntT=null;
 function hud(){
+  if(sisteKr!=null&&P.kr>sisteKr){
+    // kassa vokste — la mynta snurre to runder
+    var mn0=$(".hudPenge");
+    if(mn0&&mn0.classList.contains("mynt")){ mn0.classList.remove("snurr"); void mn0.offsetWidth; mn0.classList.add("snurr");
+      clearTimeout(myntT); myntT=setTimeout(function(){ mn0.classList.remove("snurr"); },1500); }
+  }
+  sisteKr=P.kr;
   $("#hudKr").textContent=P.kr;
   $("#hudFuel").style.width=Math.max(0,Math.min(100,P.fuel/P.fuelMax*100))+"%";
   var sc=$("#hudStreakChip"); if(sc){ sc.style.display=(P.streak||0)>=2?"flex":"none"; $("#hudStreak").textContent=P.streak||0; }
@@ -929,7 +949,7 @@ function setDepth(d){
   if(d===3){ if(!vinsjKlar())return;
     if(!P.vinsj){ setHint("Vinsj og dyphavsrigg trengs for djuphavet (300–500 m) — kjøp i butikken 🛒"); return; } }
   else if(d>P.rod){ setHint(RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+") — kjøp i butikken 🛒"); return; }
-  depth=d; camY=camHome(); maneter.length=0; silh=null; silhKlar=null; // ny sone → vannlinja på samme skjermhøyde, og drivgodset hører til forrige sone
+  depth=d; camY=camHome(); maneter.length=0; silh=null; silhKlar=null; stjerner=null; // ny sone → vannlinja på samme skjermhøyde, og drivgodset hører til forrige sone
   updateRigChip();
   document.querySelectorAll("#depthsel button").forEach(function(x){x.classList.toggle("on",+x.dataset.d===d)});
   if(phase==="idle") setHint(erfaren()?"":ZONE[d]+" "+DEPM[d]+" valgt. Kast ut.");
@@ -1013,7 +1033,7 @@ function cast(){
     notice("KLONK! Propellen slo i noe og røk 🛠️ Propell-Kjell har ny.");
     if(navigator.vibrate)navigator.vibrate([40,30,80]); return; }
   if(P.motorOk && Math.random()<(P.svc>250?1/60:1/1500) && P.kr>=8000){ // over service = STOR havarifare; en godt vedlikeholdt motor havarerer nesten aldri (kun når reparasjon er innen rekkevidde)
-    P.motorOk=false; saveAll(); Snd.fiskerSur(); Snd.sadDog(); dogShow(2,5);
+    P.motorOk=false; smellT=0; saveAll(); Snd.fiskerSur(); Snd.sadDog(); dogShow(2,5);
     notice("MOTORHAVARI! 💥 Den hostet, smalt og døde. Propell-Kjell tar imot …");
     if(navigator.vibrate)navigator.vibrate([90,60,90,60,140]); return; }
   flee=null; // evt. rømmende fisk ryddes ved nytt kast
@@ -1308,6 +1328,84 @@ function resolveCatch(sell){
 /* ---------- Vær: regn, vind, torden + motorrøyk ---------- */
 var regnImg=[1,2,3].map(function(i){ var im=new Image(); im.src="spill/assets/regn-sprite-0"+i+".png"; return im; });
 var roykImg=new Image(); roykImg.onerror=function(){}; roykImg.src="spill/assets/motorroyk.png"; // auto-plug når eier lager den
+// Motorhavariet: 8-rammers eksplosjon fra eiers gif, pakket om til ett ark (canvas kan ikke animere gif)
+var smellImg=new Image(); smellImg.onerror=function(){}; smellImg.src="spill/assets/motorsmell-ark.png";
+var smellT=-1; // teller 0 → SMELL_TID mens eksplosjonen spilles, ellers -1
+// BLINKENDE STJERNER: seks faste stjerner i nattehimmelen som glimter av og til.
+// Posisjonene ligger i VERDENSKOORDINATER, så de står stille når kameraet farer nedover.
+var stjImg=[]; for(var _si=1;_si<=4;_si++){ var _sm=new Image(); _sm.onerror=function(){}; _sm.src="spill/assets/star-sparkle-sprite-0"+_si+".png"; stjImg.push(_sm); }
+var stjerner=null;
+// MÅNEN: fem faser fra eier. Fasevinkelen hentes fra METs månefase-API (kilden bak Yr):
+// 0 grader = nymåne (usynlig, ingen måne tegnes), 180 = fullmåne.
+var maaneImg={}; ["01","02","03","04","full"].forEach(function(n){ var im=new Image(); im.onerror=function(){}; im.src="spill/assets/maane-"+n+".png"; maaneImg[n]=im; });
+var maaneFase=null;
+function maaneLokal(){
+  // reservefase om nettet svikter — treffer innenfor et døgn
+  var syn=29.530588853, d=(Date.now()/86400000)+2440587.5-2451550.26;
+  return (((d%syn)+syn)%syn)/syn*360; }
+function maaneBilde(){
+  var g=maaneFase==null?maaneLokal():maaneFase;
+  if(g<40||g>=320)return null;
+  if(g<115)return maaneImg["02"];
+  if(g<160)return maaneImg["01"];
+  if(g<205)return maaneImg["full"];
+  if(g<255)return maaneImg["03"];
+  return maaneImg["04"]; }
+function hentMaane(){
+  var dag=new Date().toISOString().slice(0,10), nk="storkveita-maane";
+  try{ var c=JSON.parse(localStorage.getItem(nk)||"null"); if(c&&c.d===dag){ maaneFase=c.g; return; } }catch(e){}
+  fetch("https://api.met.no/weatherapi/sunrise/3.0/moon?lat=66.8706&lon=13.6733&date="+dag)
+    .then(function(r){ return r.json(); })
+    .then(function(j){ var g=j&&j.properties&&j.properties.moonphase;
+      if(typeof g==="number"){ maaneFase=g; try{ localStorage.setItem(nk,JSON.stringify({d:dag,g:g})); }catch(e){} } })
+    .catch(function(){});
+}
+hentMaane();
+function nyStjerner(){
+  var g=colGeom(); if(!g)return null;
+  var ut=[], n=6;
+  for(var i=0;i<n;i++){
+    // spredt utover bredden, og i himmelbeltet godt over vannlinja
+    ut.push({ x:(0.07+0.86*((i+0.5+Math.random()*0.5)/n)),
+      wy:camHome()+(g.wl-camHome())*(0.08+Math.random()*0.66),
+      sc:0.7+Math.random()*0.65,
+      dur:2.4+Math.random()*2.6,
+      vent:4+Math.random()*22,
+      t:Math.random()*20, blink:-1 });
+  }
+  return ut;
+}
+function tegnStjerner(dt,wlY){
+  if(dyptCur!=="natt"){ stjerner=null; return; }
+  var mn=Math.min(W,H), g0=colGeom();
+  // månen bakerst, halv opasitet så den hviler i himmelen
+  var mim=maaneBilde();
+  if(mim&&mim.complete&&mim.naturalWidth&&g0){
+    var my=(camHome()+(g0.wl-camHome())*0.42)-camY, msz=mn*0.13; // under HUD-raden, godt over horisonten
+    if(my>-msz&&my<wlY){ cx.save(); cx.globalAlpha=0.5;
+      cx.drawImage(mim, W*0.80-msz/2, my-msz/2, msz, msz); cx.restore(); }
+  }
+  if(!stjImg[3].complete||!stjImg[3].naturalWidth)return;
+  if(!stjerner){ stjerner=nyStjerner(); if(!stjerner)return; }
+  for(var i=0;i<stjerner.length;i++){
+    var a=stjerner[i]; a.t+=dt;
+    if(a.blink<0){ if(a.t>=a.vent){ a.blink=0; a.t=0; } }
+    else { a.blink+=dt; if(a.blink>=a.dur){ a.blink=-1; a.t=0; a.vent=7+Math.random()*24; a.dur=2.4+Math.random()*2.6; } }
+    if(a.blink<0)continue;
+    var y=a.wy-camY; if(y<-30||y>wlY)continue;
+    // 0→3→0: opp og ned igjen, så glimtet puster
+    var f=a.blink/a.dur, idx=f<0.5?Math.floor(f*8):Math.floor((1-f)*8);
+    if(idx>3)idx=3; if(idx<0)idx=0;
+    var im=stjImg[idx]; if(!im.complete||!im.naturalWidth)continue;
+    var sz=mn*0.028*a.sc;
+    cx.save(); cx.globalAlpha=0.20+0.38*Math.sin(f*Math.PI); // svakt — de skal så vidt anes
+    cx.drawImage(im, W*a.x-sz/2, y-sz/2, sz, sz); cx.restore();
+  }
+}
+var SMELL_TID=0.95;
+// Mynta byttes bare inn hvis arket faktisk laster — ellers står 💰-emojien
+var myntImg=new Image(); myntImg.onload=function(){ var e=$(".hudPenge"); if(e)e.classList.add("mynt"); };
+myntImg.onerror=function(){}; myntImg.src="spill/assets/mynt-ark.png";
 var tordenCool=25, regnFase=0;
 function vxKode(){ return (window.__wx!=null?window.__wx:seaWx)||""; }
 function regnerNaa(){ return /rain|sleet/.test(vxKode()); }
@@ -1320,6 +1418,20 @@ function nySno(spred){ var mn=Math.min(W,H); return {x:Math.random()*W, y:spred?
 function oppdaterVaerLyd(){ if($("#sea").classList.contains("on")) Snd.vaerLyd(regnerNaa(), gloomyWx()); }
 function tegnVaer(dt){
   var g=colGeom(), mn=Math.min(W,H), wlY=(g?g.wl:H*0.34)-camY;
+  tegnStjerner(dt,wlY);
+  // SMELLET: eksplosjonen spilles ÉN gang over motoren i det den havarerer, før røyken tar over
+  if(smellT>=0&&boatIn>=1&&smellImg.complete&&smellImg.naturalWidth){
+    smellT+=dt;
+    if(smellT>=SMELL_TID)smellT=-1;
+    else {
+      var sbw=mn*0.5, sbh=(boatImg.complete&&boatImg.naturalWidth)?sbw*(boatImg.naturalHeight/boatImg.naturalWidth):sbw*0.4;
+      var sx=W*0.52-sbw*0.44, sy=wlY-sbh*0.09; // midt på motoren, ikke oppe i røykfanen
+      var sfr=Math.min(7,Math.floor(smellT/SMELL_TID*8)), sw=smellImg.naturalWidth/8, sq=mn*0.17; // motorstor, ikke båtstor
+      cx.save(); cx.globalAlpha=smellT>SMELL_TID*0.75?(SMELL_TID-smellT)/(SMELL_TID*0.25):1;
+      cx.drawImage(smellImg, sfr*sw, 0, sw, smellImg.naturalHeight, sx-sq/2, sy-sq/2, sq, sq);
+      cx.restore();
+    }
+  }
   if(P&&!P.motorOk&&boatIn>=1&&roykImg.complete&&roykImg.naturalWidth){ // det RYKER av havarert motor
     var tbw=mn*0.5, tbh=(boatImg.complete&&boatImg.naturalWidth)?tbw*(boatImg.naturalHeight/boatImg.naturalWidth):tbw*0.4;
     var mx2=W*0.52-tbw*0.44, my2=wlY-tbh*0.36-tbh*0.18;
@@ -2362,11 +2474,16 @@ function drawScene(dt){
   if(by>-bh){ if(boatIn>=1){ tickDog(dt); drawDog(bx,by,bw,bh,mn); }
     if(boatReady){ cx.save(); cx.translate(bx,by); cx.rotate(bTilt); cx.drawImage(boatImg,-bw/2,-bh*0.5,bw,bh); cx.restore(); } else drawBoat(bx,by,mn*0.14); }
   // teiner i sona: blåse på vannlinja, grønt tau ned, teine ved bunnen av bildet
-  var BPOS=[0.08,0.92,0.16,0.84,0.24,0.87]; // annenhver side av båten — klar av motor og skrog
+  var BPOS=[0.15,0.85,0.22,0.78,0.29,0.72]; // annenhver side av båten — klar av motor, skrog OG kamp-barene i kantene
+  var barKlar=44; // spenn-/dybdebaren dekker x 10-32 fra hver kant — 44 gir 12 px luft
   if(P&&P.pots&&g){ var zi=0;
     P.pots.out.forEach(function(t){ if(t.zone!==depth)return;
-      var pbX=W*BPOS[zi%BPOS.length], pbY=wlY+Math.sin(bob*1.1+2+zi)*1.5, potY=g.imgH*0.93-camY; zi++;
-      cx.strokeStyle="rgba(63,125,78,.8)"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(pbX,Math.max(pbY,-10)); cx.lineTo(pbX,Math.min(potY,H+20)); cx.stroke();
+      var pbX=Math.min(Math.max(W*BPOS[zi%BPOS.length], barKlar), W-barKlar), pbY=wlY+Math.sin(bob*1.1+2+zi)*1.5, potY=g.imgH*0.93-camY; zi++;
+      // tauet blekner nedover mot dypet — gradienten spennes over HELE tauet, ikke bare den synlige biten,
+      // ellers ville fadingen fulgt kameraet i stedet for å sitte i vannet
+      var tg=null;
+      if(potY>pbY+1){ tg=cx.createLinearGradient(0,pbY,0,potY); tg.addColorStop(0,"rgba(63,125,78,.85)"); tg.addColorStop(1,"rgba(63,125,78,.14)"); }
+      cx.strokeStyle=tg||"rgba(63,125,78,.8)"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(pbX,Math.max(pbY,-10)); cx.lineTo(pbX,Math.min(potY,H+20)); cx.stroke();
       var ti=poteineImg[potType(t)]; // teine-sprite ved bunnen (når den er i bildet)
       if(ti&&ti.complete&&ti.naturalWidth&&potY>-40&&potY<H+40){ var tw2=mn*0.10, th2=tw2*ti.naturalHeight/ti.naturalWidth; cx.drawImage(ti,pbX-tw2/2,potY-th2,tw2,th2); }
       if(blaaseImg.complete&&blaaseImg.naturalWidth&&pbY>-20&&pbY<H+20){ var bh2=mn*0.055, bw2=bh2*blaaseImg.naturalWidth/blaaseImg.naturalHeight;
@@ -2464,7 +2581,20 @@ function fishScale(f,len){ var L=len||((f.len[0]+f.len[1])/2); // individuell le
   if(f.k==="haakjerring")return Math.min(W,H)*(0.264+0.12*Math.max(0,Math.min(1,(L-220)/230))); // håkjerringa enda større
   return Math.min(W,H)*Math.max(0.042,Math.min(0.288, L*0.00102)); }
 var snelleGrad=0; // snella roteres jevnt (ett PNG — mye mykere enn sprite-hakking)
+var gnistT=0;
+function tegnGnist(dt){
+  // Bare turbosnella gnistrer, og bare mens den faktisk står under belastning
+  var el=$("#gnist"); if(!el)return;
+  var paa=!!(P&&P.turbo)&&phase==="reel"&&(holding||runT>0);
+  if(!paa){ if(el.style.opacity!=="0")el.style.opacity="0"; return; }
+  gnistT+=dt;
+  var fr=Math.floor(gnistT*12)%4;
+  el.style.backgroundPositionX=(fr*(100/3)).toFixed(2)+"%";
+  var t=Math.min(1,Math.max(0,tension/100));
+  el.style.opacity=(0.14+0.46*t+(runT>0?0.16:0)).toFixed(2);
+}
 function snelleSpinn(dt){
+  tegnGnist(dt);
   var im=$("#snelleImg"), ab=$("#actionBtn"); if(!im)return;
   var rund=!!(ab&&ab.classList.contains("snellebtn"));
   im.style.visibility=rund?"":"hidden"; // snella vises BARE når den runde knappen er aktiv (aldri oppå «HUGG!»)
