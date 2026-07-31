@@ -3037,8 +3037,9 @@ function drawDog(bx,by,bw,bh,mn){ if(!dog.vis && dog.rise<=0.01)return;
   var yoff=(1-dog.rise)*dh*0.5; // glir opp når den dukker fram (bak rekka)
   cx.save(); cx.globalAlpha=Math.min(1,dog.rise*1.25); cx.drawImage(im, dx-dw/2, feet-dh+yoff, dw, dh); cx.restore();
 }
+// vy er roleg med vilje: bobler i sjø stig seint — brusfart ser feil ut.
 function newBubble(fromBottom){ return { x:Math.random(), y: fromBottom?(1+Math.random()*0.15):Math.random(),
-  vy:0.04+Math.random()*0.05, sc:0.35+Math.random()*0.6, im:3+((Math.random()*5)|0), wob:Math.random()*6.283, wa:0.003+Math.random()*0.008, al:0.3+Math.random()*0.35 }; }
+  vy:0.023+Math.random()*0.030, sc:0.35+Math.random()*0.6, im:3+((Math.random()*5)|0), wob:Math.random()*6.283, wa:0.003+Math.random()*0.008, al:0.3+Math.random()*0.35 }; }
 function drawBubbles(dt,top,surfY){ var mn=Math.min(W,H), band=H-top; if(band<=0)return;
   if(surfY==null)surfY=H*0.34;
   if(bubbles.length===0){ for(var i=0;i<28;i++)bubbles.push(newBubble(false)); }
