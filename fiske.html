@@ -175,6 +175,7 @@
   #strompil{position:absolute;left:50%;bottom:calc(var(--snelle) + 16px);transform:translateX(-50%);
     display:none;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
   #reelui.on #strompil{display:flex}
+  #strompil .strlab{font-family:var(--mono);font-size:10px;color:#eaf3ee;text-shadow:0 1px 3px #000a;line-height:1;letter-spacing:.04em}
   #strompilIkon{font-family:var(--mono);font-size:15px;color:#cfe6e2;text-shadow:0 1px 3px #000a;line-height:1}
   #strompilStyrke{display:block;width:38px;height:4px;border-radius:3px;background:rgba(13,33,41,.55);overflow:hidden;position:relative}
   #strompilStyrke::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--str,0%);
@@ -287,8 +288,8 @@
   .rigrow.tom{opacity:.45;cursor:default}
   .recchip{font-size:9px;font-weight:800;letter-spacing:.4px;background:#e8ddc6;color:#7a5b3a;border-radius:5px;padding:1px 5px;vertical-align:1px}
   .recchip.ok{background:#cfe4c7;color:#2f5d33} /* anbefalt for sona du står i */
-  .catch-fish{height:120px;display:grid;place-items:center;margin:6px 0}
-  .catch-fish canvas{position:static;width:auto;height:110px}
+  .catch-fish{height:104px;display:grid;place-items:center;margin:2px 0 0}
+  .catch-fish canvas{position:static;width:auto;height:100px}
   .statline{font-family:var(--mono);font-size:14px;margin:3px 0}
   .statline b{color:var(--wood-dark)}
   .newtag{display:inline-block;background:var(--good);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;margin-left:6px}
@@ -475,7 +476,7 @@
         <div class="vbar tension"><span class="lab">SPENN</span><i id="tensionBar"></i></div>
         <img id="snelleImg" src="spill/assets/fiskesnelle-ny.png" alt="" onerror="this.style.visibility='hidden'">
         <div class="vbar prog"><span class="lab">DYBDE</span><i id="progBar"></i></div>
-        <div id="strompil"><span id="strompilIkon">→</span><i id="strompilStyrke"></i></div>
+        <div id="strompil" title="Tidevannsstrømmen: retning og styrke"><span class="strlab">STRØM</span><span id="strompilIkon">→</span><i id="strompilStyrke"></i></div>
       </div>
       <div id="potRow" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
         <button class="btn sm" id="potBtn" style="display:none"></button>
@@ -634,7 +635,8 @@ var Snd=(function(){
               bird:{url:"spill/lyd/fuglelyder.aac",   vol:0.22, want:false, node:null},   // fugler lavt i bakgrunnen
               reel:{url:"spill/lyd/fiskesnelle-loop.aac", vol:0.55, want:false, node:null},   // snelle mens man sveiver
               regn:{url:"spill/lyd/regn.aac", vol:0.55, want:false, node:null},                  // regnvær fra MET
-              vindL:{url:"spill/lyd/vind.aac", vol:0.28, want:false, node:null} };              // vind i gråvær
+              vindL:{url:"spill/lyd/vind.aac", vol:0.28, want:false, node:null},
+              strittL:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.6, want:false, node:null} }; // hviner mens fisken tar ut line              // vind i gråvær
   var ONESHOT={ buy:{url:"spill/lyd/butikk-kjop.aac", vol:0.7},
     splash:{url:"spill/lyd/splash-sluk-treffer-vannet.aac", vol:0.7},
     napp:{url:"spill/lyd/napp.aac", vol:0.8},
@@ -649,11 +651,14 @@ var Snd=(function(){
     bjeff3:{url:"spill/lyd/hund-bjeff-03.aac", vol:0.45},
     knurr:{url:"spill/lyd/hund-knurring.aac", vol:0.32},
     knurrfisk:{url:"spill/lyd/knurr.aac", vol:0.8}, // knurren trommar på svømmeblæra når han kjem opp
+    dorbjelle:{url:"spill/lyd/dorbjelle.aac", vol:0.42},          // du opnar døra inn til Rusten
+    verkstedlyd:{url:"spill/lyd/verksted-skralle.aac", vol:0.40}, // Kjell strammar ei stroppe
+    blaibok:{url:"spill/lyd/bla-i-bok.aac", vol:0.9},
+    sluklokk:{url:"spill/lyd/sluksett-lokk.aac", vol:0.5},        // låsen vippast og lokket går opp             // papir ber lite — må ligge klart høgare enn bjelle og metall
     hval1:{url:"spill/lyd/hval-01.aac", vol:0.55}, // to ulike rop — same hval skal ikkje seie
     hval2:{url:"spill/lyd/hval-02.aac", vol:0.55}, // det same to gonger på rad
     motor:{url:"spill/lyd/paahengsmotor.aac", vol:0.5},
     stritter:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.65},
-    strittL:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.6, want:false, node:null}, // samme lyd som styrt LOOP — stopper når utraset slutter
     nys1:{url:"spill/lyd/nys-01.aac", vol:0.68},
     nys2:{url:"spill/lyd/nys-02.aac", vol:0.68},
     nys3:{url:"spill/lyd/nys-03.aac", vol:0.68},
@@ -693,6 +698,12 @@ var Snd=(function(){
     for(var k in loops)list.push([k,loops[k].url]); for(var k2 in ONESHOT)list.push([k2,ONESHOT[k2].url]);
     list.forEach(function(p){ fetch(p[1]).then(function(r){return r.arrayBuffer()}).then(function(ab){return c.decodeAudioData(ab)})
       .then(function(buf){ buffers[p[0]]=buf; if(loops[p[0]]&&loops[p[0]].want)startLoop(p[0]); }).catch(function(){}); }); }
+  var soneNa=0, sistSone=-1, vilRegn=false, vilVind=false;
+  var REGN_V=0.55, VIND_V=0.28;                      // grunnvolum frå loops-tabellen
+  function djupSone(){ return soneNa>=2; }           // Dypt og Djuphavet
+  function overflateDemp(){ // 1 = full overflatelyd, 0 = heilt borte. dypNa kan vere -1 i overgangen.
+    return (djupSone()&&dykket) ? Math.max(0, Math.min(1, 1-Math.max(0,dypNa)/0.8)) : 1; }
+  function tennStille(name){ var L=loops[name]; if(L&&!L.node)L.vol=0.0001; } // ramp opp frå null, ikkje smell
   function stopAllLoops(){ for(var k in loops)stopLoop(k); }
   function restartWanted(){ for(var k in loops)if(loops[k].want)startLoop(k); }
   return {
@@ -700,8 +711,15 @@ var Snd=(function(){
     isMuted:function(){return muted;},
     setMuted:function(m){ muted=m; try{localStorage.setItem("storkveita-muted",m?"1":"0")}catch(e){}; if(theme)theme.muted=m; if(m){stopAllLoops(); motorStop(0);} else restartWanted(); },
     ambienceOn:function(){ loadAll(); dykket=false; dypNa=0; this.settLoopVol("sea",regnNa?HAV_REGN:HAV); this.settLoopVol("bird",0.22); wantLoop("sea",true); wantLoop("bird",true); },
-    ambienceOff:function(){ dykket=false; wantLoop("sea",false); wantLoop("bird",false); wantLoop("undervann",false); wantLoop("reel",false); wantLoop("regn",false); wantLoop("vindL",false); },
-    vaerLyd:function(regnOn,vindOn){ loadAll(); wantLoop("regn",!!regnOn); wantLoop("vindL",!!vindOn); regnNa=!!regnOn;
+    ambienceOff:function(){ dykket=false; wantLoop("sea",false); wantLoop("bird",false); wantLoop("undervann",false); wantLoop("reel",false); wantLoop("strittL",false); wantLoop("regn",false); wantLoop("vindL",false); },
+    vaerLyd:function(regnOn,vindOn){ loadAll(); regnNa=!!regnOn; vilRegn=!!regnOn; vilVind=!!vindOn;
+      // Volumet MÅ settast her: startLoop kopierer L.vol inn i den nye gain-noden, og
+      // dykk() kan ha nulla det medan veret var av. Same demping som dykk() bruker.
+      var dd=overflateDemp(), stille=djupSone()&&dykket&&dypNa>0.8;
+      this.settLoopVol("regn",  REGN_V*(vilRegn?1:0)*dd);
+      this.settLoopVol("vindL", VIND_V*(vilVind?1:0)*dd);
+      wantLoop("regn",  vilRegn && !stille);
+      wantLoop("vindL", vilVind && !stille);
       if(!dykket)this.settLoopVol("sea", regnOn?HAV_REGN:HAV); }, // regnet skal eie lydbildet i uvær (men undervann eier det enda mer)
     torden:function(){ var c=["torden1","torden2","torden3"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
     munnspill:function(){ var c=["munnspill1","munnspill2"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
@@ -712,21 +730,40 @@ var Snd=(function(){
       if(L.node&&L.node.g&&c){ try{ L.node.g.gain.setTargetAtTime(vol,c.currentTime,Math.max(0.08,sek||0.8)/3); }catch(e){ L.node.g.gain.value=vol; } } },
     // Sluken synker: overflatelyden tones ned og undervannslyden opp — jevnt med dybden, ikke som en bryter.
     // Måkene er HELT borte (loopen stoppes) når sluken er drøyt halvveis nede; de kommer tilbake når du sveiver opp.
-    dykk:function(ned,dyp){ ned=!!ned;
+    // På Dypt og Djuphavet skal overflata bli HEILT borte — ikkje berre dempa.
+    // Sona kjem inn utanfrå, for lydmodulen kjenner ikkje spelet.
+    dykk:function(ned,dyp,sone){ ned=!!ned;
       dyp = ned ? Math.max(0,Math.min(1, dyp||0)) : 0;
+      soneNa = (sone==null?soneNa:sone);
       if(ned!==dykket){ dykket=ned; loadAll(); dypNa=-1;
         if(ned){ wantLoop("undervann",true); var L=loops.undervann, c=AC();
           if(L.node&&L.node.g&&c){ try{ L.node.g.gain.setValueAtTime(0.0001,c.currentTime); }catch(e){} } }
         else { this.fadeLoopVol("undervann",0.0001,0.9);
           setTimeout(function(){ if(!dykket)wantLoop("undervann",false); },1200); } }
-      if(Math.abs(dyp-dypNa)<0.02)return;
-      dypNa=dyp;
-      var over=Math.max(0,1-dyp/0.55), maake=0.22*over*over;
+      if(Math.abs(dyp-dypNa)<0.02 && soneNa===sistSone)return; // sona MÅ slippe gjennom porten
+      dypNa=dyp; sistSone=soneNa;
+      // djupsone: alt over vassflata tonar ut til null etter kvart som sluken søkk
+      var d = djupSone() ? Math.max(0, 1-dyp/0.8) : 1;
+      var over=Math.max(0,1-dyp/0.55), maake=0.22*over*over*d;
       var havOver=regnNa?HAV_REGN:HAV;
-      this.fadeLoopVol("sea", havOver+(0.045-havOver)*dyp, 0.5);
+      var seaMaal=(havOver+(0.045-havOver)*dyp)*d, seaPaa=!(djupSone()&&d<=0.001);
+      if(seaPaa)tennStille("sea"); wantLoop("sea", seaPaa);
+      this.fadeLoopVol("sea", seaMaal, 0.5);
       this.fadeLoopVol("bird", maake, 0.5);
       wantLoop("bird", maake>0.004);
+      var vaerPaa=!(djupSone()&&d<=0.001);                       // regn og vind høyrer til oppe —
+      if(vilRegn&&vaerPaa)tennStille("regn");                    // 400 m ned finst dei ikkje
+      if(vilVind&&vaerPaa)tennStille("vindL");
+      wantLoop("regn",  vilRegn && vaerPaa);
+      wantLoop("vindL", vilVind && vaerPaa);
+      this.fadeLoopVol("regn",  REGN_V*(vilRegn?1:0)*d, 0.6);
+      this.fadeLoopVol("vindL", VIND_V*(vilVind?1:0)*d, 0.6);
       if(ned)this.fadeLoopVol("undervann", 0.05+0.29*dyp, 0.6); },
+    overflateStille:function(){ return djupSone() && dykket && dypNa>0.8; }, // til enkeltlydar
+    _maal:function(){ var ut={sone:soneNa, dykket:dykket, dyp:dypNa, stille:this.overflateStille()};
+      for(var k in loops){ var L=loops[k];
+        ut[k]={vil:!!L.want, vol:+(L.vol||0).toFixed(4), gain:(L.node&&L.node.g)? +L.node.g.gain.value.toFixed(4) : null}; }
+      return ut; },
     themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; theme.volume=0.45; } theme.muted=muted; theme.play().catch(function(){}); },
     themeOff:function(){ if(theme)theme.pause(); },
     click:function(){ if(buffers.klikk1||buffers.klikk2){ altClick=!altClick; oneShot(altClick&&buffers.klikk1?"klikk1":"klikk2"); } else beep(430,0.05,"square",0.05,320); },
@@ -738,6 +775,10 @@ var Snd=(function(){
     trophy:function(){ if(buffers.jingle)oneShot("jingle"); [523,659,784,1047,1319,1568].forEach(function(f,i){ setTimeout(function(){beep(f,0.17,"triangle",0.17)},i*105); }); },
     coin:function(){ if(buffers.mynt)oneShot("mynt"); else { beep(988,0.07,"square",0.11); setTimeout(function(){beep(1319,0.12,"square",0.11)},70); } }, // salg av fangst
     knurreFisk:function(){ oneShot("knurrfisk"); },
+    dorbjelle:function(){ oneShot("dorbjelle"); },
+    verkstedlyd:function(){ oneShot("verkstedlyd"); },
+    blaIBok:function(){ oneShot("blaibok"); },
+    slukLokk:function(){ oneShot("sluklokk"); },
     hvalrop:function(){ var c=["hval1","hval2"].filter(function(k){return buffers[k]});
       if(c.length)oneShot(c[(Math.random()*c.length)|0]); }, // ekte lyd, ingen fallback — knurren tier heller enn å pipe
     buy:function(){ oneShot("buy"); }, // butikk-kjøp (ekte lyd)
@@ -949,7 +990,8 @@ function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE felte
   if(g.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,+g.streakBest||0); // rekordstreaken er monoton
   ["vinsj","ekko","turbo"].forEach(function(k){ if(g[k])lp[k]=true; }); }
 function gearInn(lp,g){ if(!g||typeof g!=="object")return; // på fjernspeil: siste innsending vinner (ts-porten står utenfor)
-  ["fuel","fuelMax","svc","forsTil","havnNeste","smorTs","propOk","motorOk","rolex","lures","pots","agn","streak","streakDag","naadeMnd"].forEach(function(k){ if(g[k]!=null)lp[k]=g[k]; });
+  ["fuel","fuelMax","svc","forsTil","havnNeste","smorTs","propOk","motorOk","rolex","lures","agn","streak","streakDag","naadeMnd"].forEach(function(k){ if(g[k]!=null)lp[k]=g[k]; });
+  if(g.pots)lp.pots=Object.assign({},lp.pots||{},g.pots); // ALDRI rått bytte: felt serveren ikkje kjenner (bunnline o.l.) skal overleve
   gearLoft(lp,g);
   if(typeof g.motor==="string")lp.motor=g.motor; if(typeof g.rig==="string")lp.rig=g.rig; }
 function famTaImot(j){ // flett serverens familiebilde inn lokalt — erstatt aldri, lokal fremgang kan ikke krympes
@@ -1140,7 +1182,7 @@ function setDepth(d){
   if(d===3){ if(!vinsjKlar())return;
     if(!P.vinsj){ setHint("Vinsj og dyphavsrigg trengs for djuphavet (300–500 m) — kjøp i butikken 🛒"); return; } }
   else if(d>P.rod){ setHint(RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+") — kjøp i butikken 🛒"); return; }
-  depth=d; camY=camHome(); maneter.length=0; stromRetn=Math.random()<0.5?1:-1; silh=null; silhKlar=null; stjerner=null; // ny sone → vannlinja på samme skjermhøyde, og drivgodset hører til forrige sone
+  depth=d; if(Snd&&Snd.dykk)Snd.dykk(phase!=="idle", dykkAndel(), d); camY=camHome(); maneter.length=0; ambient.length=0; gulls.length=0; stromRetn=Math.random()<0.5?1:-1; silh=null; silhKlar=null; stjerner=null; // ny sone → vannlinja på samme skjermhøyde, og drivgodset hører til forrige sone
   updateRigChip();
   document.querySelectorAll("#depthsel button").forEach(function(x){x.classList.toggle("on",+x.dataset.d===d)});
   if(phase==="idle") setHint(erfaren()?"":ZONE[d]+" "+DEPM[d]+" valgt. Kast ut.");
@@ -1246,7 +1288,9 @@ function cast(){
 }
 /* Rustens bestilling: dato-seedet «dagens art» — hele familien får samme, selges +50 % */
 function dailyFish(){ var d=new Date(), s=d.getFullYear()*372+d.getMonth()*31+d.getDate();
-  var pool=FISH.filter(function(f){return !f.trophy&&f.z!==3}); return pool[((s*9301+49297)%233280)%pool.length]; } // djuphavsarter er ikke dagens art (ikke alle har vinsj)
+  var pool=FISH.filter(function(f){return !f.trophy&&f.z!==3&&!f.freda&&!fredetNaa(f)&&f.pris>0
+    &&(!f.ss||f.ss[d.getMonth()]>0); }); // ei bestilling må kunne innfriast: ikkje freda, ikkje verdlaus, og arten må finnast denne månaden
+  return pool[((s*9301+49297)%233280)%pool.length]; } // djuphavsarter er ikke dagens art (ikke alle har vinsj)
 function starSumFor(pl){ var sum=0; FISH.forEach(function(f){ var rec=pl.caught&&pl.caught[f.k]; if(!rec)return;
   var t=(rec.bestLen-f.len[0])/(f.len[1]-f.len[0]); sum+=Math.round(Math.max(0,Math.min(1,t))*10)/2; }); return sum; }
 var goldCatch=false; // 1 av 40: gyllen fisk (×3 verdi, ✨ i boka)
@@ -1304,6 +1348,7 @@ var pilkT=0, pilkKrav=12, pilkFangst=[], pilkHoldT=0; // pilkHoldT: hvor lenge d
 function startPilk(){ // juksa-teknikken: pump forsatsen gjennom stimen — min 10–15 s før småfisken hogger
   phase="pilkfiske"; pilkT=0; pilkKrav=10+Math.random()*5; pilkFangst=[]; pilkHoldT=0;
   setAction("PILK (hold)",true);
+  $("#reelui").classList.add("on"); // MÅ med: utan denne står snella, spenn/dybde og strømpila skjult heile markpilkinga
   setHint(erfaren()?"":"Pump pilken: hold inne for å dra opp, slipp for å la den synke. Småfisken hogger på makkene!");
 }
 function pilkStep(dt){
@@ -1339,7 +1384,8 @@ function pilkSlutt(){
     L2.insertAdjacentHTML("beforeend",'<div class="statline"><img src="spill/assets/'+(FIMG[f.k]||f.k)+'.png" onerror="this.style.display=\'none\'" style="height:24px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">'+f.n+' '+pf.len+' cm ('+wt+' kg) — '
       +((vern||umaal)?'<b class="verna">🤍 '+esc(umaal?("under målet på "+umaal+" cm"):vern)+' — satt ut</b>':'<b>'+kr+' kr</b>')+'</div>');
   });
-  if(pilkFangst.length){ P.kr+=total; Snd.coin(); if(pilkFangst.length>=3)setTimeout(Snd.fiskerLettet,300); }
+  if(total){ P.kr+=total; Snd.coin(); } // ingen mynt når alt vart sett ut — lyden skal fortelje same historia som lista
+  if(pilkFangst.length>=3)setTimeout(Snd.fiskerLettet,300);
   $("#potTitle").textContent="🎣 Pilkefangst";
   $("#potTotal").innerHTML=total?('Solgt til Rusten: <b>'+total+' kr</b>'):'';
   var fikk=pilkFangst.length>0; pilkFangst=[]; hud(); saveAll(); syncFam(); modal("potModal",true);
@@ -1431,7 +1477,7 @@ function commitBite(){
   // når det HENG agn der; ein blank sluk har han ingen bruk for.
   if(cf&&cf.k==="haagjel"&&ag&&Math.random()<0.45){
     if(sceneFish) flee={f:cf, len:sceneFish.sizeLen||60, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*1.2, t:1.0};
-    phase="idle"; hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
+    phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
     setHint("Bar krok. Noe tok agnet og var borte."); setAction("Kast ut");
     Snd.fiskerSurPool(); rustenSier("haagjel",700); saveAll(); return;
   }
@@ -1455,7 +1501,7 @@ function tryHook(){
 function miss(){
   if(sceneFish) flee={f:sceneFish.f, len:sceneFish.sizeLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool(); // hunden er lei seg
-  phase="idle"; hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
+  phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
   setHint("Fisken slapp… prøv igjen."); setAction("Kast ut"); saveAll();
 }
 function reelStep(dt){
@@ -1506,7 +1552,7 @@ function escape(){
   if(hooked) flee={f:hooked, len:hookedLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool();
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); $("#reelui").classList.remove("on"); hooked=null; sceneFish=null;
-  setHint("Du ga for mye slakk — fisken glapp! (Sluken er i behold.)"); setAction("Kast ut"); saveAll();
+  setHint("Du ga for mye slakk og fisken glapp! Sluken er i god behold."); setAction("Kast ut"); saveAll();
   if(navigator.vibrate)navigator.vibrate(30);
 }
 function snap(){
@@ -1552,7 +1598,9 @@ function land(){
   $("#catchKeep").style.display=uteHelt?"none":"";
   $("#catchRelease").textContent=uteHelt?"Sett den ut 🤍":"Slipp ut";
   drawFishInto($("#catchFish"),f,110);
-  $("#catchTitle").textContent = (vern||umaal) ? (f.trophy?"STORKVEITA! 🏆":"Godt fiskarskap 🤍") : (f.trophy ? "STORKVEITA! 🏆" : (gold?"GYLLEN FISK! ✨" : isNew?"Ny art!":"Fisk!"));
+  var cT=$("#catchTitle");
+  cT.textContent = (vern||umaal) ? (f.trophy?"STORKVEITA! 🏆":"Godt fiskarskap 🤍") : (f.trophy ? "STORKVEITA! 🏆" : (gold?"GYLLEN FISK! ✨" : isNew?"Ny art!":"Fisk!"));
+  cT.style.display = cT.textContent==="Fisk!" ? "none" : ""; // vanleg fangst treng ingen overskrift — bildet seier alt
   visNyArt(isNew&&!f.trophy); // stempel over plansjen ved førstegangsfangst (storkveita har sin egen fest)
   $("#catchName").innerHTML="<b>"+f.n+"</b>"+(gold?' ✨':'')+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>'+(isNew?'<span class="newtag">NY</span>':'')+(isRecord&&!isNew?'<span class="newtag">REKORD</span>':'');
   $("#catchSize").innerHTML="Lengde <b>"+len+" cm</b> · vekt <b>"+wt+" kg</b>";
@@ -1733,9 +1781,8 @@ function tegnStjerner(dt,wlY){
   // månen bakerst, halv opasitet så den hviler i himmelen
   var mim=maaneBilde();
   if(mim&&mim.complete&&mim.naturalWidth&&g0){
-    // Målt fjellprofil: Mellomdyp har rygg allerede 18-28 % nede i himmelen (de andre sonene 47-54 %),
-    // og fjellene er høyest mot høyre. Derfor står månen høyt og til venstre for midten.
-    var my=(camHome()+(g0.wl-camHome())*0.17)-camY, msz=mn*0.13, mx=W*0.42;
+    // Månen står høgt og to tredelar ut mot høgre — der himmelen er open i alle fire sonene.
+    var my=(camHome()+(g0.wl-camHome())*0.17)-camY, msz=mn*0.065, mx=W*0.667; // halv storleik: kunsten har grove piksler
     if(my>-msz&&my<wlY){
       cx.save();
       var gl=cx.createRadialGradient(mx,my,msz*0.34,mx,my,msz*1.15);
@@ -1823,7 +1870,9 @@ function tegnVaer(dt){
       cx.drawImage(sim,-s.r/2,-s.r/2,s.r,s.r); cx.restore();
     }
   } else if(sno.length) sno.length=0;
-  if(tordenNaa()){ tordenCool-=dt; if(tordenCool<=0){ Snd.torden(); if(navigator.vibrate)navigator.vibrate(120); tordenCool=40+Math.random()*80; } }
+  if(tordenNaa()){ tordenCool-=dt; if(tordenCool<=0){
+    if(!Snd.overflateStille()){ Snd.torden(); if(navigator.vibrate)navigator.vibrate(120); } // 400 m ned når tordenen ikkje fram
+    tordenCool=40+Math.random()*80; } }
 }
 
 /* ---------- Rekordkort: familiens nyeste rekorder ved oppstart ---------- */
@@ -1937,6 +1986,46 @@ function setPot(ty){ ty=ty||"k";
                  :"Teina er satt! 🦀 Kom tilbake senere — den fisker best etter noen timer.");
 }
 var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = vekt)
+ // ——— Rustens siste innsamling: 32 nye ting frå teine og line ———
+ // Skrap og linerestar — vanleg, verdlaust, men det er dette teina er full av
+ {k:"gammeltagn",e:"🪱",n:"Gammelt agn, godt gått ut på dato",kr:0,w:14,img:"funn-gammelt-agn.png",trofeKun:true,t:"Nokon sette teina og gløymde henne. Krabbene sa ikkje nei."},
+ {k:"linefloke",e:"🧶",n:"Linefloke — noen andres dårlige dag",kr:0,w:13,img:"funn-linefloke.png",trofeKun:true,t:"Fire timar med knutar, samla i ein ball. Vi tek han med inn."},
+ {k:"fremmedekroker",e:"🪝",n:"Fremmede kroker",kr:10,w:12,img:"funn-fremmede-kroker.png",t:"Rustne, men gode nok. Rusten kjøper dei for slanterier."},
+ {k:"fortommer",e:"〰️",n:"Bunt med fortommer",kr:15,w:11,img:"funn-fortommer.png",t:"Ferdig knytte og alt. Ein annan sin kveld ved kjøkkenbordet."},
+ {k:"fiskekasse",e:"📦",n:"Fiskekasse fra et ukjent bruk",kr:0,w:10,img:"funn-fiskekasse.png",trofeKun:true,t:"Stempelet er slite bort. Ho har flote lenge."},
+ {k:"blyblink",e:"🎣",n:"Blyblink, blank som ny",kr:25,w:10,img:"funn-blyblink.png",t:"Ein gammal favoritt. Nokon sakna henne meir enn han sa."},
+ {k:"nokkelknippe",e:"🔑",n:"Nøkkelknippe med naustnøkkel",kr:0,w:9,img:"funn-nokkelknippe.png",trofeKun:true,t:"Tre nøklar og ein flaskeopnar. Det siste var det viktigaste."},
+ {k:"slipsknute",e:"👔",n:"Slips, framleis knytt",kr:0,w:8,img:"funn-slipsknute.png",trofeKun:true,t:"Knuten sit. Nokon drog det over hovudet og var ferdig med den jobben."},
+ {k:"spokelsesgarn",e:"🕸️",n:"Spøkelsesgarn — tatt opp av havet 🤍",kr:0,w:7,img:"funn-spokelsesgarn.png",trofeKun:true,t:"Fiskar vidare i årevis om det får liggje. No gjer det ikkje det."},
+ {k:"annensteine",e:"🦞",n:"Ei anna sin teine — merkt og full",kr:0,w:6,img:"funn-annens-teine.png",trofeKun:true,t:"Vi merkte kor ho låg og sette henne ned att. Slik gjer ein."},
+
+ // Levande ting
+ {k:"tokrabber",e:"🦀",n:"To krabber i slåsskamp",kr:45,w:12,img:"funn-to-krabber.png",t:"Dei slepte ikkje kvarandre heile vegen opp. Vinnaren fekk sveltast."},
+ {k:"kongesnegl",e:"🐚",n:"Kongesnegl",kr:30,w:10,img:"funn-kongesnegl.png",t:"Rusten kokar dei. Ungane vil helst ikkje sjå på."},
+ {k:"eremittkork",e:"🦐",n:"Eremittkreps som har flytta inn i ein kork",kr:0,w:9,img:"funn-eremittkreps-kork.png",trofeKun:true,t:"Skalet var opptatt. Han tok det han fann, og bar det med verdigheit."},
+ {k:"sjopolse",e:"🥒",n:"Sjøpølse",kr:20,w:9,img:"funn-sjopolse.png",t:"Ho spytta ut innmaten sin av skrekk. Ho lagar seg ny."},
+ {k:"blekksprutunge",e:"🦑",n:"Blekkspruunge",kr:25,w:8,img:"funn-blekksprutunge.png",t:"På storleik med ein tommel, og sinna som ein bikkje."},
+ {k:"uermedkrok",e:"🪝",n:"Uer med gammel krok i kjeften 🤍",kr:0,w:6,img:"funn-uer-med-krok.png",trofeKun:true,t:"Han har gått med han lenge. Vi klipte han laus og sette ueren ut."},
+ {k:"aalikar",e:"🪣",n:"Ål i eit gammalt kar",kr:0,w:5,img:"funn-aal-i-kar.png",trofeKun:true,t:"Han hadde budd der ei stund. Vi bar karet ut på djupet og velta det."},
+ {k:"hummerstrikk",e:"🦞",n:"Hummer med strikk på klørne",kr:220,w:5,img:"funn-hummer-strikk.png",hummer:true,t:"Nokon mista henne på veg heim. No er ho vår — om sesongen tillèt det."},
+ {k:"nisereskalle",e:"💀",n:"Nisereskalle",kr:0,w:3,img:"funn-nisereskalle.png",djup:true,trofeKun:true,t:"Rein og kvit. Ho svømte her lenge før nokon av oss."},
+
+ // Skattar frå sjøbotnen
+ {k:"liteanker",e:"⚓",n:"Lite anker, grønt av ir",kr:90,w:5,img:"funn-lite-anker.png",t:"Frå ein robåt som ikkje finst lenger. Det held framleis."},
+ {k:"solvskje",e:"🥄",n:"Sølvskje med initialar",kr:180,w:5,img:"funn-solvskje.png",trofeSelg:180,t:"«A.M.» står det. Rusten seier han kjende ein A.M. ein gong."},
+ {k:"kobberkjele",e:"🫖",n:"Kopperkjele",kr:240,w:4,img:"funn-kobberkjele.png",trofeSelg:240,t:"Blank når ein pussar henne. Nokon kokte kaffi i henne kvar morgon."},
+ {k:"kamera",e:"📷",n:"Kamera med film i",kr:160,w:4,img:"funn-kamera.png",trofeSelg:160,t:"Filmen er øydelagt. Bileta finst berre hos den som tok dei."},
+ {k:"messingkikkert",e:"🔭",n:"Messingkikkert",kr:380,w:3.5,img:"funn-messingkikkert.png",trofeSelg:380,t:"Linsa er heil. Ein kan framleis sjå Lopphavet gjennom henne."},
+ {k:"signetring",e:"💍",n:"Signetring i gull",kr:650,w:3,img:"funn-signetring.png",trofeSelg:650,t:"Eit segl med ein fisk. Slekta er borte, ringen er her."},
+ {k:"nordlandsbaatflaske",e:"⛵",n:"Nordlandsbåt i flaske",kr:480,w:2.5,img:"funn-nordlandsbaat-flaske.png",trofeSelg:480,t:"Åtte årer, alle på plass. Nokon hadde tid og tolmod."},
+ {k:"ubaatboye",e:"📡",n:"Merkeboye — militær, står det",kr:320,w:2.2,img:"funn-ubaatboye.png",djup:true,t:"Rusten vil ikkje snakke om henne. Han berre ser ut vindauget."},
+ {k:"brevingeborg",e:"✉️",n:"Brev til Ingeborg, aldri sendt",kr:0,w:2,img:"funn-brev-ingeborg.png",trofeKun:true,t:"«Eg skulle sagt det då eg hadde sjansen.» Meir står det ikkje."},
+ {k:"gullfiskglass",e:"🐠",n:"Gullfisk i glas — framleis i live",kr:0,w:1.6,img:"funn-gullfisk-glass.png",trofeKun:true,t:"Ingen veit korleis. Han bur hos Rusten no og heiter Storkveita."},
+
+ // Arkeologi — museet vil ha desse
+ {k:"pilspiss",e:"🏹",n:"Pilspiss frå steinalderen",kr:0,w:1.8,img:"funn-pilspiss.png",djup:true,museum:1800,t:"Skjefta av flint. Nokon sikta med henne på denne fjorden."},
+ {k:"dinosaurbein",e:"🦴",n:"DINOSAURBEIN i steinen",kr:0,w:1.2,img:"funn-dinosaurbein.png",djup:true,museum:3500,t:"Museet trong tre veker på å tru det. Namnet ditt står på skiltet."},
+ {k:"neandertalskalle",e:"🗿",n:"HODESKALLE — museet seier neandertalar",kr:0,w:0.8,img:"funn-neandertalskalle.png",djup:true,museum:6000,t:"Førti tusen år. Han fiska her han òg, seier dei."},
  {k:"sjostjerne",e:"⭐",n:"Sjøstjerne — den har spist opp agnet",kr:0,w:26},
  {k:"strandkrabbe",e:"🦀",n:"Strandkrabbe (liten)",kr:5,w:22},
  {k:"berggylte",e:"🐟",n:"Berggylte i teina",kr:20,w:18,fimg:"berggylte"},
@@ -2030,6 +2119,8 @@ function potBycatch(rng,sone){ // djuphavsrariteter dukker BARE opp på 300-500 
   var r=rng()*tot, v=pulje[0];
   for(var i=0;i<pulje.length;i++){ r-=pulje[i].w; if(r<=0){ v=pulje[i]; break; } }
   var l={e:v.e,n:v.n,kr:v.kr,img:v.fimg||v.img, funnK:v.k}; // MERK: ikke «fk» — det betyr fiskenøkkel i linekoden
+  if(v.hummer&&!hummerSeason()){ // strikk på klørne betyr at nokon alt har fanga henne — men lova gjeld
+    l.n="Hummer med strikk på klørne — freda no, sett ut att 🤍"; l.kr=0; l.valg=null; l.ut=true; }
   if(v.trofeKun||v.trofeSelg||v.auksjon||v.museum||v.laas){ l.valg=v; l.kr=0; } // valget avgjør pengene — ikke utbetal på forhånd
   if(l.kr>0&&!v.rolexFunn) l.kr=Math.max(1,Math.round(l.kr*verdiSkala()/5)*5); // formuen styrer prisen på skattene
   if(v.k==="flaskepost"){ var r2=rng(); // 90-tallsklassikeren
@@ -2041,6 +2132,9 @@ function potBycatch(rng,sone){ // djuphavsrariteter dukker BARE opp på 300-500 
     else if(r3<0.55){ l.kr=7+(rng()<0.5?1:0); l.n="Gammel lommebok — "+l.kr+" kronestykker og en tørket froskefot"; }
     else { l.kr=0; l.n="Gammel lommebok — tom. Kortene er sperret."; } }
   if(v.rolexFunn)l.rolexFunn=true; return l; }
+var SMAAFISK=[ // går inn i teina etter agnet — same fisken som står på grunna
+ {k:"rognkjeks",n:"Rognkjeks (gjekk inn etter agnet)",kr:90},
+ {k:"rognkall",n:"Rognkall — raud i gytetida",kr:70}];
 function potOutcome(t,soak){ // krabbeteine — deterministisk av seed+soak: reload gir samme trekk
   // 0–15 krabber pr. teine: fylles LANGSOMT opp, maks effekt ved 2 døgn (q48). Krabbe = 25–30 kr.
   var rng=mulberry32(t.seed^((soak/60000)|0)), q48=Math.max(0,Math.min(1,soak/(48*3600000))), lines=[];
@@ -2055,6 +2149,10 @@ function potOutcome(t,soak){ // krabbeteine — deterministisk av seed+soak: rel
   else{
     var n=Math.floor(q48*15*(0.35+0.65*rng()) + rng()*1.6); if(n>15)n=15; // få etter timer, mange etter et døgn+
     for(var i=0;i<n;i++){ var tt=rng(); lines.push({e:"🦀",n:"Taskekrabbe "+(tt>0.8?"(diger!)":tt>0.4?"(fin)":"(grei)"),kr:25+Math.round(tt*5),img:"taskekrabbe"}); }
+    // vandrande trollkrabbe: kongekrabba går vestover og tek turen inn på grunna — sjelden, men det skjer
+    if(rng()<0.004+0.026*q48){ var tk=rng(); lines.push({e:"🦀",n:"TROLLKRABBE — dyphavets ridder!",kr:Math.round(450*(0.6+0.9*tk)),img:"trollkrabbe"}); }
+    // småfisk som svømte inn etter agnet og ikkje fann vegen ut att
+    if(rng()<0.16){ var sm=SMAAFISK[(rng()*SMAAFISK.length)|0]; lines.push({e:"🐟",n:sm.n,kr:sm.kr,img:sm.k}); }
     if(rng()<0.04)lines.push(potBycatch(rng,t.zone)); // skrap og sjeldne funn — under 5 % (eiers regel)
   }
   var total=0; lines.forEach(function(l){total+=l.kr});
@@ -2069,6 +2167,7 @@ function potOutcomeH(t,soak){ // hummerteine: best med natt (22–06) i soaket; 
     else{ var len=Math.round(22+rng()*13);
       if(len<25) lines.push({e:"🦞",n:"Hummer "+len+" cm — under minstemålet (25 cm), satt ut",kr:0,img:"hummer"});
       else if(len>32) lines.push({e:"🦞",n:"Diger hummer "+len+" cm — over maksmålet (32 cm), satt ut!",kr:0,img:"hummer"});
+      else if(!hummerSeason()) lines.push({e:"🦞",n:"Hummer "+len+" cm — sesongen er slutt, sett varsomt ut igjen 🤍",kr:0,img:"hummer",ut:true});
       else lines.push({e:"🦞",n:"HUMMER "+len+" cm — havets kardinal!",kr:Math.round(500*(0.6+0.9*(len-25)/7)),img:"hummer"});
     }
   } else if(r1<hc+0.30*q){ var n2=1+(rng()<0.4?1:0);
@@ -2531,7 +2630,10 @@ function addShop(L,title,desc,cost,owned,buy){
   else{b.textContent=(cost<0?"+"+(-cost):cost)+" kr"; b.disabled=P.kr<cost || cost<=0 && title.indexOf("bensin")>-1 && P.fuel>=P.fuelMax;
     b.onclick=function(){ if(shopLock||P.kr<cost)return; shopLock=true; setTimeout(function(){shopLock=false},400); // dobbeltklikk-vern
       if(!P.motorOk && cost>0 && cost<8000 && P.kr-cost<8000){ notice("Spar pengene til motorreparasjonen hos Propell-Kjell — 8000 kr ⚙️"); return; } // aldri shoppe-seg-til-softlock (reparasjon/motorer slipper gjennom)
-      P.kr-=cost; buy(); Snd.buy(); saveAll(); hud(); updateDepthLocks(); updatePotBtn(); (shopRefresh||openShop)(); };}
+      var sEl=null, sTop=0, sN=div; // ta vare på kvar i lista vi står — elles ryk du til toppen for kvart kjøp
+      while(sN&&sN!==document.body){ if(sN.scrollHeight-sN.clientHeight>4){ sEl=sN; sTop=sN.scrollTop; break; } sN=sN.parentNode; }
+      P.kr-=cost; buy(); Snd.buy(); saveAll(); hud(); updateDepthLocks(); updatePotBtn(); (shopRefresh||openShop)();
+      if(sEl)sEl.scrollTop=sTop; };}
   div.appendChild(b); L.appendChild(div);
 }
 
@@ -2809,7 +2911,7 @@ var waterImg=[new Image(),new Image(),new Image(),new Image()];
 });
 var n4Fallback=false; // nivå 4: mangler skumring/natt-variant → fall tilbake til -dag (mangler alt → sonen skjules)
 waterImg[3].onerror=function(){ if(!n4Fallback){ n4Fallback=true; waterImg[3].src="spill/assets/nedstigning-4-dag.jpg"; } };
-waterImg[3].onload=function(){ if(waterImg[3].naturalHeight)WLF[3]=894/waterImg[3].naturalHeight; // samme toppblokk som nivå 3: vannlinja på rad 894
+waterImg[3].onload=function(){ settWLF(3,waterImg[3]);
   if(window.P&&typeof updateDepthLocks==="function")updateDepthLocks(); };
 function vinsjKlar(){ return waterImg[3].complete&&waterImg[3].naturalWidth>0; } // sonen åpner først når bakgrunnsbildet finnes
 var seaWx=null, dyptCur=""; // vær-symbol fra MET (samme kilde som engoya.no) + valgt dybde-3-variant
@@ -2820,13 +2922,16 @@ function dyptVariant(){ if(window.__dv)return window.__dv; // test-override
   if(h>=18||h<8)return "skumring";
   return gloomyWx()?"skumring":"dag"; } // gråvær demper dagen
 function updateDyptImg(){ var v=dyptVariant(); if(v===dyptCur)return; dyptCur=v;
-  ["nedstigning-1","nedstigning-2"].forEach(function(n,i){ // Grunt/Mellomdyp: dag = originalfila
-    var m=v==="dag"?"spill/assets/"+n+".jpg":"spill/assets/"+n+"-"+v+".jpg";
-    var pre=new Image(); pre.onload=function(){ waterImg[i]=pre; }; pre.onerror=function(){}; pre.src=m; });
+  ["nedstigning-1","nedstigning-2"].forEach(function(n,i){
+    var pre=new Image(); pre.onload=function(){ waterImg[i]=pre; settWLF(i,pre); };
+    pre.onerror=function(){ if(v!=="dag"||this.dataset.prov)return;  // dag: prøv «-dag» først, så den gamle
+      this.dataset.prov="1"; this.src="spill/assets/"+n+".jpg"; };
+    pre.src="spill/assets/"+n+"-"+v+".jpg"; });
+  waterImg[2].onload=function(){ settWLF(2,waterImg[2]); };
   waterImg[2].src="spill/assets/nedstigning-3-"+v+".jpg";
   var u="spill/assets/nedstigning-4-"+v+".jpg";
   if(!vinsjKlar()){ n4Fallback=false; waterImg[3].src=u; } // ingenting lastet ennå — direktelast (med dag-fallback)
-  else { var pre4=new Image(); pre4.onload=function(){ waterImg[3]=pre4; if(pre4.naturalHeight)WLF[3]=894/pre4.naturalHeight; }; pre4.src=u; } } // bytt aldri bort lastede bilder før de nye er klare
+  else { var pre4=new Image(); pre4.onload=function(){ waterImg[3]=pre4; settWLF(3,pre4); }; pre4.src=u; } } // bytt aldri bort lastede bilder før de nye er klare
 updateDyptImg();
 (function(){ try{ var c=JSON.parse(localStorage.getItem("storkveita-vaer")||"null");
     if(c&&Date.now()-c.t<1800000){ seaWx=c.code; updateDyptImg(); return; } }catch(e){}
@@ -2838,7 +2943,17 @@ updateDyptImg();
     updateDyptImg();
   }).catch(function(){});
 })();
-var WLF=[0.332,0.179,0.118,0.089]; // vannlinjas andel av bildehøyden pr. nivå (målt; nivå 4 automåles ved lasting)
+// Toppdelen av bakgrunnen (himmel + sjøflate) er teikna i 2:1 — altså halvparten så høg
+// som biletet er breitt. HIMMEL er kor mange piksler ned i den delen vannlinja ligg, og
+// båten flyt der: 93,5 %, dvs. 6,5 % over nedre kant. Endrar du eit bilete er dette det
+// einaste talet som må følgje med — WLF reknar seg sjølv ut frå bilethøgda ved lasting.
+var HIMMEL=[843,814,931,927];
+var WLF=[0.332,0.179,0.118,0.089]; // rekna ut frå HIMMEL når bileta lastar — sjå settWLF()
+function settWLF(i,img){ if(!img||!img.naturalHeight)return;
+  WLF[i]=HIMMEL[i]/img.naturalHeight;
+  // Byter biletet høgd (t.d. dag→natt), er camY rekna på det gamle. Still kameraet
+  // på nytt når båten ligg i ro — elles sig vannlinja til feil høgd til neste kast.
+  if(i===depth && typeof phase!=="undefined" && phase==="idle" && typeof camHome==="function")camY=camHome(); }
 var DESC_DUR=[3.2,6,10,14];        // nedstigningstid i sek pr. nivå (dypere = lengre ferd)
 var LTF=[0.79,0.75,0.89,0.93];     // slukens måldybde (andel av bildet) — Grunt 10 % over bunn-dekoren, mellomdyp over berget
 function slukTak(){ // sluken skal ALDRI havne bak snella nederst på skjermen
@@ -2847,7 +2962,13 @@ function slukTak(){ // sluken skal ALDRI havne bak snella nederst på skjermen
 var camY=0, camBottom=0, descend=0, lureW=0, lureTargetW=0, castNoGeom=false; // kamera + sluk i verdenskoordinater (px i bildet)
 function colGeom(){ var img=waterImg[depth]; if(!img||!img.complete||!img.naturalWidth)return null;
   // tredje ledd: zoom nok til at vannlinja ALLTID kan ligge på 34 % skjermhøyde (høye mobilskjermer)
-  var s=Math.max(W/img.naturalWidth, H/img.naturalHeight, (0.34*H)/(WLF[depth]*img.naturalHeight));
+  // Fire krav: dekk breidda, dekk høgda, ha nok bilete OVER vannlinja til at ho kan ligge
+  // på 34 %, og — det siste er nytt — nok bilete UNDER henne til å fylle skjermen der.
+  // Utan det siste blir maxScroll 0 på bilete med mykje himmel, og vannlinja sig nedover.
+  var wf=WLF[depth];
+  var s=Math.max(W/img.naturalWidth, H/img.naturalHeight,
+                 (0.34*H)/(wf*img.naturalHeight),
+                 (0.66*H)/((1-wf)*img.naturalHeight));
   var imgW=img.naturalWidth*s, imgH=img.naturalHeight*s;
   return {img:img,imgW:imgW,imgH:imgH,dx:(W-imgW)/2,wl:WLF[depth]*imgH,maxScroll:Math.max(0,imgH-H)}; }
 function camHome(){ var g=colGeom(); if(!g)return 0; // hjem-kamera: vannlinja på SAMME skjermhøyde (34 %) på alle nivåer
@@ -2891,7 +3012,7 @@ var silhImg={};
 SILH.forEach(function(x){ var im=new Image(); im.onerror=function(){}; im.src="spill/assets/"+x.k+".png"; silhImg[x.k]=im; });
 var silh=null, silhKlar=null;
 function newFlyGull(yMin,yMax){ var dir=Math.random()<0.5?1:-1, far=Math.random()<0.5; // «far» = mindre + svakere opasitet → ser lengre bak ut (dybde)
-  return {x:dir<0?1.15:-0.15, y:yMin+Math.random()*(yMax-yMin), vx:dir*(0.025+Math.random()*0.04), sc:far?0.4+Math.random()*0.2:0.6+Math.random()*0.35, op:far?0.45+Math.random()*0.25:0.92+Math.random()*0.08, ph:Math.random()*8, fr:6+Math.random()*4, glideT:0, flapT:3+Math.random()*5}; }
+  return {x:dir<0?1.15:-0.15, y:yMin+Math.random()*(yMax-yMin), vx:dir*(0.048+Math.random()*0.062), sc:far?0.4+Math.random()*0.2:0.6+Math.random()*0.35, op:far?0.45+Math.random()*0.25:0.92+Math.random()*0.08, ph:Math.random()*8, fr:6+Math.random()*4, glideT:0, flapT:3+Math.random()*5}; }
 function gullFrame(g,dt){ // 4-frames vingeslag, men glir 2–4 s på frame 03 (index 2) av og til
   if(g.glideT>0){ g.glideT-=dt; if(g.glideT<=0)g.flapT=3+Math.random()*5; return 2; }
   g.flapT-=dt; if(g.flapT<=0){ g.glideT=2+Math.random()*2; return 2; }
@@ -2923,7 +3044,11 @@ function drawBubbles(dt,top,surfY){ var mn=Math.min(W,H), band=H-top; if(band<=0
   if(bubbles.length===0){ for(var i=0;i<28;i++)bubbles.push(newBubble(false)); }
   var fadeStart=Math.max(surfY+H*0.12, H*0.06); // fader ut i god tid før overflata (eller nær toppen når vi er dypt)
   var bspd=phase==="sink"?2.2:(phase==="reel"?0.28:1); // dykk: bobler suser forbi; oppsveiving: rolige
+  // Straumen ber boblene med seg: rett opp når det er stille, meir og meir på skrå når han tek i.
+  // Same tal som fiskesjansen les (stromNaa().fart), så det du ser er det spelet reknar med.
+  var st=stromNaa(), drift=(st.stigende?1:-1)*st.fart*0.040; // full straum ≈ ein firedel av skjermbreidda på veg opp
   for(var j=0;j<bubbles.length;j++){ var b=bubbles[j]; b.y-=b.vy*dt*bspd; // stiger opp (snø motsatt vei)
+    if(drift){ b.x+=drift*dt*bspd; if(b.x<-0.05)b.x+=1.1; else if(b.x>1.05)b.x-=1.1; } // rullar rundt, elles tømmest biletet for bobler
     var by=top+band*b.y, fade=(by-fadeStart)/(H*0.16);
     if(fade<=0){ var nb=newBubble(true); for(var k in nb)b[k]=nb[k]; continue; }
     if(fade>1)fade=1;
@@ -2975,14 +3100,14 @@ function loop(now){
   else if(fisherT<1) fisherT=Math.min(1,fisherT+dt/0.5);
   if(document.querySelector("#catchModal").classList.contains("on")) liftT+=dt; else liftT=0; // løft-fangst spilles ÉN gang, nullstilles mellom fangster
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH); drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,3,lobbySpawn,0); } // måker over tittelen i lobbyen
-  if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); snelleSpinn(dt); Snd.dykk(phase!=="idle", dykkAndel()); $("#sea").classList.toggle("fishing", phase!=="idle");
-    if(boatIn>=1&&fisherT>=1){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/140){ var rl=Math.random();
+  if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); snelleSpinn(dt); Snd.dykk(phase!=="idle", dykkAndel(), depth); $("#sea").classList.toggle("fishing", phase!=="idle");
+    if(boatIn>=1&&fisherT>=1&&!Snd.overflateStille()){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/140){ var rl=Math.random();
       if(rl<0.06){ Snd.fiskerFis(); dogShow(1,3); }
       else if(rl<0.40) Snd.fiskerHark();
       else Snd.nys();
       nysCool=60; } } } // frisk sjøluft — med gubbens fulle lydspor
   // fisketilstand — fryser bak åpne popups og utenfor sjøen (så fisken ikke glipper bak en modal / på menyen)
-  if(!$("#sea").classList.contains("on") || document.querySelector(".modal.on")){ if(phase==="reel")Snd.reelSound(false); requestAnimationFrame(loop); return; }
+  if(!$("#sea").classList.contains("on") || document.querySelector(".modal.on")){ if(phase==="reel"){Snd.reelSound(false); Snd.utrasLyd(false);} requestAnimationFrame(loop); return; }
   if(phase==="pilkfiske"){ pilkStep(dt); }
   else if(phase==="sink"){ // kameraet følger sluken nedover: jevn ferd, varighet etter dybde
     descend+=dt/DESC_DUR[depth]; if(descend>1)descend=1;
@@ -3027,12 +3152,13 @@ function drawScene(dt){
     if(serpent.x<-0.45||serpent.x>1.45){ serpent=null; serpentCd=240; } }
   drawClouds(dt,g); // skyer bak måkene
   // himmel-liv kun når overflata er i bildet
-  if(g&&wlY>H*0.15) drawGullField(cx,W,H,gulls,dt,camY+wlY*0.10,camY+wlY*0.72,2,gullSpawn,camY); // måkene bor i verdensrommet over vannlinja
+  if(g&&wlY>H*0.15) drawGullField(cx,W,H,gulls,dt,camY+wlY*0.08,camY+wlY*0.52,2,gullSpawn,camY); // måkene bor i verdensrommet over vannlinja — og held seg godt over sjøen
   // båt + fisker forankret til vannlinja – ruller opp og ut av bildet når kameraet følger sluken ned
   var lineX, top;
   var inE=1-Math.pow(1-boatIn,2); // båten glir på plass etter turen ut (ease-out)
   var bx=W*0.52-(1-inE)*W*0.95, bw=mn*0.5, bh=boatReady?bw*(boatImg.naturalHeight/boatImg.naturalWidth):bw*0.4;
-  var by=wlY - bh*0.36 + Math.sin(bob*1.3)*3, bTilt=-(1-inE)*0.08; // svak baug-opp mens den glir på plass
+  var dupp=Math.sin(bob*1.3)*4.5 + Math.sin(bob*0.61+1.7)*1.8; // to takter — sjøen har aldri berre éin
+  var by=wlY - bh*0.48 + dupp, bTilt=-(1-inE)*0.08 + Math.sin(bob*0.47)*0.006; // svak baug-opp + roleg slingring
   var ff=fisherFrame();
   if(ff&&ff.complete&&ff.naturalWidth){
     var fw=mn*0.30, fh=fw*(ff.naturalHeight/ff.naturalWidth), fX=bx-bw*0.21, fFeet=by+bh*0.33;
@@ -3040,7 +3166,32 @@ function drawScene(dt){
     lineX=fX-fw*0.10; top=fFeet-fh*0.58; // stang-tuppen (kan være over bildekanten → snøret kommer «ovenfra»)
   } else { lineX=bx-mn*0.13; top=by+bh*0.10; }
   if(by>-bh){ if(boatIn>=1){ tickDog(dt); drawDog(bx,by,bw,bh,mn); }
-    if(boatReady){ cx.save(); cx.translate(bx,by); cx.rotate(bTilt); cx.drawImage(boatImg,-bw/2,-bh*0.5,bw,bh); cx.restore(); } else drawBoat(bx,by,mn*0.14); }
+    if(boatReady){
+      // Vasslinja er ei bølgje, ikkje ein rett strek. Same kurve brukast to gonger:
+      // først som klippekant for skroget, så som skumstrek oppå — då møtest dei eksakt.
+      var kx0=bx-bw*0.72, kx1=bx+bw*0.72, steg=26;
+      var klippY=wlY - bh*0.05;   // følgjer båten opp — same neddykking som før
+      function boelgeY(x){ return klippY + Math.sin(bob*2.1 + x*0.045)*2.0 + Math.sin(bob*1.3 + x*0.017)*1.2; }
+      cx.save();
+      cx.beginPath();
+      cx.moveTo(kx0, by-bh);                                   // godt over båten
+      cx.lineTo(kx1, by-bh);
+      for(var i=steg;i>=0;i--){ var xx=kx0+(kx1-kx0)*(i/steg); cx.lineTo(xx, boelgeY(xx)); }
+      cx.closePath(); cx.clip();                               // alt under bølgja fell bort
+      cx.translate(bx,by); cx.rotate(bTilt); cx.drawImage(boatImg,-bw/2,-bh*0.5,bw,bh);
+      cx.restore();
+      // Skumstrek berre langs skroget, og fada ut i begge endar — elles blir det ein
+      // strek tvers over heile sjøen i staden for eit skvulp ved båten.
+      var sx0=bx-bw*0.46, sx1=bx+bw*0.46;
+      var gr=cx.createLinearGradient(sx0,0,sx1,0);
+      gr.addColorStop(0,"rgba(255,255,255,0)"); gr.addColorStop(0.18,"rgba(255,255,255,.34)");
+      gr.addColorStop(0.82,"rgba(255,255,255,.34)"); gr.addColorStop(1,"rgba(255,255,255,0)");
+      cx.save(); cx.beginPath();
+      for(var j=0;j<=steg;j++){ var sx=sx0+(sx1-sx0)*(j/steg), sy=boelgeY(sx);
+        if(j===0)cx.moveTo(sx,sy); else cx.lineTo(sx,sy); }
+      cx.strokeStyle=gr; cx.lineWidth=2; cx.stroke();
+      cx.restore();
+    } else drawBoat(bx,by,mn*0.14); }
   // teiner i sona: blåse på vannlinja, grønt tau ned, teine ved bunnen av bildet
   var BPOS=[0.15,0.85,0.22,0.78,0.29,0.72]; // annenhver side av båten — klar av motor, skrog OG kamp-barene i kantene
   var barKlar=44; // spenn-/dybdebaren dekker x 10-32 fra hver kant — 44 gir 12 px luft
@@ -3071,7 +3222,7 @@ function drawScene(dt){
         var gx,gyTop;
         if(bg.tak){ var tbw=mn*0.5, tbh=(boatImg.complete&&boatImg.naturalWidth)?tbw*(boatImg.naturalHeight/boatImg.naturalWidth):tbw*0.4;
           gx=W*0.52+tbw*0.17; gyTop=wlY-tbh*0.36+Math.sin(bob*1.3)*3-tbh*0.47; } // styrehustaket (samme formel som båten)
-        else { gx=W*BPOS[bg.zi%BPOS.length]; gyTop=wlY+Math.sin(bob*1.1+2+bg.zi)*1.5-mn*0.030; }
+        else { gx=W*BPOS[bg.zi%BPOS.length]; gyTop=wlY+Math.sin(bob*1.1+2+bg.zi)*1.5-mn*0.042; }
         var gw=mn*0.075, gh=gw*7/6, sx=gx+bg.dir*W*0.32, sy=gyTop-H*0.24, px,py,fr;
         bg.t+=dt;
         if(bg.st==="inn"){ var pi=Math.min(1,bg.t/1.7), ei=1-Math.pow(1-pi,2);
@@ -3113,6 +3264,15 @@ function drawScene(dt){
       var lang=mn*0.05*((ka&&KROKSKALA[ka.k])||1); // spritene har ulike proporsjoner:
       var sk=lang/Math.max(vw,vh), rw=vw*sk, rh=vh*sk;                  // skaler etter LENGSTE side
       rigDy=lang*0.72; // kroken sitter nede i enden av den hengende sluken
+      var uLys=(typeof aktivSluk==="function")&&aktivSluk();
+      if(!ka&&uLys&&uLys.k==="lysende"){ // sjølvlysande pilk: mjuk grøn glød som pustar
+        var gY=ey+lang*0.45, gR=lang*2.2, pu=0.72+0.28*Math.sin(bob*2.0);
+        var gg=cx.createRadialGradient(lineX,gY,0,lineX,gY,gR);
+        gg.addColorStop(0,"rgba(178,255,190,"+(0.40*pu).toFixed(3)+")");
+        gg.addColorStop(0.42,"rgba(126,242,150,"+(0.17*pu).toFixed(3)+")");
+        gg.addColorStop(1,"rgba(110,235,140,0)");
+        cx.save(); cx.globalCompositeOperation="lighter"; cx.fillStyle=gg;
+        cx.beginPath(); cx.arc(lineX,gY,gR,0,7); cx.fill(); cx.restore(); }
       cx.save(); cx.translate(lineX, ey);
       cx.rotate((vh>=vw?0:Math.PI/2) + Math.sin(bob*1.6)*0.08);          // liggende kunst legges loddrett; alt vugger så vidt
       cx.drawImage(rb,-rw/2,0,rw,rh); cx.restore(); }                    // HENGER fra snørets ende (ikke balansert på midten)
@@ -3210,8 +3370,12 @@ function pickAmbient(){
   var kveiteFinnes=(hooked&&hooked.trophy)||(sceneFish&&sceneFish.f.trophy)||ambient.some(function(a){return a.f&&a.f.trophy});
   var tot=0, ws=FISH.map(function(f){ var k=(f.trophy&&kveiteFinnes)?0:(f.rar===2?0.06:f.rar===1?0.35:1)*f.w; tot+=k; return k; });
   var r=Math.random()*tot; for(var i=0;i<FISH.length;i++){ r-=ws[i]; if(r<=0)return FISH[i]; } return FISH[0]; }
+var BUNNFRAC=[0.89,0.86,0.93,0.95]; // andel av bakgrunnen som er VANN — under dette ligger sanden
 function newAmbient(){ var f=pickAmbient(), dir=Math.random()<0.5?1:-1, g=colGeom();
-  var top=Math.max(g?g.wl+14:H*0.32, camY), bot=camY+H; // gyter i vannet INNENFOR dagens kamerautsnitt
+  var top=Math.max(g?g.wl+14:H*0.32, camY);
+  var sand=g?g.imgH*(BUNNFRAC[depth]||0.9):Infinity;   // havbotnen i verdskoordinat
+  var bot=Math.min(camY+H, sand);                       // ingen fisk under sanden
+  if(bot-top<40)bot=top+40;                             // kameraet heilt nede: hald eit tynt band
   var lo=f.bunn?0.84:(f.rar?0.55:0.10), hi=f.bunn?0.97:0.95; // bunnfisk ved bunnen; sjeldne/legendariske dypere i utsnittet
   return {f:f, x:dir<0?1.2:-0.2, wy: top+(bot-top)*(lo+Math.random()*(hi-lo)), vx:dir*(0.015+Math.random()*0.045), op:0.4+Math.random()*0.4, sc:0.85+Math.random()*0.3, len:Math.round(rnd(f.len[0],f.len[1])) }; }
 function drawAmbient(dt,colTop){
@@ -3233,10 +3397,12 @@ function nyManet(){
   var r=Math.random()*tot, m=kand[kand.length-1];
   for(var i=0;i<kand.length;i++){ r-=kand[i].w; if(r<=0){ m=kand[i]; break; } }
   var g=colGeom(), dir=stromRetn; // ikke tilfeldig: hele utsnittet driver med strømmen
-  var top=Math.max(g?g.wl+30:H*0.35, camY), bot=camY+H;
+  var gj=g?g.imgH*(BUNNFRAC[depth]||0.9):0;
+  var top=Math.max(g?g.wl+(gj-g.wl)*0.14:H*0.35, camY), bot=Math.min(camY+H, gj||camY+H);
   return {m:m, x:dir<0?1.18:-0.18, wy:top+(bot-top)*(0.12+Math.random()*0.76),
     vx:dir*(0.006+Math.random()*0.012), vy:(Math.random()-0.5)*9,
-    op:0.20+Math.random()*0.18, sc:0.8+Math.random()*0.45, ph:Math.random()*7, t:Math.random()*7};
+    // 10-40 % opasitet, med tyngda nede mot 10-20 %: dei fleste manetene skal berre anast
+    op:0.10+Math.pow(Math.random(),1.7)*0.30, sc:0.8+Math.random()*0.45, ph:Math.random()*7, t:Math.random()*7};
 }
 function drawManeter(dt){
   // driver saktere enn fisken, pulserer med klokka og svaier med strømmen
@@ -3244,6 +3410,11 @@ function drawManeter(dt){
   var mn2=Math.min(W,H);
   for(var i=maneter.length-1;i>=0;i--){
     var a=maneter[i]; a.t+=dt; a.x+=a.vx*dt; a.wy+=a.vy*dt;
+    var gm=colGeom();
+    if(gm){ var golv=gm.imgH*(BUNNFRAC[depth]||0.9);
+      var tak=gm.wl+(golv-gm.wl)*0.12;                                // maneta held seg nede i vassøyla, ikkje i flata
+      if(a.wy<tak){ a.wy=tak; a.vy=Math.abs(a.vy)*0.6+2; }            // sig roleg ned att, pressar ikkje mot taket
+      else if(a.wy>golv){ a.wy=golv; a.vy=-Math.abs(a.vy)*0.6-2; } }
     if(a.x<-0.32||a.x>1.32||a.wy<camY-90||a.wy>camY+H+90){ maneter.splice(i,1); continue; }
     var im=manetImg[a.m.k]; if(!im.complete||!im.naturalWidth)continue;
     var sv=Math.sin(a.t*1.4+a.ph);
@@ -3291,11 +3462,11 @@ function drawSilhuett(dt){
 $("#playBtn").onclick=startGame;
 $("#openProfil").onclick=visProfil;
 $("#profilLukk").onclick=function(){ modal("profilModal",false); };
-$("#openShop").onclick=function(){ if(document.querySelector(".modal.on"))return; openShop(); }; // butikker kan aldri stables (Tab+Enter-fella)
+$("#openShop").onclick=function(){ if(document.querySelector(".modal.on"))return; Snd.dorbjelle(); openShop(); }; // butikker kan aldri stables (Tab+Enter-fella)
 $("#shopClose").onclick=function(){modal("shopModal",false); shopRefresh=null; updatePotBtn();};
-$("#openKjell").onclick=function(){ if(document.querySelector(".modal.on"))return; openKjell(); };
+$("#openKjell").onclick=function(){ if(document.querySelector(".modal.on"))return; Snd.verkstedlyd(); openKjell(); };
 $("#kjellClose").onclick=function(){modal("kjellModal",false); shopRefresh=null; updatePotBtn();};
-$("#openBook").onclick=function(){openBook("mine")}; $("#bookClose").onclick=function(){modal("bookModal",false)};
+$("#openBook").onclick=function(){ Snd.blaIBok(); openBook("mine"); }; $("#bookClose").onclick=function(){modal("bookModal",false)};
 $("#mapClose").onclick=function(){modal("mapModal",false)};
 document.querySelectorAll(".mappin").forEach(function(p){ p.onclick=function(){ var d=+p.dataset.d;
   if(d>P.rod){ $("#mapHint").textContent=RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+")"; return; }
@@ -3312,9 +3483,11 @@ function toggleMute(){ Snd.setMuted(!Snd.isMuted());
   if(!Snd.isMuted()&&$("#menu").classList.contains("on"))Snd.themeOn(); lydIkon(); }
 $("#muteBtnMenu").onclick=toggleMute;
 lydIkon();
-[].slice.call(document.querySelectorAll(".iconbtn, .dekk button, .depthsel button, #playBtn")).forEach(function(b){ b.addEventListener("click",function(){ if(b.matches("#depthsel button") && phase!=="idle")return; Snd.click(); }); });
+[].slice.call(document.querySelectorAll(".iconbtn, .dekk button, .depthsel button, #hudLure, #playBtn")).forEach(function(b){
+  if(b.id==="openShop"||b.id==="openKjell"||b.id==="openBook"||b.id==="hudLure")return; // desse har si eiga stemme
+  b.addEventListener("click",function(){ if(b.matches("#depthsel button") && phase!=="idle")return; Snd.click(); }); });
 $("#tabMine").onclick=function(){openBook("mine")}; $("#tabFam").onclick=function(){openBook("fam")}; $("#tabRek").onclick=function(){openBook("rek")}; $("#tabTrofe").onclick=function(){openBook("trofe")}; $("#tabAar").onclick=function(){openBook("aar")};
-$("#hudLure").onclick=function(){ if(!$("#sea").classList.contains("on"))return; renderRig(); modal("rigModal",true);
+$("#hudLure").onclick=function(){ if(!$("#sea").classList.contains("on"))return; Snd.slukLokk(); renderRig(); modal("rigModal",true);
 };
 $("#rigClose").onclick=function(){ modal("rigModal",false); };
 $("#rekLukk").onclick=function(){ modal("rekModal",false); };
@@ -3352,7 +3525,7 @@ window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("o
   im.src="spill/assets/spill-logo-liten.gif"; })(); // optimalisert utgave (64 kB mot 627 kB png)
 
 /* ---------- Start ---------- */
-window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,streak:streakTikk,famTaImot:famTaImot,strom:stromNaa,stromF:stromFaktor,setDyp:function(d){depth=d},baro:baroTraume,havmusOppe:havmusOppe,iSona:iSona,ord:RUSTEN_ORD,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null,pilk:phase==="pilkfiske"?{t:+pilkT.toFixed(1),krav:+pilkKrav.toFixed(1),n:pilkFangst.length,hold:holding}:null}}};
+window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,streak:streakTikk,famTaImot:famTaImot,bycatch:potBycatch,FUNN:FUNN,geom:function(){var g=colGeom();return g?{imgH:g.imgH,wl:g.wl,maxScroll:g.maxScroll,camY:camY,H:H,WLF:WLF[depth],HIMMEL:HIMMEL[depth],natH:g.img.naturalHeight,wlY:g.wl-camY}:null},lyd:function(){return Snd._maal()},dykkTest:function(n,d,z){Snd.dykk(n,d,z)},vaerTest:function(r2,v){Snd.vaerLyd(r2,v)},strom:stromNaa,stromF:stromFaktor,setDyp:function(d){depth=d},baro:baroTraume,havmusOppe:havmusOppe,iSona:iSona,ord:RUSTEN_ORD,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null,pilk:phase==="pilkfiske"?{t:+pilkT.toFixed(1),krav:+pilkKrav.toFixed(1),n:pilkFangst.length,hold:holding}:null}}};
 renderPlayers(); resize(); requestAnimationFrame(loop);
 })();
 </script>

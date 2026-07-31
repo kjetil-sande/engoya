@@ -58,6 +58,12 @@ function vaskPots(p) {
   if (!p || typeof p !== "object" || Array.isArray(p)) return undefined;
   const ut = { owned: tall(p.owned, 99), ownedH: tall(p.ownedH, 99), bait: tall(p.bait, 999),
     cap: tall(p.cap, 99), rescue: !!p.rescue, out: [] };
+  // Bunnlina MÅ med: familielageret er einaste backupen, og utan desse tre felta
+  // mistar ei fersk eining line, krokar og linagn for godt. Berre når feltet finst,
+  // så ein gammal klient utan dei ikkje skriv 0 over eit kjøpt bruk.
+  if (p.lineOwned != null) ut.lineOwned = tall(p.lineOwned, 9);
+  if (p.lineAgn != null) ut.lineAgn = tall(p.lineAgn, 999);
+  if (p.lineKroker != null) ut.lineKroker = Math.min(10, Math.max(3, tall(p.lineKroker, 10)));
   if (Array.isArray(p.out)) for (const o of p.out.slice(0, 12)) {
     if (!o || typeof o !== "object") continue;
     const t = typeof o.t === "string" && PEN_NOKKEL.test(o.t) ? o.t : "k";
@@ -140,6 +146,8 @@ function flettSpiller(fam, p) {
       g.tidMs = Math.max(tall(gml.tidMs, 9e15), tall(g.tidMs, 9e15)); // krympe, uansett klokkerot
       g.streakBest = Math.max(tall(gml.streakBest, 9e15), tall(g.streakBest, 9e15)); // beste streak er en rekord — aldri ned
       for (const k of ["vinsj", "ekko", "turbo", "sattDekk"]) if (gml[k]) g[k] = true; // sette flagg kan aldri tas tilbake
+      if (g.pots && gml.pots) for (const k of ["lineOwned", "lineKroker"]) // kjøpt line og krokar krymper aldri
+        if (gml.pots[k] != null) g.pots[k] = Math.max(tall(gml.pots[k], 99), tall(g.pots[k], 99));
       cur.gear = g;
     }
   }
