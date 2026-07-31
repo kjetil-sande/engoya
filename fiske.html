@@ -922,6 +922,10 @@ var KROKAGN={rustenspesial:"agn-rusten-spesial-paa-kroken",rustensuper:"agn-rust
 // Kompakte agn får same «lengde» som slanke, men dobbelt så mykje synleg masse.
 // Her skrur vi dei ned så dei står i rimeleg storleik mot fisken. 1 = uendra.
 var KROKSKALA={makrellhode:0.5, blaaskjell:0.68, brunost:0.68, polsebiter:0.7, krabbe:0.75, akkar:0.85};
+// Sluken skalerast etter LENGSTE side, så ein brei sprite får full lengde i begge retningar
+// og ser dobbelt så stor ut som ein slank. Målt synleg masse mot medianen: blink, lysende
+// og kjeks låg på 1,8x. Desse tala dreg dei ned til same storleiksorden. 1 = uendra.
+var SLUKSKALA={blink:0.78, lysende:0.78, kjeks:0.80, spinner:0.88, dupp:0.90, juksa:0.90};
 function rigBilde(){ var a=(typeof aktivAgn==="function")&&aktivAgn(), u=(typeof aktivSluk==="function")&&aktivSluk();
   var fil=a?bildeFil(KROKAGN[a.k]||agnImg(a)):(u?bildeFil(u.img):null); if(!fil)return null;
   if(!rigImg[fil]){ var im=new Image();
@@ -3262,11 +3266,11 @@ function drawScene(dt){
     var rb=rigBilde(); // sluken/agnet henger i enden av snøret
     if(rb){ var vw=rb.naturalWidth, vh=rb.naturalHeight;
       var ka=(typeof aktivAgn==="function")&&aktivAgn();
-      var lang=mn*0.05*((ka&&KROKSKALA[ka.k])||1); // spritene har ulike proporsjoner:
+      var ku=(typeof aktivSluk==="function")&&aktivSluk();
+      var lang=mn*0.05*((ka&&KROKSKALA[ka.k])||(!ka&&ku&&SLUKSKALA[ku.k])||1); // spritene har ulike proporsjoner:
       var sk=lang/Math.max(vw,vh), rw=vw*sk, rh=vh*sk;                  // skaler etter LENGSTE side
       rigDy=lang*0.72; // kroken sitter nede i enden av den hengende sluken
-      var uLys=(typeof aktivSluk==="function")&&aktivSluk();
-      if(!ka&&uLys&&uLys.k==="lysende"){ // sjølvlysande pilk: mjuk grøn glød som pustar
+      if(!ka&&ku&&ku.k==="lysende"){ // sjølvlysande pilk: mjuk grøn glød som pustar
         var gY=ey+lang*0.45, gR=lang*2.2, pu=0.72+0.28*Math.sin(bob*2.0);
         var gg=cx.createRadialGradient(lineX,gY,0,lineX,gY,gR);
         gg.addColorStop(0,"rgba(178,255,190,"+(0.40*pu).toFixed(3)+")");
