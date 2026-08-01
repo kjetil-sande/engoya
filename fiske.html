@@ -727,16 +727,16 @@ var Snd=(function(){
     hval2:{url:"spill/lyd/hval-02.aac", vol:0.55}, // det same to gonger på rad
     motor:{url:"spill/lyd/paahengsmotor.aac", vol:0.5},
     stritter:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.65},
-    nys1:{url:"spill/lyd/nys-01.aac", vol:0.68},
-    nys2:{url:"spill/lyd/nys-02.aac", vol:0.68},
-    nys3:{url:"spill/lyd/nys-03.aac", vol:0.68},
+    nys1:{url:"spill/lyd/nys-01.aac", vol:0.55},
+    nys2:{url:"spill/lyd/nys-02.aac", vol:0.55},
+    nys3:{url:"spill/lyd/nys-03.aac", vol:0.55},
     hmm:{url:"spill/lyd/fisker-hmm.aac", vol:0.85},
     imponert:{url:"spill/lyd/fisker-imponert.aac", vol:0.9},
     surGrynt:{url:"spill/lyd/fisker-surt-grynt.aac", vol:0.9},
     lettet:{url:"spill/lyd/fisker-lettet-stonn.aac", vol:0.9},
     host:{url:"spill/lyd/fisker-host.aac", vol:0.8},
-    nys4:{url:"spill/lyd/nys-04.aac", vol:0.85},
-    nysGubbe:{url:"spill/lyd/nys-gubbe.aac", vol:0.9}, // eierens ekte gubbenys — hovednyset
+    nys4:{url:"spill/lyd/nys-04.aac", vol:0.69},
+    nysGubbe:{url:"spill/lyd/nys-gubbe.aac", vol:0.73}, // eierens ekte gubbenys — dempa: opptaket er innandørs
     fis:{url:"spill/lyd/fisker-fis.aac", vol:0.55},
     stonnTungt:{url:"spill/lyd/fisker-stonn-tungt.aac", vol:0.9},
     aha:{url:"spill/lyd/fisker-aha.aac", vol:0.85},
@@ -812,7 +812,8 @@ var Snd=(function(){
       dypNa=dyp; sistSone=soneNa;
       // djupsone: alt over vassflata tonar ut til null etter kvart som sluken søkk
       var d = djupSone() ? Math.max(0, 1-dyp/0.8) : 1;
-      var over=Math.max(0,1-dyp/0.55), maake=0.22*over*over*d;
+      var over=Math.max(0,1-dyp/0.55);
+      var maake=0.22*over*over*d*(typeof maakeDogn==="function"?maakeDogn():1); // stilt om natta
       var havOver=regnNa?HAV_REGN:HAV;
       var seaMaal=(havOver+(0.045-havOver)*dyp)*d, seaPaa=!(djupSone()&&d<=0.001);
       if(seaPaa)tennStille("sea"); wantLoop("sea", seaPaa);
@@ -1265,7 +1266,7 @@ function tegnGlitr(dt,k,g2){
   lastVassmaske(k.b);
   var pkt=glitrMaske[k.b.fil]; if(!pkt)return;
   if(glitrFil!==k.b.fil){ glitr.length=0; royk.length=0; glitrFil=k.b.fil; } // skjermen snudde: gamle koordinatar høyrer til det andre biletet
-  while(glitr.length<58){ var i=(((Math.random()*pkt.length/2)|0)*2);
+  while(glitr.length<88){ var i=(((Math.random()*pkt.length/2)|0)*2);
     glitr.push({ix:pkt[i], iy:pkt[i+1], t:0, liv:0.8+Math.random()*1.5, br:1+Math.random()*2.4}); }
   g2.fillStyle="#eaf6ff";
   for(var j=glitr.length-1;j>=0;j--){ var q=glitr[j]; q.t+=dt;
@@ -1888,6 +1889,10 @@ function dogn(){
   return {fase:0, styrke:1};                                  // natt
 }
 var DOGNORD=["natt","gry","dag","skumring"];
+// Måkene søv om natta: ingen skrik, og berre ei einsleg silhuett på vengene.
+// Brukt både av lyden og av flokkstorleiken, så dei to aldri kjem i utakt.
+function maakeDogn(){ var f=dogn().fase; return f===0?0 : (f===2?1 : 0.45); }
+function maakeTal(dag){ var f=dogn().fase; return f===0?1 : (f===2?dag : dag-1); }
 // Lyset når ikke ned: full effekt på Grunt, halv på Mellomdyp, nesten ingen på Dypt, null i Djuphavet
 var DOGNDYP=[1,0.5,0.15,0];
 function dognFaktor(f){
@@ -3254,7 +3259,7 @@ function loop(now){
   if(document.querySelector("#catchModal").classList.contains("on")) liftT+=dt; else liftT=0; // løft-fangst spilles ÉN gang, nullstilles mellom fangster
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH);
     var lk=lobbyKart(); if(lk){ tegnGlitr(dt,lk,lgCtx); tegnRoyk(dt,lk,lgCtx); } // sjøen glitrar, pipa ryk
-    drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,3,lobbySpawn,0); } // måker over tittelen i lobbyen
+    drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,maakeTal(3),lobbySpawn,0); } // måker over tittelen i lobbyen
   if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); snelleSpinn(dt); Snd.dykk(phase!=="idle", dykkAndel(), depth); $("#sea").classList.toggle("fishing", phase!=="idle");
     if(boatIn>=1&&fisherT>=1&&!Snd.overflateStille()){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/140){ var rl=Math.random();
       if(rl<0.06){ Snd.fiskerFis(); dogShow(1,3); }
@@ -3307,7 +3312,7 @@ function drawScene(dt){
     if(serpent.x<-0.45||serpent.x>1.45){ serpent=null; serpentCd=240; } }
   drawClouds(dt,g); // skyer bak måkene
   // himmel-liv kun når overflata er i bildet
-  if(g&&wlY>H*0.15) drawGullField(cx,W,H,gulls,dt,camY+wlY*0.08,camY+wlY*0.52,2,gullSpawn,camY); // måkene bor i verdensrommet over vannlinja — og held seg godt over sjøen
+  if(g&&wlY>H*0.15) drawGullField(cx,W,H,gulls,dt,camY+wlY*0.08,camY+wlY*0.52,maakeTal(2),gullSpawn,camY); // måkene bor i verdensrommet over vannlinja — og held seg godt over sjøen
   // båt + fisker forankret til vannlinja – ruller opp og ut av bildet når kameraet følger sluken ned
   var lineX, top;
   var inE=1-Math.pow(1-boatIn,2); // båten glir på plass etter turen ut (ease-out)
