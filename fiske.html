@@ -211,9 +211,9 @@
      bakgrunn, så den leses som DEG og ikke som enda en funksjonsknapp. */
   .fiskerknapp{position:absolute;top:calc(10px + env(safe-area-inset-top));right:10px;z-index:6;
     pointer-events:auto;background:#a7cac8;border:0;border-radius:11px;padding:0;cursor:pointer;
-    width:46px;height:46px;overflow:hidden;display:block;box-shadow:0 2px 6px rgba(13,33,41,.22)}
+    width:46px;height:46px;display:block;box-shadow:0 2px 6px rgba(13,33,41,.22)}
   .fiskerknapp:active{transform:translateY(1px)}
-  .fiskerknapp img{width:100%;height:100%;object-fit:cover;display:block}
+  .fiskerknapp img{width:100%;height:100%;object-fit:cover;display:block;border-radius:11px}
   .pfhode{display:flex;align-items:center;gap:12px;margin-bottom:4px}
   .pfhode img{width:64px;height:64px;flex:0 0 64px;object-fit:cover;border-radius:12px;
     background:#e8dcc0;border:2px solid var(--kant,#c8b48a)}
@@ -314,9 +314,7 @@
   .vbar.prog > i{background:linear-gradient(0deg,#0d3b4a,#2e8b9e,#7fd0dd)}
   .vbar .lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:#eaf3ee;white-space:nowrap}
 
-  /* Raudt varselmerke på fiskerknappen. Ligg utanpå, så det ikkje flyttar noko. */
-  .fiskerknapp{position:relative}
-  #profilPrikk{position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;border-radius:10px;
+  #profilPrikk{position:absolute;top:-5px;left:-5px;min-width:20px;height:20px;border-radius:10px;
     background:var(--red);color:#fff;font-size:12px;font-weight:800;line-height:20px;text-align:center;
     padding:0 5px;box-shadow:0 0 0 2px #fff;display:none;pointer-events:none;z-index:2}
   #profilPrikk.on{display:block}
@@ -3731,36 +3729,40 @@ function drawSilhuett(dt){
    3. Kvar fiskar har ei synleg historie hos deg. Ingen skjulte terningar.        */
 
 var FISKERE=[
- {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"fisker-harald.png",  snitt:1.00, flaks:0.9, timar:[8,14],
-  sms:"Hei! Harald her, fra Nordvær. Eg skal ut på rekefeltet i natt og manglar litt til diesel. Vil du vere med på turen?",
+ {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"fisker-harald.png",  ho:false, mal:"nn", snitt:1.00, flaks:0.9, timar:[8,14],
+  sms:"Hei! Harald her, frå Nordvær. Eg skal ut på rekefeltet i natt og manglar litt til diesel. Vil du vere med på turen?",
   ord:"Harald er ein trygg kar. Han lovar aldri for mykje."},
- {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"fisker-jorunn.png",  snitt:1.08, flaks:0.6, timar:[10,16],
-  sms:"Jorunn på Havglimt. Eg går sjeldan tomhendt heim, men eg går heller ikkje langt ut. Blir du med på ein rolig tur?",
-  ord:"Jorunn tek ingen sjansar. Det syner på tala."},
- {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"fisker-birger.png",  snitt:1.14, flaks:1.6, timar:[14,22],
+ {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"fisker-jorunn.png",  ho:true,  mal:"bm", snitt:1.08, flaks:0.6, timar:[10,16],
+  sms:"Jorunn på Havglimt her. Jeg går sjelden tomhendt hjem, men jeg går heller ikke langt ut. Blir du med på en rolig tur?",
+  ord:"Jorunn tar ingen sjanser. Det synes på tallene."},
+ {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"fisker-birger.png",  ho:false, mal:"nn", snitt:1.14, flaks:1.6, timar:[14,22],
   sms:"Birger! Eg har peila inn ein reketopp langt ute som INGEN andre veit om. Det kan bli stort. Eller ingenting. Er du med?",
-  ord:"Birger går alltid lengst ut. Det går bra eller det går til helvete."},
- {k:"solveig",n:"Solveig Å.",      b:"M/S Fjordperle",  img:"fisker-solveig.png", snitt:1.05, flaks:1.0, timar:[9,15],
-  sms:"Solveig her. Ny rist på trålen, godkjent og fin. Eg treng berre litt til første turen. Blir du med?",
-  ord:"Solveig held bruket i orden. Det løner seg over tid."},
- {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"fisker-odd.png",     snitt:0.98, flaks:1.3, timar:[12,20],
+  ord:"Birger går alltid lengst ut. Det går bra, eller det går rett vest."},
+ {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"fisker-solveig.png", ho:true,  mal:"bm", snitt:1.05, flaks:1.0, timar:[9,15],
+  sms:"Solveig her. Ny rist på trålen, godkjent og fin. Jeg trenger bare litt til første turen. Blir du med?",
+  ord:"Solveig holder bruket i orden. Det lønner seg over tid."},
+ {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"fisker-odd.png",     ho:false, mal:"nn", snitt:0.98, flaks:1.3, timar:[12,20],
   sms:"Det er Odd. Båten er gammal og eg har hatt ein tung sesong. Men eg kjenner desse feltene betre enn nokon. Ein tur til?",
   ord:"Odd har uflaks. Men han kan sjøen."},
- {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"fisker-marit.png",   snitt:1.10, flaks:0.8, timar:[10,16],
-  sms:"Marit på Havbris. Eg har fast avtale med mottaket, så prisen er sikra. Kan du bli med på ein tur?",
-  ord:"Marit sel alt før ho går ut. Kjedeleg og lurt."},
- {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"fisker-trygve.png",  snitt:1.18, flaks:2.0, timar:[16,26],
-  sms:"TRYGVE! Eg går heilt ut på eggakanten no. Vêrmeldinga er … tja. Men fangsten der ute, mann. Er du med eller ikkje?",
-  ord:"Trygve er galen. Det er difor han av og til kjem heim stinn."},
- {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"fisker-ingrid.png",  snitt:1.06, flaks:0.7, timar:[7,12],
-  sms:"Ingrid. Kort tur i natt, inne i fjorden. Ikkje store pengar, men eg kjem alltid heim. Blir du med?",
-  ord:"Ingrid går korte turar. Låg risiko, låg gevinst."},
- {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"fisker-kaare.png",   snitt:1.12, flaks:1.4, timar:[13,21],
+ {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"fisker-marit.png",   ho:true,  mal:"bm", snitt:1.10, flaks:0.8, timar:[10,16],
+  sms:"Marit på Havbris. Jeg har fast avtale med mottaket, så prisen er sikret. Kan du bli med på en tur?",
+  ord:"Marit selger alt før hun går ut. Kjedelig og lurt."},
+ {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"fisker-trygve.png",  ho:false, mal:"bm", snitt:1.18, flaks:2.0, timar:[16,26],
+  sms:"TRYGVE! Jeg går helt ut på eggakanten nå. Værmeldinga er … tja. Men fangsten der ute, mann. Er du med eller ikke?",
+  ord:"Trygve er gal. Det er derfor han av og til kommer hjem stinn."},
+ {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"fisker-ingrid.png",  ho:true,  mal:"bm", snitt:1.06, flaks:0.7, timar:[7,12],
+  sms:"Ingrid her. Kort tur i natt, inne i fjorden. Ikke store penger, men jeg kommer alltid hjem. Blir du med?",
+  ord:"Ingrid går korte turer. Lav risiko, lav gevinst."},
+ {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"fisker-kaare.png",   ho:false, mal:"nn", snitt:1.12, flaks:1.4, timar:[13,21],
   sms:"Kåre her. Eg har fått teften av noko stort på det nye feltet. Treng ein partner på denne. Hiv deg med!",
   ord:"Kåre har teft. Av og til stemmer det."},
- {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"fisker-astrid.png",  snitt:1.09, flaks:1.1, timar:[11,18],
+ {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"fisker-astrid.png",  ho:true,  mal:"nn", snitt:1.09, flaks:1.1, timar:[11,18],
   sms:"Astrid på Kvitskjær. Eg tek med både reke og det som elles går i trålen — det blir alltid noko. Vil du inn?",
   ord:"Astrid tek imot alt trålen gir. Sjeldan heilt tomt."}];
+// Kvar fiskar har sitt eige målføre — Nordland har begge delar. Pronomenet må
+// følgje BÅDE kjønn og målføre: ho på nynorsk, hun på bokmål.
+function fPron(f){ return f.ho ? (f.mal==="nn"?"ho":"hun") : "han"; }
+function fPronStor(f){ var x=fPron(f); return x.charAt(0).toUpperCase()+x.slice(1); }
 var fiskerVed={}; FISKERE.forEach(function(f){ fiskerVed[f.k]=f; });
 
 // Utfall. mult = kva du får att av innsatsen. Vekta blir vridd av fiskarens profil
@@ -3893,7 +3895,9 @@ function apneMelding(m){
     return;
   }
   // tilbod
-  if(Date.now()-m.tid>=MELD_LIV){ notice(f.n.split(" ")[0]+" gjekk ut utan deg. Han spør nok igjen."); return; }
+  if(Date.now()-m.tid>=MELD_LIV){ var nn2=(f.mal==="nn");
+    notice(f.n.split(" ")[0]+(nn2?" gjekk ut utan deg. ":" dro ut uten deg. ")+fPronStor(f)
+      +(nn2?" spør nok igjen.":" spør nok igjen.")); return; }
   if(P.invest.tur){ notice("Du har alt pengar ute på ein tur. Vent til han er tilbake."); return; }
   if(P.kr<m.sum){ notice("Du har ikkje "+m.sum.toLocaleString("nb")+" kr på konto no."); return; }
   smsAktiv={f:f, sum:m.sum, timar:m.timar, meld:m};
@@ -3909,7 +3913,9 @@ function investJa(){
   P.invest.neste=Date.now()+18*3600000;
   if(a.meld) P.innboks=P.innboks.filter(function(x){return x.id!==a.meld.id;});
   innPrikk(); hud(); saveAll(); modal("smsModal",false);
-  notice(a.f.n.split(" ")[0]+" kastar loss. Han melder frå når han er tilbake 🛥️");
+  var f2=a.f, nn=(f2.mal==="nn");
+  notice(f2.n.split(" ")[0]+(nn?" kastar loss. ":" kaster loss. ")+fPronStor(f2)
+    +(nn?" melder frå når ":" melder fra når ")+fPron(f2)+(nn?" er tilbake 🛥️":" er tilbake 🛥️"));
 }
 function investNei(){
   if(smsAktiv){ P.invest.nei[smsAktiv.f.k]=(P.invest.nei[smsAktiv.f.k]||0)+1;
@@ -3928,7 +3934,7 @@ function investSjekk(){
   h.turar++; h.inn+=t.sum; h.ut+=ut;
   innLegg({type:"resultat", fk:t.fk, utfall:u.k, mult:u.mult, inn:t.sum, ut:ut});
   hud(); saveAll();
-  notice(f.n.split(" ")[0]+" er tilbake i hamn 📨");
+  notice(f.n.split(" ")[0]+(f.mal==="nn"?" er tilbake i hamn 📨":" er tilbake i havna 📨"));
 }
 
 function visResultat(f, u, inn, ut, fraaInnboks){
@@ -3960,7 +3966,9 @@ function investUtstyr(){
   P.kr-=a.neste.pris;
   P.invest.utstyr[a.f.k]=investNivaa(a.f.k)+1;
   hud(); saveAll(); modal("smsModal",false);
-  notice(a.f.n.split(" ")[0]+" fekk "+a.neste.n.toLowerCase()+". Det merkast på neste tur 🔧");
+  var nn3=(a.f.mal==="nn");
+  notice(a.f.n.split(" ")[0]+(nn3?" fekk ":" fikk ")+a.neste.n.toLowerCase()
+    +(nn3?". Det merkast på neste tur 🔧":". Det merkes på neste tur 🔧"));
 }
 
 /* ---------- Input ---------- */
