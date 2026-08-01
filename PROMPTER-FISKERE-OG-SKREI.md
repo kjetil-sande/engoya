@@ -106,3 +106,59 @@ horisonten i ulik avstand og fart, så feltet ser befolket ut.
 1. **De ti fiskerne** — mekanikken kjører allerede, den mangler bare ansiktene.
 2. **Skreien** — sesongen starter i januar, så det haster ikke.
 3. **De fjerne båtene** — først når skreifeltet bygges.
+
+---
+
+## 4. Mobiltelefonen
+
+For at meldingen skal føles som en ekte SMS, ikke en dialogboks.
+
+**Anbefalingen min: ikke lag en hel telefonramme.** En ramme rundt hele kortet må
+skalere fra 320 px til iPad uten å bli tynn eller grøtete, og den stjeler plass fra
+teksten på små skjermer. Det som faktisk selger «telefon» er toppen og bunnen.
+
+### 4a. Statuslinja på toppen
+
+Fil: **`sms-topplinje.png`** — **512 × 56**, sømløs venstre↔høyre, transparent
+
+> 16-bit pixel art iOS-style phone status bar strip. Left side: a small clock reading
+> "07:14". Right side: cellular signal bars, a wifi arc, and a battery icon roughly
+> two-thirds full. Rendered in **flat light grey-white on transparent**, no background
+> fill — it will sit on a dark bar. Very small, very clean, extremely legible at 1:1.
+> Strict pixel grid, hard edges, no anti-aliasing. Leave the centre third empty so a
+> notch can sit there.
+
+Kakles vannrett, så bredden spiller ingen rolle.
+
+### 4b. Hjemindikatoren nederst
+
+Fil: **`sms-bunnstrek.png`** — **160 × 12**, transparent
+
+> A single rounded horizontal bar, light grey, like the iPhone home indicator. Pixel
+> art, hard edges, transparent background. Nothing else.
+
+### Om du likevel vil ha hele telefonen
+
+Fil: **`sms-telefon.png`** — **360 × 720**, transparent midt
+
+> 16-bit pixel art smartphone seen straight on, dark grey aluminium body, rounded
+> corners, thin bezel, small notch at the top centre, subtle side buttons. The screen
+> area must be **fully transparent** so the message can render through it. Soft drop
+> shadow outside the body only. Strict pixel grid, hard edges, no anti-aliasing.
+
+Da må jeg vite det, for kortet må låses til 1:2-format og det koster plass i liggende.
+
+---
+
+## 5. Konvolutt-ikonet
+
+Fil: **`ikon-konvolutt.png`** — **64 × 64**, transparent
+
+Ligger til venstre i «Innboks»-knappen, vises som 17 px høy.
+
+> 16-bit pixel art envelope icon, seen straight on, slightly tilted. Warm cream paper
+> with a visible fold line forming a V across the front, and a thin darker edge. Simple
+> and chunky — it must read clearly at 17 pixels high. No text, no stamp, no seal.
+> Strict pixel grid, hard edges, no anti-aliasing, transparent background.
+
+Fram til fila finnes bruker knappen 📨 som reserve, så ingenting brekker.

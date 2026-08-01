@@ -314,6 +314,24 @@
   .vbar.prog > i{background:linear-gradient(0deg,#0d3b4a,#2e8b9e,#7fd0dd)}
   .vbar .lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:#eaf3ee;white-space:nowrap}
 
+  /* Raudt varselmerke på fiskerknappen. Ligg utanpå, så det ikkje flyttar noko. */
+  .fiskerknapp{position:relative}
+  #profilPrikk{position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;border-radius:10px;
+    background:var(--red);color:#fff;font-size:12px;font-weight:800;line-height:20px;text-align:center;
+    padding:0 5px;box-shadow:0 0 0 2px #fff;display:none;pointer-events:none;z-index:2}
+  #profilPrikk.on{display:block}
+  /* Innboksen — meldingar frå fiskarane, uleste øvst og i feit skrift. */
+  .innrad{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#fff8ea;
+    border:2px solid var(--paper-2);border-radius:10px;padding:9px 11px;margin-bottom:7px;cursor:pointer;
+    font-family:var(--font);position:relative}
+  .innrad.ulest{border-color:var(--gold);background:#fdf3d6}
+  .innrad img{width:38px;height:38px;border-radius:50%;object-fit:cover;image-rendering:pixelated;
+    background:var(--paper-2);flex:0 0 38px}
+  .innrad .it{flex:1;min-width:0}
+  .innrad .in{font-weight:700;font-size:14px;color:var(--wood-dark)}
+  .innrad.ulest .in::after{content:"●";color:var(--red);font-size:11px;margin-left:6px;vertical-align:2px}
+  .innrad .ib{font-size:12.5px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .innrad .id2{font-size:11px;color:var(--ink-soft);opacity:.7;flex:0 0 auto}
   /* SMS frå ein fiskar som treng investor. Skal sjå ut som ei melding, ikkje som ein butikk. */
   #smsModal .card{max-width:400px;padding:0;overflow:hidden}
   .smstopp{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--wood-dark);color:#f6ecd0}
@@ -542,7 +560,7 @@
   <!-- SEA -->
   <section class="screen" id="sea">
     <div id="hud">
-      <button class="fiskerknapp" id="openProfil" title="Fiskerkortet"><img src="spill/assets/ikon-fiskeren.png" alt="Fiskerkortet" onerror="this.outerHTML='🧑'"></button>
+      <button class="fiskerknapp" id="openProfil" title="Fiskerkortet"><img src="spill/assets/ikon-fiskeren.png" alt="Fiskerkortet" onerror="this.outerHTML='🧑'"><span id="profilPrikk"></span></button>
       <div class="chip"><span class="hudPenge">💰</span> <b id="hudKr">0</b> kr</div>
       <div class="chip"><img src="spill/assets/bensinkanne.png" alt="Bensin" class="hudBensin" onerror="this.outerHTML='⛽'"> <div class="fuel"><i id="hudFuel"></i></div></div>
       <div class="spacer"></div>
@@ -670,6 +688,13 @@
     <div id="potList"></div>
     <div class="statline" id="potTotal"></div>
     <div class="row"><span></span><button class="btn gold" id="potTake">Ta med</button></div>
+  </div></div>
+
+  <!-- INNBOKS -->
+  <div class="modal" id="innModal"><div class="cardwrap" style="max-width:400px">
+    <img src="spill/assets/knapp-lukk.png" id="innLukk" class="lukkx" alt="Lukk innboksen">
+    <div class="card"><h2 style="margin:.1em 0 .6em">📨 Innboks</h2>
+      <div id="innListe"></div></div>
   </div></div>
 
   <!-- SMS: fiskar søkjer investor -->
@@ -1216,7 +1241,7 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.agn==null)P.agn={}; // agnbeholdning
   if(P.rolex===undefined||P.rolex==="raa"||P.rolex==="klar")P.rolex=(P.rolex==="klar")?{bud:50000}:null; // null | {ferdig:ts} | {bud:kr}
   if(P.turbo==null)P.turbo=false; // turbosnelle (halv kamptid)
-  if(typeof investInit==="function")investInit();
+  if(typeof investInit==="function"){ investInit(); innRydd(); setTimeout(innPrikk,0); }
   P.motor="stor"; if(P.motorOk==null)P.motorOk=true; // éin motor på båten — sett ubetinga, så gamle saves med "liten" ikkje står fast
   if(P.pots.lineKroker==null)P.pots.lineKroker=3; // bunnlinekroker (3 standard, 10 maks)
   if(P.lures&&P.lures[0]!=null){ var g0=P.lures; P.lures={blink:g0[0]||0,torskepilk:g0[1]||0,dyppilk:g0[2]||0,agnrigg:g0[3]||0}; } // gamle sone-sluker → nærmeste i katalogen
@@ -2562,6 +2587,7 @@ setInterval(updatePotBtn,15000);
 setInterval(function(){ if(!P)return;
   try{ investSjekk(); }catch(e){}
   try{ investTilbod(); }catch(e){}
+  try{ innRydd(); innPrikk(); }catch(e){}
 },20000);
 setInterval(function(){ if(P&&!document.hidden&&document.querySelector("#sea").classList.contains("on")){ // spilletid teller bare når man faktisk er på havet
   P.tidMs=(P.tidMs||0)+15000;
@@ -2645,13 +2671,18 @@ function visProfil(){
            : '<p class="muted" style="font-size:13px;margin:2px 0">Ikke koblet ennå. Under <b>Fangstboka → Familien</b> kan dere dele rekorder mellom alle enhetene.</p>')
     +'</div>';
 
+  var nUlest=uleste();
   h+='<div class="row" style="justify-content:center;margin-top:16px;gap:8px">'
-    +'<button class="btn sm" id="pfTilNaust">⚓ Bytt fisker</button></div>';
+    +'<button class="btn sm" id="pfTilNaust">⚓ Bytt spiller</button>'
+    +'<button class="btn sm gold" id="pfInnboks">'
+      +'<img src="spill/assets/ikon-konvolutt.png" alt="" style="height:17px;vertical-align:-3px;margin-right:6px;image-rendering:pixelated" onerror="this.outerHTML=&quot;📨 &quot;">'
+      +'Innboks'+(nUlest?' ('+nUlest+')':'')+'</button></div>';
 
   $("#profilKort").innerHTML=h;
   $("#pfNavnBytt").onclick=byttNavn;
   lydIkon(); $("#pfLyd").onclick=function(){ toggleMute(); };
   $("#pfTilNaust").onclick=function(){ modal("profilModal",false); tilNaustet(); };
+  $("#pfInnboks").onclick=function(){ modal("profilModal",false); visInnboks(); };
   modal("profilModal",true);
 }
 
@@ -3751,7 +3782,19 @@ var TRAALUTSTYR=[
  {n:"Kraftblokk og vinsj",pris:80000, t:"Halve tida på hal. Fleire hal per tur."}];
 
 function investInit(){ if(!P.invest)P.invest={tur:null,hist:{},neste:0,utstyr:{},nei:{}};
-  var iv=P.invest; if(!iv.hist)iv.hist={}; if(!iv.utstyr)iv.utstyr={}; if(!iv.nei)iv.nei={}; if(!iv.neste)iv.neste=0; }
+  var iv=P.invest; if(!iv.hist)iv.hist={}; if(!iv.utstyr)iv.utstyr={}; if(!iv.nei)iv.nei={}; if(!iv.neste)iv.neste=0;
+  if(!Array.isArray(P.innboks))P.innboks=[]; }
+function uleste(){ return (P.innboks||[]).filter(function(m){return !m.lest}).length; }
+function innPrikk(){ var e=$("#profilPrikk"); if(!e||!P)return;
+  var n=uleste(); e.textContent=n>9?"9+":n; e.classList.toggle("on", n>0); }
+// Ei melding varer 20 timar. Eit tilbod som har lege ei veke er ikkje eit tilbod lenger.
+var MELD_LIV=20*3600000;
+function innLegg(m){ investInit(); m.id=(Math.random()*1e9)|0; m.tid=Date.now(); m.lest=false;
+  P.innboks.unshift(m); if(P.innboks.length>30)P.innboks.length=30;
+  innPrikk(); saveAll(); }
+function innRydd(){ if(!P||!P.innboks)return; var f=P.innboks.length;
+  P.innboks=P.innboks.filter(function(m){ return m.type!=="tilbod" || Date.now()-m.tid<MELD_LIV; });
+  if(P.innboks.length!==f){ innPrikk(); saveAll(); } }
 
 function investNivaa(fk){ return (P.invest&&P.invest.utstyr&&P.invest.utstyr[fk])||0; }
 
@@ -3793,8 +3836,9 @@ function investTilbod(){
   var sumKr=Math.max(5000, Math.min(tak, basis));
   if(sumKr>tak) return;
   var timar=f.timar[0]+Math.random()*(f.timar[1]-f.timar[0]);
-  smsAktiv={f:f, sum:sumKr, timar:timar};
-  visSms(f, sumKr, timar);
+  innLegg({type:"tilbod", fk:f.k, sum:sumKr, timar:timar});
+  P.invest.neste=Date.now()+9*3600000;   // ikkje mas: minst ni timar til neste spørsmål
+  notice("Du har fått ei melding 📨");
 }
 
 function visSms(f, sumKr, timar){
@@ -3813,6 +3857,49 @@ function visSms(f, sumKr, timar){
   Snd.click(); modal("smsModal",true);
 }
 
+
+function visInnboks(){
+  investInit(); innRydd();
+  var L=$("#innListe"); L.innerHTML="";
+  if(!P.innboks.length){
+    L.innerHTML='<p class="muted center">Ingen meldingar. Fiskarane tek kontakt når dei treng ein partner.</p>';
+  } else P.innboks.forEach(function(m){
+    var f=fiskerVed[m.fk]; if(!f)return;
+    var d=document.createElement("button"); d.className="innrad"+(m.lest?"":" ulest");
+    var forh = m.type==="tilbod"
+      ? (Date.now()-m.tid<MELD_LIV ? "Spør om "+m.sum.toLocaleString("nb")+" kr" : "Tilbodet er gått ut")
+      : (m.ut>m.inn ? "+"+(m.ut-m.inn).toLocaleString("nb")+" kr" : (m.ut? (m.ut-m.inn).toLocaleString("nb")+" kr" : "Tomhendt"));
+    d.innerHTML='<img src="spill/assets/'+f.img+'" alt="" onerror="this.style.visibility=\'hidden\'">'
+      +'<span class="it"><span class="in">'+esc(f.n)+'</span>'
+      +'<span class="ib">'+esc(forh)+'</span></span>'
+      +'<span class="id2">'+naarTekst(m.tid)+'</span>';
+    d.onclick=function(){ apneMelding(m); };
+    L.appendChild(d);
+  });
+  Snd.click(); modal("innModal",true);
+}
+function naarTekst(t){ var d=Date.now()-t;
+  if(d<3600000)return Math.max(1,Math.round(d/60000))+" min";
+  if(d<86400000)return Math.round(d/3600000)+" t";
+  return Math.round(d/86400000)+" d"; }
+
+function apneMelding(m){
+  var f=fiskerVed[m.fk]; if(!f)return;
+  if(!m.lest){ m.lest=true; innPrikk(); saveAll(); }
+  modal("innModal",false);
+  if(m.type==="resultat"){
+    var u=null; for(var i=0;i<UTFALL.length;i++) if(UTFALL[i].k===m.utfall)u=UTFALL[i];
+    visResultat(f, u||UTFALL[2], m.inn, m.ut, true);
+    return;
+  }
+  // tilbod
+  if(Date.now()-m.tid>=MELD_LIV){ notice(f.n.split(" ")[0]+" gjekk ut utan deg. Han spør nok igjen."); return; }
+  if(P.invest.tur){ notice("Du har alt pengar ute på ein tur. Vent til han er tilbake."); return; }
+  if(P.kr<m.sum){ notice("Du har ikkje "+m.sum.toLocaleString("nb")+" kr på konto no."); return; }
+  smsAktiv={f:f, sum:m.sum, timar:m.timar, meld:m};
+  visSms(f, m.sum, m.timar);
+}
+
 function investJa(){
   if(!smsAktiv)return; var a=smsAktiv; smsAktiv=null;
   if(P.kr<a.sum){ modal("smsModal",false); notice("Du har ikkje så mykje på konto lenger."); return; }
@@ -3820,13 +3907,15 @@ function investJa(){
   P.invest.tur={fk:a.f.k, sum:a.sum, start:Date.now(), ferdig:Date.now()+a.timar*3600000,
                 seed:(Math.random()*1e9)|0, niv:investNivaa(a.f.k)};
   P.invest.neste=Date.now()+18*3600000;
-  hud(); saveAll(); modal("smsModal",false);
+  if(a.meld) P.innboks=P.innboks.filter(function(x){return x.id!==a.meld.id;});
+  innPrikk(); hud(); saveAll(); modal("smsModal",false);
   notice(a.f.n.split(" ")[0]+" kastar loss. Han melder frå når han er tilbake 🛥️");
 }
 function investNei(){
-  if(smsAktiv){ P.invest.nei[smsAktiv.f.k]=(P.invest.nei[smsAktiv.f.k]||0)+1; smsAktiv=null; }
-  P.invest.neste=Date.now()+6*3600000;
-  saveAll(); modal("smsModal",false);
+  if(smsAktiv){ P.invest.nei[smsAktiv.f.k]=(P.invest.nei[smsAktiv.f.k]||0)+1;
+    if(smsAktiv.meld) P.innboks=P.innboks.filter(function(x){return x.id!==smsAktiv.meld.id;});
+    smsAktiv=null; }
+  innPrikk(); saveAll(); modal("smsModal",false);
 }
 
 function investSjekk(){
@@ -3837,11 +3926,12 @@ function investSjekk(){
   P.kr+=ut; P.invest.tur=null;
   var h=P.invest.hist[t.fk]||(P.invest.hist[t.fk]={turar:0,inn:0,ut:0});
   h.turar++; h.inn+=t.sum; h.ut+=ut;
+  innLegg({type:"resultat", fk:t.fk, utfall:u.k, mult:u.mult, inn:t.sum, ut:ut});
   hud(); saveAll();
-  visResultat(f, u, t.sum, ut);
+  notice(f.n.split(" ")[0]+" er tilbake i hamn 📨");
 }
 
-function visResultat(f, u, inn, ut){
+function visResultat(f, u, inn, ut, fraaInnboks){
   $("#smsAvatar").src="spill/assets/"+f.img;
   $("#smsNavn").textContent=f.n;
   $("#smsBaat").textContent=f.b+" — tilbake i hamn";
@@ -3858,8 +3948,8 @@ function visResultat(f, u, inn, ut){
   $("#smsJa").textContent = neste ? "Spleis på utstyr" : "Fint";
   $("#smsJa").disabled = !!(neste && P.kr<neste.pris);
   smsAktiv={resultat:true, f:f, neste:neste};
-  if(ut>inn){ Snd.coin(); if(u.mult>=3){ Snd.trophy(); dogShow(0,5); Snd.gladDog(); } }
-  else Snd.fiskerSurPool&&Snd.fiskerSurPool();
+  if(!fraaInnboks){ if(ut>inn){ Snd.coin(); if(u.mult>=3){ Snd.trophy(); dogShow(0,5); Snd.gladDog(); } }
+    else if(Snd.fiskerSurPool)Snd.fiskerSurPool(); }
   modal("smsModal",true);
 }
 
@@ -3875,6 +3965,7 @@ function investUtstyr(){
 
 /* ---------- Input ---------- */
 $("#playBtn").onclick=startGame;
+$("#innLukk").onclick=function(){ modal("innModal",false); };
 $("#smsJa").onclick=function(){ if(smsAktiv&&smsAktiv.resultat)investUtstyr(); else investJa(); };
 $("#smsNei").onclick=function(){ if(smsAktiv&&smsAktiv.resultat){ smsAktiv=null; modal("smsModal",false); } else investNei(); };
 $("#openProfil").onclick=visProfil;
