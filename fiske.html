@@ -3781,34 +3781,74 @@ function drawSilhuett(dt){
 
 var FISKERE=[
  {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"harald-nystad-ms-nordvaer.png",  ho:false, mal:"nn", kost:40000, snitt:1.03, flaks:0.9, timar:[26,36],
-  sms:"Hei! Harald her, frå Nordvær. Eg skal ut på rekefeltet i natt og manglar litt til diesel. Vil du vere med på turen?",
+  sms:"Hei {NAVN}! Harald her, frå Nordvær. Eg skal ut på rekefeltet i natt og tek gjerne med ein partner. Det går slik: du betaler ein del av det turen kostar — diesel, agn og mannskap — og får den same delen av det vi får for fangsten. Går det tomt, går det tomt for oss båe. Eg lovar aldri meir enn eg kan halde. Vil du vere med?",
+  minne:{bra:"Hei igjen, {NAVN}! Sist gjekk det riktig så bra, det. Eg går same vegen i natt, og eg tenkte du kanskje ville vere med på ein ny ein. Same avtale som før — du tek ein del av turen, og får same delen av fangsten.",
+    ok:"Hei {NAVN}. Det vart ein grei tur sist. Ikkje meir, ikkje mindre — slik er det stort sett. Eg går ut att i natt om du vil vere med på same vilkåra.",
+    daarleg:"Hei {NAVN}. Det vart lite sist, det veit vi båe. Vêret ville det ikkje annleis. No skal eg prøve på nytt, og eg forstår om du vil sitje over denne gongen. Men blir du med, gjer eg det eg kan.",
+    tomt:"Hei {NAVN}. Eg beklagar sist. Trålen kom opp tom, og pengane dine gjekk med. Eg skal ikkje pynte på det. Men eg går ut att i natt, og eg vil gjerne ha deg med om du framleis har tru på meg."},
   ord:"Harald er ein trygg kar. Han lovar aldri for mykje."},
  {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"jorunn-eide-ms-havglimt.png",  ho:true,  mal:"bm", kost:45000, snitt:1.09, flaks:0.6, timar:[30,42],
-  sms:"Jorunn på Havglimt her. Jeg går sjelden tomhendt hjem, men jeg går heller ikke langt ut. Blir du med på en rolig tur?",
+  sms:"Hei {NAVN}! Jorunn på Havglimt her. Jeg går ut i morgen tidlig og lurer på om du vil være med på en andel. Da betaler du en del av det turen koster, og får den samme delen av det fangsten er verdt. Jeg går sjelden tomhendt hjem, men jeg går heller ikke langt ut — så det blir sjelden de store summene. Blir du med?",
+  minne:{bra:"Hei igjen, {NAVN}! Det ble en fin tur sist, den. Jeg drar ut i morgen tidlig igjen, og du er hjertelig velkommen på en ny andel. Samme opplegg som sist.",
+    ok:"Hei {NAVN}. Sist ble omtrent som jeg pleier — ikke noe å skryte av, men vi kom hjem med noe. Jeg går ut i morgen om du vil være med igjen.",
+    daarleg:"Hei {NAVN}. Vi måtte snu sist, og du fikk lite igjen for pengene. Det liker jeg dårlig. Jeg drar ut i morgen tidlig, og jeg holder meg nærmere land denne gangen. Er du med?",
+    tomt:"Hei {NAVN}. Sist ga ingenting, og det var dine penger også. Jeg forstår godt om du er skeptisk nå. Men jeg drar ut i morgen, og jeg skal gjøre alt jeg kan for at det blir annerledes. Vil du prøve en gang til?"},
   ord:"Jorunn tar ingen sjanser. Det synes på tallene."},
  {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"birger-kvalvik-ms-storskjaer.png",  ho:false, mal:"nn", kost:80000, snitt:1.22, flaks:1.6, timar:[62,80],
-  sms:"Birger! Eg har peila inn ein reketopp langt ute som INGEN andre veit om. Det kan bli stort. Eller ingenting. Er du med?",
+  sms:"Hei {NAVN}! Birger her. Eg har peila inn ein reketopp langt ute som INGEN andre veit om. Vil du vere med på ein andel? Du betaler ein del av turen og får same delen av fangsten. Eg skal ikkje lyge: det kan bli stort, og det kan bli null. Slik er det når ein går så langt ut. Er du med?",
+  minne:{bra:"{NAVN}! Sa eg det ikkje? Det datt inn sist! Eg har peila inn ein ny topp, endå lenger ute. Same avtale — del av turen, del av fangsten. Hiv deg med, så tek vi ein til!",
+    ok:"Hei {NAVN}. Det vart midt på treet sist. Eg hadde venta meir, men sjøen bryr seg ikkje om kva eg ventar. No har eg eit nytt felt eg vil prøve. Blir du med?",
+    daarleg:"Hei {NAVN}. Det bles opp sist, og vi fekk ikkje sett trålen slik eg ville. Du tapte på det, og det var eg som drog deg med. No har eg eit nytt hol eg vil prøve — men eg forstår om du sit over.",
+    tomt:"Hei {NAVN}. Det vart svart sist. Heilt tomt, og pengane dine med. Eg har ikkje noko å seie til mitt forsvar anna enn at eg gjekk for langt ut. Men eg har eit nytt felt no, og eg vil gjerne ha deg med om du toler ein sjanse til."},
   ord:"Birger går alltid lengst ut. Det går bra, eller det går rett vest."},
  {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"solveig-aasen-ms-fjordperle.png", ho:true,  mal:"bm", kost:42000, snitt:1.07, flaks:1.0, timar:[28,38],
-  sms:"Solveig her. Ny rist på trålen, godkjent og fin. Jeg trenger bare litt til første turen. Blir du med?",
+  sms:"Hei {NAVN}! Solveig her, fra Fjordperle. Jeg har ny rist på trålen, godkjent og fin, og skal ut i morgen. Vil du være med på en andel? Du betaler en del av det turen koster, og får den samme delen av fangsten. Ingen garantier — men bruket mitt er i orden, og det teller over tid. Hva sier du?",
+  minne:{bra:"Hei {NAVN}! Det ble en god tur sist — ristene og alt fungerte som det skulle. Jeg går ut igjen i morgen, og du er velkommen på en ny andel om du vil.",
+    ok:"Hei {NAVN}. Sist ble helt greit. Ikke noe å hoppe i taket for, men bruket holdt og vi kom hjem med fangst. Blir du med en gang til?",
+    daarleg:"Hei {NAVN}. Vi fikk ikke gjort mye sist, og du satt igjen med lite. Jeg har gått over hele trålen siden. Jeg drar ut i morgen, og jeg forstår om du vil vente — men jeg vil gjerne ha deg med.",
+    tomt:"Hei {NAVN}. Sist ga ingenting. Det er kjipt å ta imot andres penger og komme hjem tomhendt. Jeg har sjekket bruket fra ende til annen. Vil du gi meg én sjanse til?"},
   ord:"Solveig holder bruket i orden. Det lønner seg over tid."},
- {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"odd-mikkelsen-ms-gamle-ola.png",     ho:false, mal:"nn", kost:30000, snitt:1.00, flaks:1.3, timar:[20,30],
-  sms:"Det er Odd. Båten er gammal og eg har hatt ein tung sesong. Men eg kjenner desse feltene betre enn nokon. Ein tur til?",
+ {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"odd-mikkelsen-ms-gamle-ola.png",     ho:false, mal:"nn", kost:30000, snitt:1.03, flaks:2.3, timar:[20,30],
+  sms:"Hei {NAVN}. Det er Odd. Båten er gammal og eg har hatt ein tung sesong, men eg kjenner desse felta betre enn nokon. Vil du vere med på ein andel? Du legg inn ein del av det turen kostar og får same delen av fangsten. Eg skal ikkje lova deg noko. Men eg veit kvar fisken står.",
+  minne:{bra:"Hei {NAVN}. Du, det gjekk faktisk bra sist. Det hender ikkje så ofte for meg lenger, så eg tenkte eg måtte ringe. Vil du vere med på ein til, på same vilkåra?",
+    ok:"Hei {NAVN}. Det vart eit vanleg hal sist. Ikkje mykje, men noko. Eg går ut att, og du er velkomen om du vil.",
+    daarleg:"Hei {NAVN}. Det vart tynt sist. Gamle Ola er ikkje den ho var, og vêret var imot oss. Eg forstår om du finn deg ein betre båt å setje pengane i. Men eg spør likevel.",
+    tomt:"Hei {NAVN}. Eg kom heim tom sist, og du tapte pengane dine på meg. Eg har hatt fleire slike enn eg vil telje. Så eg skjønar godt om du seier nei. Men eg går ut att i morgon, og eg kjenner framleis desse felta."},
   ord:"Odd har uflaks. Men han kan sjøen."},
  {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"marit-fagerli-ms-havbris.png",   ho:true,  mal:"bm", kost:50000, snitt:1.13, flaks:0.8, timar:[40,54],
-  sms:"Marit på Havbris. Jeg har fast avtale med mottaket, så prisen er sikret. Kan du bli med på en tur?",
+  sms:"Hei {NAVN}! Marit her, Havbris. Jeg har fast avtale med mottaket, så prisen på fangsten er sikret før vi går ut. Vil du være med på en andel? Du betaler en del av det turen koster og får den samme delen av det vi får betalt. Det blir sjelden eventyr, men det blir sjelden krise heller. Er du med?",
+  minne:{bra:"Hei {NAVN}! Det ble bra tall sist, det. Mottaket tok imot alt til avtalt pris. Jeg går ut igjen i morgen — vil du være med på en andel til?",
+    ok:"Hei {NAVN}. Sist gikk som beregnet. Det er stort sett slik jeg driver. Ny tur i morgen om du vil være med på samme betingelser.",
+    daarleg:"Hei {NAVN}. Vi fikk mindre enn planlagt sist, og det gikk ut over deg også. Avtalen med mottaket står, så prisen er trygg — det er mengden som sviktet. Jeg drar ut igjen. Er du med?",
+    tomt:"Hei {NAVN}. Det ble null sist. Jeg liker ikke å ringe folk etter en slik tur, men jeg gjør det likevel. Prisen er fortsatt sikret gjennom mottaket, og jeg skal gjøre det jeg kan for å fylle rommet denne gangen."},
   ord:"Marit selger alt før hun går ut. Kjedelig og lurt."},
  {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"trygve-bang-ms-nordlys.png",  ho:false, mal:"bm", kost:110000, snitt:1.28, flaks:2.0, timar:[78,100],
-  sms:"TRYGVE! Jeg går helt ut på eggakanten nå. Værmeldinga er … tja. Men fangsten der ute, mann. Er du med eller ikke?",
+  sms:"Hei {NAVN}! TRYGVE her! Jeg går helt ut på eggakanten nå. Værmeldinga er … tja. Men fangsten der ute, mann! Vil du være med på en andel? Du legger inn en del av det turen koster og får samme delen av fangsten. Det kan gå helt til himmels og det kan gå rett i dass. Er du med eller ikke?",
+  minne:{bra:"{NAVN}! DU! Husker du sist?! Det var jo helt vilt! Jeg går ut igjen, enda lenger denne gangen. Samme greie — du tar en andel, du får en andel. Kom igjen!",
+    ok:"Hei {NAVN}! Sist ble litt sånn midt på. Ærlig talt kjedelig, etter min smak. Men nå har jeg tenkt meg lenger ut. Blir du med på en andel til?",
+    daarleg:"Hei {NAVN}. Vi måtte snu sist. Det bles for hardt selv for meg, og det sier litt. Du tapte på det. Jeg skal ut igjen, og jeg skjønner om du synes jeg er for gæren. Men det er der ute fisken står.",
+    tomt:"Hei {NAVN}. Helt tomt sist. Jeg dro deg med langt ut og kom hjem med ingenting. Det er min feil. Jeg drar ut igjen — jeg kan ikke la være — og jeg vil gjerne ha deg med. Men jeg skal ikke være sur om du sier nei denne gangen."},
   ord:"Trygve er gal. Det er derfor han av og til kommer hjem stinn."},
  {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"ingrid-sund-ms-maaken.png",  ho:true,  mal:"bm", kost:18000, snitt:1.05, flaks:0.7, timar:[14,20],
-  sms:"Ingrid her. Kort tur i natt, inne i fjorden. Ikke store penger, men jeg kommer alltid hjem. Blir du med?",
+  sms:"Hei {NAVN}! Ingrid her, fra Måken. Jeg skal en kort tur inne i fjorden i natt. Vil du være med på en andel? Du betaler en del av det turen koster, og får den samme delen av fangsten. Det blir ikke store penger — men jeg kommer alltid hjem. Blir du med?",
+  minne:{bra:"Hei {NAVN}! Så gøy at det ble bra sist! Jeg er gira på en ny tur i natt — samme sted, samme opplegg. Vil du være med igjen?",
+    ok:"Hei {NAVN}. Det ble en grei liten tur sist. Sånn passe, men vi kom hjem med noe. Jeg går ut igjen i natt om du er med.",
+    daarleg:"Hei {NAVN}. Det ble tynt sist, og du fikk lite igjen. Jeg skjønner om du er litt skeptisk nå. Men jeg drar ut i natt igjen, og jeg skal gjøre alt jeg kan for at det blir bedre. Er du med?",
+    tomt:"Hei {NAVN}. Sist ble det ingenting, og pengene dine gikk med. Det syns jeg er veldig kjipt. Jeg forstår godt om du ikke vil være med igjen — men jeg spør, for jeg har lyst til å gjøre det godt igjen."},
   ord:"Ingrid går korte turer. Lav risiko, lav gevinst."},
  {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"kaare-lind-ms-brottsjoe.png",   ho:false, mal:"nn", kost:60000, snitt:1.18, flaks:1.4, timar:[48,64],
-  sms:"Kåre her. Eg har fått teften av noko stort på det nye feltet. Treng ein partner på denne. Hiv deg med!",
+  sms:"Hei {NAVN}. Kåre her. Eg har fått teften av noko stort på det nye feltet. Vil du vere med på ein andel? Du betaler ein del av det turen kostar og får same delen av fangsten. Eg har teke feil før, men eg har òg hatt rett. Hiv deg med, så får vi sjå.",
+  minne:{bra:"Hei {NAVN}! Eg hadde rett sist, hadde eg ikkje? No har eg teften av noko på eit nytt felt. Same avtale — vil du vere med?",
+    ok:"Hei {NAVN}. Det vart middels sist. Teften min tok meg halvvegs. No har eg peila inn noko nytt. Blir du med og prøver?",
+    daarleg:"Hei {NAVN}. Eg bomma sist, og du betalte for det. Slik er det med teft — ho tek av og til feil. Eg har eit nytt spor no, men eg forstår om du vil vente og sjå.",
+    tomt:"Hei {NAVN}. Det vart heilt tomt sist. Eg var så sikker, og eg tok feil, og det gjekk ut over pengane dine. Eg har eit nytt felt no. Eg lovar ingenting — men eg spør likevel."},
   ord:"Kåre har teft. Av og til stemmer det."},
  {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"astrid-holm-ms-kvitskjaer.png",  ho:true,  mal:"nn", kost:55000, snitt:1.14, flaks:1.1, timar:[44,58],
-  sms:"Astrid på Kvitskjær. Eg tek med både reke og det som elles går i trålen — det blir alltid noko. Vil du inn?",
+  sms:"Hei {NAVN}. Astrid på Kvitskjær. Eg tek med både reke og det som elles går i trålen, så det blir som regel noko. Vil du vere med på ein andel? Du betaler ein del av det turen kostar og får same delen av det fangsten er verdt. Etter alle desse åra har eg lært at det sjeldan blir heilt tomt — men det hender.",
+  minne:{bra:"Hei {NAVN}! Det vart ein god tur sist, det. Trålen var tung kvar gong. Eg går ut att, og du er velkomen på ein andel til om du vil.",
+    ok:"Hei {NAVN}. Sist vart som det plar. Litt reke, litt av kvart anna, og noko å ta med heim. Eg går ut att om du vil vere med.",
+    daarleg:"Hei {NAVN}. Det vart magert sist. Vi fekk ikkje stått slik eg ville. Eg går ut att i morgon, og eg forstår om du treng ein pause — men du er velkomen om du vil.",
+    tomt:"Hei {NAVN}. Heilt tomt sist. Etter tretti år på sjøen hender det framleis, og det er like leitt kvar gong — særleg når andre har sett pengar i det. Eg går ut att. Vil du vere med ein gong til?"},
   ord:"Astrid tek imot alt trålen gir. Sjeldan heilt tomt."}];
 // Kvar fiskar har sitt eige målføre — Nordland har begge delar. Pronomenet må
 // følgje BÅDE kjønn og målføre: ho på nynorsk, hun på bokmål.
@@ -3903,12 +3943,23 @@ function investTilbod(){
 // Ekte klokkeslett i statuslinja — det er det som gjer at det ser ut som ein telefon.
 function settKlokke(){ var e=$("#smsKlokke"); if(!e)return; var d=new Date();
   e.textContent=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
+// Fiskaren hugsar korleis det gjekk sist. Fire tonar: det gjekk strålande, det
+// gjekk greit, det vart tynt, eller det vart heilt tomt. Fyrste gong: grunnteksten.
+function fiskerTekst(f){
+  var h=P&&P.invest&&P.invest.hist&&P.invest.hist[f.k], si=h&&h.sist;
+  if(!si||!f.minne) return f.sms;
+  var m=si.mult;
+  if(m>=1.9) return f.minne.bra;
+  if(m>=0.95) return f.minne.ok;
+  if(m>0) return f.minne.daarleg;
+  return f.minne.tomt;
+}
 function visSms(f, timar, ordForOrd){
   $("#smsAvatar").src="spill/assets/"+f.img;
   $("#smsNavn").textContent=f.n;
   $("#smsBaat").textContent=f.b;
   var nn=(f.mal==="nn");
-  var tekst=(f.sms||"").replace(/\{NAVN\}/g, (P&&P.name)||"du");
+  var tekst=(fiskerTekst(f)||"").replace(/\{NAVN\}/g, (P&&P.name)||"du");
   if(ordForOrd) skrivUt($("#smsTekst"), tekst); else $("#smsTekst").textContent=tekst;
   $("#smsSum").textContent="Hele turen koster "+f.kost.toLocaleString("nb")+" kr · "+turTid(timar);
   var h=P.invest.hist[f.k], niv=investNivaa(f.k);
@@ -4069,6 +4120,7 @@ function investSjekk(){
   P.kr+=ut; P.invest.tur=null;
   var h=P.invest.hist[t.fk]||(P.invest.hist[t.fk]={turar:0,inn:0,ut:0});
   h.turar++; h.inn+=t.sum; h.ut+=ut;
+  h.sist={mult:u.mult, utfall:u.k, tid:Date.now()};   // fiskaren hugsar til neste gong
   innLegg({type:"resultat", fk:t.fk, utfall:u.k, mult:u.mult, inn:t.sum, ut:ut});
   hud(); saveAll();
   notice(f.n.split(" ")[0]+(f.mal==="nn"?" er tilbake i hamn 📨":" er tilbake i havna 📨"));
