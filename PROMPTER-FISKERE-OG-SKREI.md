@@ -108,3 +108,29 @@ Ligger til venstre i «Innboks»-knappen, vises som 17 px høy.
 16-bit pixel art envelope icon, seen straight on, slightly tilted. Warm cream paper with a visible fold line forming a V across the front, and a thin darker edge. Simple and chunky — it must read clearly at 17 pixels high. No text, no stamp, no seal. Strict pixel grid, hard edges, no anti-aliasing, transparent background.
 
 Fram til fila finnes bruker knappen 📨 som reserve, så ingenting brekker.
+
+---
+
+## 6. «Bytt spiller»-ikonet
+
+Fil: **`ikon-bytt-spiller.png`** — **64 × 64**, transparent
+
+Ligger til venstre i «Bytt spiller»-knappen, vises som 17 px høy.
+
+**Viktig om fargen:** knappen er brun (`#b07c4a`) med hvit tekst. ⚓-emojien
+som lå der tegner seg selv i mørk grå og forsvant nesten helt. Ikonet må derfor
+være **lyst** — samme kremhvite som teksten ved siden av — ikke mørkt.
+
+Fram til fila finnes brukes ⚓ med en lysningsfilter, så knappen er lesbar nå.
+
+### Alternativ A — anker *(anbefalt: mest lesbart på 17 px)*
+
+16-bit pixel art anchor icon, seen straight on, perfectly symmetrical. Rendered in a single **light cream-white** (#f6ecd0) with one slightly darker cream for the inner shading only — it will sit on a mid-brown button and must read as bright. Classic admiralty anchor: ring at the top, straight shank, horizontal stock, two curved flukes. Chunky and simple — it must read clearly at 17 pixels high, so no rope, no chain, no fine detail. Strict pixel grid, hard edges, no anti-aliasing, transparent background.
+
+### Alternativ B — to fiskere som bytter plass *(treffer ordet «bytt» bedre)*
+
+16-bit pixel art icon of two overlapping fisherman silhouettes seen from the shoulders up, one slightly behind and to the right of the other, with a small circular swap arrow curving between them. Rendered in flat **light cream-white** (#f6ecd0) only, with a single darker cream used to separate the two silhouettes — no other colours; it sits on a mid-brown button and must read as bright. Extremely simplified: a beanie-shaped head and shoulders is enough. Must read clearly at 17 pixels high. Strict pixel grid, hard edges, no anti-aliasing, transparent background.
+
+**Min anbefaling:** A. Knappen tar deg tilbake til naustet, så ankeret er både
+riktig og det som overlever nedskaleringen til 17 px. B er mer presist på ordet
+«bytt», men to figurer pluss en pil blir grøt på så få piksler.
