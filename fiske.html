@@ -103,6 +103,18 @@
     text-shadow:3px 3px 0 var(--wood-dark),0 10px 22px rgba(0,0,0,.55);
     letter-spacing:.02em;line-height:1;margin-bottom:12px}
   #menu .logo-fallback small{display:block;font-size:.4em;color:var(--red)}
+  /* Liggjande mobil: innhaldet var 503 px i ei 390 px høg rute, så lobbyen rulla — og då
+     hamna teksten under knappen UNDER sløret (som er dimensjonert etter ruta, ikkje
+     innhaldet), og #skyCv rulla vekk frå dei nedste 113 pikslane. Vi krympar innhaldet
+     i staden for å lappe på sløret: logoen er den store synderen med 44vh. */
+  @media (min-aspect-ratio:1/1) and (max-height:480px){
+    #menu{padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+    #menu .logo{max-height:26vh;margin:2px 0 8px}
+    #menu .logo-fallback{font-size:clamp(22px,5vw,38px);margin-bottom:6px}
+    #menu .who{padding:8px 12px}
+    #menu .who h2{margin:0 0 .35em}
+    #menu #playBtn{margin-top:8px;padding:10px 24px;font-size:18px}
+    #menu .muted{margin-top:8px;font-size:13px} }
   .who{background:rgba(242,228,199,.94);border:3px solid var(--wood-dark);border-radius:14px;padding:14px 16px;max-width:420px;width:92%}
   .who h2{margin:.1em 0 .5em;font-size:16px;color:var(--wood-dark)}
   .plist{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
