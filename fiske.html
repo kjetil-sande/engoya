@@ -115,7 +115,10 @@
     #menu .who h2{margin:0 0 .35em}
     #menu #playBtn{margin-top:8px;padding:10px 24px;font-size:18px}
     #menu .muted{margin-top:8px;font-size:13px} }
-  .who{background:rgba(242,228,199,.94);border:3px solid var(--wood-dark);border-radius:14px;padding:14px 16px;max-width:420px;width:92%}
+  :root{--lobbyspalte:460px}
+  .who{background:rgba(242,228,199,.94);border:3px solid var(--wood-dark);border-radius:14px;padding:14px 16px;
+    width:100%;max-width:var(--lobbyspalte)}
+  #playBtn{width:100%;max-width:var(--lobbyspalte)}
   .who h2{margin:.1em 0 .5em;font-size:16px;color:var(--wood-dark)}
   .plist{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
   .btn{font-family:var(--font);font-weight:700;cursor:pointer;border:0;border-radius:11px;padding:12px 18px;font-size:16px;
@@ -215,8 +218,9 @@
   .fiskerknapp:active{transform:translateY(1px)}
   .fiskerknapp img{width:100%;height:100%;object-fit:cover;display:block;border-radius:11px}
   .pfhode{display:flex;align-items:center;gap:12px;margin-bottom:4px}
-  .pfhode img{width:64px;height:64px;flex:0 0 64px;object-fit:cover;border-radius:12px;
-    background:#e8dcc0;border:2px solid var(--kant,#c8b48a)}
+  .pfhode img{width:96px;height:96px;flex:0 0 96px;object-fit:cover;border-radius:12px;
+    background:#e8dcc0;border:2px solid var(--kant,#c8b48a);
+    transform:scaleX(-1)}   /* ser inn mot namnet, som dei ti fiskarane */
   .pfnavn{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
   .pfnavn h3{margin:0;font-size:20px;line-height:1.15;word-break:break-word}
   .pfbytt{background:none;border:0;cursor:pointer;font-size:14px;opacity:.55;padding:2px 4px;line-height:1}
@@ -616,7 +620,6 @@
       <div class="plist" id="plist"></div>
     </div>
     <button class="btn big gold" id="playBtn" disabled>Dra på lopphavet <img src="spill/assets/ikon-pipe.png" class="pipa" alt="" onerror="this.outerHTML='→'"></button>
-    <p class="muted" style="margin-top:14px;max-width:420px">Fisk deg opp fra sei og lyr til du har råd til grovere utstyr — og jakt drømmefangsten: <b>storkveita</b>.</p>
   </section>
 
   <!-- SEA -->
@@ -814,6 +817,10 @@ var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&
 /* ---------- Lyd: tema-musikk + syntetiserte effekter (Web Audio) ---------- */
 var Snd=(function(){
   var ctx=null, muted=false, theme=null, ringtone=null, reelT=0;
+  // Lobbyen: svakt → mellomsvakt. Ute på havet er sjøen 0,187 og måkane 0,22.
+  var LOBBY_HAV0=0.045, LOBBY_HAV1=0.115, LOBBY_FUGL0=0.030, LOBBY_FUGL1=0.085;
+  var LOBBY_FADE=4200, TEMA_V=0.45, TEMA_FADE=2200;   // opninga er 1000 stille + 2800 pan
+  var lobbyT=null, temaT=null, lobbyFerdig=false, TEMA_UT=1400;
   try{ muted = localStorage.getItem("storkveita-muted")==="1"; }catch(e){}
   function AC(){ if(!ctx){ try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return ctx; }
   function beep(freq,dur,type,g,slideTo){ var c=AC(); if(!c||muted)return; var o=c.createOscillator(),ga=c.createGain(),t=c.currentTime;
@@ -967,7 +974,37 @@ var Snd=(function(){
       for(var k in loops){ var L=loops[k];
         ut[k]={vil:!!L.want, vol:+(L.vol||0).toFixed(4), gain:(L.node&&L.node.g)? +L.node.g.gain.value.toFixed(4) : null}; }
       return ut; },
-    themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; theme.volume=0.45; } theme.muted=muted; theme.play().catch(function(){}); },
+    themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; theme.volume=TEMA_V; }
+      if(temaT){clearInterval(temaT); temaT=null;}   // snudde du i døra, skal han ikkje halde fram med å fade ut
+      if(lobbyFerdig)theme.volume=TEMA_V;
+      theme.muted=muted; var pr=theme.play(); if(pr&&pr.catch)pr.catch(function(){}); return pr; },
+    // Lobbyen har sjø og måkar òg, men lågare enn ute på havet, og dei sig opp
+    // medan biletet panorerer: svakt før scrollen, mellomsvakt når logoen har landa.
+    lobbyLyd:function(on){
+      if(!on){ if(lobbyT){clearInterval(lobbyT); lobbyT=null;} wantLoop("sea",false); wantLoop("bird",false); return; }
+      loadAll();
+      var self=this, pr=this.themeOn();
+      self.settLoopVol("sea",  lobbyFerdig?LOBBY_HAV1 :LOBBY_HAV0);
+      self.settLoopVol("bird", lobbyFerdig?LOBBY_FUGL1:LOBBY_FUGL0);
+      wantLoop("sea",true); wantLoop("bird",true);
+      if(lobbyFerdig||lobbyT)return;
+      Promise.resolve(pr).then(function(){ self._lobbyFade(); }, function(){});
+    },
+    _lobbyFade:function(){
+      if(lobbyFerdig||lobbyT)return;
+      var self=this, t0=Date.now();
+      if(theme)theme.volume=0;
+      lobbyT=setInterval(function(){
+        // forlet du lobbyen midt i fadet, eig ambienceOn() miksen — då slepper vi taket
+        var m=document.getElementById("menu");
+        if(!m||!m.classList.contains("on")){ clearInterval(lobbyT); lobbyT=null; return; }
+        var u=Math.min(1,(Date.now()-t0)/LOBBY_FADE), e=u*(2-u);   // ease-out
+        self.settLoopVol("sea",  LOBBY_HAV0 +(LOBBY_HAV1 -LOBBY_HAV0 )*e);
+        self.settLoopVol("bird", LOBBY_FUGL0+(LOBBY_FUGL1-LOBBY_FUGL0)*e);
+        if(theme)theme.volume=TEMA_V*Math.min(1,(Date.now()-t0)/TEMA_FADE);
+        if(u>=1){ clearInterval(lobbyT); lobbyT=null; lobbyFerdig=true; }
+      },110);
+    },
     // Telefonen ringjer heilt til du svarar, avviser, eller dei fjorten sekunda er ute.
     ringtone:function(on){
       if(!ringtone){ ringtone=new Audio("spill/lyd/telefon-ring.aac"); ringtone.loop=true; ringtone.volume=0.5; }
@@ -975,7 +1012,16 @@ var Snd=(function(){
       if(on){ try{ringtone.currentTime=0}catch(e){} ringtone.play().catch(function(){}); }
       else { ringtone.pause(); try{ringtone.currentTime=0}catch(e){} }
     },
-    themeOff:function(){ if(theme)theme.pause(); },
+    // Musikken skal ikkje kuttast når du legg frå kaia — han skal sige ut.
+    themeOff:function(){ if(!theme||theme.paused)return;
+      if(temaT){clearInterval(temaT); temaT=null;}
+      var v0=theme.volume, t0=Date.now();
+      temaT=setInterval(function(){
+        var u=Math.min(1,(Date.now()-t0)/TEMA_UT);
+        theme.volume=Math.max(0,v0*(1-u));
+        if(u>=1){ clearInterval(temaT); temaT=null; theme.pause(); theme.volume=TEMA_V; }
+      },60);
+    },
     click:function(){ if(buffers.klikk1||buffers.klikk2){ altClick=!altClick; oneShot(altClick&&buffers.klikk1?"klikk1":"klikk2"); } else beep(430,0.05,"square",0.05,320); },
     cast:function(){ if(buffers.splash)oneShot("splash"); else { noise(0.3,0.22,900); beep(300,0.18,"sine",0.10,120); } },
     bite:function(){ if(buffers.napp)oneShot("napp"); else { beep(880,0.08,"triangle",0.16); setTimeout(function(){beep(1170,0.10,"triangle",0.16)},80); } },
@@ -2797,7 +2843,7 @@ function byttNavn(){
 }
 
 function tilNaustet(){ Snd.ambienceOff(); Snd.utrasLyd(false); phase="idle"; hooked=null; sceneFish=null;
-  holding=false; $("#reelui").classList.remove("on"); show("menu"); renderPlayers(); Snd.themeOn(); }
+  holding=false; $("#reelui").classList.remove("on"); show("menu"); renderPlayers(); Snd.lobbyLyd(true); }
 
 /* ---------- Butikk ---------- */
 var shopLock=false;
@@ -4286,13 +4332,13 @@ document.querySelectorAll(".mappin").forEach(function(p){ p.onclick=function(){ 
 // lyd: lås opp Web Audio + start tema ved første trykk; mute-knapper; klikk-lyd på knapper
 document.addEventListener("gesturestart",function(e){e.preventDefault()}); document.addEventListener("gesturechange",function(e){e.preventDefault()}); // pinch-zoom reelt av (iOS)
 window.addEventListener("pointerdown",function(){ Snd.unlock(); },{passive:true}); // permanent: vekker lyden etter iOS-avbrudd
-window.addEventListener("pointerdown",function(){ if($("#menu").classList.contains("on"))Snd.themeOn(); },{once:true});
+window.addEventListener("pointerdown",function(){ if($("#menu").classList.contains("on"))Snd.lobbyLyd(true); });
 document.addEventListener("visibilitychange",function(){ if(!document.hidden)Snd.unlock(); });
 function lydIkon(){ var av=Snd.isMuted();
   var mm=$("#muteBtnMenu"); if(mm)mm.textContent=av?"🔇":"🔊";
   var pl=$("#pfLyd"); if(pl)pl.textContent=av?"🔇 Lyd av":"🔊 Lyd på"; }
 function toggleMute(){ Snd.setMuted(!Snd.isMuted());
-  if(!Snd.isMuted()&&$("#menu").classList.contains("on"))Snd.themeOn(); lydIkon(); }
+  if(!Snd.isMuted()&&$("#menu").classList.contains("on"))Snd.lobbyLyd(true); lydIkon(); }
 $("#muteBtnMenu").onclick=toggleMute;
 lydIkon();
 [].slice.call(document.querySelectorAll(".iconbtn, .dekk button, .depthsel button, #hudLure, #playBtn")).forEach(function(b){
@@ -4366,6 +4412,10 @@ window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("o
 /* ---------- Start ---------- */
 window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,streak:streakTikk,famTaImot:famTaImot,bycatch:potBycatch,FUNN:FUNN,geom:function(){var g=colGeom();return g?{imgH:g.imgH,wl:g.wl,maxScroll:g.maxScroll,camY:camY,H:H,WLF:WLF[depth],HIMMEL:HIMMEL[depth],natH:g.img.naturalHeight,wlY:g.wl-camY}:null},lyd:function(){return Snd._maal()},dykkTest:function(n,d,z){Snd.dykk(n,d,z)},vaerTest:function(r2,v){Snd.vaerLyd(r2,v)},strom:stromNaa,stromF:stromFaktor,setDyp:function(d){depth=d},baro:baroTraume,havmusOppe:havmusOppe,iSona:iSona,ord:RUSTEN_ORD,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null,pilk:phase==="pilkfiske"?{t:+pilkT.toFixed(1),krav:+pilkKrav.toFixed(1),n:pilkFangst.length,hold:holding}:null}}};
 renderPlayers(); resize(); requestAnimationFrame(loop);
+// Musikken og sjøen skal ligge der når sida kjem opp, ikkje vente på at nokon
+// vel fiskar. Nettlesarane blokkerer autoplay til fyrste trykk — då tek
+// pointerdown-handteringa under over, og fadet startar fyrst når lyden faktisk går.
+Snd.lobbyLyd(true);
 })();
 </script>
 </body>
