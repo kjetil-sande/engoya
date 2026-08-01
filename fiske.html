@@ -333,6 +333,7 @@
   /* Innkomande anrop. Stort bilete, namn, og to knappar — som ein telefon. */
   #ringModal .card{max-width:340px;padding:0;overflow:hidden;background:#1b2530}
   .ringtopp{padding:26px 20px 18px;text-align:center;color:#eef3f6}
+  .ringtopp img.speil,.innrad img.speil{transform:scaleX(-1)}
   .ringtopp img{width:132px;height:132px;border-radius:50%;object-fit:cover;background:#a7cac8;
     image-rendering:pixelated;box-shadow:0 6px 18px rgba(0,0,0,.45)}
   .ringtopp .rn{font-size:22px;font-weight:800;margin-top:14px;line-height:1.2}
@@ -357,7 +358,10 @@
   .lottrad button:disabled{opacity:.32;cursor:default}
   #smsJa:disabled{opacity:.5}
   /* SMS frå ein fiskar som treng investor. Skal sjå ut som ei melding, ikkje som ein butikk. */
-  #smsModal .card{max-width:400px;padding:0;overflow:hidden}
+  #smsModal .card{max-width:400px;padding:0;overflow:hidden;
+    max-height:min(94vh,780px);display:flex;flex-direction:column}
+  #smsModal .smstopp,#smsModal .smssum,#smsModal .smsfakta,
+  #smsModal .lottrad,#smsModal .smsknapp{flex:0 0 auto}
   /* Statuslinja. Biletet har hakket i midten, så det blir sentrert i staden for kakla,
      og baren si eiga farge fyller ut sidene. Klokka blir teikna i kode — ekte tid. */
   .smsstatus{height:27px;background:#1e262d;flex:0 0 27px;display:flex;align-items:center;
@@ -368,17 +372,33 @@
   .smsbunn{height:16px;background:#1e262d;flex:0 0 16px;
     background-image:url("spill/assets/sms-bunnstrek-v2.png");background-size:auto 62%;
     background-position:center;background-repeat:no-repeat;image-rendering:pixelated}
-  .smstopp{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--wood-dark);color:#f6ecd0}
-  .smstopp img{width:44px;height:44px;border-radius:50%;object-fit:cover;image-rendering:pixelated;
-    background:#a7cac8;flex:0 0 44px}   /* same tonen som ikon-fiskeren har innbakt */
-  .smstopp .sn{font-weight:800;font-size:15px;line-height:1.2}
-  .smstopp .sb{font-size:12px;opacity:.75;font-style:italic}
+  .smstopp{display:flex;align-items:center;gap:13px;padding:13px 15px;background:var(--wood-dark);color:#f6ecd0}
+  .smstopp img{width:72px;height:72px;border-radius:50%;object-fit:cover;image-rendering:pixelated;
+    background:#a7cac8;flex:0 0 72px}   /* same tonen som ikon-fiskeren har innbakt */
+  .smstopp img.speil{transform:scaleX(-1)}   /* alle ser mot namnet sitt */
+  .smstopp .stk{min-width:0;text-align:left}
+  .smstopp .sn{font-weight:800;font-size:21px;line-height:1.15}
+  .smstopp .sy{font-size:12.5px;opacity:.78;margin-top:3px}
+  .smstopp .sb{font-size:12.5px;opacity:.62;font-style:italic}
   .smsboble{margin:13px;padding:11px 13px;background:#e8eef2;border-radius:14px 14px 14px 4px;
-    font-size:15px;line-height:1.45;color:#28323a;text-align:left}
+    font-size:15px;line-height:1.45;color:#28323a;text-align:left;white-space:pre-line;
+    flex:1 1 auto;min-height:56px;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .smssum{margin:0 13px 4px;font-family:var(--mono);font-size:15px;color:var(--wood-dark);text-align:left}
   .smsfakta{margin:0 13px 12px;font-size:12.5px;color:var(--ink-soft);text-align:left;line-height:1.4}
   .smsknapp{display:flex;gap:9px;padding:0 13px 13px}
   .smsknapp .btn{flex:1}
+  @media (max-height:480px){ #smsModal .card{max-width:min(94vw,640px)} }
+  @media (max-height:700px){
+    .smstopp{gap:10px;padding:9px 12px}
+    .smstopp img{width:52px;height:52px;flex-basis:52px}
+    .smstopp .sn{font-size:17px}
+    .smstopp .sy,.smstopp .sb{font-size:11.5px}
+    .smsboble{margin:9px 11px;padding:9px 11px;font-size:14px}
+    .smsfakta{margin-bottom:8px;font-size:11.5px}
+    .lottrad button{padding:4px 2px}
+    .lottrad button .lp{font-size:13.5px}
+    .smsknapp{padding:0 11px 10px}
+  }
   /* Popups / panels */
   .modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:16px;z-index:20;
     background:rgba(10,25,30,.55)}
@@ -747,7 +767,8 @@
       <span class="sfyll"></span>
       <img src="spill/assets/sms-status-hoegre.png" alt="" onerror="this.style.display='none'"></div>
     <div class="smstopp"><img id="smsAvatar" alt="" onerror="this.style.visibility='hidden'">
-      <div><div class="sn" id="smsNavn"></div><div class="sb" id="smsBaat"></div></div></div>
+      <div class="stk"><div class="sn" id="smsNavn"></div><div class="sy" id="smsYrke"></div>
+        <div class="sb" id="smsBaat"></div></div></div>
     <p class="smsboble" id="smsTekst"></p>
     <div class="smssum" id="smsSum"></div>
     <div class="smsfakta" id="smsFakta"></div>
@@ -3780,71 +3801,71 @@ function drawSilhuett(dt){
    3. Kvar fiskar har ei synleg historie hos deg. Ingen skjulte terningar.        */
 
 var FISKERE=[
- {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"harald-nystad-ms-nordvaer.png",  ho:false, mal:"nn", kost:40000, snitt:1.03, flaks:0.9, timar:[26,36],
-  sms:"Hei {NAVN}! Harald her, frå Nordvær. Eg skal ut på rekefeltet i natt og tek gjerne med ein partner. Det går slik: du betaler ein del av det turen kostar — diesel, agn og mannskap — og får den same delen av det vi får for fangsten. Går det tomt, går det tomt for oss båe. Eg lovar aldri meir enn eg kan halde. Vil du vere med?",
+ {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"harald-nystad-ms-nordvaer.png", yrke:"Reketrålskipper", speil:true,  ho:false, mal:"nn", kost:40000, snitt:1.03, flaks:0.9, timar:[26,36],
+  sms:"Hei {NAVN}. Håpar eg ikkje ringjer midt i middagen.\n\nEg går ut på rekefeltet i natt og har ein andel ledig. Du kjøper ikkje båten min, og ikkje kvoten heller — han følgjer Nordvær. Du er med på denne eine turen.\n\nTuren kostar 40 000 å køyre. Tek du til dømes tjue prosent, legg du inn 8 000 og får tjue prosent av det fangsten er verd. Kjem trålen opp tom, får du ingenting igjen.\n\nEg går aldri lenger ut enn båten toler. Meir lovar eg ikkje. Eg er inne att om eit døgn — blir du med?",
   minne:{bra:"Hei igjen, {NAVN}! Sist gjekk det riktig så bra, det. Eg går same vegen i natt, og eg tenkte du kanskje ville vere med på ein ny ein. Same avtale som før — du tek ein del av turen, og får same delen av fangsten.",
     ok:"Hei {NAVN}. Det vart ein grei tur sist. Ikkje meir, ikkje mindre — slik er det stort sett. Eg går ut att i natt om du vil vere med på same vilkåra.",
     daarleg:"Hei {NAVN}. Det vart lite sist, det veit vi båe. Vêret ville det ikkje annleis. No skal eg prøve på nytt, og eg forstår om du vil sitje over denne gongen. Men blir du med, gjer eg det eg kan.",
     tomt:"Hei {NAVN}. Eg beklagar sist. Trålen kom opp tom, og pengane dine gjekk med. Eg skal ikkje pynte på det. Men eg går ut att i natt, og eg vil gjerne ha deg med om du framleis har tru på meg."},
   ord:"Harald er ein trygg kar. Han lovar aldri for mykje."},
- {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"jorunn-eide-ms-havglimt.png",  ho:true,  mal:"bm", kost:45000, snitt:1.09, flaks:0.6, timar:[30,42],
-  sms:"Hei {NAVN}! Jorunn på Havglimt her. Jeg går ut i morgen tidlig og lurer på om du vil være med på en andel. Da betaler du en del av det turen koster, og får den samme delen av det fangsten er verdt. Jeg går sjelden tomhendt hjem, men jeg går heller ikke langt ut — så det blir sjelden de store summene. Blir du med?",
+ {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"jorunn-eide-ms-havglimt.png", yrke:"Reketrålskipper",  ho:true,  mal:"bm", kost:45000, snitt:1.09, flaks:0.6, timar:[30,42],
+  sms:"Hei {NAVN}! Det er stille vær i natt, og da drar jeg ut.\n\nJeg har en andel ledig på turen. Du blir ikke medeier i båten, og du kjøper ingen kvote — den henger på Havglimt. Du kjøper en del av denne ene turen.\n\nTuren koster 45 000 å kjøre. Tar du for eksempel ti prosent, legger du inn 4 500 og får ti prosent av det fangsten er verdt. Kommer trålen opp tom, får du ingenting igjen.\n\nJeg går ikke langt ut, og jeg går ikke i dårlig vær. Derfor kommer jeg sjelden hjem tom. Men sjelden er ikke det samme som aldri. Jeg er tilbake om et døgn eller to — blir du med?",
   minne:{bra:"Hei igjen, {NAVN}! Det ble en fin tur sist, den. Jeg drar ut i morgen tidlig igjen, og du er hjertelig velkommen på en ny andel. Samme opplegg som sist.",
     ok:"Hei {NAVN}. Sist ble omtrent som jeg pleier — ikke noe å skryte av, men vi kom hjem med noe. Jeg går ut i morgen om du vil være med igjen.",
     daarleg:"Hei {NAVN}. Vi måtte snu sist, og du fikk lite igjen for pengene. Det liker jeg dårlig. Jeg drar ut i morgen tidlig, og jeg holder meg nærmere land denne gangen. Er du med?",
     tomt:"Hei {NAVN}. Sist ga ingenting, og det var dine penger også. Jeg forstår godt om du er skeptisk nå. Men jeg drar ut i morgen, og jeg skal gjøre alt jeg kan for at det blir annerledes. Vil du prøve en gang til?"},
   ord:"Jorunn tar ingen sjanser. Det synes på tallene."},
- {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"birger-kvalvik-ms-storskjaer.png",  ho:false, mal:"nn", kost:80000, snitt:1.22, flaks:1.6, timar:[62,80],
-  sms:"Hei {NAVN}! Birger her. Eg har peila inn ein reketopp langt ute som INGEN andre veit om. Vil du vere med på ein andel? Du betaler ein del av turen og får same delen av fangsten. Eg skal ikkje lyge: det kan bli stort, og det kan bli null. Slik er det når ein går så langt ut. Er du med?",
+ {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"birger-kvalvik-ms-storskjaer.png", yrke:"Reketrålskipper", speil:true,  ho:false, mal:"nn", kost:80000, snitt:1.22, flaks:1.6, timar:[62,80],
+  sms:"Hei {NAVN}. Eg har peila inn ei renne langt vest som ingen andre går i. Meir seier eg ikkje på telefonen.\n\nEg treng ein partner på turen. Ikkje om bord — du blir heime, det er pengane dine som er med. Du kjøper korkje båten eller kvoten, berre denne eine turen.\n\nTuren kostar 80 000, for det er langt dit og dieselen renn. Tek du til dømes tretti prosent, legg du inn 24 000 og får tretti prosent av fangsten.\n\nKjem eg heim med tom trål, er dei 24 000 borte. Ikkje ein del av dei. Alle. Vi er ute i to-tre døgn. Eg spør ikkje pent, eg spør ærleg — er du med?",
   minne:{bra:"{NAVN}! Sa eg det ikkje? Det datt inn sist! Eg har peila inn ein ny topp, endå lenger ute. Same avtale — del av turen, del av fangsten. Hiv deg med, så tek vi ein til!",
     ok:"Hei {NAVN}. Det vart midt på treet sist. Eg hadde venta meir, men sjøen bryr seg ikkje om kva eg ventar. No har eg eit nytt felt eg vil prøve. Blir du med?",
     daarleg:"Hei {NAVN}. Det bles opp sist, og vi fekk ikkje sett trålen slik eg ville. Du tapte på det, og det var eg som drog deg med. No har eg eit nytt hol eg vil prøve — men eg forstår om du sit over.",
     tomt:"Hei {NAVN}. Det vart svart sist. Heilt tomt, og pengane dine med. Eg har ikkje noko å seie til mitt forsvar anna enn at eg gjekk for langt ut. Men eg har eit nytt felt no, og eg vil gjerne ha deg med om du toler ein sjanse til."},
   ord:"Birger går alltid lengst ut. Det går bra, eller det går rett vest."},
- {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"solveig-aasen-ms-fjordperle.png", ho:true,  mal:"bm", kost:42000, snitt:1.07, flaks:1.0, timar:[28,38],
-  sms:"Hei {NAVN}! Solveig her, fra Fjordperle. Jeg har ny rist på trålen, godkjent og fin, og skal ut i morgen. Vil du være med på en andel? Du betaler en del av det turen koster, og får den samme delen av fangsten. Ingen garantier — men bruket mitt er i orden, og det teller over tid. Hva sier du?",
+ {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"solveig-aasen-ms-fjordperle.png", yrke:"Reketrålskipper", ho:true,  mal:"bm", kost:42000, snitt:1.07, flaks:1.0, timar:[28,38],
+  sms:"Hei {NAVN}. Jeg har fått montert ny sorteringsrist i trålen, godkjent og kontrollert.\n\nRista er et gitter foran posen. Reka smetter gjennom, men fisken blir ledet ut igjen levende. Det er derfor jeg får lov til å tråle der jeg egentlig vil tråle.\n\nNå trenger jeg en andel på turen. Ikke i båten, og ingen kvote — den følger Fjordperle. Bare denne ene turen. Den koster 42 000 å kjøre. Tar du for eksempel førti prosent, legger du inn 16 800.\n\nKommer jeg hjem med lite, får du førti prosent av lite. Blir trålen helt tom, får du ingenting. Jeg er tilbake om et døgn. Skal jeg føre deg opp?",
   minne:{bra:"Hei {NAVN}! Det ble en god tur sist — ristene og alt fungerte som det skulle. Jeg går ut igjen i morgen, og du er velkommen på en ny andel om du vil.",
     ok:"Hei {NAVN}. Sist ble helt greit. Ikke noe å hoppe i taket for, men bruket holdt og vi kom hjem med fangst. Blir du med en gang til?",
     daarleg:"Hei {NAVN}. Vi fikk ikke gjort mye sist, og du satt igjen med lite. Jeg har gått over hele trålen siden. Jeg drar ut i morgen, og jeg forstår om du vil vente — men jeg vil gjerne ha deg med.",
     tomt:"Hei {NAVN}. Sist ga ingenting. Det er kjipt å ta imot andres penger og komme hjem tomhendt. Jeg har sjekket bruket fra ende til annen. Vil du gi meg én sjanse til?"},
   ord:"Solveig holder bruket i orden. Det lønner seg over tid."},
- {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"odd-mikkelsen-ms-gamle-ola.png",     ho:false, mal:"nn", kost:30000, snitt:1.03, flaks:2.3, timar:[20,30],
-  sms:"Hei {NAVN}. Det er Odd. Båten er gammal og eg har hatt ein tung sesong, men eg kjenner desse felta betre enn nokon. Vil du vere med på ein andel? Du legg inn ein del av det turen kostar og får same delen av fangsten. Eg skal ikkje lova deg noko. Men eg veit kvar fisken står.",
+ {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"odd-mikkelsen-ms-gamle-ola.png", yrke:"Fiskar", speil:true,     ho:false, mal:"nn", kost:30000, snitt:1.03, flaks:2.3, timar:[20,30],
+  sms:"Ja … hei. Er det {NAVN}? Eg veit ikkje heilt korleis eg skal spørje om dette.\n\nEg går ein kort tur i natt, rett ut og heim att, så han kostar ikkje meir enn 30 000. Du kjøper ikkje båten og ikkje kvoten, berre denne eine turen. Tek du til dømes ti prosent, legg du inn 3 000 og får ti prosent av det fangsten gir. Kjem eg inn med tom trål, er dei borte.\n\nEg har hatt ein tung sesong, det skal du vite før du seier ja. Men eg har gått desse felta i femti år, og eg veit kvar reka står når straumen snur.\n\nEg er inne att i morgon. Det er heilt greitt om du seier nei — men vil du ta sjansen på ein gammal kar?",
   minne:{bra:"Hei {NAVN}. Du, det gjekk faktisk bra sist. Det hender ikkje så ofte for meg lenger, så eg tenkte eg måtte ringe. Vil du vere med på ein til, på same vilkåra?",
     ok:"Hei {NAVN}. Det vart eit vanleg hal sist. Ikkje mykje, men noko. Eg går ut att, og du er velkomen om du vil.",
     daarleg:"Hei {NAVN}. Det vart tynt sist. Gamle Ola er ikkje den ho var, og vêret var imot oss. Eg forstår om du finn deg ein betre båt å setje pengane i. Men eg spør likevel.",
     tomt:"Hei {NAVN}. Eg kom heim tom sist, og du tapte pengane dine på meg. Eg har hatt fleire slike enn eg vil telje. Så eg skjønar godt om du seier nei. Men eg går ut att i morgon, og eg kjenner framleis desse felta."},
   ord:"Odd har uflaks. Men han kan sjøen."},
- {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"marit-fagerli-ms-havbris.png",   ho:true,  mal:"bm", kost:50000, snitt:1.13, flaks:0.8, timar:[40,54],
-  sms:"Hei {NAVN}! Marit her, Havbris. Jeg har fast avtale med mottaket, så prisen på fangsten er sikret før vi går ut. Vil du være med på en andel? Du betaler en del av det turen koster og får den samme delen av det vi får betalt. Det blir sjelden eventyr, men det blir sjelden krise heller. Er du med?",
+ {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"marit-fagerli-ms-havbris.png", yrke:"Reketrålskipper",   ho:true,  mal:"bm", kost:50000, snitt:1.13, flaks:0.8, timar:[40,54],
+  sms:"Hei {NAVN}. Kort sak.\n\nJeg har fast leveringsavtale med mottaket. Det betyr at jeg vet hva jeg får betalt per kilo før jeg kaster loss, i stedet for å håpe på prisen når jeg kommer inn. Halve usikkerheten er borte.\n\nDen andre halvparten er her fremdeles. Hvor mye som kommer opp av sjøen, kan ingen love — heller ikke jeg. Kommer trålen opp tom, hjelper avtalen min deg ikke det minste.\n\nTuren koster 50 000. Ti prosent er 5 000 inn og ti prosent av fangsten ut. Tjue prosent er 10 000 inn og tjue prosent ut. Du kjøper ingen båt og ingen kvote, bare turen. Jeg er tilbake om to døgn. Er du med?",
   minne:{bra:"Hei {NAVN}! Det ble bra tall sist, det. Mottaket tok imot alt til avtalt pris. Jeg går ut igjen i morgen — vil du være med på en andel til?",
     ok:"Hei {NAVN}. Sist gikk som beregnet. Det er stort sett slik jeg driver. Ny tur i morgen om du vil være med på samme betingelser.",
     daarleg:"Hei {NAVN}. Vi fikk mindre enn planlagt sist, og det gikk ut over deg også. Avtalen med mottaket står, så prisen er trygg — det er mengden som sviktet. Jeg drar ut igjen. Er du med?",
     tomt:"Hei {NAVN}. Det ble null sist. Jeg liker ikke å ringe folk etter en slik tur, men jeg gjør det likevel. Prisen er fortsatt sikret gjennom mottaket, og jeg skal gjøre det jeg kan for å fylle rommet denne gangen."},
   ord:"Marit selger alt før hun går ut. Kjedelig og lurt."},
- {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"trygve-bang-ms-nordlys.png",  ho:false, mal:"bm", kost:110000, snitt:1.28, flaks:2.0, timar:[78,100],
-  sms:"Hei {NAVN}! TRYGVE her! Jeg går helt ut på eggakanten nå. Værmeldinga er … tja. Men fangsten der ute, mann! Vil du være med på en andel? Du legger inn en del av det turen koster og får samme delen av fangsten. Det kan gå helt til himmels og det kan gå rett i dass. Er du med eller ikke?",
+ {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"trygve-bang-ms-nordlys.png", yrke:"Reketrålskipper", speil:true,  ho:false, mal:"bm", kost:110000, snitt:1.28, flaks:2.0, timar:[78,100],
+  sms:"Hei {NAVN}! Jeg går ut på eggakanten i natt. Helt ut, dit bunnen stuper fra tre hundre meter og rett ned i mørket, og der står reka tjukk fordi ingen andre gidder å gå så langt, og —\n\nnei, vent. Jeg må ta det andre først, så du skjønner hva du sier ja til. Du eier ikke båten min. Du eier ingen kvote heller — ingen kjøper kvote over telefonen. Du kjøper en andel i én tur.\n\nTuren koster 110 000, for den er lang. Ti prosent er 11 000. Femti prosent er 55 000, og da er halve fangsten din. HALVE!\n\nMen kommer vi inn med tom trål, er pengene borte. Vi er ute i tre døgn, kanskje fire. Er du med, eller er du ikke?",
   minne:{bra:"{NAVN}! DU! Husker du sist?! Det var jo helt vilt! Jeg går ut igjen, enda lenger denne gangen. Samme greie — du tar en andel, du får en andel. Kom igjen!",
     ok:"Hei {NAVN}! Sist ble litt sånn midt på. Ærlig talt kjedelig, etter min smak. Men nå har jeg tenkt meg lenger ut. Blir du med på en andel til?",
     daarleg:"Hei {NAVN}. Vi måtte snu sist. Det bles for hardt selv for meg, og det sier litt. Du tapte på det. Jeg skal ut igjen, og jeg skjønner om du synes jeg er for gæren. Men det er der ute fisken står.",
     tomt:"Hei {NAVN}. Helt tomt sist. Jeg dro deg med langt ut og kom hjem med ingenting. Det er min feil. Jeg drar ut igjen — jeg kan ikke la være — og jeg vil gjerne ha deg med. Men jeg skal ikke være sur om du sier nei denne gangen."},
   ord:"Trygve er gal. Det er derfor han av og til kommer hjem stinn."},
- {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"ingrid-sund-ms-maaken.png",  ho:true,  mal:"bm", kost:18000, snitt:1.05, flaks:0.7, timar:[14,20],
-  sms:"Hei {NAVN}! Ingrid her, fra Måken. Jeg skal en kort tur inne i fjorden i natt. Vil du være med på en andel? Du betaler en del av det turen koster, og får den samme delen av fangsten. Det blir ikke store penger — men jeg kommer alltid hjem. Blir du med?",
+ {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"ingrid-sund-ms-maaken.png", yrke:"Fisker",  ho:true,  mal:"bm", kost:18000, snitt:1.05, flaks:0.7, timar:[14,20],
+  sms:"Hei {NAVN}! Måken er den minste båten innerst på kaia.\n\nDu har vel ikke vært med på noe sånt før? Da forklarer jeg. Du blir ikke medeier i båten min, og du kjøper ikke kvote — det er noe helt annet, og det koster millioner, altså. Du kjøper deg inn i én tur.\n\nTuren koster 18 000, det billigste du får av oss her på kaia. Tar du for eksempel tjue prosent, legger du inn 3 600 og får tjue prosent av alt jeg leverer inn. Blir trålen tom, får du ingenting igjen.\n\nJeg går bare inne i fjorden, så det blir aldri store penger. Men du får se hvordan det fungerer uten å satse alt du eier. Jeg er inne igjen i morgen. Er du med?",
   minne:{bra:"Hei {NAVN}! Så gøy at det ble bra sist! Jeg er gira på en ny tur i natt — samme sted, samme opplegg. Vil du være med igjen?",
     ok:"Hei {NAVN}. Det ble en grei liten tur sist. Sånn passe, men vi kom hjem med noe. Jeg går ut igjen i natt om du er med.",
     daarleg:"Hei {NAVN}. Det ble tynt sist, og du fikk lite igjen. Jeg skjønner om du er litt skeptisk nå. Men jeg drar ut i natt igjen, og jeg skal gjøre alt jeg kan for at det blir bedre. Er du med?",
     tomt:"Hei {NAVN}. Sist ble det ingenting, og pengene dine gikk med. Det syns jeg er veldig kjipt. Jeg forstår godt om du ikke vil være med igjen — men jeg spør, for jeg har lyst til å gjøre det godt igjen."},
   ord:"Ingrid går korte turer. Lav risiko, lav gevinst."},
- {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"kaare-lind-ms-brottsjoe.png",   ho:false, mal:"nn", kost:60000, snitt:1.18, flaks:1.4, timar:[48,64],
-  sms:"Hei {NAVN}. Kåre her. Eg har fått teften av noko stort på det nye feltet. Vil du vere med på ein andel? Du betaler ein del av det turen kostar og får same delen av fangsten. Eg har teke feil før, men eg har òg hatt rett. Hiv deg med, så får vi sjå.",
+ {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"kaare-lind-ms-brottsjoe.png", yrke:"Reketrålskipper", speil:true,   ho:false, mal:"nn", kost:60000, snitt:1.18, flaks:1.4, timar:[48,64],
+  sms:"Hei {NAVN}.\n\nStraumen snudde tre dagar for tidleg i år. Slikt betyr noko der ute. Og i det siste halet på det nye feltet — det siste draget med trålen — kjende eg vekta i vinsjen. Tungt. Eg veit ikkje kva som stod der nede. Eg veit berre at eg må tilbake.\n\nDå treng eg ein partner. Du kjøper ikkje båten og ikkje kvoten, berre denne eine turen. Han kostar 60 000. Tek du til dømes tretti prosent, legg du inn 18 000 og får tretti prosent av fangsten. Kjem eg inn med tom trål, er dei borte.\n\nTeft er ikkje det same som å vite. Eg har teke feil før. Men eg trur på denne. To døgn, kanskje tre — blir du med?",
   minne:{bra:"Hei {NAVN}! Eg hadde rett sist, hadde eg ikkje? No har eg teften av noko på eit nytt felt. Same avtale — vil du vere med?",
     ok:"Hei {NAVN}. Det vart middels sist. Teften min tok meg halvvegs. No har eg peila inn noko nytt. Blir du med og prøver?",
     daarleg:"Hei {NAVN}. Eg bomma sist, og du betalte for det. Slik er det med teft — ho tek av og til feil. Eg har eit nytt spor no, men eg forstår om du vil vente og sjå.",
     tomt:"Hei {NAVN}. Det vart heilt tomt sist. Eg var så sikker, og eg tok feil, og det gjekk ut over pengane dine. Eg har eit nytt felt no. Eg lovar ingenting — men eg spør likevel."},
   ord:"Kåre har teft. Av og til stemmer det."},
- {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"astrid-holm-ms-kvitskjaer.png",  ho:true,  mal:"nn", kost:55000, snitt:1.14, flaks:1.1, timar:[44,58],
-  sms:"Hei {NAVN}. Astrid på Kvitskjær. Eg tek med både reke og det som elles går i trålen, så det blir som regel noko. Vil du vere med på ein andel? Du betaler ein del av det turen kostar og får same delen av det fangsten er verdt. Etter alle desse åra har eg lært at det sjeldan blir heilt tomt — men det hender.",
+ {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"astrid-holm-ms-kvitskjaer.png", yrke:"Reketrålskipper", speil:true,  ho:true,  mal:"nn", kost:55000, snitt:1.14, flaks:1.1, timar:[44,58],
+  sms:"Hei {NAVN}. Eg har fiska her i femti år og lært meg éin ting: ta imot det sjøen gir deg.\n\nEg trålar etter reke, men eg har litt line og garn med òg. Kjem det ei kveite eller ein steinbit stor nok, går det i kassa det same. Difor er det sjeldan heilt tomt hos meg.\n\nVil du ta ein andel? Du blir ikkje medeigar, og du får ingen kvote — kvoten følgjer båten, ikkje folk som ringjer. Du er med på éin tur. Han kostar 55 000. Tek du til dømes tjue prosent, legg du inn 11 000 og får tjue prosent av fangsten.\n\nMen sjeldan tomt er ikkje sikkert. Eg har hatt netter der eg leverte for mindre enn dieselen kosta. Sjøen skuldar oss ingenting. To døgn — vil du vere med?",
   minne:{bra:"Hei {NAVN}! Det vart ein god tur sist, det. Trålen var tung kvar gong. Eg går ut att, og du er velkomen på ein andel til om du vil.",
     ok:"Hei {NAVN}. Sist vart som det plar. Litt reke, litt av kvart anna, og noko å ta med heim. Eg går ut att om du vil vere med.",
     daarleg:"Hei {NAVN}. Det vart magert sist. Vi fekk ikkje stått slik eg ville. Eg går ut att i morgon, og eg forstår om du treng ein pause — men du er velkomen om du vil.",
@@ -3954,9 +3975,14 @@ function fiskerTekst(f){
   if(m>0) return f.minne.daarleg;
   return f.minne.tomt;
 }
+// Alle avatarane skal sjå INN mot namnet sitt. Seks av ti var teikna mot venstre,
+// og dei får speil:true i tabellen — filene er urørte.
+function settAvatar(el,f){ if(!el)return; el.src="spill/assets/"+f.img;
+  el.classList.toggle("speil", !!f.speil); }
 function visSms(f, timar, ordForOrd){
-  $("#smsAvatar").src="spill/assets/"+f.img;
+  settAvatar($("#smsAvatar"), f);
   $("#smsNavn").textContent=f.n;
+  $("#smsYrke").textContent=f.yrke||"Fisker";
   $("#smsBaat").textContent=f.b;
   var nn=(f.mal==="nn");
   var tekst=(fiskerTekst(f)||"").replace(/\{NAVN\}/g, (P&&P.name)||"du");
@@ -3982,7 +4008,7 @@ var ringT=null, ringMeld=null;
 function ringOpp(f, m){
   if(document.querySelector(".modal.on")){ notice("Du har fått ei melding 📨"); return; }
   ringMeld=m;
-  $("#ringAvatar").src="spill/assets/"+f.img;
+  settAvatar($("#ringAvatar"), f);
   $("#ringNavn").textContent=f.n;
   $("#ringBaat").textContent=f.b;
   modal("ringModal",true);
@@ -4058,7 +4084,7 @@ function visInnboks(){
     var forh = m.type==="tilbod"
       ? (Date.now()-m.tid<MELD_LIV ? "Vil ha deg med på en tur" : "Tilbudet er gått ut")
       : (m.ut>m.inn ? "+"+(m.ut-m.inn).toLocaleString("nb")+" kr" : (m.ut? (m.ut-m.inn).toLocaleString("nb")+" kr" : "Tomhendt"));
-    d.innerHTML='<img src="spill/assets/'+f.img+'" alt="" onerror="this.style.visibility=\'hidden\'">'
+    d.innerHTML='<img class="'+(f.speil?"speil":"")+'" src="spill/assets/'+f.img+'" alt="" onerror="this.style.visibility=\'hidden\'">'
       +'<span class="it"><span class="in">'+esc(f.n)+'</span>'
       +'<span class="ib">'+esc(forh)+'</span></span>'
       +'<span class="id2">'+naarTekst(m.tid)+'</span>';
@@ -4127,8 +4153,9 @@ function investSjekk(){
 }
 
 function visResultat(f, u, inn, ut, fraaInnboks){
-  $("#smsAvatar").src="spill/assets/"+f.img;
+  settAvatar($("#smsAvatar"), f);
   $("#smsNavn").textContent=f.n;
+  $("#smsYrke").textContent=f.yrke||"Fisker";
   $("#smsBaat").textContent=f.b+(f.mal==="nn"?" — tilbake i hamn":" — tilbake i havna");
   $("#smsTekst").textContent=u.t;
   var diff=ut-inn;
