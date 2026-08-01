@@ -719,6 +719,11 @@ var Snd=(function(){
     bjeff3:{url:"spill/lyd/hund-bjeff-03.aac", vol:0.45},
     knurr:{url:"spill/lyd/hund-knurring.aac", vol:0.32},
     knurrfisk:{url:"spill/lyd/knurr.aac", vol:0.8}, // knurren trommar på svømmeblæra når han kjem opp
+    // Tre isolerte skrik klipte ut av eit 18 s opptak, lågpassa til 6,2 kHz så dei
+    // høyrest ut som dei kjem langt borte frå. Volumet blir skalert av døgnet.
+    maakeskrik1:{url:"spill/lyd/maakeskrik-01.aac", vol:0.34},
+    maakeskrik2:{url:"spill/lyd/maakeskrik-02.aac", vol:0.34},
+    maakeskrik3:{url:"spill/lyd/maakeskrik-03.aac", vol:0.34},
     dorbjelle:{url:"spill/lyd/dorbjelle.aac", vol:0.42},          // du opnar døra inn til Rusten
     verkstedlyd:{url:"spill/lyd/verksted-skralle.aac", vol:0.40}, // Kjell strammar ei stroppe
     blaibok:{url:"spill/lyd/bla-i-bok.aac", vol:0.9},
@@ -760,8 +765,9 @@ var Snd=(function(){
   var regnNa=false, dykket=false, dypNa=0; // vær- og dykketilstand styrer miksen (dypNa: hvor langt nede sluken er, 0–1)
   var HAV=0.187, HAV_REGN=0.085; // bølgeskvulpet over vann — dempet 15 % etter tilbakemelding
   function wantLoop(name,on){ var L=loops[name]; if(!L)return; L.want=on; if(on)startLoop(name); else stopLoop(name); }
-  function oneShot(name){ var c=AC(),o=ONESHOT[name]; if(!c||!o||muted)return; var buf=buffers[name]; if(!buf)return;
-    var s=c.createBufferSource(); s.buffer=buf; var g=c.createGain(); g.gain.value=o.vol; s.connect(g); g.connect(c.destination); try{s.start()}catch(e){} }
+  function oneShot(name,skala,rate){ var c=AC(),o=ONESHOT[name]; if(!c||!o||muted)return; var buf=buffers[name]; if(!buf)return;
+    var s=c.createBufferSource(); s.buffer=buf; if(rate)s.playbackRate.value=rate; // rate varierer tonehøgda så same klipp ikkje blir gjenkjenneleg
+    var g=c.createGain(); g.gain.value=o.vol*(skala==null?1:skala); s.connect(g); g.connect(c.destination); try{s.start()}catch(e){} }
   function loadAll(){ var c=AC(); if(loaded||!c)return; loaded=true; var list=[];
     for(var k in loops)list.push([k,loops[k].url]); for(var k2 in ONESHOT)list.push([k2,ONESHOT[k2].url]);
     list.forEach(function(p){ fetch(p[1]).then(function(r){return r.arrayBuffer()}).then(function(ab){return c.decodeAudioData(ab)})
@@ -844,6 +850,10 @@ var Snd=(function(){
     trophy:function(){ if(buffers.jingle)oneShot("jingle"); [523,659,784,1047,1319,1568].forEach(function(f,i){ setTimeout(function(){beep(f,0.17,"triangle",0.17)},i*105); }); },
     coin:function(){ if(buffers.mynt)oneShot("mynt"); else { beep(988,0.07,"square",0.11); setTimeout(function(){beep(1319,0.12,"square",0.11)},70); } }, // salg av fangst
     knurreFisk:function(){ oneShot("knurrfisk"); },
+    maakeskrik:function(styrke){ // eitt fjernt skrik. maakeDogn() gjer det stilt om natta.
+      var v=(typeof maakeDogn==="function"?maakeDogn():1)*(styrke==null?1:styrke);
+      if(v<0.05)return;
+      oneShot("maakeskrik"+(1+((Math.random()*3)|0)), v, 0.88+Math.random()*0.26); },
     dorbjelle:function(){ oneShot("dorbjelle"); },
     verkstedlyd:function(){ oneShot("verkstedlyd"); },
     blaIBok:function(){ oneShot("blaibok"); },
@@ -1308,6 +1318,7 @@ function visNapp(){ var i=$("#nappSplash"); if(!i)return;
   i.classList.add("on"); clearTimeout(nappT);
   nappT=setTimeout(function(){ i.classList.remove("on"); },1300); }
 var nysCool=20; // første nys tidligst etter 20 s i båten
+var skrikCool=12+Math.random()*20; // første måkeskrik tidligst etter 12 s
 function erfaren(){ if(!P||!P.caught)return false; var n=0; for(var k in P.caught){ n+=(P.caught[k]&&P.caught[k].count)||0; if(n>=20)return true; } return false; }
 var noticeT=null;
 function lesetid(m){ // 2,25 s til å oppdage beskjeden + 56 ms per teikn til å lese han (20 % kortare enn før)
@@ -3257,6 +3268,12 @@ function loop(now){
   if(boatIn<1&&!boatHold){ boatIn=Math.min(1,boatIn+dt/1.4); if(boatIn>=1)Snd.motorOff(); }
   else if(fisherT<1) fisherT=Math.min(1,fisherT+dt/0.5);
   if(document.querySelector("#catchModal").classList.contains("on")) liftT+=dt; else liftT=0; // løft-fangst spilles ÉN gang, nullstilles mellom fangster
+  // Eit fjernt måkeskrik no og då — 25-75 s mellom kvart, aldri om natta (maakeDogn gir 0).
+  // Under vatn er det ingenting å høyre: overflateStille() dekkjer Dypt og Djuphavet.
+  if(skrikCool>0){ skrikCool-=dt;
+    if(skrikCool<=0){ skrikCool=25+Math.random()*50;
+      var uteEllerLobby=$("#menu").classList.contains("on") || ($("#sea").classList.contains("on")&&!Snd.overflateStille());
+      if(uteEllerLobby) Snd.maakeskrik(0.75+Math.random()*0.5); } }
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH);
     var lk=lobbyKart(); if(lk){ tegnGlitr(dt,lk,lgCtx); tegnRoyk(dt,lk,lgCtx); } // sjøen glitrar, pipa ryk
     drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,maakeTal(3),lobbySpawn,0); } // måker over tittelen i lobbyen
