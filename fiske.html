@@ -51,10 +51,17 @@
   #menu.panstart{background-position:center 0%}
   #menu.panner{background-position:center 100%;
     transition:background-position 2.8s cubic-bezier(.36,.03,.16,1)}
-  /* Breie skjermar får sitt eige bilete. Det høge (720x2067) ville gitt over 3000 px
-     slingringsmonn på ein laptop — heile turen som ein piskesnert. Det breie (2134x2067)
-     gir 320-500 px, som er akkurat passe, og fyller breidda utan å klippe scena. */
-  @media (min-aspect-ratio:1/1){ #menu{background-image:url("spill/assets/lobby-v3-wide.png")} }
+  /* #menu ligg i #stage, som har max-width:900px — boksen blir ALDRI breiare enn 900 px.
+     Difor hjelper det breie biletet berre når sjølve vindauget er smalare enn 900 og
+     ligg på tvers: liggjande mobil og små nettbrett. Der fyller det scena utan klipping.
+     Over 900 px er boksen kapsla til ~900 px brei, og då gir det breie biletet (1,032:1)
+     null vertikalt slingringsmonn — panoreringa ville stått bom stille. Der bruker vi det
+     høge og klemmer turen i staden, elles blir 1500-1800 px ein piskesnert. */
+  @media (min-aspect-ratio:1/1) and (max-width:899px){
+    #menu{background-image:url("spill/assets/lobby-v3-wide.png")} }
+  @media (min-width:900px){
+    #menu.panstart{background-position:center 22%}
+    #menu.panner{background-position:center 70%} }
   @media (prefers-reduced-motion:reduce){
     #menu.panstart{background-position:center 100%}
     #menu.panner{transition:none}
@@ -1202,7 +1209,9 @@ var gulls=[], lobbyGulls=[], gullSpawn={t:0}, lobbySpawn={t:0}; // flyvende måk
 // her må vi kjenne begge, for glitter og røyk er festa i BILETkoordinatar.
 var LOBBY_HOG ={w:720, h:2067, fil:"lobby-v3.png",      pipe:{x:560, y:1345}};
 var LOBBY_BREI={w:2134,h:2067, fil:"lobby-v3-wide.png", pipe:{x:1270,y:1338}};
-function lobbyBilde(){ return (window.matchMedia && matchMedia("(min-aspect-ratio: 1/1)").matches) ? LOBBY_BREI : LOBBY_HOG; }
+// Same vilkår som CSS-en over — dei to MÅ følgje kvarandre, elles teiknar vi glitter og
+// røyk mot eit anna bilete enn det som faktisk ligg der.
+function lobbyBilde(){ return (window.matchMedia && matchMedia("(min-aspect-ratio: 1/1) and (max-width: 899px)").matches) ? LOBBY_BREI : LOBBY_HOG; }
 var glitrMaske={};              // filnamn → vasspunkt henta ut av biletet sjølv, ikkje gjetta
 function lastVassmaske(b){
   if(b.fil in glitrMaske)return;                       // null = prøvd og feila, array = klar
