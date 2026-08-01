@@ -347,13 +347,15 @@
   @keyframes ringSkjelv{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
   #ringModal.on .ringtopp img{animation:ringSkjelv 1.1s ease-in-out infinite}
   /* Andelsvalet: fem storleikar, og dei du ikkje har råd til er slått av. */
-  .lottrad{display:flex;gap:6px;padding:0 13px 4px}
-  .lottrad button{flex:1;border:2px solid var(--paper-2);background:#fff8ea;border-radius:9px;
-    padding:7px 2px;cursor:pointer;font-family:var(--font);line-height:1.15}
+  .lottrad{display:flex;flex-wrap:wrap;gap:6px;padding:0 13px 4px}
+  .lottrad button{flex:1 1 calc(33.33% - 4px);border:2px solid var(--paper-2);background:#fff8ea;
+    border-radius:9px;padding:7px 2px;cursor:pointer;font-family:var(--font);line-height:1.15}
+  @media (min-width:430px){ .lottrad button{flex:1 1 0} }   /* seks på rad når det er plass */
   .lottrad button .lp{display:block;font-weight:800;font-size:15px;color:var(--wood-dark)}
   .lottrad button .lk{display:block;font-size:10.5px;color:var(--ink-soft);font-family:var(--mono)}
   .lottrad button.valt{border-color:var(--gold);background:#fdf3d6}
   .lottrad button:disabled{opacity:.32;cursor:default}
+  #smsJa:disabled{opacity:.5}
   /* SMS frå ein fiskar som treng investor. Skal sjå ut som ei melding, ikkje som ein butikk. */
   #smsModal .card{max-width:400px;padding:0;overflow:hidden}
   /* Statuslinja. Biletet har hakket i midten, så det blir sentrert i staden for kakla,
@@ -3778,34 +3780,34 @@ function drawSilhuett(dt){
    3. Kvar fiskar har ei synleg historie hos deg. Ingen skjulte terningar.        */
 
 var FISKERE=[
- {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"harald-nystad-ms-nordvaer.png",  ho:false, mal:"nn", kost:40000, snitt:1.00, flaks:0.9, timar:[8,14],
+ {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"harald-nystad-ms-nordvaer.png",  ho:false, mal:"nn", kost:40000, snitt:1.03, flaks:0.9, timar:[26,36],
   sms:"Hei! Harald her, frå Nordvær. Eg skal ut på rekefeltet i natt og manglar litt til diesel. Vil du vere med på turen?",
   ord:"Harald er ein trygg kar. Han lovar aldri for mykje."},
- {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"jorunn-eide-ms-havglimt.png",  ho:true,  mal:"bm", kost:45000, snitt:1.08, flaks:0.6, timar:[10,16],
+ {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"jorunn-eide-ms-havglimt.png",  ho:true,  mal:"bm", kost:45000, snitt:1.09, flaks:0.6, timar:[30,42],
   sms:"Jorunn på Havglimt her. Jeg går sjelden tomhendt hjem, men jeg går heller ikke langt ut. Blir du med på en rolig tur?",
   ord:"Jorunn tar ingen sjanser. Det synes på tallene."},
- {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"birger-kvalvik-ms-storskjaer.png",  ho:false, mal:"nn", kost:80000, snitt:1.14, flaks:1.6, timar:[14,22],
+ {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"birger-kvalvik-ms-storskjaer.png",  ho:false, mal:"nn", kost:80000, snitt:1.22, flaks:1.6, timar:[62,80],
   sms:"Birger! Eg har peila inn ein reketopp langt ute som INGEN andre veit om. Det kan bli stort. Eller ingenting. Er du med?",
   ord:"Birger går alltid lengst ut. Det går bra, eller det går rett vest."},
- {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"solveig-aasen-ms-fjordperle.png", ho:true,  mal:"bm", kost:42000, snitt:1.05, flaks:1.0, timar:[9,15],
+ {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"solveig-aasen-ms-fjordperle.png", ho:true,  mal:"bm", kost:42000, snitt:1.07, flaks:1.0, timar:[28,38],
   sms:"Solveig her. Ny rist på trålen, godkjent og fin. Jeg trenger bare litt til første turen. Blir du med?",
   ord:"Solveig holder bruket i orden. Det lønner seg over tid."},
- {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"odd-mikkelsen-ms-gamle-ola.png",     ho:false, mal:"nn", kost:30000, snitt:0.98, flaks:1.3, timar:[12,20],
+ {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"odd-mikkelsen-ms-gamle-ola.png",     ho:false, mal:"nn", kost:30000, snitt:1.00, flaks:1.3, timar:[20,30],
   sms:"Det er Odd. Båten er gammal og eg har hatt ein tung sesong. Men eg kjenner desse feltene betre enn nokon. Ein tur til?",
   ord:"Odd har uflaks. Men han kan sjøen."},
- {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"marit-fagerli-ms-havbris.png",   ho:true,  mal:"bm", kost:50000, snitt:1.10, flaks:0.8, timar:[10,16],
+ {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"marit-fagerli-ms-havbris.png",   ho:true,  mal:"bm", kost:50000, snitt:1.13, flaks:0.8, timar:[40,54],
   sms:"Marit på Havbris. Jeg har fast avtale med mottaket, så prisen er sikret. Kan du bli med på en tur?",
   ord:"Marit selger alt før hun går ut. Kjedelig og lurt."},
- {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"trygve-bang-ms-nordlys.png",  ho:false, mal:"bm", kost:110000, snitt:1.18, flaks:2.0, timar:[16,26],
+ {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"trygve-bang-ms-nordlys.png",  ho:false, mal:"bm", kost:110000, snitt:1.28, flaks:2.0, timar:[78,100],
   sms:"TRYGVE! Jeg går helt ut på eggakanten nå. Værmeldinga er … tja. Men fangsten der ute, mann. Er du med eller ikke?",
   ord:"Trygve er gal. Det er derfor han av og til kommer hjem stinn."},
- {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"ingrid-sund-ms-maaken.png",  ho:true,  mal:"bm", kost:18000, snitt:1.06, flaks:0.7, timar:[7,12],
+ {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"ingrid-sund-ms-maaken.png",  ho:true,  mal:"bm", kost:18000, snitt:1.05, flaks:0.7, timar:[14,20],
   sms:"Ingrid her. Kort tur i natt, inne i fjorden. Ikke store penger, men jeg kommer alltid hjem. Blir du med?",
   ord:"Ingrid går korte turer. Lav risiko, lav gevinst."},
- {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"kaare-lind-ms-brottsjoe.png",   ho:false, mal:"nn", kost:60000, snitt:1.12, flaks:1.4, timar:[13,21],
+ {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"kaare-lind-ms-brottsjoe.png",   ho:false, mal:"nn", kost:60000, snitt:1.18, flaks:1.4, timar:[48,64],
   sms:"Kåre her. Eg har fått teften av noko stort på det nye feltet. Treng ein partner på denne. Hiv deg med!",
   ord:"Kåre har teft. Av og til stemmer det."},
- {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"astrid-holm-ms-kvitskjaer.png",  ho:true,  mal:"nn", kost:55000, snitt:1.09, flaks:1.1, timar:[11,18],
+ {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"astrid-holm-ms-kvitskjaer.png",  ho:true,  mal:"nn", kost:55000, snitt:1.14, flaks:1.1, timar:[44,58],
   sms:"Astrid på Kvitskjær. Eg tek med både reke og det som elles går i trålen — det blir alltid noko. Vil du inn?",
   ord:"Astrid tek imot alt trålen gir. Sjeldan heilt tomt."}];
 // Kvar fiskar har sitt eige målføre — Nordland har begge delar. Pronomenet må
@@ -3866,9 +3868,14 @@ function investTrekk(f, niv, rng){
   return UTFALL[2];
 }
 
-// Terskelen er låg med vilje: den minste andelen hos Ingrid kostar 1 800 kr, så
-// ein spelar er med lenge før han er rik. LOTTAR er kor stor del av turen du kan ta.
-var TERSKEL=4000, LOTTAR=[0.10,0.20,0.30,0.40,0.50], LOTT_TAK=0.35;
+// Ingen ringjer før du har 10 000 kr — då har du fått taket på sjølve fisket først.
+// Etter det opnar fiskarane seg gradvis: 35 %-taket gjer at Trygve, som går lengst
+// ut og har dyrast tur, fyrst tek kontakt når du har rundt 16 000 på konto.
+var TERSKEL=10000, LOTTAR=[0.05,0.10,0.20,0.30,0.40,0.50], LOTT_TAK=0.35;
+// Under eit døgn: timar. Over: døgn — det er slik ein fiskar snakkar, og
+// «tar ~86 timer» seier ingenting til ein tiåring.
+function turTid(t){ if(t<24) return "tar ~"+Math.round(t)+" timer";
+  var d=t/24; return "tar "+(d<1.6?"ett døgn":d<2.6?"to døgn":d<3.6?"tre døgn":d<4.6?"fire døgn":Math.round(d)+" døgn"); }
 function lottPris(f,del){ return Math.round(f.kost*del/100)*100; }
 function harRaad(f,del){ var pr=lottPris(f,del); return P.kr>=pr && pr<=P.kr*LOTT_TAK; }
 var smsAktiv=null;   // {f, del, timar}
@@ -3903,8 +3910,7 @@ function visSms(f, timar, ordForOrd){
   var nn=(f.mal==="nn");
   var tekst=(f.sms||"").replace(/\{NAVN\}/g, (P&&P.name)||"du");
   if(ordForOrd) skrivUt($("#smsTekst"), tekst); else $("#smsTekst").textContent=tekst;
-  $("#smsSum").textContent="Hele turen koster "+f.kost.toLocaleString("nb")+" kr · tar ~"
-    +Math.round(timar)+" timer";
+  $("#smsSum").textContent="Hele turen koster "+f.kost.toLocaleString("nb")+" kr · "+turTid(timar);
   var h=P.invest.hist[f.k], niv=investNivaa(f.k);
   var fakta=f.ord;
   if(h&&h.turar) fakta+=" Du har vært med på "+h.turar+" tur"+(h.turar>1?"er":"")+" — satt inn "
@@ -3912,7 +3918,7 @@ function visSms(f, timar, ordForOrd){
   if(niv) fakta+=" Du har spleiset på "+niv+" oppgradering"+(niv>1?"er":"")+" på båten "+(f.ho?"hennes":"hans")+".";
   $("#smsFakta").textContent="Du betaler en del av det turen koster, og får den samme delen av det fangsten er verdt. Går det tomt, er pengene borte. "+fakta;
   byggLott(f);
-  $("#smsNei").textContent="Nei takk"; $("#smsJa").textContent="Velg en andel først"; $("#smsJa").disabled=true;
+  $("#smsNei").textContent="Nei takk"; $("#smsJa").textContent="Bli med"; $("#smsJa").disabled=true;
   settKlokke(); modal("smsModal",true);
 }
 
@@ -3983,7 +3989,6 @@ function byggLott(f){
       [].slice.call(rad.children).forEach(function(x){ x.classList.remove("valt"); });
       b.classList.add("valt");
       $("#smsJa").disabled=false;
-      $("#smsJa").textContent="Bli med for "+pr.toLocaleString("nb")+" kr";
       if(Snd.click)Snd.click();
     };
     rad.appendChild(b);
