@@ -2312,7 +2312,7 @@ function potOutcome(t,soak){ // krabbeteine — deterministisk av seed+soak: rel
     var r1=rng(), qd=Math.min(1,soak/(8*3600000));
     if(r1<0.10*qd){ var tt3=rng(); lines.push({e:"🦀",n:"TROLLKRABBE — dyphavets ridder!",kr:Math.round(450*(0.6+0.9*tt3)),img:"trollkrabbe"}); }
     else if(r1<0.35*qd){ lines.push({e:"🦀",n:"Taskekrabbe (langt hjemmefra)",kr:25+Math.round(rng()*5),img:"taskekrabbe"}); }
-    else if(r1<0.35*qd+0.04) lines.push(potBycatch(rng,t.zone));
+    else if(r1<0.35*qd+0.20) lines.push(potBycatch(rng,t.zone));
     /* ellers tom — «for dypt for taska» */
   }
   else{
@@ -2322,7 +2322,7 @@ function potOutcome(t,soak){ // krabbeteine — deterministisk av seed+soak: rel
     if(rng()<0.004+0.026*q48){ var tk=rng(); lines.push({e:"🦀",n:"TROLLKRABBE — dyphavets ridder!",kr:Math.round(450*(0.6+0.9*tk)),img:"trollkrabbe"}); }
     // småfisk som svømte inn etter agnet og ikkje fann vegen ut att
     if(rng()<0.16){ var sm=SMAAFISK[(rng()*SMAAFISK.length)|0]; lines.push({e:"🐟",n:sm.n,kr:sm.kr,img:sm.k}); }
-    if(rng()<0.04)lines.push(potBycatch(rng,t.zone)); // skrap og sjeldne funn — under 5 % (eiers regel)
+    if(rng()<0.20)lines.push(potBycatch(rng,t.zone)); // eitt funn per femte trekk (var 4 % — då såg ingen dei)
   }
   var total=0; lines.forEach(function(l){total+=l.kr});
   return {lines:lines,total:total,early:false};
@@ -2341,7 +2341,7 @@ function potOutcomeH(t,soak){ // hummerteine: best med natt (22–06) i soaket; 
     }
   } else if(r1<hc+0.30*q){ var n2=1+(rng()<0.4?1:0);
     for(var j=0;j<n2;j++){ var tt2=rng(); lines.push({e:"🦀",n:"Taskekrabbe i hummerteina "+(tt2>0.6?"(fin)":"(grei)"),kr:25+Math.round(tt2*5),img:"taskekrabbe"}); }
-  } else if(r1<hc+0.30*q+0.04) lines.push(potBycatch(rng,t.zone));
+  } else if(r1<hc+0.30*q+0.18) lines.push(potBycatch(rng,t.zone));
   var total=0; lines.forEach(function(l){total+=l.kr});
   return {lines:lines,total:total,early:false,night:night};
 }
@@ -2372,7 +2372,7 @@ function lineOutcome(t,soak){ // bunnline: kveitesjansen er BETRAKTELIG større 
   var krk=(P&&P.pots&&P.pots.lineKroker)||3;
   var n=Math.min(krk, Math.floor(q*(1+rng()*4)*(krk/3))); // 0–5 bunnfisk ved 3 kroker — flere kroker, mer fangst
   for(var i=0;i<n;i++) lines.push(lineFisk(rng,POOL[(rng()*POOL.length)|0]));
-  if(rng()<0.03) lines.push(potBycatch(rng,z)); // rart og skatter setter seg på krokene også
+  if(rng()<0.14) lines.push(potBycatch(rng,z)); // rart og skatter setter seg på krokene også
   if(!lines.length&&rng()<0.5) lines.push({e:"🪝",n:"Krokene var slikket reine — noe har forsynt seg av agnet",kr:0});
   var total=0; lines.forEach(function(l){total+=l.kr});
   return {lines:lines,total:total,early:false};
@@ -2398,10 +2398,14 @@ function pullPot(ty){ ty=ty||"k";
     rec.count++; if(l.len>rec.bestLen){rec.bestLen=l.len; rec.redskap="Bunnline"; rec.rts=Date.now();} if(l.wt>(rec.bestWt||0))rec.bestWt=l.wt;
     if(l.ut)rec.sluppet=(rec.sluppet||0)+1;
     if(byKey[l.fk].trophy)fikkKveite=true; });
+  var dkP=dailyFish(), bestiltIBruket=false;   // Rusten betaler +50 % same kvar fisken kom frå
+  res.lines.forEach(function(l){ if(l.fk&&l.fk===dkP.k&&l.kr>0){ l.kr=Math.round(l.kr*1.5); bestiltIBruket=true; } });
+  if(bestiltIBruket){ res.total=0; res.lines.forEach(function(l){ res.total+=l.kr; }); }
   var rolexLinje=res.lines.some(function(l){return l.rolexFunn}) && !P.rolex;
   if(res.lines.some(function(l){return l.rolexFunn}) && P.rolex){ // én om gangen — ny selges rett til Rusten
     res.total+=3000; res.lines.forEach(function(l){ if(l.rolexFunn){l.n="Rolex (urmakeren har alt én) — solgt";l.kr=3000;} }); }
   P.pots.out.splice(idx,1); P.kr+=res.total; hud(); saveAll(); updatePotBtn(); if(ty==="l")syncFam();
+  if(bestiltIBruket) setTimeout(function(){ notice("Rusten hadde bestilt "+dkP.n.toLowerCase()+" i dag — +50 % 📋"); },900);
   if(fikkKveite){ Snd.trophy(); notice("STORKVEITA GIKK PÅ LINA! 🏆"); dogShow(0,7); Snd.gladDog(); }
   else if(res.lines.some(function(l){return l.fk==="haakjerring"})){ Snd.trophy(); notice("HÅKJERRINGA GIKK PÅ LINA! 🦈 Havets eldste!"); dogShow(0,7); Snd.gladDog(); setTimeout(Snd.fiskerImponert,500); }
   if(res.lines.length)setTimeout(streakTikk,0); // etter at trekk-boksen er åpnet
@@ -3174,8 +3178,9 @@ var MANET=[{k:"drift-glassmanet",z:[0,1,2,3],w:1.0,br:0.058,puls:0.20},
 var manetImg={};
 MANET.forEach(function(m){ var im=new Image(); im.onerror=function(){}; im.src="spill/assets/"+m.k+".png"; manetImg[m.k]=im; });
 var maneter=[], stromRetn=1; // flo og fjære drar alt samme vei
-var SILH=[{k:"silhuett-ubaat",z:[2,3],br:0.50,op:0.34,sjanse:1/1000,hoyre:true},
-          {k:"silhuett-hval", z:[2,3],br:0.62,op:0.26,sjanse:1/90,lyd:"hval"}];
+// dyp: kvar på skjermen silhuetten sig forbi, 0 = toppen, 1 = botnen.
+var SILH=[{k:"silhuett-ubaat",z:[2,3],br:0.50,op:0.34,sjanse:1/1000,hoyre:true,dyp:[0.52,0.72]},
+          {k:"silhuett-hval", z:[2,3],br:0.62,op:0.26,sjanse:1/90,lyd:"hval",dyp:[0.32,0.46]}];
 var silhImg={};
 SILH.forEach(function(x){ var im=new Image(); im.onerror=function(){}; im.src="spill/assets/"+x.k+".png"; silhImg[x.k]=im; });
 var silh=null, silhKlar=null;
@@ -3633,7 +3638,8 @@ function drawSilhuett(dt){
     if(!im0.complete||!im0.naturalWidth)return;
     var s2=silhKlar, dir=Math.random()<0.5?1:-1;
     silhKlar=null;
-    silh={s:s2, x:dir<0?1.5:-0.5, vx:dir*(0.035+Math.random()*0.025), wy:camY+H*(0.62+Math.random()*0.26)};
+    var db=s2.dyp||[0.62,0.88];
+    silh={s:s2, x:dir<0?1.5:-0.5, vx:dir*(0.035+Math.random()*0.025), wy:camY+H*(db[0]+Math.random()*(db[1]-db[0]))};
     if(s2.lyd==="hval")Snd.hvalrop(); // ropet kjem idet ho sig inn i lyskjegla
     return;
   }
