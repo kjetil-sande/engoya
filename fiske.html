@@ -314,6 +314,19 @@
   .vbar.prog > i{background:linear-gradient(0deg,#0d3b4a,#2e8b9e,#7fd0dd)}
   .vbar .lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:#eaf3ee;white-space:nowrap}
 
+  /* SMS frå ein fiskar som treng investor. Skal sjå ut som ei melding, ikkje som ein butikk. */
+  #smsModal .card{max-width:400px;padding:0;overflow:hidden}
+  .smstopp{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--wood-dark);color:#f6ecd0}
+  .smstopp img{width:44px;height:44px;border-radius:50%;object-fit:cover;image-rendering:pixelated;
+    background:#f2e4c7;flex:0 0 44px}
+  .smstopp .sn{font-weight:800;font-size:15px;line-height:1.2}
+  .smstopp .sb{font-size:12px;opacity:.75;font-style:italic}
+  .smsboble{margin:13px;padding:11px 13px;background:#e8eef2;border-radius:14px 14px 14px 4px;
+    font-size:15px;line-height:1.45;color:#28323a;text-align:left}
+  .smssum{margin:0 13px 4px;font-family:var(--mono);font-size:15px;color:var(--wood-dark);text-align:left}
+  .smsfakta{margin:0 13px 12px;font-size:12.5px;color:var(--ink-soft);text-align:left;line-height:1.4}
+  .smsknapp{display:flex;gap:9px;padding:0 13px 13px}
+  .smsknapp .btn{flex:1}
   /* Popups / panels */
   .modal{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:16px;z-index:20;
     background:rgba(10,25,30,.55)}
@@ -657,6 +670,17 @@
     <div id="potList"></div>
     <div class="statline" id="potTotal"></div>
     <div class="row"><span></span><button class="btn gold" id="potTake">Ta med</button></div>
+  </div></div>
+
+  <!-- SMS: fiskar søkjer investor -->
+  <div class="modal" id="smsModal"><div class="card center">
+    <div class="smstopp"><img id="smsAvatar" alt="" onerror="this.style.visibility='hidden'">
+      <div><div class="sn" id="smsNavn"></div><div class="sb" id="smsBaat"></div></div></div>
+    <p class="smsboble" id="smsTekst"></p>
+    <div class="smssum" id="smsSum"></div>
+    <div class="smsfakta" id="smsFakta"></div>
+    <div class="smsknapp"><button class="btn ghost" id="smsNei">Nei takk</button>
+      <button class="btn gold" id="smsJa">Bli med</button></div>
   </div></div>
 
   <!-- KART / FISKEPLASS-VELGER -->
@@ -1192,7 +1216,8 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.agn==null)P.agn={}; // agnbeholdning
   if(P.rolex===undefined||P.rolex==="raa"||P.rolex==="klar")P.rolex=(P.rolex==="klar")?{bud:50000}:null; // null | {ferdig:ts} | {bud:kr}
   if(P.turbo==null)P.turbo=false; // turbosnelle (halv kamptid)
-  if(!P.motor)P.motor="stor"; if(P.motorOk==null)P.motorOk=true; // stormotor følger båten
+  if(typeof investInit==="function")investInit();
+  P.motor="stor"; if(P.motorOk==null)P.motorOk=true; // éin motor på båten — sett ubetinga, så gamle saves med "liten" ikkje står fast
   if(P.pots.lineKroker==null)P.pots.lineKroker=3; // bunnlinekroker (3 standard, 10 maks)
   if(P.lures&&P.lures[0]!=null){ var g0=P.lures; P.lures={blink:g0[0]||0,torskepilk:g0[1]||0,dyppilk:g0[2]||0,agnrigg:g0[3]||0}; } // gamle sone-sluker → nærmeste i katalogen
   if(P.lures==null)P.lures={blink:3};
@@ -1344,7 +1369,6 @@ function updateDepthLocks(){ var klar=vinsjKlar();
 function setDepth(d){
   if(!P)return;
   if(phase!=="idle")return; // ikke bytt dybde midt i fisking (gjelder også kart/pins)
-  if(d>=2&&P.motor!=="stor"){ setHint("Den lille motoren orker ikke "+ZONE[d].toLowerCase()+" — du trenger stormotoren fra Propell-Kjell ⚙️"); return; }
   if(d===3){ if(!vinsjKlar())return;
     if(!P.vinsj){ setHint("Vinsj og dyphavsrigg trengs for djuphavet (300–500 m) — kjøp i butikken 🛒"); return; } }
   else if(d>P.rod){ setHint(RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+") — kjøp i butikken 🛒"); return; }
@@ -1355,7 +1379,7 @@ function setDepth(d){
   if(typeof updatePotBtn==="function")updatePotBtn();
 }
 
-function toSea(){Snd.themeOff(); Snd.ambienceOn(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth((depth>=2&&P.motor!=="stor")?Math.min(1,P.rod):depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
+function toSea(){Snd.themeOff(); Snd.ambienceOn(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase==="idle")setHint("📋 Rusten betaler +50 % for "+dk.n.toLowerCase()+" i dag. "+ZONE[dk.z]+" ("+DEPM[dk.z]+")."); },1200);
   setTimeout(visRekordKort, 2800); // familiens siste rekorder — én gang per økt, når båten har glidd inn
   setTimeout(streakVis, 4200);   // uhentet streak-gave (lukket med X) ligger klar til neste tur — aldri tapt
@@ -1484,6 +1508,7 @@ function underMaal(f,len){ return f.min&&len<f.min ? f.min : 0; }
 // Rustens folklore. Vises når det den handler om faktisk skjer på skjermen —
 // aldri tilfeldig, for da blir den bakgrunnsstøy i stedet for lærdom.
 var RUSTEN_ORD={
+  skrei:"No er skreien komen. Han har symt frå Barentshavet for å gyte, og han er feit og blank — det er ein annan fisk enn kysttorsken som står her heile året.",
   knurr1:"Knurren syng når han kjem opp. Han trommar på svømmeblæra. Sinna, ikkje redd.",
   knurr2:"Høyrer du knurren, er du på rett grunn. Han held seg der botnen er rein.",
   haagjel:"Hågjelen tek agnet og let deg stå att med bar krok. Du betaler.",
@@ -1507,6 +1532,13 @@ var FREDET_ORD={
   kveite:"Fredningstid for kveita. Ho skal gyte i fred — men for ei ho var!",
   uer:"Ueren blir hundre år gammal. Han har ikkje tid til oss no."
 };
+// Skreisesongen: januar-april. Skrei ER torsk (Gadus morhua) — den gytemodne
+// barentshavstorsken som vandrar inn til Lofoten. Same art, anna historie, og
+// fangstboka skal framleis føre han som torsk. torsk.ss toppar alt 1.6 i feb-mars.
+function skreiTid(){ var m=new Date().getMonth(); return m<=3; }   // jan-apr
+function erSkrei(f){ return !!(f && f.k==="torsk" && skreiTid()); }
+function artNavn(f){ return erSkrei(f) ? "Skrei" : f.n; }
+function artPris(f){ return erSkrei(f) ? 1.7 : 1; }                // skrei betalast langt betre enn kysttorsk
 function storjeSeason(){ var m=new Date().getMonth(); return m>=6&&m<=9; } // størja følger makrellen nordover: juli–oktober
 var lokkT=0, lokkOpp=0; // «lokking»: dra sluken litt opp mens fisken snuser — øker nappesjansen
 var pilkT=0, pilkKrav=12, pilkFangst=[], pilkHoldT=0; // pilkHoldT: hvor lenge dette draget har vart
@@ -1541,7 +1573,7 @@ function pilkSlutt(){
   pilkFangst.forEach(function(pf){ var f=pf.f, t=(pf.len-f.len[0])/(f.len[1]-f.len[0]);
     var wt=+((Math.pow(pf.len/100,3)*f.kg*1.02)).toFixed(1); if(wt<0.1)wt=0.1;
     var vern=fredetNaa(f), umaal=underMaal(f,pf.len);   // samme lov på markpilken som på stanga
-    var kr=(vern||umaal)?0:Math.max(1,Math.round(f.pris*(0.6+0.9*t)));
+    var kr=(vern||umaal)?0:Math.max(1,Math.round(f.pris*(0.6+0.9*t)*artPris(f)));
     var rec=P.caught[f.k]; if(!rec)rec=P.caught[f.k]={count:0,bestLen:0,bestWt:0};
     rec.count++; if(pf.len>rec.bestLen){rec.bestLen=pf.len; rec.redskap="Markpilk"; rec.rts=Date.now();} if(wt>(rec.bestWt||0))rec.bestWt=wt;
     if(vern||umaal)rec.sluppet=(rec.sluppet||0)+1;      // godt fiskarskap telles også her
@@ -1739,7 +1771,7 @@ function land(){
   var wt=+((Math.pow(len/100,3)*f.kg*(0.9+Math.random()*0.3))).toFixed(1); if(wt<0.1)wt=0.1;
   if(f.trophy&&wt>40)wt=+(38+Math.random()*2).toFixed(1); // mer enn ~40 kg får du ikke i båten
   var tt=(len-f.len[0])/(f.len[1]-f.len[0]); if(tt<0)tt=0; if(tt>1)tt=1;
-  var kr=Math.max(1,Math.round(f.pris*(0.6+0.9*tt))); // pris skalerer med størrelse (0.6×–1.5× av basispris)
+  var kr=Math.max(1,Math.round(f.pris*(0.6+0.9*tt)*artPris(f))); // pris skalerer med størrelse (0.6×–1.5× av basispris)
   var vern=fredetNaa(f), umaal=underMaal(f,len);       // ut igjen? da er kroner uaktuelt
   var baro=baroTraume(f,depth)&&!vern&&!umaal;         // tekst, ikke ny regel — og aldri på fisk som SKAL ut igjen
   if(vern||umaal)kr=0;
@@ -1767,7 +1799,7 @@ function land(){
   cT.textContent = (vern||umaal) ? (f.trophy?"STORKVEITA! 🏆":"Godt fiskarskap 🤍") : (f.trophy ? "STORKVEITA! 🏆" : (gold?"GYLLEN FISK! ✨" : isNew?"Ny art!":"Fisk!"));
   cT.style.display = cT.textContent==="Fisk!" ? "none" : ""; // vanleg fangst treng ingen overskrift — bildet seier alt
   visNyArt(isNew&&!f.trophy); // stempel over plansjen ved førstegangsfangst (storkveita har sin egen fest)
-  $("#catchName").innerHTML="<b>"+f.n+"</b>"+(gold?' ✨':'')+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>'+(isNew?'<span class="newtag">NY</span>':'')+(isRecord&&!isNew?'<span class="newtag">REKORD</span>':'');
+  $("#catchName").innerHTML="<b>"+artNavn(f)+"</b>"+(gold?' ✨':'')+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>'+(isNew?'<span class="newtag">NY</span>':'')+(isRecord&&!isNew?'<span class="newtag">REKORD</span>':'');
   $("#catchSize").innerHTML="Lengde <b>"+len+" cm</b> · vekt <b>"+wt+" kg</b>";
   $("#catchRig").textContent="Tatt på: "+rigNavn(); // samme opplysning som på rekordkortene
   $("#catchKr").innerHTML=(vern||umaal
@@ -2348,8 +2380,8 @@ function potOutcomeH(t,soak){ // hummerteine: best med natt (22–06) i soaket; 
 function lineFisk(rng,k){ var f=byKey[k], t=rng(), len=Math.round(f.len[0]+(f.len[1]-f.len[0])*t);
   var wt=+((Math.pow(len/100,3)*f.kg*(0.9+rng()*0.3))).toFixed(1); if(wt<0.1)wt=0.1; if(f.trophy&&wt>40)wt=+(38+rng()*2).toFixed(1);
   var vern=fredetNaa(f), umaal=underMaal(f,len);        // lova gjelder uansett redskap
-  var kr=(vern||umaal)?0:Math.max(1,Math.round(f.pris*(0.6+0.9*t)));
-  var n=f.n+" "+len+" cm ("+wt+" kg)"+((vern||umaal)?" — 🤍 "+(umaal?("under målet på "+umaal+" cm"):vern)+", satt ut":"");
+  var kr=(vern||umaal)?0:Math.max(1,Math.round(f.pris*(0.6+0.9*t)*artPris(f)));
+  var n=artNavn(f)+" "+len+" cm ("+wt+" kg)"+((vern||umaal)?" — 🤍 "+(umaal?("under målet på "+umaal+" cm"):vern)+", satt ut":"");
   return {e:(vern||umaal)?"🤍":"🐟", n:n, kr:kr, img:f.k, fk:k, len:len, wt:wt, ut:!!(vern||umaal)}; }
 function lineOutcome(t,soak){ // bunnline: kveitesjansen er BETRAKTELIG større enn med stang — men den vil stå natta over
   var rng=mulberry32(t.seed^((soak/60000)|0)), q=Math.max(0,Math.min(1,soak/(10*3600000))), lines=[];
@@ -2526,6 +2558,11 @@ function updatePotBtn(){
   potSetState($("#potBtnL"),"l");  potPullState($("#potPullL"),"l",10*3600000);
 }
 setInterval(updatePotBtn,15000);
+// Turen går i ekte tid. Vi sjekkar om han er tilbake, og om nokon vil spørje deg om noko.
+setInterval(function(){ if(!P)return;
+  try{ investSjekk(); }catch(e){}
+  try{ investTilbod(); }catch(e){}
+},20000);
 setInterval(function(){ if(P&&!document.hidden&&document.querySelector("#sea").classList.contains("on")){ // spilletid teller bare når man faktisk er på havet
   P.tidMs=(P.tidMs||0)+15000;
   if(!P.dager)P.dager={}; var dk=dagKey(); P.dager[dk]=(P.dager[dk]||0)+15000; beskjaerDager(P);
@@ -2775,10 +2812,7 @@ function openKjell(){
     vKost, vp>=100, function(){ P.svc=0; notice("Motoren spinner som en katt igjen — takk, Propell-Kjell! ⚙️"); });
   if(!P.motorOk){
     addShop(L,'<img src="spill/assets/verksted-motor-reparasjon.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🔧 \'" alt=""> Reparer motoren',"Kjell åpner den, banner litt, og får liv i den igjen.",8000,false,function(){P.motorOk=true; notice("Motoren durer igjen! ⚙️");});
-    addShop(L,'<img src="spill/assets/verksted-motor-liten.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Liten påhengsmotor',"Ny, men beskjeden — klarer Grunt og Mellomdyp. Billigste vei ut av havariet.",6000,false,function(){P.motor="liten"; P.motorOk=true; updateDepthLocks(); notice("Liten motor montert — grunt og mellomdyp venter ⚙️");});
-    addShop(L,'<img src="spill/assets/verksted-motor-stor.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Stor påhengsmotor',"Kraftpakke som drar deg helt ut til djuphavet.",45000,false,function(){P.motor="stor"; P.motorOk=true; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
-  } else if(P.motor==="liten")
-    addShop(L,'<img src="spill/assets/verksted-motor-stor.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Stor påhengsmotor',"Bytt opp: kraftpakka som drar deg til Dypt og djuphavet.",45000,false,function(){P.motor="stor"; updateDepthLocks(); notice("STORMOTOR! Hele havet er ditt ⚙️✨");});
+  }
   if(!P.propOk){ var fDekt=fors;
     addShop(L,'<img src="spill/assets/verksted-propell.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🛠️ \'" alt=""> Ny propell',
       fDekt?"Propellen røk — men forsikringen dekker alt! 🛡️":"Propellen røk — Kjell setter på ny. (Gratis med forsikring!)",
@@ -3652,8 +3686,197 @@ function drawSilhuett(dt){
   cx.drawImage(im2,-tw2/2,-th2/2,tw2,th2); cx.restore();
 }
 
+
+/* ---------- Investering: fiskarar som treng ein partner ----------
+   Du eig aldri båten. Du set pengar i EIN TUR hos ein annan fiskar, turen går i
+   EKTE tid, og du får ein SMS når han er tilbake. Same «kom att i morgon»-mønster
+   som teina, men med innsats.
+
+   Tre reglar som ikkje kan brytast:
+   1. Tilbodet kan aldri be om meir enn 35 % av det du har. Du skal alltid ha att
+      nok til bensin og agn — eit tap er eit tilbakeslag, aldri ein blindveg.
+   2. Utstyr du er med og betaler flyttar oddsen MÅLBART. Den tolmodige som
+      oppgraderer skal slå den som berre satsar. Det er heile poenget.
+   3. Kvar fiskar har ei synleg historie hos deg. Ingen skjulte terningar.        */
+
+var FISKERE=[
+ {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"fisker-harald.png",  snitt:1.00, flaks:0.9, timar:[8,14],
+  sms:"Hei! Harald her, fra Nordvær. Eg skal ut på rekefeltet i natt og manglar litt til diesel. Vil du vere med på turen?",
+  ord:"Harald er ein trygg kar. Han lovar aldri for mykje."},
+ {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"fisker-jorunn.png",  snitt:1.08, flaks:0.6, timar:[10,16],
+  sms:"Jorunn på Havglimt. Eg går sjeldan tomhendt heim, men eg går heller ikkje langt ut. Blir du med på ein rolig tur?",
+  ord:"Jorunn tek ingen sjansar. Det syner på tala."},
+ {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"fisker-birger.png",  snitt:1.14, flaks:1.6, timar:[14,22],
+  sms:"Birger! Eg har peila inn ein reketopp langt ute som INGEN andre veit om. Det kan bli stort. Eller ingenting. Er du med?",
+  ord:"Birger går alltid lengst ut. Det går bra eller det går til helvete."},
+ {k:"solveig",n:"Solveig Å.",      b:"M/S Fjordperle",  img:"fisker-solveig.png", snitt:1.05, flaks:1.0, timar:[9,15],
+  sms:"Solveig her. Ny rist på trålen, godkjent og fin. Eg treng berre litt til første turen. Blir du med?",
+  ord:"Solveig held bruket i orden. Det løner seg over tid."},
+ {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"fisker-odd.png",     snitt:0.98, flaks:1.3, timar:[12,20],
+  sms:"Det er Odd. Båten er gammal og eg har hatt ein tung sesong. Men eg kjenner desse feltene betre enn nokon. Ein tur til?",
+  ord:"Odd har uflaks. Men han kan sjøen."},
+ {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"fisker-marit.png",   snitt:1.10, flaks:0.8, timar:[10,16],
+  sms:"Marit på Havbris. Eg har fast avtale med mottaket, så prisen er sikra. Kan du bli med på ein tur?",
+  ord:"Marit sel alt før ho går ut. Kjedeleg og lurt."},
+ {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"fisker-trygve.png",  snitt:1.18, flaks:2.0, timar:[16,26],
+  sms:"TRYGVE! Eg går heilt ut på eggakanten no. Vêrmeldinga er … tja. Men fangsten der ute, mann. Er du med eller ikkje?",
+  ord:"Trygve er galen. Det er difor han av og til kjem heim stinn."},
+ {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"fisker-ingrid.png",  snitt:1.06, flaks:0.7, timar:[7,12],
+  sms:"Ingrid. Kort tur i natt, inne i fjorden. Ikkje store pengar, men eg kjem alltid heim. Blir du med?",
+  ord:"Ingrid går korte turar. Låg risiko, låg gevinst."},
+ {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"fisker-kaare.png",   snitt:1.12, flaks:1.4, timar:[13,21],
+  sms:"Kåre her. Eg har fått teften av noko stort på det nye feltet. Treng ein partner på denne. Hiv deg med!",
+  ord:"Kåre har teft. Av og til stemmer det."},
+ {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"fisker-astrid.png",  snitt:1.09, flaks:1.1, timar:[11,18],
+  sms:"Astrid på Kvitskjær. Eg tek med både reke og det som elles går i trålen — det blir alltid noko. Vil du inn?",
+  ord:"Astrid tek imot alt trålen gir. Sjeldan heilt tomt."}];
+var fiskerVed={}; FISKERE.forEach(function(f){ fiskerVed[f.k]=f; });
+
+// Utfall. mult = kva du får att av innsatsen. Vekta blir vridd av fiskarens profil
+// og av kva utstyr du har vore med og betalt.
+var UTFALL=[
+ {k:"tom",     mult:0,    v:22, t:"Tomt. Trålen kom opp med tang og ein gammal støvel."},
+ {k:"vaer",    mult:0.60, v:13, t:"Måtte snu. Det bles opp til kuling og han fekk ikkje sett trålen skikkeleg."},
+ {k:"saavidt", mult:0.95, v:24, t:"Så vidt i hamn. Nok til diesel og litt til."},
+ {k:"greit",   mult:1.35, v:24, t:"Grei tur! Jamn reke heile natta."},
+ {k:"godt",    mult:1.90, v:11, t:"God tur! Trålen var tung kvar einaste gong."},
+ {k:"stinn",   mult:3.20, v:5,  t:"STINN AV REKER! Dekket låg fullt heilt til rekka."},
+ {k:"eventyr", mult:5.50, v:1,  t:"EVENTYRTUR! Reke, kveite og ein steinbit på tjue kilo. Slikt skjer eit par gonger i livet."}];
+
+// Utstyr du kan vere med og betale. Kvart nivå flyttar vekt frå botn til topp.
+var TRAALUTSTYR=[
+ {n:"Ny sorteringsrist",  pris:12000, t:"Påbode i norsk reketrål — og han slepp ut småfisken i staden for å øydelegge han."},
+ {n:"Større trålpose",    pris:26000, t:"Meir rom, færre hal. Han kan stå lenger ute."},
+ {n:"Nytt ekkolodd",      pris:45000, t:"Han finn stimen i staden for å leite."},
+ {n:"Kraftblokk og vinsj",pris:80000, t:"Halve tida på hal. Fleire hal per tur."}];
+
+function investInit(){ if(!P.invest)P.invest={tur:null,hist:{},neste:0,utstyr:{},nei:{}};
+  var iv=P.invest; if(!iv.hist)iv.hist={}; if(!iv.utstyr)iv.utstyr={}; if(!iv.nei)iv.nei={}; if(!iv.neste)iv.neste=0; }
+
+function investNivaa(fk){ return (P.invest&&P.invest.utstyr&&P.invest.utstyr[fk])||0; }
+
+// Trekk eit utfall. niv 0-4 flyttar vekt frå "tom"/"vaer" over til "godt"/"stinn".
+function investTrekk(f, niv, rng){
+  var vekt=UTFALL.map(function(u){ var v=u.v;
+    // flaks styrer SPREIINGA: ein vågal fiskar har både fleire tomturar og fleire eventyr.
+    // snitt styrer kor tyngdepunktet ligg. Utstyr flyttar vekt frå botn til midten.
+    if(u.mult===0)      v=v*(1+0.55*f.flaks)/f.snitt - niv*2.0;
+    else if(u.mult<1)   v=v*(1+0.30*f.flaks)/f.snitt - niv*1.2;
+    else if(u.mult>2.5) v=v*f.snitt*(1+0.85*f.flaks) + niv*0.35;
+    else if(u.mult>1.5) v=v*f.snitt*(1+0.20*f.flaks) + niv*0.9;
+    else v=v*f.snitt*(1+0.10*niv);
+    return Math.max(0.5,v); });
+  var sum=0; vekt.forEach(function(v){sum+=v;});
+  var r=rng()*sum;
+  for(var i=0;i<UTFALL.length;i++){ r-=vekt[i]; if(r<=0)return UTFALL[i]; }
+  return UTFALL[2];
+}
+
+var smsAktiv=null;   // {f, sum, timar}
+function investTilbod(){
+  investInit(); var iv=P.invest;
+  if(iv.tur || !P || P.kr<50000 || Date.now()<iv.neste) return;
+  if(document.querySelector(".modal.on") || phase!=="idle") return;
+  // vel ein fiskar — dei du ikkje har prøvd kjem oftast, dei du har sagt nei til fleire gonger kjem sjeldnare
+  var kand=FISKERE.map(function(f){
+    var h=iv.hist[f.k], nei=iv.nei[f.k]||0;
+    return {f:f, v:Math.max(0.4, (h?1:2.2) / (1+nei*0.8))}; });
+  var sum=0; kand.forEach(function(c){sum+=c.v;});
+  var r=Math.random()*sum, valt=kand[0];
+  for(var i=0;i<kand.length;i++){ r-=kand[i].v; if(r<=0){ valt=kand[i]; break; } }
+  var f=valt.f;
+  // REGEL 1: aldri meir enn 35 % av det du har, og aldri under 5000
+  var tak=Math.floor(P.kr*0.35/1000)*1000;
+  // Innsatsen skalerer med formuen (8-25 %), men taket på 35 % står fast.
+  // Utan skalering ville mekanikken vore irrelevant for ein rik spelar.
+  var basis=Math.round(P.kr*(0.08+Math.random()*0.17)/1000)*1000;
+  var sumKr=Math.max(5000, Math.min(tak, basis));
+  if(sumKr>tak) return;
+  var timar=f.timar[0]+Math.random()*(f.timar[1]-f.timar[0]);
+  smsAktiv={f:f, sum:sumKr, timar:timar};
+  visSms(f, sumKr, timar);
+}
+
+function visSms(f, sumKr, timar){
+  $("#smsAvatar").src="spill/assets/"+f.img;
+  $("#smsNavn").textContent=f.n;
+  $("#smsBaat").textContent=f.b;
+  $("#smsTekst").textContent=f.sms;
+  $("#smsSum").textContent="Han spør om "+sumKr.toLocaleString("nb")+" kr · turen tek ~"+Math.round(timar)+" timar";
+  var h=P.invest.hist[f.k], niv=investNivaa(f.k);
+  var fakta=f.ord;
+  if(h&&h.turar) fakta+=" Du har vore med på "+h.turar+" tur"+(h.turar>1?"ar":"")+" — sett inn "
+    +h.inn.toLocaleString("nb")+" kr, fått "+h.ut.toLocaleString("nb")+" kr tilbake.";
+  if(niv) fakta+=" Du har vore med og betalt "+niv+" oppgradering"+(niv>1?"ar":"")+" på båten hans.";
+  $("#smsFakta").textContent=fakta;
+  $("#smsNei").textContent="Nei takk"; $("#smsJa").textContent="Bli med"; $("#smsJa").disabled=false;
+  Snd.click(); modal("smsModal",true);
+}
+
+function investJa(){
+  if(!smsAktiv)return; var a=smsAktiv; smsAktiv=null;
+  if(P.kr<a.sum){ modal("smsModal",false); notice("Du har ikkje så mykje på konto lenger."); return; }
+  P.kr-=a.sum;
+  P.invest.tur={fk:a.f.k, sum:a.sum, start:Date.now(), ferdig:Date.now()+a.timar*3600000,
+                seed:(Math.random()*1e9)|0, niv:investNivaa(a.f.k)};
+  P.invest.neste=Date.now()+18*3600000;
+  hud(); saveAll(); modal("smsModal",false);
+  notice(a.f.n.split(" ")[0]+" kastar loss. Han melder frå når han er tilbake 🛥️");
+}
+function investNei(){
+  if(smsAktiv){ P.invest.nei[smsAktiv.f.k]=(P.invest.nei[smsAktiv.f.k]||0)+1; smsAktiv=null; }
+  P.invest.neste=Date.now()+6*3600000;
+  saveAll(); modal("smsModal",false);
+}
+
+function investSjekk(){
+  investInit(); var t=P.invest.tur; if(!t||Date.now()<t.ferdig)return;
+  var f=fiskerVed[t.fk]; if(!f){ P.invest.tur=null; saveAll(); return; }
+  var rng=mulberry32(t.seed), u=investTrekk(f, t.niv||0, rng);
+  var ut=Math.round(t.sum*u.mult);
+  P.kr+=ut; P.invest.tur=null;
+  var h=P.invest.hist[t.fk]||(P.invest.hist[t.fk]={turar:0,inn:0,ut:0});
+  h.turar++; h.inn+=t.sum; h.ut+=ut;
+  hud(); saveAll();
+  visResultat(f, u, t.sum, ut);
+}
+
+function visResultat(f, u, inn, ut){
+  $("#smsAvatar").src="spill/assets/"+f.img;
+  $("#smsNavn").textContent=f.n;
+  $("#smsBaat").textContent=f.b+" — tilbake i hamn";
+  $("#smsTekst").textContent=u.t;
+  var diff=ut-inn;
+  $("#smsSum").textContent = ut>0
+    ? "Din del: "+ut.toLocaleString("nb")+" kr  ("+(diff>=0?"+":"")+diff.toLocaleString("nb")+" kr)"
+    : "Din del: ingenting denne gongen.";
+  var niv=investNivaa(f.k), neste=TRAALUTSTYR[niv];
+  $("#smsFakta").textContent = neste
+    ? "Du kan vere med og betale "+neste.n.toLowerCase()+" til "+neste.pris.toLocaleString("nb")+" kr. "+neste.t
+    : "Båten hans er fullt utstyrt no — takka vere deg.";
+  $("#smsNei").textContent="Greit";
+  $("#smsJa").textContent = neste ? "Spleis på utstyr" : "Fint";
+  $("#smsJa").disabled = !!(neste && P.kr<neste.pris);
+  smsAktiv={resultat:true, f:f, neste:neste};
+  if(ut>inn){ Snd.coin(); if(u.mult>=3){ Snd.trophy(); dogShow(0,5); Snd.gladDog(); } }
+  else Snd.fiskerSurPool&&Snd.fiskerSurPool();
+  modal("smsModal",true);
+}
+
+function investUtstyr(){
+  var a=smsAktiv; smsAktiv=null;
+  if(!a||!a.neste){ modal("smsModal",false); return; }
+  if(P.kr<a.neste.pris){ modal("smsModal",false); return; }
+  P.kr-=a.neste.pris;
+  P.invest.utstyr[a.f.k]=investNivaa(a.f.k)+1;
+  hud(); saveAll(); modal("smsModal",false);
+  notice(a.f.n.split(" ")[0]+" fekk "+a.neste.n.toLowerCase()+". Det merkast på neste tur 🔧");
+}
+
 /* ---------- Input ---------- */
 $("#playBtn").onclick=startGame;
+$("#smsJa").onclick=function(){ if(smsAktiv&&smsAktiv.resultat)investUtstyr(); else investJa(); };
+$("#smsNei").onclick=function(){ if(smsAktiv&&smsAktiv.resultat){ smsAktiv=null; modal("smsModal",false); } else investNei(); };
 $("#openProfil").onclick=visProfil;
 $("#profilLukk").onclick=function(){ modal("profilModal",false); };
 $("#openShop").onclick=function(){ if(document.querySelector(".modal.on"))return; Snd.dorbjelle(); openShop(); }; // butikker kan aldri stables (Tab+Enter-fella)
