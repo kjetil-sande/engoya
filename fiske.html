@@ -51,14 +51,19 @@
   #menu.panstart{background-position:center 0%}
   #menu.panner{background-position:center 100%;
     transition:background-position 2.8s cubic-bezier(.36,.03,.16,1)}
-  @media (min-aspect-ratio:1/1){ /* brei skjerm har over 3000 px slingringsmonn — heile turen ville blitt ein piskesnert */
-    #menu.panstart{background-position:center 22%}
-    #menu.panner{background-position:center 70%} }
+  /* Breie skjermar får sitt eige bilete. Det høge (720x2067) ville gitt over 3000 px
+     slingringsmonn på ein laptop — heile turen som ein piskesnert. Det breie (2134x2067)
+     gir 320-500 px, som er akkurat passe, og fyller breidda utan å klippe scena. */
+  @media (min-aspect-ratio:1/1){ #menu{background-image:url("spill/assets/lobby-v3-wide.png")} }
   @media (prefers-reduced-motion:reduce){
     #menu.panstart{background-position:center 100%}
     #menu.panner{transition:none}
     #menu.svart::after{opacity:0} }
   #menu #skyCv{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+  /* Slør nedst: 0 % på midten, 50 % heilt nede. Utan det drukna teksten under knappen
+     i sjøen. z-index -1 legg det over bakgrunnsbiletet, men under all tekst. */
+  #menu::before{content:"";position:absolute;left:0;right:0;top:50%;bottom:0;z-index:-1;pointer-events:none;
+    background:linear-gradient(rgba(5,18,26,0),rgba(5,18,26,.5))}
   /* Opninga stig fram av mørket. Ligg over ALT (muteknappen har z-index 5). */
   #menu::after{content:"";position:absolute;inset:0;background:#05121a;z-index:7;pointer-events:none;
     opacity:0;transition:opacity 1.15s ease}
@@ -74,15 +79,17 @@
   /* Ingenting viser seg før BÅDE panoreringa er ferdig OG logoen har landa.
      Himmel-lerretet med måkene ventar òg — måker over skjæret gir ikkje meining
      medan vi står nede i vasskanten. */
-  #menu .logo,#menu .logo-fallback,#menu .who,#menu .muted,#menu #playBtn,#menu #skyCv{opacity:0}
+  /* pointer-events MÅ med: opacity:0 skjuler, men slår ikkje av treffdeteksjon. Utan dette
+     kunne eit «trykk kvar som helst for å hoppe fram» treffe ein spelarknapp eller sende
+     ungen rett til havs med feil profil. */
+  #menu .logo,#menu .logo-fallback,#menu .who,#menu .muted,#menu #playBtn,#menu #skyCv{opacity:0;pointer-events:none}
+  #menu.landa .who,#menu.landa .muted,#menu.landa #playBtn{pointer-events:auto}
   #menu.landa .logo,#menu.landa .logo-fallback{animation:fadeUp .62s ease both}
   #menu.landa #skyCv{opacity:1;transition:opacity 1.1s ease .25s}
   #menu.landa .who{animation:fadeUp .7s ease .38s both}
   #menu.landa #playBtn{animation:fadeUp .7s ease .54s both}
   #menu.landa .muted{animation:fadeUp .7s ease .70s both}
   #menu.leaving .logo,#menu.leaving .logo-fallback,#menu.leaving .who,#menu.leaving #playBtn,#menu.leaving .muted{opacity:0!important;transition:opacity .5s ease;animation:none}
-  #menu .driveby{position:absolute;bottom:16%;left:0;width:min(36%,210px);transform:translateX(-160%) rotate(-2.5deg);transform-origin:50% 82%;pointer-events:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3));z-index:3}
-  #menu .driveby.go{transform:translateX(520%) rotate(-2.5deg);transition:transform 2.6s linear} /* 520 % av egen bredde → godt forbi høyre kant på alle skjermer */
   #menu .logo{width:auto;max-width:min(84%,470px);max-height:44vh;object-fit:contain;image-rendering:pixelated;margin:clamp(6px,2vh,18px) 0 clamp(18px,5vh,40px);
     filter:drop-shadow(0 4px 0 rgba(0,0,0,.20)) drop-shadow(0 12px 20px rgba(0,0,0,.50))}
   #menu .logo-fallback{display:none;font-size:clamp(30px,8vw,60px);font-weight:800;color:#f6ecd0;
@@ -447,8 +454,9 @@
     width:max-content;max-width:min(86%,30em);text-align:center;color:var(--ink);font-weight:700;font-size:17px;line-height:1.35;
     box-shadow:0 8px 0 rgba(0,0,0,.15);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
   #notice.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  /* Éin beskjed om gongen: Rustens replikk og dagens bestilling låg oppå kvarandre.
-     #notice står før .bottom i markup, så ~ når fram. */
+  /* Éin beskjed om gongen. #hintMid er den som faktisk kolliderer — botn-hintet er alt
+     skjult av «#sea.fishing .bottom #hint{display:none}» medan snøret står ute. */
+  #notice.on ~ #hintMid,
   #notice.on ~ .bottom #hint{opacity:0;transition:opacity .25s ease}
   /* Mobil: HUD fikk ikke plass til 4 chips + 5 ikoner på én rad → chips rad 1, ikoner rad 2 */
   @media (max-width:520px){
@@ -1190,40 +1198,54 @@ var gulls=[], lobbyGulls=[], gullSpawn={t:0}, lobbySpawn={t:0}; // flyvende måk
    Begge er festa i BILETET, ikkje på skjermen, så dei følgjer opningspanoreringa
    heilt presist. lobbyKart() reknar om biletpiksel → skjermpiksel med nøyaktig same
    formel som background-size:cover + background-position bruker. */
-var LOBBY_NAT={w:720,h:2067};   // lobby-v3.png sine eigne mål
-var PIPE={x:560,y:1345};        // pipemunningen på naustet, målt i biletet
-var glitrPkt=null;              // vasspunkt henta ut av biletet sjølv, ikkje gjetta
-(function lastVassmaske(){
+// To bilete: det høge på mobil, det breie på liggjande skjermar. CSS byter via media query;
+// her må vi kjenne begge, for glitter og røyk er festa i BILETkoordinatar.
+var LOBBY_HOG ={w:720, h:2067, fil:"lobby-v3.png",      pipe:{x:560, y:1345}};
+var LOBBY_BREI={w:2134,h:2067, fil:"lobby-v3-wide.png", pipe:{x:1270,y:1338}};
+function lobbyBilde(){ return (window.matchMedia && matchMedia("(min-aspect-ratio: 1/1)").matches) ? LOBBY_BREI : LOBBY_HOG; }
+var glitrMaske={};              // filnamn → vasspunkt henta ut av biletet sjølv, ikkje gjetta
+function lastVassmaske(b){
+  if(b.fil in glitrMaske)return;                       // null = prøvd og feila, array = klar
+  glitrMaske[b.fil]=null;
   var im=new Image();
   im.onload=function(){
-    var sk=0.25, c=document.createElement("canvas");   // 180x517 er meir enn nok oppløysing
-    c.width=Math.round(LOBBY_NAT.w*sk); c.height=Math.round(LOBBY_NAT.h*sk);
+    var sk=Math.min(0.25, 200/b.w), c=document.createElement("canvas");  // held rikeleg, og held minnet nede
+    c.width=Math.max(1,Math.round(b.w*sk)); c.height=Math.max(1,Math.round(b.h*sk));
     var k=c.getContext("2d",{willReadFrequently:true}); if(!k)return;
     k.drawImage(im,0,0,c.width,c.height);
     var d; try{ d=k.getImageData(0,0,c.width,c.height).data; }catch(e){ return; } // tainted canvas → berre dropp glitteret
-    var pkt=[], y0=Math.round(c.height*0.63);          // over dette ligg fjell og himmel
+    // Kuttet MÅ ligge under fjellfoten (0.73), og terskelen må vere hard nok til å skilje
+    // sjø frå stein: b-r ligg på 20-50 i berg og skjær, men 70-110 i vatnet. Med det gamle
+    // kravet (b-r>=22, kutt 0.63) blinka glitteret på tørkestativet og oppå skjæret.
+    var pkt=[], y0=Math.round(c.height*0.73);
     for(var y=y0;y<c.height;y++)for(var x=0;x<c.width;x++){
-      var i=(y*c.width+x)*4, r=d[i], g=d[i+1], b=d[i+2], lys=(r+g+b)/3;
-      if(b-r>=22 && b>=72 && g>=r && lys>=46 && lys<=142){ pkt.push(x/sk, y/sk); } // blått, ikkje for mørkt, ikkje for lyst
+      var i=(y*c.width+x)*4, r=d[i], g=d[i+1], bl=d[i+2], lys=(r+g+bl)/3;
+      if(bl-r>=78 && lys>=45 && lys<=115){ pkt.push(x/sk, y/sk); }
     }
-    if(pkt.length>200) glitrPkt=pkt;
+    if(pkt.length>120) glitrMaske[b.fil]=pkt;
   };
-  im.src="spill/assets/lobby-v3.png";
-})();
+  im.src="spill/assets/"+b.fil;
+}
 function lobbyKart(){
   var m=document.querySelector("#menu"); if(!m)return null;
   var bw=m.clientWidth, bh=m.clientHeight; if(!bw||!bh)return null;
-  var sc=Math.max(bw/LOBBY_NAT.w, bh/LOBBY_NAT.h);
-  var rw=LOBBY_NAT.w*sc, rh=LOBBY_NAT.h*sc;
+  var b=lobbyBilde();
+  var sc=Math.max(bw/b.w, bh/b.h);
+  var rw=b.w*sc, rh=b.h*sc;
   var yy=(getComputedStyle(m).backgroundPosition.split(",")[0].trim().split(/\s+/)[1])||"100%";
   var y0=yy.charAt(yy.length-1)==="%" ? (bh-rh)*(parseFloat(yy)/100) : parseFloat(yy)||0;
-  return {s:sc, x0:(bw-rw)/2, y0:y0, h:bh};
+  // #skyCv er absolutt plassert INNE i #menu, som kan rulle. Lerretet rullar med innhaldet,
+  // medan bakgrunnsbiletet står i ro — utan dette leddet losnar røyken frå pipa i landskap.
+  return {s:sc, x0:(bw-rw)/2, y0:y0+(m.scrollTop||0), h:bh, b:b, romY:bh-rh};
 }
 var glitr=[], royk=[], roykT=0;
+var glitrFil=null;
 function tegnGlitr(dt,k,g2){
-  if(!glitrPkt)return;
-  while(glitr.length<58){ var i=(((Math.random()*glitrPkt.length/2)|0)*2);
-    glitr.push({ix:glitrPkt[i], iy:glitrPkt[i+1], t:0, liv:0.8+Math.random()*1.5, br:1+Math.random()*2.4}); }
+  lastVassmaske(k.b);
+  var pkt=glitrMaske[k.b.fil]; if(!pkt)return;
+  if(glitrFil!==k.b.fil){ glitr.length=0; royk.length=0; glitrFil=k.b.fil; } // skjermen snudde: gamle koordinatar høyrer til det andre biletet
+  while(glitr.length<58){ var i=(((Math.random()*pkt.length/2)|0)*2);
+    glitr.push({ix:pkt[i], iy:pkt[i+1], t:0, liv:0.8+Math.random()*1.5, br:1+Math.random()*2.4}); }
   g2.fillStyle="#eaf6ff";
   for(var j=glitr.length-1;j>=0;j--){ var q=glitr[j]; q.t+=dt;
     if(q.t>=q.liv){ glitr.splice(j,1); continue; }
@@ -1241,8 +1263,8 @@ function tegnRoyk(dt,k,g2){
   for(var j=royk.length-1;j>=0;j--){ var p=royk[j]; p.t+=dt;
     if(p.t>=p.liv){ royk.splice(j,1); continue; }
     var u=p.t/p.liv;
-    var ix=PIPE.x + p.dx*u + Math.sin(p.sv+u*3.1)*11*u;               // siger til sida etter kvart som han stig
-    var iy=PIPE.y - 170*u*(0.55+0.45*u);
+    var ix=k.b.pipe.x + p.dx*u + Math.sin(p.sv+u*3.1)*11*u;           // siger til sida etter kvart som han stig
+    var iy=k.b.pipe.y - 170*u*(0.55+0.45*u);
     var y=k.y0+iy*k.s; if(y<-40||y>k.h+40)continue;
     var bx=Math.round((k.x0+ix*k.s)/q)*q, by=Math.round(y/q)*q, n=Math.round(0.7+u*2.3);
     g2.globalAlpha=Math.min(1,u*7)*(1-u)*0.62;                        // svell raskt opp, tynnest ut mot toppen
@@ -1266,8 +1288,8 @@ function visNapp(){ var i=$("#nappSplash"); if(!i)return;
 var nysCool=20; // første nys tidligst etter 20 s i båten
 function erfaren(){ if(!P||!P.caught)return false; var n=0; for(var k in P.caught){ n+=(P.caught[k]&&P.caught[k].count)||0; if(n>=20)return true; } return false; }
 var noticeT=null;
-function lesetid(m){ // 2,8 s til å oppdage beskjeden + 70 ms per teikn til å lese han
-  return Math.max(3500, Math.min(12000, 2800 + String(m||"").length*70)); }
+function lesetid(m){ // 2,25 s til å oppdage beskjeden + 56 ms per teikn til å lese han (20 % kortare enn før)
+  return Math.max(2800, Math.min(9600, 2240 + String(m||"").length*56)); }
 function notice(m){ var n=$("#notice"); if(!n)return; n.textContent=m; n.style.pointerEvents="none"; n.classList.add("on");
   if(noticeT)clearTimeout(noticeT); noticeT=setTimeout(function(){n.classList.remove("on")}, lesetid(m)); }
 function noticeMedKnapp(m,knapp,fn){ var n=$("#notice"); if(!n)return;
@@ -1330,14 +1352,13 @@ function startGame(){
   if(!P)return; var m=$("#menu");
   if(m.classList.contains("leaving")){ if(introFin)introFin(); return; } // andre trykk → hopp over intro
   m.classList.add("leaving");
-  Snd.motorOn(); // påhengsmotoren durer mens båten farer over skjermen
-  var db=document.createElement("img"); db.className="driveby"; db.src="spill/assets/spill-baat-ny.png"; m.appendChild(db);
-  requestAnimationFrame(function(){requestAnimationFrame(function(){db.classList.add("go")})}); // to rAF: la start-transform feste seg først
-  var done=false; function fin(){ if(done)return; done=true; if(db.parentNode)db.parentNode.removeChild(db);
+  Snd.motorOn(); // påhengsmotoren durer mens menyen toner ut
+  // Båten som kjørte over lobbyskjermen er fjernet: den passet til det gamle
+  // bakgrunnsbildet, ikke til skjæret og naustet vi har nå.
+  var done=false; function fin(){ if(done)return; done=true;
     curtainClose(function(){ m.classList.remove("leaving"); toSea(); boatHold=true; // teppet lukkes → sjøen gjøres klar bak
-      setTimeout(function(){ curtainOpen(function(){ boatHold=false; }); }, 300); }); } introFin=fin; // teppet åpnes → båten kommer
-  db.addEventListener("transitionend",function(ev){ if(ev.propertyName==="transform") setTimeout(fin,1500); }); // båten ute → 1,5 s ro før sjøen
-  setTimeout(fin,4200); // fallback om transitionend uteblir
+      setTimeout(function(){ curtainOpen(function(){ boatHold=false; }); }, 300); }); } introFin=fin;
+  setTimeout(fin,900); // menyen toner ut (.5 s) og litt ro før teppet
 }
 
 function cast(){
@@ -3648,8 +3669,15 @@ window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("o
   function panFerdig(){ if(panOk)return; panOk=true; land(); }
   function tilToppen(){ m.classList.remove("panstart"); m.classList.add("panner"); }
   // Slepp mørket så snart første frame er måla — to rAF, elles fell overgangen bort.
-  requestAnimationFrame(function(){ requestAnimationFrame(function(){ m.classList.remove("svart"); }); });
-  var rolig = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // setTimeout i tillegg: rAF fyrer ikkje i ei bakgrunnsfane, og då ville lobbyen
+  // stått kolsvart heilt til fana blei vist. Den som kjem først vinn.
+  var mork=function(){ m.classList.remove("svart"); };
+  requestAnimationFrame(function(){ requestAnimationFrame(mork); });
+  setTimeout(mork,140);
+  // Breie skjermar: det breie biletet har nesten same sideforhold som ruta, så cover gir
+  // knapt vertikalt slingringsmonn. Utan dette ville opninga blitt 3,2 sekund stillbilete.
+  var k0=lobbyKart(), tomPan = k0 && Math.abs(k0.romY)<40;
+  var rolig = (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) || tomPan;
   if(rolig){ tilToppen(); panFerdig(); }
   else{
     setTimeout(tilToppen, VENT);
@@ -3666,7 +3694,7 @@ window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("o
   setTimeout(function(){ vis(true); },4000); // treg linje? da slipper vi folk inn med tekstlogoen
   var im=new Image(); im.onerror=function(){ vis(true); };
   im.onload=function(){ $("#logoImg").src=im.src; $("#logoImg").style.display="block"; vis(false); };
-  im.src="spill/assets/spill-logo-liten.gif"; })(); // optimalisert utgave (64 kB mot 627 kB png)
+  im.src="spill/assets/spill-logo-liten.png"; })(); // ekte alfa — gif-en hadde berre 1-bits maske
 
 /* ---------- Start ---------- */
 window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,streak:streakTikk,famTaImot:famTaImot,bycatch:potBycatch,FUNN:FUNN,geom:function(){var g=colGeom();return g?{imgH:g.imgH,wl:g.wl,maxScroll:g.maxScroll,camY:camY,H:H,WLF:WLF[depth],HIMMEL:HIMMEL[depth],natH:g.img.naturalHeight,wlY:g.wl-camY}:null},lyd:function(){return Snd._maal()},dykkTest:function(n,d,z){Snd.dykk(n,d,z)},vaerTest:function(r2,v){Snd.vaerLyd(r2,v)},strom:stromNaa,stromF:stromFaktor,setDyp:function(d){depth=d},baro:baroTraume,havmusOppe:havmusOppe,iSona:iSona,ord:RUSTEN_ORD,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null,pilk:phase==="pilkfiske"?{t:+pilkT.toFixed(1),krav:+pilkKrav.toFixed(1),n:pilkFangst.length,hold:holding}:null}}};
