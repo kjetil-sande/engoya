@@ -324,7 +324,7 @@
     font-family:var(--font);position:relative}
   .innrad.ulest{border-color:var(--gold);background:#fdf3d6}
   .innrad img{width:38px;height:38px;border-radius:50%;object-fit:cover;image-rendering:pixelated;
-    background:var(--paper-2);flex:0 0 38px}
+    background:#a7cac8;flex:0 0 38px}
   .innrad .it{flex:1;min-width:0}
   .innrad .in{font-weight:700;font-size:14px;color:var(--wood-dark)}
   .innrad.ulest .in::after{content:"●";color:var(--red);font-size:11px;margin-left:6px;vertical-align:2px}
@@ -332,9 +332,19 @@
   .innrad .id2{font-size:11px;color:var(--ink-soft);opacity:.7;flex:0 0 auto}
   /* SMS frå ein fiskar som treng investor. Skal sjå ut som ei melding, ikkje som ein butikk. */
   #smsModal .card{max-width:400px;padding:0;overflow:hidden}
+  /* Statuslinja. Biletet har hakket i midten, så det blir sentrert i staden for kakla,
+     og baren si eiga farge fyller ut sidene. Klokka blir teikna i kode — ekte tid. */
+  .smsstatus{position:relative;height:26px;background:#1e262d;flex:0 0 26px}
+  .smsstatus i{position:absolute;inset:0;background:url("spill/assets/sms-topplinje.png") center/auto 100% no-repeat;
+    image-rendering:pixelated}
+  .smsstatus b{position:absolute;left:13px;top:0;line-height:26px;font-family:var(--mono);
+    font-size:12px;font-weight:700;color:#eef3f6;letter-spacing:.02em}
+  .smsbunn{height:16px;background:#1e262d;flex:0 0 16px;
+    background-image:url("spill/assets/sms-bunnstrek-v2.png");background-size:auto 62%;
+    background-position:center;background-repeat:no-repeat;image-rendering:pixelated}
   .smstopp{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--wood-dark);color:#f6ecd0}
   .smstopp img{width:44px;height:44px;border-radius:50%;object-fit:cover;image-rendering:pixelated;
-    background:#f2e4c7;flex:0 0 44px}
+    background:#a7cac8;flex:0 0 44px}   /* same tonen som ikon-fiskeren har innbakt */
   .smstopp .sn{font-weight:800;font-size:15px;line-height:1.2}
   .smstopp .sb{font-size:12px;opacity:.75;font-style:italic}
   .smsboble{margin:13px;padding:11px 13px;background:#e8eef2;border-radius:14px 14px 14px 4px;
@@ -697,6 +707,7 @@
 
   <!-- SMS: fiskar søkjer investor -->
   <div class="modal" id="smsModal"><div class="card center">
+    <div class="smsstatus"><i></i><b id="smsKlokke"></b></div>
     <div class="smstopp"><img id="smsAvatar" alt="" onerror="this.style.visibility='hidden'">
       <div><div class="sn" id="smsNavn"></div><div class="sb" id="smsBaat"></div></div></div>
     <p class="smsboble" id="smsTekst"></p>
@@ -704,6 +715,7 @@
     <div class="smsfakta" id="smsFakta"></div>
     <div class="smsknapp"><button class="btn ghost" id="smsNei">Nei takk</button>
       <button class="btn gold" id="smsJa">Bli med</button></div>
+    <div class="smsbunn"></div>
   </div></div>
 
   <!-- KART / FISKEPLASS-VELGER -->
@@ -3729,34 +3741,34 @@ function drawSilhuett(dt){
    3. Kvar fiskar har ei synleg historie hos deg. Ingen skjulte terningar.        */
 
 var FISKERE=[
- {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"fisker-harald.png",  ho:false, mal:"nn", snitt:1.00, flaks:0.9, timar:[8,14],
+ {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"harald-nystad-ms-nordvaer.png",  ho:false, mal:"nn", snitt:1.00, flaks:0.9, timar:[8,14],
   sms:"Hei! Harald her, frå Nordvær. Eg skal ut på rekefeltet i natt og manglar litt til diesel. Vil du vere med på turen?",
   ord:"Harald er ein trygg kar. Han lovar aldri for mykje."},
- {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"fisker-jorunn.png",  ho:true,  mal:"bm", snitt:1.08, flaks:0.6, timar:[10,16],
+ {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"jorunn-eide-ms-havglimt.png",  ho:true,  mal:"bm", snitt:1.08, flaks:0.6, timar:[10,16],
   sms:"Jorunn på Havglimt her. Jeg går sjelden tomhendt hjem, men jeg går heller ikke langt ut. Blir du med på en rolig tur?",
   ord:"Jorunn tar ingen sjanser. Det synes på tallene."},
- {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"fisker-birger.png",  ho:false, mal:"nn", snitt:1.14, flaks:1.6, timar:[14,22],
+ {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"birger-kvalvik-ms-storskjaer.png",  ho:false, mal:"nn", snitt:1.14, flaks:1.6, timar:[14,22],
   sms:"Birger! Eg har peila inn ein reketopp langt ute som INGEN andre veit om. Det kan bli stort. Eller ingenting. Er du med?",
   ord:"Birger går alltid lengst ut. Det går bra, eller det går rett vest."},
- {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"fisker-solveig.png", ho:true,  mal:"bm", snitt:1.05, flaks:1.0, timar:[9,15],
+ {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"solveig-aasen-ms-fjordperle.png", ho:true,  mal:"bm", snitt:1.05, flaks:1.0, timar:[9,15],
   sms:"Solveig her. Ny rist på trålen, godkjent og fin. Jeg trenger bare litt til første turen. Blir du med?",
   ord:"Solveig holder bruket i orden. Det lønner seg over tid."},
- {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"fisker-odd.png",     ho:false, mal:"nn", snitt:0.98, flaks:1.3, timar:[12,20],
+ {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"odd-mikkelsen-ms-gamle-ola.png",     ho:false, mal:"nn", snitt:0.98, flaks:1.3, timar:[12,20],
   sms:"Det er Odd. Båten er gammal og eg har hatt ein tung sesong. Men eg kjenner desse feltene betre enn nokon. Ein tur til?",
   ord:"Odd har uflaks. Men han kan sjøen."},
- {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"fisker-marit.png",   ho:true,  mal:"bm", snitt:1.10, flaks:0.8, timar:[10,16],
+ {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"marit-fagerli-ms-havbris.png",   ho:true,  mal:"bm", snitt:1.10, flaks:0.8, timar:[10,16],
   sms:"Marit på Havbris. Jeg har fast avtale med mottaket, så prisen er sikret. Kan du bli med på en tur?",
   ord:"Marit selger alt før hun går ut. Kjedelig og lurt."},
- {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"fisker-trygve.png",  ho:false, mal:"bm", snitt:1.18, flaks:2.0, timar:[16,26],
+ {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"trygve-bang-ms-nordlys.png",  ho:false, mal:"bm", snitt:1.18, flaks:2.0, timar:[16,26],
   sms:"TRYGVE! Jeg går helt ut på eggakanten nå. Værmeldinga er … tja. Men fangsten der ute, mann. Er du med eller ikke?",
   ord:"Trygve er gal. Det er derfor han av og til kommer hjem stinn."},
- {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"fisker-ingrid.png",  ho:true,  mal:"bm", snitt:1.06, flaks:0.7, timar:[7,12],
+ {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"ingrid-sund-ms-maaken.png",  ho:true,  mal:"bm", snitt:1.06, flaks:0.7, timar:[7,12],
   sms:"Ingrid her. Kort tur i natt, inne i fjorden. Ikke store penger, men jeg kommer alltid hjem. Blir du med?",
   ord:"Ingrid går korte turer. Lav risiko, lav gevinst."},
- {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"fisker-kaare.png",   ho:false, mal:"nn", snitt:1.12, flaks:1.4, timar:[13,21],
+ {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"kaare-lind-ms-brottsjoe.png",   ho:false, mal:"nn", snitt:1.12, flaks:1.4, timar:[13,21],
   sms:"Kåre her. Eg har fått teften av noko stort på det nye feltet. Treng ein partner på denne. Hiv deg med!",
   ord:"Kåre har teft. Av og til stemmer det."},
- {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"fisker-astrid.png",  ho:true,  mal:"nn", snitt:1.09, flaks:1.1, timar:[11,18],
+ {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"astrid-holm-ms-kvitskjaer.png",  ho:true,  mal:"nn", snitt:1.09, flaks:1.1, timar:[11,18],
   sms:"Astrid på Kvitskjær. Eg tek med både reke og det som elles går i trålen — det blir alltid noko. Vil du inn?",
   ord:"Astrid tek imot alt trålen gir. Sjeldan heilt tomt."}];
 // Kvar fiskar har sitt eige målføre — Nordland har begge delar. Pronomenet må
@@ -3778,10 +3790,10 @@ var UTFALL=[
 
 // Utstyr du kan vere med og betale. Kvart nivå flyttar vekt frå botn til topp.
 var TRAALUTSTYR=[
- {n:"Ny sorteringsrist",  pris:12000, t:"Påbode i norsk reketrål — og han slepp ut småfisken i staden for å øydelegge han."},
- {n:"Større trålpose",    pris:26000, t:"Meir rom, færre hal. Han kan stå lenger ute."},
- {n:"Nytt ekkolodd",      pris:45000, t:"Han finn stimen i staden for å leite."},
- {n:"Kraftblokk og vinsj",pris:80000, t:"Halve tida på hal. Fleire hal per tur."}];
+ {n:"Ny sorteringsrist",  pris:12000, t:"Påbudt i norsk reketrål — og småfisken slipper ut i stedet for å bli ødelagt."},
+ {n:"Større trålpose",    pris:26000, t:"Mer rom, færre hal. Båten kan stå lenger ute."},
+ {n:"Nytt ekkolodd",      pris:45000, t:"Stimen blir funnet i stedet for lett etter."},
+ {n:"Kraftblokk og vinsj",pris:80000, t:"Halve tiden på hvert hal. Flere hal per tur."}];
 
 function investInit(){ if(!P.invest)P.invest={tur:null,hist:{},neste:0,utstyr:{},nei:{}};
   var iv=P.invest; if(!iv.hist)iv.hist={}; if(!iv.utstyr)iv.utstyr={}; if(!iv.nei)iv.nei={}; if(!iv.neste)iv.neste=0;
@@ -3843,20 +3855,25 @@ function investTilbod(){
   notice("Du har fått ei melding 📨");
 }
 
+// Ekte klokkeslett i statuslinja — det er det som gjer at det ser ut som ein telefon.
+function settKlokke(){ var e=$("#smsKlokke"); if(!e)return; var d=new Date();
+  e.textContent=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
 function visSms(f, sumKr, timar){
   $("#smsAvatar").src="spill/assets/"+f.img;
   $("#smsNavn").textContent=f.n;
   $("#smsBaat").textContent=f.b;
   $("#smsTekst").textContent=f.sms;
-  $("#smsSum").textContent="Han spør om "+sumKr.toLocaleString("nb")+" kr · turen tek ~"+Math.round(timar)+" timar";
+  var nn=(f.mal==="nn");
+  $("#smsSum").textContent=fPronStor(f)+" spør om "+sumKr.toLocaleString("nb")+" kr · "
+    +(nn?"turen tek ~":"turen tar ~")+Math.round(timar)+(nn?" timar":" timer");
   var h=P.invest.hist[f.k], niv=investNivaa(f.k);
   var fakta=f.ord;
-  if(h&&h.turar) fakta+=" Du har vore med på "+h.turar+" tur"+(h.turar>1?"ar":"")+" — sett inn "
+  if(h&&h.turar) fakta+=" Du har vært med på "+h.turar+" tur"+(h.turar>1?"er":"")+" — satt inn "
     +h.inn.toLocaleString("nb")+" kr, fått "+h.ut.toLocaleString("nb")+" kr tilbake.";
-  if(niv) fakta+=" Du har vore med og betalt "+niv+" oppgradering"+(niv>1?"ar":"")+" på båten hans.";
+  if(niv) fakta+=" Du har spleiset på "+niv+" oppgradering"+(niv>1?"er":"")+" på båten "+(f.ho?"hennes":"hans")+".";
   $("#smsFakta").textContent=fakta;
   $("#smsNei").textContent="Nei takk"; $("#smsJa").textContent="Bli med"; $("#smsJa").disabled=false;
-  Snd.click(); modal("smsModal",true);
+  settKlokke(); Snd.click(); modal("smsModal",true);
 }
 
 
@@ -3864,12 +3881,12 @@ function visInnboks(){
   investInit(); innRydd();
   var L=$("#innListe"); L.innerHTML="";
   if(!P.innboks.length){
-    L.innerHTML='<p class="muted center">Ingen meldingar. Fiskarane tek kontakt når dei treng ein partner.</p>';
+    L.innerHTML='<p class="muted center">Ingen meldinger. Fiskerne tar kontakt når de trenger en partner.</p>';
   } else P.innboks.forEach(function(m){
     var f=fiskerVed[m.fk]; if(!f)return;
     var d=document.createElement("button"); d.className="innrad"+(m.lest?"":" ulest");
     var forh = m.type==="tilbod"
-      ? (Date.now()-m.tid<MELD_LIV ? "Spør om "+m.sum.toLocaleString("nb")+" kr" : "Tilbodet er gått ut")
+      ? (Date.now()-m.tid<MELD_LIV ? "Spør om "+m.sum.toLocaleString("nb")+" kr" : "Tilbudet er gått ut")
       : (m.ut>m.inn ? "+"+(m.ut-m.inn).toLocaleString("nb")+" kr" : (m.ut? (m.ut-m.inn).toLocaleString("nb")+" kr" : "Tomhendt"));
     d.innerHTML='<img src="spill/assets/'+f.img+'" alt="" onerror="this.style.visibility=\'hidden\'">'
       +'<span class="it"><span class="in">'+esc(f.n)+'</span>'
@@ -3898,8 +3915,8 @@ function apneMelding(m){
   if(Date.now()-m.tid>=MELD_LIV){ var nn2=(f.mal==="nn");
     notice(f.n.split(" ")[0]+(nn2?" gjekk ut utan deg. ":" dro ut uten deg. ")+fPronStor(f)
       +(nn2?" spør nok igjen.":" spør nok igjen.")); return; }
-  if(P.invest.tur){ notice("Du har alt pengar ute på ein tur. Vent til han er tilbake."); return; }
-  if(P.kr<m.sum){ notice("Du har ikkje "+m.sum.toLocaleString("nb")+" kr på konto no."); return; }
+  if(P.invest.tur){ notice("Du har allerede penger ute på en tur. Vent til den er tilbake."); return; }
+  if(P.kr<m.sum){ notice("Du har ikke "+m.sum.toLocaleString("nb")+" kr på konto nå."); return; }
   smsAktiv={f:f, sum:m.sum, timar:m.timar, meld:m};
   visSms(f, m.sum, m.timar);
 }
@@ -3940,20 +3957,20 @@ function investSjekk(){
 function visResultat(f, u, inn, ut, fraaInnboks){
   $("#smsAvatar").src="spill/assets/"+f.img;
   $("#smsNavn").textContent=f.n;
-  $("#smsBaat").textContent=f.b+" — tilbake i hamn";
+  $("#smsBaat").textContent=f.b+(f.mal==="nn"?" — tilbake i hamn":" — tilbake i havna");
   $("#smsTekst").textContent=u.t;
   var diff=ut-inn;
   $("#smsSum").textContent = ut>0
     ? "Din del: "+ut.toLocaleString("nb")+" kr  ("+(diff>=0?"+":"")+diff.toLocaleString("nb")+" kr)"
-    : "Din del: ingenting denne gongen.";
+    : "Din del: ingenting denne gangen.";
   var niv=investNivaa(f.k), neste=TRAALUTSTYR[niv];
   $("#smsFakta").textContent = neste
-    ? "Du kan vere med og betale "+neste.n.toLowerCase()+" til "+neste.pris.toLocaleString("nb")+" kr. "+neste.t
-    : "Båten hans er fullt utstyrt no — takka vere deg.";
+    ? "Du kan spleise på "+neste.n.toLowerCase()+" til "+neste.pris.toLocaleString("nb")+" kr. "+neste.t
+    : "Båten "+(f.ho?"hennes":"hans")+" er fullt utstyrt nå — takket være deg.";
   $("#smsNei").textContent="Greit";
   $("#smsJa").textContent = neste ? "Spleis på utstyr" : "Fint";
   $("#smsJa").disabled = !!(neste && P.kr<neste.pris);
-  smsAktiv={resultat:true, f:f, neste:neste};
+  smsAktiv={resultat:true, f:f, neste:neste}; settKlokke();
   if(!fraaInnboks){ if(ut>inn){ Snd.coin(); if(u.mult>=3){ Snd.trophy(); dogShow(0,5); Snd.gladDog(); } }
     else if(Snd.fiskerSurPool)Snd.fiskerSurPool(); }
   modal("smsModal",true);
