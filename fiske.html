@@ -373,30 +373,38 @@
     background-image:url("spill/assets/sms-bunnstrek-v2.png");background-size:auto 62%;
     background-position:center;background-repeat:no-repeat;image-rendering:pixelated}
   .smstopp{display:flex;align-items:center;gap:13px;padding:13px 15px;background:var(--wood-dark);color:#f6ecd0}
-  .smstopp img{width:72px;height:72px;border-radius:50%;object-fit:cover;image-rendering:pixelated;
-    background:#a7cac8;flex:0 0 72px}   /* same tonen som ikon-fiskeren har innbakt */
+  .smstopp img{width:86px;height:86px;border-radius:50%;object-fit:cover;image-rendering:pixelated;
+    background:#a7cac8;flex:0 0 86px}   /* same tonen som ikon-fiskeren har innbakt */
   .smstopp img.speil{transform:scaleX(-1)}   /* alle ser mot namnet sitt */
   .smstopp .stk{min-width:0;text-align:left}
-  .smstopp .sn{font-weight:800;font-size:21px;line-height:1.15}
-  .smstopp .sy{font-size:12.5px;opacity:.78;margin-top:3px}
-  .smstopp .sb{font-size:12.5px;opacity:.62;font-style:italic}
+  .smstopp .sb{font-size:12px;opacity:.66;letter-spacing:.07em;text-transform:uppercase}
+  .smstopp .sn{font-weight:800;font-size:21px;line-height:1.15;margin-top:1px}
+  .smstopp .sy{font-size:12.5px;opacity:.8;font-style:italic;margin-top:4px}
   .smsboble{margin:13px;padding:11px 13px;background:#e8eef2;border-radius:14px 14px 14px 4px;
     font-size:15px;line-height:1.45;color:#28323a;text-align:left;white-space:pre-line;
     flex:1 1 auto;min-height:56px;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .smssum{margin:0 13px 4px;font-family:var(--mono);font-size:15px;color:var(--wood-dark);text-align:left}
   .smsfakta{margin:0 13px 12px;font-size:12.5px;color:var(--ink-soft);text-align:left;line-height:1.4}
+  /* Fasiten med denne fiskaren. Står rett over knappane, der valet blir teke. */
+  .smshist{margin:2px 13px 11px;padding:7px 11px;border-radius:9px;text-align:left;
+    font-size:13px;line-height:1.35;color:var(--ink);
+    background:#efe7d4;border-left:4px solid var(--paper-2)}
+  .smshist.opp{background:#e6f0e4;border-left-color:var(--good)}
+  .smshist.ned{background:#f7e8e4;border-left-color:var(--red)}
+  .smshist b{font-family:var(--mono);font-weight:800;white-space:nowrap}
   .smsknapp{display:flex;gap:9px;padding:0 13px 13px}
   .smsknapp .btn{flex:1}
   @media (max-height:480px){ #smsModal .card{max-width:min(94vw,640px)} }
   @media (max-height:700px){
     .smstopp{gap:10px;padding:9px 12px}
-    .smstopp img{width:52px;height:52px;flex-basis:52px}
+    .smstopp img{width:62px;height:62px;flex-basis:62px}
     .smstopp .sn{font-size:17px}
-    .smstopp .sy,.smstopp .sb{font-size:11.5px}
+    .smstopp .sy,.smstopp .sb{font-size:11px}
     .smsboble{margin:9px 11px;padding:9px 11px;font-size:14px}
     .smsfakta{margin-bottom:8px;font-size:11.5px}
     .lottrad button{padding:4px 2px}
     .lottrad button .lp{font-size:13.5px}
+    .smshist{margin:0 11px 8px;padding:5px 9px;font-size:12px}
     .smsknapp{padding:0 11px 10px}
   }
   /* Popups / panels */
@@ -755,7 +763,7 @@
   <div class="modal" id="ringModal"><div class="card center">
     <div class="ringtopp"><img id="ringAvatar" alt="" onerror="this.style.visibility='hidden'">
       <div class="rn" id="ringNavn"></div><div class="rb" id="ringBaat"></div>
-      <div class="rs">RINGER …</div></div>
+      <div class="rs" id="ringStatus">RINGER …</div></div>
     <div class="ringknapp"><button class="avvis" id="ringAvvis">Ikke svar</button>
       <button class="svar" id="ringSvar">Svar</button></div>
   </div></div>
@@ -767,12 +775,13 @@
       <span class="sfyll"></span>
       <img src="spill/assets/sms-status-hoegre.png" alt="" onerror="this.style.display='none'"></div>
     <div class="smstopp"><img id="smsAvatar" alt="" onerror="this.style.visibility='hidden'">
-      <div class="stk"><div class="sn" id="smsNavn"></div><div class="sy" id="smsYrke"></div>
-        <div class="sb" id="smsBaat"></div></div></div>
+      <div class="stk"><div class="sb" id="smsBaat"></div><div class="sn" id="smsNavn"></div>
+        <div class="sy" id="smsKjenne"></div></div></div>
     <p class="smsboble" id="smsTekst"></p>
     <div class="smssum" id="smsSum"></div>
     <div class="smsfakta" id="smsFakta"></div>
     <div class="lottrad" id="smsLott"></div>
+    <div class="smshist" id="smsHist"></div>
     <div class="smsknapp"><button class="btn ghost" id="smsNei">Nei takk</button>
       <button class="btn gold" id="smsJa">Bli med</button></div>
     <div class="smsbunn"></div>
@@ -804,7 +813,7 @@ var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&
 
 /* ---------- Lyd: tema-musikk + syntetiserte effekter (Web Audio) ---------- */
 var Snd=(function(){
-  var ctx=null, muted=false, theme=null, reelT=0;
+  var ctx=null, muted=false, theme=null, ringtone=null, reelT=0;
   try{ muted = localStorage.getItem("storkveita-muted")==="1"; }catch(e){}
   function AC(){ if(!ctx){ try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return ctx; }
   function beep(freq,dur,type,g,slideTo){ var c=AC(); if(!c||muted)return; var o=c.createOscillator(),ga=c.createGain(),t=c.currentTime;
@@ -902,7 +911,7 @@ var Snd=(function(){
   return {
     unlock:function(){ var c=AC(); if(c&&c.state!=="running"){try{c.resume()}catch(e){}} loadAll(); },
     isMuted:function(){return muted;},
-    setMuted:function(m){ muted=m; try{localStorage.setItem("storkveita-muted",m?"1":"0")}catch(e){}; if(theme)theme.muted=m; if(m){stopAllLoops(); motorStop(0);} else restartWanted(); },
+    setMuted:function(m){ muted=m; try{localStorage.setItem("storkveita-muted",m?"1":"0")}catch(e){}; if(theme)theme.muted=m; if(ringtone)ringtone.muted=m; if(m){stopAllLoops(); motorStop(0);} else restartWanted(); },
     ambienceOn:function(){ loadAll(); dykket=false; dypNa=0; this.settLoopVol("sea",regnNa?HAV_REGN:HAV); this.settLoopVol("bird",0.22); wantLoop("sea",true); wantLoop("bird",true); },
     ambienceOff:function(){ dykket=false; wantLoop("sea",false); wantLoop("bird",false); wantLoop("undervann",false); wantLoop("reel",false); wantLoop("strittL",false); wantLoop("regn",false); wantLoop("vindL",false); },
     vaerLyd:function(regnOn,vindOn){ loadAll(); regnNa=!!regnOn; vilRegn=!!regnOn; vilVind=!!vindOn;
@@ -959,6 +968,13 @@ var Snd=(function(){
         ut[k]={vil:!!L.want, vol:+(L.vol||0).toFixed(4), gain:(L.node&&L.node.g)? +L.node.g.gain.value.toFixed(4) : null}; }
       return ut; },
     themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; theme.volume=0.45; } theme.muted=muted; theme.play().catch(function(){}); },
+    // Telefonen ringjer heilt til du svarar, avviser, eller dei fjorten sekunda er ute.
+    ringtone:function(on){
+      if(!ringtone){ ringtone=new Audio("spill/lyd/telefon-ring.aac"); ringtone.loop=true; ringtone.volume=0.5; }
+      ringtone.muted=muted;
+      if(on){ try{ringtone.currentTime=0}catch(e){} ringtone.play().catch(function(){}); }
+      else { ringtone.pause(); try{ringtone.currentTime=0}catch(e){} }
+    },
     themeOff:function(){ if(theme)theme.pause(); },
     click:function(){ if(buffers.klikk1||buffers.klikk2){ altClick=!altClick; oneShot(altClick&&buffers.klikk1?"klikk1":"klikk2"); } else beep(430,0.05,"square",0.05,320); },
     cast:function(){ if(buffers.splash)oneShot("splash"); else { noise(0.3,0.22,900); beep(300,0.18,"sine",0.10,120); } },
@@ -3801,75 +3817,75 @@ function drawSilhuett(dt){
    3. Kvar fiskar har ei synleg historie hos deg. Ingen skjulte terningar.        */
 
 var FISKERE=[
- {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"harald-nystad-ms-nordvaer.png", yrke:"Reketrålskipper", speil:true,  ho:false, mal:"nn", kost:40000, snitt:1.03, flaks:0.9, timar:[26,36],
+ {k:"harald", n:"Harald Nystad",   b:"M/S Nordvær",     img:"harald-nystad-ms-nordvaer.png", kjenne:"Lovar aldri for mykje", speil:true,  ho:false, mal:"nn", kost:40000, snitt:1.03, flaks:0.9, timar:[26,36],
   sms:"Hei {NAVN}. Håpar eg ikkje ringjer midt i middagen.\n\nEg går ut på rekefeltet i natt og har ein andel ledig. Du kjøper ikkje båten min, og ikkje kvoten heller — han følgjer Nordvær. Du er med på denne eine turen.\n\nTuren kostar 40 000 å køyre. Tek du til dømes tjue prosent, legg du inn 8 000 og får tjue prosent av det fangsten er verd. Kjem trålen opp tom, får du ingenting igjen.\n\nEg går aldri lenger ut enn båten toler. Meir lovar eg ikkje. Eg er inne att om eit døgn — blir du med?",
   minne:{bra:"Hei igjen, {NAVN}! Sist gjekk det riktig så bra, det. Eg går same vegen i natt, og eg tenkte du kanskje ville vere med på ein ny ein. Same avtale som før — du tek ein del av turen, og får same delen av fangsten.",
     ok:"Hei {NAVN}. Det vart ein grei tur sist. Ikkje meir, ikkje mindre — slik er det stort sett. Eg går ut att i natt om du vil vere med på same vilkåra.",
     daarleg:"Hei {NAVN}. Det vart lite sist, det veit vi båe. Vêret ville det ikkje annleis. No skal eg prøve på nytt, og eg forstår om du vil sitje over denne gongen. Men blir du med, gjer eg det eg kan.",
     tomt:"Hei {NAVN}. Eg beklagar sist. Trålen kom opp tom, og pengane dine gjekk med. Eg skal ikkje pynte på det. Men eg går ut att i natt, og eg vil gjerne ha deg med om du framleis har tru på meg."},
   ord:"Harald er ein trygg kar. Han lovar aldri for mykje."},
- {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"jorunn-eide-ms-havglimt.png", yrke:"Reketrålskipper",  ho:true,  mal:"bm", kost:45000, snitt:1.09, flaks:0.6, timar:[30,42],
+ {k:"jorunn", n:"Jorunn Eide",     b:"M/S Havglimt",    img:"jorunn-eide-ms-havglimt.png", kjenne:"Drar bare ut i stille vær",  ho:true,  mal:"bm", kost:45000, snitt:1.09, flaks:0.6, timar:[30,42],
   sms:"Hei {NAVN}! Det er stille vær i natt, og da drar jeg ut.\n\nJeg har en andel ledig på turen. Du blir ikke medeier i båten, og du kjøper ingen kvote — den henger på Havglimt. Du kjøper en del av denne ene turen.\n\nTuren koster 45 000 å kjøre. Tar du for eksempel ti prosent, legger du inn 4 500 og får ti prosent av det fangsten er verdt. Kommer trålen opp tom, får du ingenting igjen.\n\nJeg går ikke langt ut, og jeg går ikke i dårlig vær. Derfor kommer jeg sjelden hjem tom. Men sjelden er ikke det samme som aldri. Jeg er tilbake om et døgn eller to — blir du med?",
   minne:{bra:"Hei igjen, {NAVN}! Det ble en fin tur sist, den. Jeg drar ut i morgen tidlig igjen, og du er hjertelig velkommen på en ny andel. Samme opplegg som sist.",
     ok:"Hei {NAVN}. Sist ble omtrent som jeg pleier — ikke noe å skryte av, men vi kom hjem med noe. Jeg går ut i morgen om du vil være med igjen.",
     daarleg:"Hei {NAVN}. Vi måtte snu sist, og du fikk lite igjen for pengene. Det liker jeg dårlig. Jeg drar ut i morgen tidlig, og jeg holder meg nærmere land denne gangen. Er du med?",
     tomt:"Hei {NAVN}. Sist ga ingenting, og det var dine penger også. Jeg forstår godt om du er skeptisk nå. Men jeg drar ut i morgen, og jeg skal gjøre alt jeg kan for at det blir annerledes. Vil du prøve en gang til?"},
   ord:"Jorunn tar ingen sjanser. Det synes på tallene."},
- {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"birger-kvalvik-ms-storskjaer.png", yrke:"Reketrålskipper", speil:true,  ho:false, mal:"nn", kost:80000, snitt:1.22, flaks:1.6, timar:[62,80],
+ {k:"birger", n:"Birger Kvalvik",  b:"M/S Storskjær",   img:"birger-kvalvik-ms-storskjaer.png", kjenne:"Seier ikkje meir på telefonen", speil:true,  ho:false, mal:"nn", kost:80000, snitt:1.22, flaks:1.6, timar:[62,80],
   sms:"Hei {NAVN}. Eg har peila inn ei renne langt vest som ingen andre går i. Meir seier eg ikkje på telefonen.\n\nEg treng ein partner på turen. Ikkje om bord — du blir heime, det er pengane dine som er med. Du kjøper korkje båten eller kvoten, berre denne eine turen.\n\nTuren kostar 80 000, for det er langt dit og dieselen renn. Tek du til dømes tretti prosent, legg du inn 24 000 og får tretti prosent av fangsten.\n\nKjem eg heim med tom trål, er dei 24 000 borte. Ikkje ein del av dei. Alle. Vi er ute i to-tre døgn. Eg spør ikkje pent, eg spør ærleg — er du med?",
   minne:{bra:"{NAVN}! Sa eg det ikkje? Det datt inn sist! Eg har peila inn ein ny topp, endå lenger ute. Same avtale — del av turen, del av fangsten. Hiv deg med, så tek vi ein til!",
     ok:"Hei {NAVN}. Det vart midt på treet sist. Eg hadde venta meir, men sjøen bryr seg ikkje om kva eg ventar. No har eg eit nytt felt eg vil prøve. Blir du med?",
     daarleg:"Hei {NAVN}. Det bles opp sist, og vi fekk ikkje sett trålen slik eg ville. Du tapte på det, og det var eg som drog deg med. No har eg eit nytt hol eg vil prøve — men eg forstår om du sit over.",
     tomt:"Hei {NAVN}. Det vart svart sist. Heilt tomt, og pengane dine med. Eg har ikkje noko å seie til mitt forsvar anna enn at eg gjekk for langt ut. Men eg har eit nytt felt no, og eg vil gjerne ha deg med om du toler ein sjanse til."},
   ord:"Birger går alltid lengst ut. Det går bra, eller det går rett vest."},
- {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"solveig-aasen-ms-fjordperle.png", yrke:"Reketrålskipper", ho:true,  mal:"bm", kost:42000, snitt:1.07, flaks:1.0, timar:[28,38],
+ {k:"solveig",n:"Solveig Åsen",    b:"M/S Fjordperle",  img:"solveig-aasen-ms-fjordperle.png", kjenne:"Slipper fisken ut levende", ho:true,  mal:"bm", kost:42000, snitt:1.07, flaks:1.0, timar:[28,38],
   sms:"Hei {NAVN}. Jeg har fått montert ny sorteringsrist i trålen, godkjent og kontrollert.\n\nRista er et gitter foran posen. Reka smetter gjennom, men fisken blir ledet ut igjen levende. Det er derfor jeg får lov til å tråle der jeg egentlig vil tråle.\n\nNå trenger jeg en andel på turen. Ikke i båten, og ingen kvote — den følger Fjordperle. Bare denne ene turen. Den koster 42 000 å kjøre. Tar du for eksempel førti prosent, legger du inn 16 800.\n\nKommer jeg hjem med lite, får du førti prosent av lite. Blir trålen helt tom, får du ingenting. Jeg er tilbake om et døgn. Skal jeg føre deg opp?",
   minne:{bra:"Hei {NAVN}! Det ble en god tur sist — ristene og alt fungerte som det skulle. Jeg går ut igjen i morgen, og du er velkommen på en ny andel om du vil.",
     ok:"Hei {NAVN}. Sist ble helt greit. Ikke noe å hoppe i taket for, men bruket holdt og vi kom hjem med fangst. Blir du med en gang til?",
     daarleg:"Hei {NAVN}. Vi fikk ikke gjort mye sist, og du satt igjen med lite. Jeg har gått over hele trålen siden. Jeg drar ut i morgen, og jeg forstår om du vil vente — men jeg vil gjerne ha deg med.",
     tomt:"Hei {NAVN}. Sist ga ingenting. Det er kjipt å ta imot andres penger og komme hjem tomhendt. Jeg har sjekket bruket fra ende til annen. Vil du gi meg én sjanse til?"},
   ord:"Solveig holder bruket i orden. Det lønner seg over tid."},
- {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"odd-mikkelsen-ms-gamle-ola.png", yrke:"Fiskar", speil:true,     ho:false, mal:"nn", kost:30000, snitt:1.03, flaks:2.3, timar:[20,30],
+ {k:"odd",    n:"Odd Mikkelsen",   b:"M/S Gamle Ola",   img:"odd-mikkelsen-ms-gamle-ola.png", kjenne:"Femti år på dei same felta", speil:true,     ho:false, mal:"nn", kost:30000, snitt:1.03, flaks:2.3, timar:[20,30],
   sms:"Ja … hei. Er det {NAVN}? Eg veit ikkje heilt korleis eg skal spørje om dette.\n\nEg går ein kort tur i natt, rett ut og heim att, så han kostar ikkje meir enn 30 000. Du kjøper ikkje båten og ikkje kvoten, berre denne eine turen. Tek du til dømes ti prosent, legg du inn 3 000 og får ti prosent av det fangsten gir. Kjem eg inn med tom trål, er dei borte.\n\nEg har hatt ein tung sesong, det skal du vite før du seier ja. Men eg har gått desse felta i femti år, og eg veit kvar reka står når straumen snur.\n\nEg er inne att i morgon. Det er heilt greitt om du seier nei — men vil du ta sjansen på ein gammal kar?",
   minne:{bra:"Hei {NAVN}. Du, det gjekk faktisk bra sist. Det hender ikkje så ofte for meg lenger, så eg tenkte eg måtte ringe. Vil du vere med på ein til, på same vilkåra?",
     ok:"Hei {NAVN}. Det vart eit vanleg hal sist. Ikkje mykje, men noko. Eg går ut att, og du er velkomen om du vil.",
     daarleg:"Hei {NAVN}. Det vart tynt sist. Gamle Ola er ikkje den ho var, og vêret var imot oss. Eg forstår om du finn deg ein betre båt å setje pengane i. Men eg spør likevel.",
     tomt:"Hei {NAVN}. Eg kom heim tom sist, og du tapte pengane dine på meg. Eg har hatt fleire slike enn eg vil telje. Så eg skjønar godt om du seier nei. Men eg går ut att i morgon, og eg kjenner framleis desse felta."},
   ord:"Odd har uflaks. Men han kan sjøen."},
- {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"marit-fagerli-ms-havbris.png", yrke:"Reketrålskipper",   ho:true,  mal:"bm", kost:50000, snitt:1.13, flaks:0.8, timar:[40,54],
+ {k:"marit",  n:"Marit Fagerli",   b:"M/S Havbris",     img:"marit-fagerli-ms-havbris.png", kjenne:"Vet prisen før hun kaster loss",   ho:true,  mal:"bm", kost:50000, snitt:1.13, flaks:0.8, timar:[40,54],
   sms:"Hei {NAVN}. Kort sak.\n\nJeg har fast leveringsavtale med mottaket. Det betyr at jeg vet hva jeg får betalt per kilo før jeg kaster loss, i stedet for å håpe på prisen når jeg kommer inn. Halve usikkerheten er borte.\n\nDen andre halvparten er her fremdeles. Hvor mye som kommer opp av sjøen, kan ingen love — heller ikke jeg. Kommer trålen opp tom, hjelper avtalen min deg ikke det minste.\n\nTuren koster 50 000. Ti prosent er 5 000 inn og ti prosent av fangsten ut. Tjue prosent er 10 000 inn og tjue prosent ut. Du kjøper ingen båt og ingen kvote, bare turen. Jeg er tilbake om to døgn. Er du med?",
   minne:{bra:"Hei {NAVN}! Det ble bra tall sist, det. Mottaket tok imot alt til avtalt pris. Jeg går ut igjen i morgen — vil du være med på en andel til?",
     ok:"Hei {NAVN}. Sist gikk som beregnet. Det er stort sett slik jeg driver. Ny tur i morgen om du vil være med på samme betingelser.",
     daarleg:"Hei {NAVN}. Vi fikk mindre enn planlagt sist, og det gikk ut over deg også. Avtalen med mottaket står, så prisen er trygg — det er mengden som sviktet. Jeg drar ut igjen. Er du med?",
     tomt:"Hei {NAVN}. Det ble null sist. Jeg liker ikke å ringe folk etter en slik tur, men jeg gjør det likevel. Prisen er fortsatt sikret gjennom mottaket, og jeg skal gjøre det jeg kan for å fylle rommet denne gangen."},
   ord:"Marit selger alt før hun går ut. Kjedelig og lurt."},
- {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"trygve-bang-ms-nordlys.png", yrke:"Reketrålskipper", speil:true,  ho:false, mal:"bm", kost:110000, snitt:1.28, flaks:2.0, timar:[78,100],
+ {k:"trygve", n:"Trygve Bang",     b:"M/S Nordlys",     img:"trygve-bang-ms-nordlys.png", kjenne:"Går ut på eggakanten", speil:true,  ho:false, mal:"bm", kost:110000, snitt:1.28, flaks:2.0, timar:[78,100],
   sms:"Hei {NAVN}! Jeg går ut på eggakanten i natt. Helt ut, dit bunnen stuper fra tre hundre meter og rett ned i mørket, og der står reka tjukk fordi ingen andre gidder å gå så langt, og —\n\nnei, vent. Jeg må ta det andre først, så du skjønner hva du sier ja til. Du eier ikke båten min. Du eier ingen kvote heller — ingen kjøper kvote over telefonen. Du kjøper en andel i én tur.\n\nTuren koster 110 000, for den er lang. Ti prosent er 11 000. Femti prosent er 55 000, og da er halve fangsten din. HALVE!\n\nMen kommer vi inn med tom trål, er pengene borte. Vi er ute i tre døgn, kanskje fire. Er du med, eller er du ikke?",
   minne:{bra:"{NAVN}! DU! Husker du sist?! Det var jo helt vilt! Jeg går ut igjen, enda lenger denne gangen. Samme greie — du tar en andel, du får en andel. Kom igjen!",
     ok:"Hei {NAVN}! Sist ble litt sånn midt på. Ærlig talt kjedelig, etter min smak. Men nå har jeg tenkt meg lenger ut. Blir du med på en andel til?",
     daarleg:"Hei {NAVN}. Vi måtte snu sist. Det bles for hardt selv for meg, og det sier litt. Du tapte på det. Jeg skal ut igjen, og jeg skjønner om du synes jeg er for gæren. Men det er der ute fisken står.",
     tomt:"Hei {NAVN}. Helt tomt sist. Jeg dro deg med langt ut og kom hjem med ingenting. Det er min feil. Jeg drar ut igjen — jeg kan ikke la være — og jeg vil gjerne ha deg med. Men jeg skal ikke være sur om du sier nei denne gangen."},
   ord:"Trygve er gal. Det er derfor han av og til kommer hjem stinn."},
- {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"ingrid-sund-ms-maaken.png", yrke:"Fisker",  ho:true,  mal:"bm", kost:18000, snitt:1.05, flaks:0.7, timar:[14,20],
+ {k:"ingrid", n:"Ingrid Sund",     b:"M/S Måken",       img:"ingrid-sund-ms-maaken.png", kjenne:"Går bare inne i fjorden",  ho:true,  mal:"bm", kost:18000, snitt:1.05, flaks:0.7, timar:[14,20],
   sms:"Hei {NAVN}! Måken er den minste båten innerst på kaia.\n\nDu har vel ikke vært med på noe sånt før? Da forklarer jeg. Du blir ikke medeier i båten min, og du kjøper ikke kvote — det er noe helt annet, og det koster millioner, altså. Du kjøper deg inn i én tur.\n\nTuren koster 18 000, det billigste du får av oss her på kaia. Tar du for eksempel tjue prosent, legger du inn 3 600 og får tjue prosent av alt jeg leverer inn. Blir trålen tom, får du ingenting igjen.\n\nJeg går bare inne i fjorden, så det blir aldri store penger. Men du får se hvordan det fungerer uten å satse alt du eier. Jeg er inne igjen i morgen. Er du med?",
   minne:{bra:"Hei {NAVN}! Så gøy at det ble bra sist! Jeg er gira på en ny tur i natt — samme sted, samme opplegg. Vil du være med igjen?",
     ok:"Hei {NAVN}. Det ble en grei liten tur sist. Sånn passe, men vi kom hjem med noe. Jeg går ut igjen i natt om du er med.",
     daarleg:"Hei {NAVN}. Det ble tynt sist, og du fikk lite igjen. Jeg skjønner om du er litt skeptisk nå. Men jeg drar ut i natt igjen, og jeg skal gjøre alt jeg kan for at det blir bedre. Er du med?",
     tomt:"Hei {NAVN}. Sist ble det ingenting, og pengene dine gikk med. Det syns jeg er veldig kjipt. Jeg forstår godt om du ikke vil være med igjen — men jeg spør, for jeg har lyst til å gjøre det godt igjen."},
   ord:"Ingrid går korte turer. Lav risiko, lav gevinst."},
- {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"kaare-lind-ms-brottsjoe.png", yrke:"Reketrålskipper", speil:true,   ho:false, mal:"nn", kost:60000, snitt:1.18, flaks:1.4, timar:[48,64],
+ {k:"kaare",  n:"Kåre Lind",       b:"M/S Brottsjø",    img:"kaare-lind-ms-brottsjoe.png", kjenne:"Går på teft, les straumen", speil:true,   ho:false, mal:"nn", kost:60000, snitt:1.18, flaks:1.4, timar:[48,64],
   sms:"Hei {NAVN}.\n\nStraumen snudde tre dagar for tidleg i år. Slikt betyr noko der ute. Og i det siste halet på det nye feltet — det siste draget med trålen — kjende eg vekta i vinsjen. Tungt. Eg veit ikkje kva som stod der nede. Eg veit berre at eg må tilbake.\n\nDå treng eg ein partner. Du kjøper ikkje båten og ikkje kvoten, berre denne eine turen. Han kostar 60 000. Tek du til dømes tretti prosent, legg du inn 18 000 og får tretti prosent av fangsten. Kjem eg inn med tom trål, er dei borte.\n\nTeft er ikkje det same som å vite. Eg har teke feil før. Men eg trur på denne. To døgn, kanskje tre — blir du med?",
   minne:{bra:"Hei {NAVN}! Eg hadde rett sist, hadde eg ikkje? No har eg teften av noko på eit nytt felt. Same avtale — vil du vere med?",
     ok:"Hei {NAVN}. Det vart middels sist. Teften min tok meg halvvegs. No har eg peila inn noko nytt. Blir du med og prøver?",
     daarleg:"Hei {NAVN}. Eg bomma sist, og du betalte for det. Slik er det med teft — ho tek av og til feil. Eg har eit nytt spor no, men eg forstår om du vil vente og sjå.",
     tomt:"Hei {NAVN}. Det vart heilt tomt sist. Eg var så sikker, og eg tok feil, og det gjekk ut over pengane dine. Eg har eit nytt felt no. Eg lovar ingenting — men eg spør likevel."},
   ord:"Kåre har teft. Av og til stemmer det."},
- {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"astrid-holm-ms-kvitskjaer.png", yrke:"Reketrålskipper", speil:true,  ho:true,  mal:"nn", kost:55000, snitt:1.14, flaks:1.1, timar:[44,58],
+ {k:"astrid", n:"Astrid Holm",     b:"M/S Kvitskjær",   img:"astrid-holm-ms-kvitskjaer.png", kjenne:"Har line og garn med òg", speil:true,  ho:true,  mal:"nn", kost:55000, snitt:1.14, flaks:1.1, timar:[44,58],
   sms:"Hei {NAVN}. Eg har fiska her i femti år og lært meg éin ting: ta imot det sjøen gir deg.\n\nEg trålar etter reke, men eg har litt line og garn med òg. Kjem det ei kveite eller ein steinbit stor nok, går det i kassa det same. Difor er det sjeldan heilt tomt hos meg.\n\nVil du ta ein andel? Du blir ikkje medeigar, og du får ingen kvote — kvoten følgjer båten, ikkje folk som ringjer. Du er med på éin tur. Han kostar 55 000. Tek du til dømes tjue prosent, legg du inn 11 000 og får tjue prosent av fangsten.\n\nMen sjeldan tomt er ikkje sikkert. Eg har hatt netter der eg leverte for mindre enn dieselen kosta. Sjøen skuldar oss ingenting. To døgn — vil du vere med?",
   minne:{bra:"Hei {NAVN}! Det vart ein god tur sist, det. Trålen var tung kvar gong. Eg går ut att, og du er velkomen på ein andel til om du vil.",
     ok:"Hei {NAVN}. Sist vart som det plar. Litt reke, litt av kvart anna, og noko å ta med heim. Eg går ut att om du vil vere med.",
     daarleg:"Hei {NAVN}. Det vart magert sist. Vi fekk ikkje stått slik eg ville. Eg går ut att i morgon, og eg forstår om du treng ein pause — men du er velkomen om du vil.",
-    tomt:"Hei {NAVN}. Heilt tomt sist. Etter tretti år på sjøen hender det framleis, og det er like leitt kvar gong — særleg når andre har sett pengar i det. Eg går ut att. Vil du vere med ein gong til?"},
+    tomt:"Hei {NAVN}. Heilt tomt sist. Etter femti år på sjøen hender det framleis, og det er like leitt kvar gong — særleg når andre har sett pengar i det. Eg går ut att. Vil du vere med ein gong til?"},
   ord:"Astrid tek imot alt trålen gir. Sjeldan heilt tomt."}];
 // Kvar fiskar har sitt eige målføre — Nordland har begge delar. Pronomenet må
 // følgje BÅDE kjønn og målføre: ho på nynorsk, hun på bokmål.
@@ -3905,7 +3921,7 @@ function innPrikk(){ var e=$("#profilPrikk"); if(!e||!P)return;
 var MELD_LIV=20*3600000;
 function innLegg(m){ investInit(); m.id=(Math.random()*1e9)|0; m.tid=Date.now(); m.lest=false;
   P.innboks.unshift(m); if(P.innboks.length>30)P.innboks.length=30;
-  innPrikk(); saveAll(); }
+  innPrikk(); saveAll(); return m; }
 function innRydd(){ if(!P||!P.innboks)return; var f=P.innboks.length;
   P.innboks=P.innboks.filter(function(m){ return m.type!=="tilbod" || Date.now()-m.tid<MELD_LIV; });
   if(P.innboks.length!==f){ innPrikk(); saveAll(); } }
@@ -3929,6 +3945,23 @@ function investTrekk(f, niv, rng){
   return UTFALL[2];
 }
 
+function investVekter(f, niv){
+  return UTFALL.map(function(u){ var v=u.v;
+    if(u.mult===0)      v=v*(1+0.55*f.flaks)/f.snitt - niv*2.0;
+    else if(u.mult<1)   v=v*(1+0.30*f.flaks)/f.snitt - niv*1.2;
+    else if(u.mult>2.5) v=v*f.snitt*(1+0.85*f.flaks) + niv*0.35;
+    else if(u.mult>1.5) v=v*f.snitt*(1+0.20*f.flaks) + niv*0.9;
+    else v=v*f.snitt*(1+0.10*niv);
+    return Math.max(0.5,v); });
+}
+// Tomturprosent og snittavkastning, eksakt. Brukt til å seie kva ei spleising er verdt.
+function investStat(f, niv){
+  var v=investVekter(f,niv), sum=0, tom=0, snitt=0;
+  v.forEach(function(x){sum+=x;});
+  for(var i=0;i<UTFALL.length;i++){ var pr=v[i]/sum;
+    snitt+=pr*UTFALL[i].mult; if(UTFALL[i].mult===0)tom+=pr; }
+  return {tom:tom, snitt:snitt};
+}
 // Ingen ringjer før du har 10 000 kr — då har du fått taket på sjølve fisket først.
 // Etter det opnar fiskarane seg gradvis: 35 %-taket gjer at Trygve, som går lengst
 // ut og har dyrast tur, fyrst tek kontakt når du har rundt 16 000 på konto.
@@ -3975,6 +4008,21 @@ function fiskerTekst(f){
   if(m>0) return f.minne.daarleg;
   return f.minne.tomt;
 }
+// Fasiten med éin fiskar: netto, ikkje to tal spelaren må trekkje frå kvarandre.
+// Tomt felt til fyrste tur er avslutta — «0 kr på 0 turar» er berre støy.
+function visHist(f){
+  var e=$("#smsHist"); if(!e)return;
+  var h=P&&P.invest&&P.invest.hist&&P.invest.hist[f.k];
+  e.classList.remove("opp","ned");
+  if(!h||!h.turar){ e.style.display="none"; e.textContent=""; return; }
+  e.style.display="";
+  var netto=h.ut-h.inn, fornamn=f.n.split(" ")[0];
+  var turar=h.turar+" tur"+(h.turar>1?"er":"");
+  if(netto===0){ e.textContent="Du går akkurat i null etter "+turar+" med "+fornamn+"."; return; }
+  e.classList.add(netto>0?"opp":"ned");
+  e.innerHTML="Du har totalt "+(netto>0?"tjent":"tapt")+" <b>"
+    +Math.abs(netto).toLocaleString("nb")+" kr</b> på "+turar+" med "+fornamn+".";
+}
 // Alle avatarane skal sjå INN mot namnet sitt. Seks av ti var teikna mot venstre,
 // og dei får speil:true i tabellen — filene er urørte.
 function settAvatar(el,f){ if(!el)return; el.src="spill/assets/"+f.img;
@@ -3982,19 +4030,17 @@ function settAvatar(el,f){ if(!el)return; el.src="spill/assets/"+f.img;
 function visSms(f, timar, ordForOrd){
   settAvatar($("#smsAvatar"), f);
   $("#smsNavn").textContent=f.n;
-  $("#smsYrke").textContent=f.yrke||"Fisker";
+  $("#smsKjenne").textContent=f.kjenne||"";
   $("#smsBaat").textContent=f.b;
   var nn=(f.mal==="nn");
   var tekst=(fiskerTekst(f)||"").replace(/\{NAVN\}/g, (P&&P.name)||"du");
   if(ordForOrd) skrivUt($("#smsTekst"), tekst); else $("#smsTekst").textContent=tekst;
   $("#smsSum").textContent="Hele turen koster "+f.kost.toLocaleString("nb")+" kr · "+turTid(timar);
-  var h=P.invest.hist[f.k], niv=investNivaa(f.k);
+  var niv=investNivaa(f.k);
   var fakta=f.ord;
-  if(h&&h.turar) fakta+=" Du har vært med på "+h.turar+" tur"+(h.turar>1?"er":"")+" — satt inn "
-    +h.inn.toLocaleString("nb")+" kr, fått "+h.ut.toLocaleString("nb")+" kr tilbake.";
   if(niv) fakta+=" Du har spleiset på "+niv+" oppgradering"+(niv>1?"er":"")+" på båten "+(f.ho?"hennes":"hans")+".";
   $("#smsFakta").textContent="Du betaler en del av det turen koster, og får den samme delen av det fangsten er verdt. Går det tomt, er pengene borte. "+fakta;
-  byggLott(f);
+  byggLott(f); visHist(f);
   $("#smsNei").textContent="Nei takk"; $("#smsJa").textContent="Bli med"; $("#smsJa").disabled=true;
   settKlokke(); modal("smsModal",true);
 }
@@ -4005,30 +4051,44 @@ function visSms(f, timar, ordForOrd){
    Eit anrop du kan ta eller la vere. Tek du det ikkje, ligg meldinga i innboksen
    og kan opnast seinare — ingenting går tapt fordi du var midt i eit kast.      */
 var ringT=null, ringMeld=null;
+// Telefonen får ikkje ringje medan du står med fisken på kroken. phase er "idle"
+// berre når snøret ikkje er ute — då er det eit naturleg pust å ta telefonen i.
+// Meldinga er alt lagt i innboksen når vi kjem hit, så ingenting går tapt.
+function ringKlar(){ return !document.querySelector(".modal.on") && phase==="idle"; }
 function ringOpp(f, m){
-  if(document.querySelector(".modal.on")){ notice("Du har fått ei melding 📨"); return; }
+  if(!ringKlar()) return false;
   ringMeld=m;
   settAvatar($("#ringAvatar"), f);
   $("#ringNavn").textContent=f.n;
   $("#ringBaat").textContent=f.b;
+  $("#ringStatus").textContent=(m&&m.type==="resultat")
+    ? (f.mal==="nn"?"TILBAKE I HAMN":"TILBAKE I HAVNA") : "RINGER …";
   modal("ringModal",true);
-  if(Snd.click)Snd.click();
+  if(Snd.ringtone)Snd.ringtone(true);
   if(navigator.vibrate)navigator.vibrate([180,120,180,120,180]);
   if(ringT)clearTimeout(ringT);
   ringT=setTimeout(function(){ ringLegg(true); }, 14000);   // ubesvart → innboksen
+  return true;
 }
 function ringLegg(ubesvart){
+  if(Snd.ringtone)Snd.ringtone(false);
   if(ringT){ clearTimeout(ringT); ringT=null; }
   modal("ringModal",false);
   if(ubesvart) notice("Ubesvart anrop — meldinga ligg i innboksen 📨");
   ringMeld=null;
 }
 function ringTaImot(){
+  if(Snd.ringtone)Snd.ringtone(false);
   if(ringT){ clearTimeout(ringT); ringT=null; }
   var m=ringMeld; ringMeld=null; modal("ringModal",false);
   if(!m)return;
   var f=fiskerVed[m.fk]; if(!f)return;
   if(!m.lest){ m.lest=true; innPrikk(); saveAll(); }
+  if(m.type==="resultat"){
+    var u=null; for(var i=0;i<UTFALL.length;i++) if(UTFALL[i].k===m.utfall)u=UTFALL[i];
+    visResultat(f, u||UTFALL[2], m.inn, m.ut, true);
+    return;
+  }
   smsAktiv={f:f, del:null, timar:m.timar, meld:m};
   visSms(f, m.timar, true);
 }
@@ -4147,28 +4207,38 @@ function investSjekk(){
   var h=P.invest.hist[t.fk]||(P.invest.hist[t.fk]={turar:0,inn:0,ut:0});
   h.turar++; h.inn+=t.sum; h.ut+=ut;
   h.sist={mult:u.mult, utfall:u.k, tid:Date.now()};   // fiskaren hugsar til neste gong
-  innLegg({type:"resultat", fk:t.fk, utfall:u.k, mult:u.mult, inn:t.sum, ut:ut});
+  var m=innLegg({type:"resultat", fk:t.fk, utfall:u.k, mult:u.mult, inn:t.sum, ut:ut});
   hud(); saveAll();
-  notice(f.n.split(" ")[0]+(f.mal==="nn"?" er tilbake i hamn 📨":" er tilbake i havna 📨"));
+  if(!ringOpp(f, m))
+    notice(f.n.split(" ")[0]+(f.mal==="nn"?" er tilbake i hamn 📨":" er tilbake i havna 📨"));
 }
 
 function visResultat(f, u, inn, ut, fraaInnboks){
   settAvatar($("#smsAvatar"), f);
   $("#smsNavn").textContent=f.n;
-  $("#smsYrke").textContent=f.yrke||"Fisker";
-  $("#smsBaat").textContent=f.b+(f.mal==="nn"?" — tilbake i hamn":" — tilbake i havna");
+  $("#smsKjenne").textContent=(f.mal==="nn"?"Tilbake i hamn":"Tilbake i havna");
+  $("#smsBaat").textContent=f.b;
   $("#smsTekst").textContent=u.t;
   var diff=ut-inn;
   $("#smsSum").textContent = ut>0
     ? "Din del: "+ut.toLocaleString("nb")+" kr  ("+(diff>=0?"+":"")+diff.toLocaleString("nb")+" kr)"
     : "Din del: ingenting denne gangen.";
   var niv=investNivaa(f.k), neste=TRAALUTSTYR[niv];
-  $("#smsFakta").textContent = neste
-    ? "Du kan spleise på "+neste.n.toLowerCase()+" til "+neste.pris.toLocaleString("nb")+" kr. "+neste.t
-    : "Båten "+(f.ho?"hennes":"hans")+" er fullt utstyrt nå — takket være deg.";
-  $("#smsLott").style.display="none";
+  if(neste){
+    var na=investStat(f,niv), ny=investStat(f,niv+1);
+    var meir=Math.round((ny.snitt/na.snitt-1)*100);
+    $("#smsFakta").textContent =
+      "Du kan spleise på "+neste.n.toLowerCase()+". "+neste.t+" "
+      +"Da kommer "+f.n.split(" ")[0]+" tom hjem sjeldnere — "+Math.round(ny.tom*100)+" i stedet for "
+      +Math.round(na.tom*100)+" av hundre turer — og du får i snitt "+meir+" % mer igjen "
+      +"hver gang du er med "+(f.ho?"henne":"ham")+". Utstyret blir stående på båten "
+      +(f.ho?"hennes":"hans")+", ikke hos de andre.";
+  } else {
+    $("#smsFakta").textContent = "Båten "+(f.ho?"hennes":"hans")+" er fullt utstyrt nå — takket være deg.";
+  }
+  $("#smsLott").style.display="none"; visHist(f);
   $("#smsNei").textContent="Greit";
-  $("#smsJa").textContent = neste ? "Spleis på utstyr" : "Fint";
+  $("#smsJa").textContent = neste ? "Spleis · "+neste.pris.toLocaleString("nb")+" kr" : "Fint";
   $("#smsJa").disabled = !!(neste && P.kr<neste.pris);
   smsAktiv={resultat:true, f:f, neste:neste}; settKlokke();
   if(!fraaInnboks){ if(ut>inn){ Snd.coin(); if(u.mult>=3){ Snd.trophy(); dogShow(0,5); Snd.gladDog(); } }
