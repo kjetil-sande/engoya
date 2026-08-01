@@ -2759,7 +2759,9 @@ function visProfil(){
 
   var nUlest=uleste();
   h+='<div class="row" style="justify-content:center;margin-top:16px;gap:8px">'
-    +'<button class="btn sm" id="pfTilNaust">⚓ Bytt spiller</button>'
+    +'<button class="btn sm" id="pfTilNaust">'
+      +'<img src="spill/assets/ikon-bytt-spiller.png" alt="" style="height:17px;vertical-align:-3px;margin-right:6px;image-rendering:pixelated" onerror="this.outerHTML=&quot;<span style=\'filter:brightness(2.1) saturate(.35);margin-right:5px&quot;+&quot;\'>⚓</span>&quot;">'
+      +'Bytt spiller</button>'
     +'<button class="btn sm gold" id="pfInnboks">'
       +'<img src="spill/assets/ikon-konvolutt.png" alt="" style="height:17px;vertical-align:-3px;margin-right:6px;image-rendering:pixelated" onerror="this.outerHTML=&quot;📨 &quot;">'
       +'Innboks'+(nUlest?' ('+nUlest+')':'')+'</button></div>';
@@ -3490,7 +3492,7 @@ function drawScene(dt){
   var lineX, top;
   var inE=1-Math.pow(1-boatIn,2); // båten glir på plass etter turen ut (ease-out)
   var bx=W*0.52-(1-inE)*W*0.95, bw=mn*0.5, bh=boatReady?bw*(boatImg.naturalHeight/boatImg.naturalWidth):bw*0.4;
-  var dupp=Math.sin(bob*1.3)*4.5 + Math.sin(bob*0.61+1.7)*1.8; // to takter — sjøen har aldri berre éin
+  var dupp=Math.sin(bob*1.3)*2.9 + Math.sin(bob*0.61+1.7)*1.2; // to takter — sjøen har aldri berre éin (ned 35 %)
   var by=wlY - bh*0.48 + dupp, bTilt=-(1-inE)*0.08 + Math.sin(bob*0.47)*0.006; // svak baug-opp + roleg slingring
   var ff=fisherFrame();
   if(ff&&ff.complete&&ff.naturalWidth){
@@ -3906,10 +3908,13 @@ var UTFALL=[
 
 // Utstyr du kan vere med og betale. Kvart nivå flyttar vekt frå botn til topp.
 var TRAALUTSTYR=[
- {n:"Ny sorteringsrist",  pris:12000, t:"Påbudt i norsk reketrål — og småfisken slipper ut i stedet for å bli ødelagt."},
- {n:"Større trålpose",    pris:26000, t:"Mer rom, færre hal. Båten kan stå lenger ute."},
- {n:"Nytt ekkolodd",      pris:45000, t:"Stimen blir funnet i stedet for lett etter."},
- {n:"Kraftblokk og vinsj",pris:80000, t:"Halve tiden på hvert hal. Flere hal per tur."}];
+ {n:"Ny sorteringsrist",  del:0.185, t:"Påbudt i norsk reketrål — og småfisken slipper ut i stedet for å bli ødelagt."},
+ {n:"Større trålpose",    del:0.40,  t:"Mer rom, færre hal. Båten kan stå lenger ute."},
+ {n:"Nytt ekkolodd",      del:0.70,  t:"Stimen blir funnet i stedet for lett etter."},
+ {n:"Kraftblokk og vinsj",del:1.24,  t:"Halve tiden på hvert hal. Flere hal per tur."}];
+// Utstyr til ein 110 000-tråler kan ikkje koste det same som til ein 18 000-sjark.
+function traalPris(f, trinn){ var u=TRAALUTSTYR[trinn]; if(!u)return 0;
+  return Math.round(f.kost*u.del/1000)*1000; }
 
 function investInit(){ if(!P.invest)P.invest={tur:null,hist:{},neste:0,utstyr:{},nei:{}};
   var iv=P.invest; if(!iv.hist)iv.hist={}; if(!iv.utstyr)iv.utstyr={}; if(!iv.nei)iv.nei={}; if(!iv.neste)iv.neste=0;
@@ -4238,8 +4243,9 @@ function visResultat(f, u, inn, ut, fraaInnboks){
   }
   $("#smsLott").style.display="none"; visHist(f);
   $("#smsNei").textContent="Greit";
-  $("#smsJa").textContent = neste ? "Spleis · "+neste.pris.toLocaleString("nb")+" kr" : "Fint";
-  $("#smsJa").disabled = !!(neste && P.kr<neste.pris);
+  var nPris = neste ? traalPris(f,niv) : 0;
+  $("#smsJa").textContent = neste ? "Spleis · "+nPris.toLocaleString("nb")+" kr" : "Fint";
+  $("#smsJa").disabled = !!(neste && P.kr<nPris);
   smsAktiv={resultat:true, f:f, neste:neste}; settKlokke();
   if(!fraaInnboks){ if(ut>inn){ Snd.coin(); if(u.mult>=3){ Snd.trophy(); dogShow(0,5); Snd.gladDog(); } }
     else if(Snd.fiskerSurPool)Snd.fiskerSurPool(); }
@@ -4249,8 +4255,9 @@ function visResultat(f, u, inn, ut, fraaInnboks){
 function investUtstyr(){
   var a=smsAktiv; smsAktiv=null;
   if(!a||!a.neste){ modal("smsModal",false); return; }
-  if(P.kr<a.neste.pris){ modal("smsModal",false); return; }
-  P.kr-=a.neste.pris;
+  var kjopPris=traalPris(a.f, investNivaa(a.f.k));
+  if(P.kr<kjopPris){ modal("smsModal",false); return; }
+  P.kr-=kjopPris;
   P.invest.utstyr[a.f.k]=investNivaa(a.f.k)+1;
   hud(); saveAll(); modal("smsModal",false);
   var nn3=(a.f.mal==="nn");
