@@ -559,10 +559,20 @@
   #lydvalg{position:absolute;left:50%;transform:translateX(-50%);bottom:14vh;z-index:8;
     display:flex;flex-direction:column;align-items:center;gap:12px;
     width:min(92%,var(--lobbyspalte));transition:opacity .35s ease}
-  #lydvalg p{margin:0;font-weight:800;font-size:17px;color:#f6ecd0;
-    text-shadow:0 2px 0 rgba(6,20,26,.75),0 0 14px rgba(6,20,26,.9)}
-  #lydvalg .lydrad{display:flex;gap:10px;width:100%}
-  #lydvalg .lydrad .btn{flex:1;font-size:16px;padding:13px 10px}
+  /* Dette er det aller første spilleren ser. Spørsmålet skal bære skjermen, og
+     ja-knappen skal ha samme tyngde som «Dra på lopphavet» lenger nede — det er
+     de to knappene som slipper deg inn i spillet. «Nei, takk» er et valg, ikke
+     et alternativ av samme vekt, så den ligger som en lenke under. */
+  #lydvalg p{margin:0;font-weight:800;font-size:clamp(34px,9.5vw,42px);line-height:1.12;
+    color:#f6ecd0;text-align:center;letter-spacing:-.01em;
+    text-shadow:0 3px 0 rgba(6,20,26,.75),0 0 18px rgba(6,20,26,.9)}
+  #lydvalg .lydrad{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+  #lydvalg .lydrad .btn.gold{width:100%;font-size:20px;padding:14px 30px}
+  #lydvalg .lydnei{background:none;border:0;box-shadow:none;padding:6px 10px;
+    font-family:var(--font);font-weight:700;font-size:16px;color:#f6ecd0;
+    text-decoration:underline;text-underline-offset:3px;cursor:pointer;
+    text-shadow:0 2px 0 rgba(6,20,26,.75),0 0 12px rgba(6,20,26,.9)}
+  #lydvalg .lydnei:active{transform:translateY(1px)}
   #lydvalg.borte{opacity:0;pointer-events:none}
   #menu.valt #lydvalg{display:none}
   .curtain{position:absolute;top:0;height:100%;width:53%;object-fit:cover;z-index:60;pointer-events:none;image-rendering:pixelated;display:none}
@@ -690,9 +700,9 @@
   <section class="screen on panstart svart" id="menu">
     <canvas id="skyCv"></canvas>
     <button class="iconbtn" id="muteBtnMenu" title="Lyd av/på" style="position:absolute;top:12px;right:12px;z-index:5">🔊</button>
-    <div id="lydvalg"><p>Vil du ha lyd?</p>
+    <div id="lydvalg"><p>Vil du høre<br>havet?</p>
       <div class="lydrad"><button class="btn gold" id="lydJa">Selvsagt!</button>
-        <button class="btn ghost" id="lydNei">Nei, takk</button></div></div>
+        <button class="lydnei" id="lydNei">Nei, takk</button></div></div>
     <img class="logo" id="logoImg" alt="Jakten på storkveita" style="display:none">
     <div class="logo-fallback" id="logoFallback">JAKTEN PÅ<small>STORKVEITA</small></div>
     <div class="who">
