@@ -515,6 +515,9 @@ main {
 .butikk-item { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: .8rem; }
 .butikk-navn { font-weight: 700; font-size: .9rem; }
 .butikk-tid { font-family: var(--font-mono); font-size: .74rem; color: var(--text-2); font-variant-numeric: tabular-nums; }
+/* «Åpner i morgen 09:00» — egen linje under dagens tid, så raden ikke blir bredere.
+   Den står bare når butikken faktisk er stengt. */
+.butikk-neste { display: block; margin-top: .15rem; color: var(--text-2); opacity: .85; }
 .butikk-badge {
   font-size: .62rem; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase;
