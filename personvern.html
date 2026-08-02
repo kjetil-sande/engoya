@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personvern · Jakten på storkveita</title>
+  <meta name="description" content="Hva «Jakten på storkveita» lagrer, hvorfor, og hvordan du blir kvitt det.">
+  <meta name="theme-color" content="#f4efe4">
+  <link rel="icon" href="engoya-logo.png">
+  <style>
+    :root{--blekk:#22282b;--daempa:#5d6b70;--sjo:#1d4e63;--djup:#0f2c3a;
+      --tre:#8a6a3d;--lys:#f4efe4;--kant:#e2dac9}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--lys);color:var(--blekk);
+      font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      padding:28px 20px calc(60px + env(safe-area-inset-bottom))}
+    main{max-width:640px;margin:0 auto}
+    h1{font-size:1.85rem;line-height:1.2;margin:0 0 4px;color:var(--djup)}
+    .ingress{color:var(--daempa);margin:0 0 26px;font-size:1.02rem}
+    h2{font-size:1.12rem;margin:30px 0 8px;color:var(--sjo)}
+    h3{font-size:.98rem;margin:18px 0 4px;color:var(--tre)}
+    p,li{margin:0 0 10px}
+    ul{padding-left:20px}
+    .boks{background:#fff;border:1px solid var(--kant);border-radius:12px;padding:14px 16px;margin:16px 0}
+    .boks p:last-child,.boks ul:last-child{margin-bottom:0}
+    table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem}
+    th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--kant);vertical-align:top}
+    th{background:var(--sjo);color:#fff;font-weight:600}
+    tr:nth-child(even) td{background:#fbf8f1}
+    a{color:var(--sjo)}
+    .fot{margin-top:34px;padding-top:14px;border-top:1px solid var(--kant);
+      color:var(--daempa);font-size:.86rem}
+    code{background:#fff;border:1px solid var(--kant);border-radius:5px;padding:1px 5px;font-size:.9em}
+  </style>
+</head>
+<body>
+<main>
+
+<h1>Personvern</h1>
+<p class="ingress">Jakten på storkveita · sist oppdatert 2. august 2026</p>
+
+<div class="boks">
+  <p><b>Kort fortalt:</b> spillet ber deg aldri om navn, e-post eller telefonnummer. Du velger
+  et kallenavn selv. Det er ingen sporing, ingen reklame, ingen informasjonskapsler og ingen
+  tredjeparter som får se noe. Alt du har fisket ligger først og fremst i din egen nettleser.</p>
+</div>
+
+<h2>Hvem står bak</h2>
+<p>Spillet lages og drives av <b>Kjetil Sande</b> som privatperson. Det er et hobbyprosjekt uten
+tilknytning til noen arbeidsgiver.</p>
+<p>Spørsmål, eller ønske om innsyn eller sletting: <b>post@fiskespillet.no</b></p>
+
+<h2>Bruk kallenavn</h2>
+<p>Når du lager en fisker, ber spillet om et <b>kallenavn</b> — ikke ditt virkelige navn.
+Det er et bevisst valg: velger ingen å oppgi ekte navn, finnes det heller ingen
+personopplysninger å beskytte. Navnet vises bare til dem du selv deler familiekoden med.</p>
+<p>Skriver du likevel inn ditt eget navn, blir det en personopplysning, og da gjelder alt
+under her for det navnet. Du kan når som helst endre det inne i spillet.</p>
+
+<h2>Hva som lagres, og hvor</h2>
+
+<h3>På din egen enhet</h3>
+<p>Det aller meste ligger i nettleserens lokale lagring (<code>localStorage</code>) på
+telefonen eller maskinen din: fangstboka, troféskapet, penger, utstyr, spilletid og
+innstillinger. Dette sendes ingen steder av seg selv, og forsvinner hvis du tømmer
+nettleserdataene dine. Derfor finnes «Last ned kopi» inne i fiskerkortet.</p>
+
+<h3>På serveren — bare hvis du kobler deg til</h3>
+<p>Bruker du <b>familiekode</b> eller <b>fiskerkort</b>, lagres en kopi av framgangen din slik at
+den kan deles mellom enheter. Uten kode eller kort sendes ingenting til serveren i det hele tatt.</p>
+
+<table>
+  <tr><th>Hva</th><th>Hvorfor</th></tr>
+  <tr><td>Kallenavnet ditt</td><td>Så familien ser hvem rekorden tilhører</td></tr>
+  <tr><td>Fangstbok: art, lengde, vekt, antall</td><td>Rekordene som deles</td></tr>
+  <tr><td>Penger, utstyr, troféer, funn</td><td>Så du får igjen spillet ditt på en ny enhet</td></tr>
+  <tr><td>Spilletid og hvilke dager du har fisket</td><td>Streaks, statistikk i spillet, og for å se om spillet holder på folk</td></tr>
+  <tr><td>Tidspunkt for siste synkronisering</td><td>Fletting mellom enheter</td></tr>
+</table>
+
+<p>Dataene ligger under en <b>hash</b> av koden eller kortet ditt — aldri under koden selv.
+Det betyr at selve koden ikke finnes lagret noe sted, heller ikke hos oss. Mister du den,
+kan vi ikke hente den fram igjen.</p>
+
+<h3>IP-adresse</h3>
+<p>For å hindre at noen prøver seg fram med tusenvis av koder, telles antall forespørsler per
+avsender. IP-adressen <b>hashes før den lagres</b>, og telleren nullstilles fortløpende. Vi kan
+se at det er samme avsender, men ikke hvem.</p>
+
+<h2>Det vi <i>ikke</i> gjør</h2>
+<ul>
+  <li>Ingen Google Analytics eller annen tredjepartssporing i spillet</li>
+  <li>Ingen informasjonskapsler</li>
+  <li>Ingen reklame, og ingen deling eller salg av data til andre</li>
+  <li>Ingen e-post, telefonnummer, adresse, fødselsdato eller posisjon</li>
+  <li>Ingen profilering, og ingen automatiske avgjørelser om deg</li>
+</ul>
+<p>Vi ser samlet statistikk for å forstå om spillet er gøy nok over tid — hvor mange som
+spiller, hvor lenge, og hvor langt folk kommer. Det er <b>tall, ikke personer</b>: den
+statistikken bygger på det som allerede er nevnt over, og vi henter ikke inn noe ekstra
+for å lage den.</p>
+
+<h2>Behandlingsgrunnlag</h2>
+<p>Velger du kallenavn, behandler vi normalt ingen personopplysninger, og reglene får da
+ingen praktisk betydning. Skulle det likevel gjøre det — for eksempel fordi du skrev ditt
+eget navn — er grunnlaget vårt <b>berettiget interesse</b> (GDPR art. 6(1)(f)) i å få spillet
+til å virke på tvers av enhetene dine. Det er du selv som starter delingen ved å ta i bruk en
+kode, og du kan slutte når du vil.</p>
+
+<h2>Hvor lenge</h2>
+<p>Data knyttet til en kode eller et kort slettes automatisk når det har gått
+<b>18 måneder</b> uten at noen har brukt koden. Lokale data i nettleseren din ligger til du
+sletter dem selv.</p>
+
+<h2>Barn</h2>
+<p>Spillet er laget for at barn skal kunne spille det. Nettopp derfor spør det aldri om noe
+personlig. Det er ingen chat, ingen kontakt med fremmede, og ingen kjøp. Meldingene du får
+inne i spillet er fra oppdiktede figurer — Rusten, Kjell og de andre — og er en del av
+fortellingen.</p>
+<p>Er du forelder og ønsker at alt knyttet til barnets kode skal slettes, send koden til
+adressen over, så gjør vi det.</p>
+
+<h2>Rettighetene dine</h2>
+<ul>
+  <li><b>Innsyn og dataportabilitet:</b> «Last ned kopi» i fiskerkortet gir deg alt vi har om
+      deg, som en vanlig fil du kan åpne og lese</li>
+  <li><b>Retting:</b> endre kallenavnet ditt inne i spillet når du vil</li>
+  <li><b>Sletting:</b> tøm nettleserdataene for å fjerne alt lokalt, og send oss koden din
+      hvis du også vil ha bort det som ligger på serveren</li>
+  <li><b>Klage:</b> du kan klage til
+      <a href="https://www.datatilsynet.no" target="_blank" rel="noopener">Datatilsynet</a></li>
+</ul>
+
+<h2>Hvor dataene ligger</h2>
+<p>Spillet driftes på Netlify. Lagringen står i Europa. Det brukes ingen andre
+databehandlere.</p>
+
+<h2>Endringer</h2>
+<p>Endrer vi hva som lagres eller hva det brukes til, oppdaterer vi denne siden og sier fra
+inne i spillet. Skulle vi en gang ønske å bruke dataene til noe helt annet enn det som står
+her, spør vi først. Vi tar ikke slike forbehold på forskudd.</p>
+
+<p class="fot">Jakten på storkveita er et hobbyprosjekt fra Engøya i Meløy.
+<a href="fiske.html">Tilbake til spillet</a></p>
+
+</main>
+</body>
+</html>
