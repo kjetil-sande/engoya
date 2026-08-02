@@ -90,6 +90,16 @@
      kunne eit «trykk kvar som helst for å hoppe fram» treffe ein spelarknapp eller sende
      ungen rett til havs med feil profil. */
   #menu .logo,#menu .logo-fallback,#menu .who,#menu .muted,#menu #playBtn,#menu #skyCv{opacity:0;pointer-events:none}
+  /* …men lerretet er unntaket. «Vil du ha lyd?» står på panstart-biletet, og det biletet
+     står HEILT stille til du svarar — panoreringa startar først i svar(). Difor kan måkene
+     gli i det mørkeblå der oppe utan at noko skurrar. Glitteret og røyken hamnar utanfor
+     skjermen av seg sjølv: lobbyKart() les den levande background-position.
+     Under sjølve panoreringa er lerretet skjult igjen — måkene følgjer ikkje bakgrunnen,
+     og ville sett fastspikra ut medan landskapet glei forbi. Regelen for .panner MÅ stå
+     før .landa: begge har same spesifisitet, så det er kjeldeorden som avgjer, og landa
+     kjem alltid medan panner framleis heng på. */
+  #menu.panstart #skyCv{opacity:1}
+  #menu.panner #skyCv{opacity:0;transition:opacity .45s ease}
   #menu.landa .who,#menu.landa .muted,#menu.landa #playBtn{pointer-events:auto}
   #menu.landa .logo,#menu.landa .logo-fallback{animation:fadeUp .62s ease both}
   #menu.landa #skyCv{opacity:1;transition:opacity 1.1s ease .25s}
@@ -1513,7 +1523,7 @@ function hud(){
 var depth=0, phase="idle", hooked=null, biteTimer=0, hookWindow=0, holding=false,
     tension=0, prog=0, lureY=0, lureTargetY=0, msg="Velg dybde og kast ut.";
 var sceneFish=null, lureSX=0, lureSY=0, slackT=0, ambient=[], pending=null, castT=0, liftT=0, fightT=0; // sluk-pos + slakk-timer + bakgrunnsfisk + transient fangst-UI + kast/løft-timere + kamp-timer (fisk snur seg)
-var gulls=[], lobbyGulls=[], gullSpawn={t:0}, lobbySpawn={t:0}; // flyvende måker (sjø + lobby): 4-frames vingeslag + glidning på frame 03
+var gulls=[], lobbyGulls=[], gullSpawn={t:0}, lobbySpawn={t:0}, lobbyFylt=false; // flyvende måker (sjø + lobby): 4-frames vingeslag + glidning på frame 03
 
 /* ---------- Liv i lobbyen: glitrande sjø og røyk frå pipa ----------
    Begge er festa i BILETET, ikkje på skjermen, så dei følgjer opningspanoreringa
@@ -3873,7 +3883,24 @@ function loop(now){
       if(uteEllerLobby) Snd.maakeskrik(0.75+Math.random()*0.5); } }
   if(lgCtx && $("#menu").classList.contains("on")){ lgCtx.clearRect(0,0,lgW,lgH);
     var lk=lobbyKart(); if(lk){ tegnGlitr(dt,lk,lgCtx); tegnRoyk(dt,lk,lgCtx); } // sjøen glitrar, pipa ryk
-    drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,lgH*0.06,lgH*0.34,maakeTal(3),lobbySpawn,0); } // måker over tittelen i lobbyen
+    // TO bånd, fordi skjermen viser to ulike ting. Før panoreringen står bildet høyt
+    // oppe og «Vil du ha lyd?» ligger nede — da skal måkene gli i det mørkeste blå helt
+    // øverst, som eieren ba om. Etter panoreringen (#menu.valt) er tittelskiltet der
+    // oppe, og da hører de hjemme i det gamle båndet bak det.
+    // MERK: #skyCv følger IKKE panoreringen. Den er viewport-festet (position:absolute,
+    // inset:0), så båndene er i SKJERMkoordinater, ikke i bakgrunnsbildet. Den ligger
+    // dessuten på z-index −1 med pointer-events:none, så måkene tegnes over landskapet
+    // men alltid bak knappene, og kan verken dekke dem eller stjele et trykk.
+    var foerPan=!$("#menu").classList.contains("valt");
+    // 0.04, ikke 0.02: newFlyGull setter y som SENTRUM, og en måke er ~32 px høy — startet
+    // båndet høyere ville toppen av vingene blitt klippet av skjermkanten. Målt.
+    var gyMin=lgH*(foerPan?0.04:0.06), gyMax=lgH*(foerPan?0.14:0.34);
+    if(!lobbyFylt){ lobbyFylt=true;                 // lydvalget står bare noen få sekunder,
+      for(var _i=0;_i<3;_i++){                      // og spawn-intervallet er 5–13 s — uten
+        var _g=newFlyGull(gyMin,gyMax);             // såing ville himmelen vært tom det meste
+        _g.x=0.05+Math.random()*0.85;               // av tida skjermen faktisk vises
+        lobbyGulls.push(_g); } }
+    drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,gyMin,gyMax,maakeTal(3),lobbySpawn,0); } // øverst på lydvalget, bak tittelen etterpå
   if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); snelleSpinn(dt); Snd.dykk(phase!=="idle", dykkAndel(), depth); $("#sea").classList.toggle("fishing", phase!=="idle");
     if(boatIn>=1&&fisherT>=1&&!Snd.overflateStille()){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/140){ var rl=Math.random();
       if(rl<0.06){ Snd.fiskerFis(); dogShow(1,3); }
