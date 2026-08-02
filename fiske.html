@@ -498,6 +498,9 @@
   .trofekort .tx b{display:block;font-size:12.5px;line-height:1.15;overflow-wrap:anywhere}
   .trofekort .tx .hist{display:block;font-size:11.5px;color:var(--ink-soft);line-height:1.3;margin-top:3px}
   .trofekort .tx .naar{display:block;font-family:var(--mono);font-size:10px;opacity:.65;margin-top:4px}
+  .trofekort .tx .trofeselg{margin-top:6px;padding:5px 10px;font-size:12px;box-shadow:0 2px 0 var(--wood-dark)}
+  .trofetel{text-align:center;margin:2px 0 6px;font-size:14px;color:var(--ink)}
+  .trofetel b{font-size:16px}
   .slot{background:#fff8ea;border:2px solid var(--paper-2);border-radius:10px;padding:6px 4px;text-align:center;min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
   .slot .redsk{border-top:1px solid rgba(93,78,55,.16);padding-top:2px;margin-top:1px;width:88%;font-size:9px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* svak, tynn strek skiller fiskene; lange agnnavn kuttes pent */
@@ -2713,11 +2716,11 @@ function pullPot(ty){ ty=ty||"k";
         if(kr>=v.laas.pris*2){ Snd.trophy(); setTimeout(Snd.fiskerJubel,300); }
         notice(kr>=v.laas.pris ? ("Låsen røk — innholdet var verdt "+kr.toLocaleString("nb")+" kr! 🔓✨")
                                : ("Låsen røk … og kista inneholdt "+kr+" kr. Slik går det noen ganger 🔓")); };
-      var gmlT=$("#potTake").onclick; // lukker man uten å velge: verdifunn selges, gratisfunn havner i skapet
+      var gmlT=$("#potTake").onclick; // lukker man uten å velge: ALT havner i skapet — aldri et salg
       $("#potTake").onclick=function(){ if(!tatt){ tatt=true;
-          var std=v.trofeSelg||(auk?auk.selg:0);
-          if(std){ P.kr+=std; hud(); Snd.coin(); notice("Solgt til Rusten — "+std+" kr 💰"); }
-          else { leggITrofe(v.k); notice("Satt i troféskapet 🏺"); } saveAll(); }
+          leggITrofe(v.k); saveAll();
+          notice(v.trofeSelg||auk ? "Lagt i troféskapet — du kan selge den derfra når du vil 🏺"
+                                  : "Satt i troféskapet 🏺"); }
         $("#potTake").onclick=gmlT; if(gmlT)gmlT(); };
     }
   }
@@ -2736,8 +2739,9 @@ function pullPot(ty){ ty=ty||"k";
     $("#rolexTrofe").onclick=function(){ if(valgt)return; valgt=true; leggITrofe("rolex"); Snd.trophy();
       this.disabled=true; $("#rolexSelg").disabled=true; $("#rolexPuss").disabled=true;
       notice("Rolexen står i troféskapet — rusten, men din 🏺⌚"); };
-    var gmlTake=$("#potTake").onclick;
-    $("#potTake").onclick=function(){ if(!valgt){ valgt=true; P.kr+=3000; hud(); saveAll(); notice("Rolexen solgt som den er — 3000 kr ⌚"); }
+    var gmlTake=$("#potTake").onclick;   // lukker man uten å velge: BEHOLD. Aldri selg noe for spilleren.
+    $("#potTake").onclick=function(){ if(!valgt){ valgt=true; leggITrofe("rolex"); saveAll();
+        notice("Rolexen står i troféskapet — du kan pusse den opp eller selge den derfra ⌚🏺"); }
       $("#potTake").onclick=gmlTake; gmlTake(); };
   }
   if(res.lines.some(function(l){return l.img==="funn-munnspill.png"})) setTimeout(Snd.munnspill,500); // en liten blues fra teina
@@ -3211,6 +3215,22 @@ function renderArtDetalj(f){ // MIN side om arten (familiens tall står i Rekord
   $("#artTilbake").onclick=function(){ renderMine(); };
 }
 function trofeDef(k){ for(var i=0;i<FUNN.length;i++)if(FUNN[i].k===k)return FUNN[i]; return null; }
+// Rolexen finst i to utgåver som ikkje står i FUNN-tabellen.
+var TROFE_EKSTRA=["rolex","rolexpusset"];
+function trofeMulige(){ var n=TROFE_EKSTRA.length;
+  FUNN.forEach(function(f){ if((f.trofeKun||f.trofeSelg||f.auksjon||f.laas)&&!f.museum)n++; });
+  return n; }
+// Prisen ligger i funntabellen, så vi trenger ingen ny tilstand — et trofé
+// vet alltid hva Rusten ville gitt for det.
+function trofeVerdi(k){ if(k==="rolex")return 3000; if(k==="rolexpusset")return 0;
+  var d=trofeDef(k); if(!d)return 0;
+  return d.trofeSelg || (d.auksjon ? (d.auksjon===true?5000:d.auksjon.selg) : 0); }
+function selgTrofe(i){ if(!P||!P.trofe||!P.trofe[i])return;
+  var t=P.trofe[i], kr=trofeVerdi(t.k); if(!kr)return;
+  var d=trofeDef(t.k), navn=d?d.n.split(/\s+[—–]\s+/)[0]:t.k;
+  P.trofe.splice(i,1); P.kr+=kr; hud(); saveAll(); Snd.coin();
+  notice("Solgt til Rusten — "+kr.toLocaleString("nb")+" kr 💰");
+  renderTrofe(); }
 function leggITrofe(k){ if(!P)return; P.trofe=P.trofe||[];
   P.trofe.unshift({k:k, ts:Date.now()}); if(P.trofe.length>120)P.trofe.length=120; saveAll(); }
 // SESONGKALENDER — gjør sesongen til samling i stedet for hindring. Uten den vet ikke
@@ -3248,18 +3268,28 @@ function renderAar(){
 function renderTrofe(){
   var box=$("#bookTrofe"); box.innerHTML="";
   var liste=P.trofe||[];
-  if(!liste.length){ box.innerHTML='<p class="muted center" style="padding:14px 6px">Troféskapet står tomt.<br>Rariteter fra teiner og bunnline kan settes her i stedet for å selges — særlig på Djuphavet. 🏺</p>'; return; }
-  box.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0 8px">'+liste.length+' rariteter i skapet</p>');
+  if(!liste.length){ box.innerHTML='<p class="muted center" style="padding:14px 6px">Troféskapet står tomt.<br>Det finnes <b>'+trofeMulige()+'</b> ulike rariteter å finne i teiner og på bunnline — særlig på Djuphavet. 🏺<br>Du kan alltid selge dem herfra senere.</p>'; return; }
+  var unike={}; liste.forEach(function(t){ unike[t.k]=1; });
+  var uT=Object.keys(unike).length, mT=trofeMulige();
+  box.insertAdjacentHTML("beforeend",
+    '<p class="trofetel"><b>'+uT+' av '+mT+'</b> ulike rariteter'
+    +(liste.length>uT?' <span class="muted">('+liste.length+' i skapet)</span>':'')+'</p>'
+    +'<div class="pfstolpe"><i style="width:'+Math.round(uT/mT*100)+'%"></i></div>');
   var g=document.createElement("div"); g.className="trofegrid";
   liste.forEach(function(t){ var d=trofeDef(t.k);
     var kort=document.createElement("div"); kort.className="trofekort";
     var navn=d?d.n.split(/\s+[—–]\s+/)[0].split(". ")[0].replace(/\s*\([^)]*\)\s*$/,"").replace(/[!.]$/,""):t.k; // tittel = første setning
     var bilde=(d&&d.img)?'<img src="spill/assets/'+bildeFil(d.img)+'" alt="" onerror="this.outerHTML=\'<span style=&quot;font-size:30px&quot;>'+(d.e||"🏺")+'</span>\'">':'<span style="font-size:30px">'+((d&&d.e)||"🏺")+'</span>';
+    var verdi=trofeVerdi(t.k), idx=liste.indexOf(t);
     kort.innerHTML='<div class="ramme">'+bilde+'</div>'
       +'<div class="tx"><b>'+esc(navn)+'</b>'
       +((d&&d.t)?'<span class="hist">'+esc(d.t)+'</span>':'')
-      +'<span class="naar">Funnet '+tidSiden(t.ts).toLowerCase()+'</span></div>';
+      +'<span class="naar">Funnet '+tidSiden(t.ts).toLowerCase()+'</span>'
+      +(verdi?'<button class="btn sm trofeselg" data-i="'+idx+'">Selg · '+verdi.toLocaleString("nb")+' kr</button>':'')
+      +'</div>';
     g.appendChild(kort); });
+  g.addEventListener("click",function(e){ var b=e.target.closest(".trofeselg"); if(!b)return;
+    selgTrofe(+b.dataset.i); });
   box.appendChild(g);
 }
 function renderFam(){
