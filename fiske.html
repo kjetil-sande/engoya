@@ -3097,11 +3097,11 @@ function openShop(){
         : "Settes ut på valgfritt dyp og står natta over — fangsten følger dypet, og kveita kan gå på. Har "+linTal+"."),
       linPris, linTal>=2, function(){ P.pots.lineOwned=Math.min(2,(P.pots.lineOwned||0)+1);
         if(P.pots.lineOwned>=2) notice("To liner i sjøen! 🪢 Sett én på Dypt og én på Djuphavet — de fisker hver for seg."); });
-    if((P.pots.lineKroker||3)<10) addShop(L,"🪝 Ekstra linekrok","Bunnlina har "+(P.pots.lineKroker||3)+" kroker (maks 10) — flere kroker, mer fangst per sett.",400,false,function(){P.pots.lineKroker=(P.pots.lineKroker||3)+1;});
+    addShop(L,"🪝 Ekstra linekrok","Bunnlina har "+(P.pots.lineKroker||3)+" kroker (maks 10) — flere kroker, mer fangst per sett.",400,(P.pots.lineKroker||3)>=10,function(){P.pots.lineKroker=(P.pots.lineKroker||3)+1;});
     teineagnRad();
     addShop(L,'<img src="spill/assets/agn-sild.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🐟 \'" alt=""> Linagn (10 kroker)',"1 sett per utsett av bunnlina. Har "+(P.pots.lineAgn||0)+".",60,false,function(){P.pots.lineAgn=(P.pots.lineAgn||0)+1;}); }
   else teineagnRad(); // uten Stang III finnes ingen bunnline — da hører teineagnet hjemme rett under teinene
-  if(P.pots.cap<4&&(P.pots.owned||0)>0) addShop(L,'<img src="spill/assets/blaase-boye.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚓ \'" alt=""> Ekstra blåser og tau',"Plass til 4 teiner ute samtidig (i dag: "+P.pots.cap+").",350,false,function(){P.pots.cap=4;});
+  if((P.pots.owned||0)>0) addShop(L,'<img src="spill/assets/blaase-boye.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚓ \'" alt=""> Ekstra blåser og tau',"Plass til 4 teiner ute samtidig (i dag: "+P.pots.cap+").",350,P.pots.cap>=4,function(){P.pots.cap=4;});
   } // slutt Utstyr del 1
   if(shopTab==="agn"){ var ds=agnDagsStatus();
   AGN.forEach(function(a){ if(a.kunFangst)return;
@@ -3120,15 +3120,15 @@ function openShop(){
   // Det store utstyret ligg nedst med vilje: bensin og agn er det ein kjøper
   // heile tida, beltet og vinsjen éin gong. Eigarens val.
   if(shopTab==="utstyr"){
-  if(!P.turbo) addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — halverer kamptida mot alt som biter.",30000,false,function(){P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");},
-    P.rod>=2?null:"Krever "+RODS[2].n);
-  if(!P.belte) addShop(L,'<img src="spill/assets/kampbelte.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎽 \'" alt=""> Kampbelte',
-    "Stangenden står i koppen på beltet, så du tar imot med hoftene i stedet for med armene. Spennet stiger 25 % saktere — storfisken fra Dypt og Djuphavet får deg ikke like lett.",12000,false,
+  addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — halverer kamptida mot alt som biter.",30000,P.turbo?"Montert":false,function(){P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");},
+    (P.turbo||P.rod>=2)?null:"Krever "+RODS[2].n);
+  addShop(L,'<img src="spill/assets/kampbelte.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎽 \'" alt=""> Kampbelte',
+    "Stangenden står i koppen på beltet, så du tar imot med hoftene i stedet for med armene. Spennet stiger 25 % saktere — storfisken fra Dypt og Djuphavet får deg ikke like lett.",12000,P.belte?"Montert":false,
     function(){P.belte=true; notice("Kampbeltet sitter! 🎽 «Det er ikkje fisken som ryk snøret, gut — det er båten som rullar.»");},
-    P.rod>=2?null:"Krever "+RODS[2].n);
-  if(!P.ekko) addShop(L,'<img src="spill/assets/ekkolodd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Ekkolodd',"Ser stimene før de ser deg — 50 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");},
-    P.rod>=1?null:"Krever "+RODS[1].n);
-  if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,'<img src="spill/assets/sluk-agnrigg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪛 \'" alt=""> Vinsj og dyphavsrigg',"Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
+    (P.belte||P.rod>=2)?null:"Krever "+RODS[2].n);
+  addShop(L,'<img src="spill/assets/ekkolodd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Ekkolodd',"Ser stimene før de ser deg — 50 % større sjanse for sjelden og legendarisk fisk.",4000,P.ekko?"Montert":false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");},
+    (P.ekko||P.rod>=1)?null:"Krever "+RODS[1].n);
+  if(P.rod>=2){ if(vinsjKlar()){ addShop(L,'<img src="spill/assets/sluk-agnrigg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪛 \'" alt=""> Vinsj og dyphavsrigg',"Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,P.vinsj?"Montert":false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
   if(P.rod<1) addShop(L,"🎣 Stang II","Låser opp mellomdypt vann (50–150 m): torsk, hyse, blåstål.",250,false,function(){P.rod=1;});
   else if(P.rod<2) addShop(L,"🎣 Stang III","Grovt djuphavsutstyr — låser opp dypt vann (150–300 m) og storkveita.",7500,false,function(){P.rod=2;});
@@ -3179,7 +3179,10 @@ function addShop(L,title,desc,cost,owned,buy,krav){
     +(krav?'<span class="krav">🔒 '+krav+'</span>':'')+'</span></div>';
   var b=document.createElement("button"); b.className="btn sm gold";
   if(krav){ b.textContent=cost.toLocaleString("nb")+" kr"; b.disabled=true; div.appendChild(b); L.appendChild(div); return; }
-  if(owned){b.textContent="Full"; b.disabled=true;}
+  // «owned» kan være true (da står det Full, som for bensin og teiner) eller en tekst.
+  // Utstyr sender inn "Montert", for da skal raden bli STÅENDE i butikken etter kjøp —
+  // eieren vil se hva han har, og utstyr skal etter planen kunne ryke senere.
+  if(owned){b.textContent=(typeof owned==="string"?owned:"Full"); b.disabled=true;}
   else{b.textContent=(cost<0?"+"+(-cost):cost)+" kr"; b.disabled=P.kr<cost || cost<=0 && title.indexOf("bensin")>-1 && P.fuel>=P.fuelMax;
     b.onclick=function(){ if(shopLock||P.kr<cost)return; shopLock=true; setTimeout(function(){shopLock=false},400); // dobbeltklikk-vern
       if(!P.motorOk && cost>0 && cost<8000 && P.kr-cost<8000){ notice("Spar pengene til motorreparasjonen hos Propell-Kjell — 8000 kr ⚙️"); return; } // aldri shoppe-seg-til-softlock (reparasjon/motorer slipper gjennom)
