@@ -1207,22 +1207,24 @@ var RODS=[{n:"Stang I",max:1.2},{n:"Stang II",max:2.3},{n:"Stang III",max:3.6}];
 /* 16 sluker — alle kan brukes overalt, men har ANBEFALTE soner (rec). Utenfor anbefalingen napper
    fisken tregere (budsjett ×1.4) og sluk-bonusene gjelder ikke. img = eksisterende/ventende kunstfil. */
 var SLUK=[
- {k:"blink",e:"🥄",n:"Blink",pris:15,rec:[0],img:"blink-sluk",b:{makrell:1.6,sei:1.2}},
- {k:"spinner",e:"🌀",n:"Spinner",pris:25,rec:[0],img:"sluk-spinner.gif",b:{lyr:1.6,makrell:1.2}},
- {k:"dupp",e:"🎈",n:"Dupp og mark",pris:20,rec:[0],img:"dupp",b:{berggylte:1.7,sandflyndre:1.3}},
- {k:"gummimakk",e:"🪱",n:"Gummimakk",pris:30,rec:[0,1],img:"gummimakk",b:{knurr:1.7,lomre:1.3}},
- {k:"sildeforsats",e:"✨",n:"Seiforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:1.7,makrell:1.3,akkar:1.4}}, // het «Sildeforsats», men løfter sei og starter ikke hekle-minispillet — navnet var en felle ved siden av Sildehekla
- {k:"wobbler",e:"🐠",n:"Wobbler",pris:45,rec:[0,1],img:"sluk-wobbler.gif",b:{lysing:1.7,lyr:1.25}},
- {k:"torskepilk",e:"🎣",n:"Torskepilk",pris:50,rec:[1],img:"torskepilk",b:{torsk:1.6}},
- {k:"juksa",e:"🧵",n:"Juksa",pris:60,rec:[1],img:"sluk-juksa.gif",b:{hyse:1.6,sei:1.2}},
- {k:"gummijigg",e:"🦎",n:"Gummijigg",pris:55,rec:[1,2],img:"sluk-gummijigg.gif",b:{lysing:1.6,lange:1.2}},
- {k:"pirk",e:"⚓",n:"Pirk",pris:80,rec:[1,2],img:"sluk-mellomdyp",b:{uer:1.7,hyse:1.2}},
- {k:"svenskepilk",e:"🇸🇪",n:"Svenskepilk",pris:90,rec:[1,2],img:"sluk-svenskepilk.gif",b:{torsk:1.45,brosme:1.2}},
- {k:"dyppilk",e:"🌑",n:"Djuphavspilk",pris:120,rec:[2],img:"sluk-djuphavs",b:{lange:1.7,brosme:1.25}},
- {k:"lysende",e:"💡",n:"Selvlysende pilk",pris:150,rec:[2,3],img:"sluk-lysende.gif",b:{havmus:1.7,akkar:1.5,haagjel:1.2}},
- {k:"kveitepilk",e:"🏆",n:"Kveitepilk",pris:250,rec:[2],img:"sluk-kveitepilk.gif",b:{kveite:1.6,blaakveite:1.3}},
- {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{haagjel:1.6,skolest:1.6,brosme:1.2}},
- {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpilk.gif",b:{blaakveite:1.7,svarthaa:1.3}},
+ // Signaturarten står FØRST i hver b:{}. Tallene under 1 er like viktige som de over:
+ // uten demping stiger hele puljen sammen og signaturen forsvinner i normaliseringen.
+ {k:"blink",e:"🥄",n:"Blink",pris:15,rec:[0],img:"blink-sluk",b:{makrell:3,sei:0.7,sandflyndre:0.7}},
+ {k:"spinner",e:"🌀",n:"Spinner",pris:25,rec:[0],img:"sluk-spinner.gif",b:{lyr:4.5,sei:0.6,sandflyndre:0.7}},
+ {k:"dupp",e:"🎈",n:"Dupp og mark",pris:20,rec:[0],img:"dupp",b:{sandflyndre:4.6,berggylte:1.7,sei:0.55,makrell:0.55,lyr:0.7}},
+ {k:"gummimakk",e:"🪱",n:"Gummimakk",pris:30,rec:[0,1],img:"gummimakk",b:{hyse:1.3,sandflyndre:2,knurr:1.7,lomre:1.3,sei:0.75,makrell:0.7,torsk:0.6}},
+ {k:"sildeforsats",e:"✨",n:"Seiforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:3.6,sild:7.5,akkar:1.4,makrell:1.3,torsk:0.6,hyse:0.6}}, // het «Sildeforsats», men løfter sei og starter ikke hekle-minispillet — navnet var en felle ved siden av Sildehekla
+ {k:"wobbler",e:"🐠",n:"Wobbler",pris:45,rec:[0,1],img:"sluk-wobbler.gif",b:{lyr:3.2,lysing:1.7,sei:0.8,sild:0.8,torsk:0.55,hyse:0.55}},
+ {k:"torskepilk",e:"🎣",n:"Torskepilk",pris:50,rec:[1],img:"torskepilk",b:{torsk:1.5,hyse:0.75,lyr:0.8}},
+ {k:"juksa",e:"🧵",n:"Juksa",pris:60,rec:[1],img:"sluk-juksa.gif",b:{hyse:1.6,torsk:0.55}},
+ {k:"gummijigg",e:"🦎",n:"Gummijigg",pris:55,rec:[1,2],img:"sluk-gummijigg.gif",b:{lange:3.5,lyr:2.2,lysing:1.6}},
+ {k:"pirk",e:"⚓",n:"Pirk",pris:80,rec:[1,2],img:"sluk-mellomdyp",b:{uer:3.4,hyse:1.25,torsk:0.7,brosme:0.8,lange:0.8}},
+ {k:"svenskepilk",e:"🇸🇪",n:"Svenskepilk",pris:90,rec:[1,2],img:"sluk-svenskepilk.gif",b:{torsk:1.4,uer:0.6,lange:0.6,brosme:0.55}},
+ {k:"dyppilk",e:"🌑",n:"Djuphavspilk",pris:120,rec:[2],img:"sluk-djuphavs",b:{lange:3.2,uer:0.8,brosme:0.7}},
+ {k:"lysende",e:"💡",n:"Selvlysende pilk",pris:150,rec:[2,3],img:"sluk-lysende.gif",b:{brosme:2.7,havmus:1.7,akkar:1.5,haagjel:0.8,blaakveite:0.8}},
+ {k:"kveitepilk",e:"🏆",n:"Kveitepilk",pris:250,rec:[2],img:"sluk-kveitepilk.gif",b:{torsk:1.9,kveite:1.6,brosme:0.7,lange:0.8}},
+ {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{haagjel:4.2,skolest:1.6,uer:1.3,lange:0.8,brosme:0.6}},
+ {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpilk.gif",b:{blaakveite:7.4,svarthaa:1.3,lange:1.3,uer:0.7,haagjel:0.7,brosme:0.6}},
  {k:"kjeks",e:"🍪",n:"Kjekssluk",pris:10,rec:[0],img:"sluk-oreo.gif",dud:true,b:{}}, // spøkesluk: fisk har IKKE søtsug — «Den er til kaffen.» — Rusten
  {k:"markpilk",e:"🪱",n:"Markpilk",pris:90,rec:[0,1],img:"sluk-markpilk",pilk:true,b:{}}, // forsats med mange makker — pump og hent småfisk (juksa-teknikk)
  // Sildehekle: forsats med små kroker og røde perler som ligner tyttebær. Båten står i
@@ -1237,18 +1239,18 @@ function slukAnbefalt(){ var u=aktivSluk(); return !u||u.rec.indexOf(depth)>=0; 
 /* Agn til stanga: b = artsvekt-bonus (hva agnet lokker), rar = ganger sjelden/legendarisk-sjansen.
    Pakke = antall per kjøp. kunFangst: fås ikke i butikken (krabbe fra teina). */
 var AGN=[
- {k:"makrellhode",e:"🐟",n:"Makrellhode",pris:120,pakke:4,b:{kveite:2.2,breiflabb:1.8,haakjerring:1.7,haabrann:1.6,skate:1.5,blaakveite:1.5,lange:1.4,steinbit:1.3,brosme:1.3}},
- {k:"sei",e:"🐟",n:"Seibiter",pris:100,pakke:4,b:{torsk:1.5,lange:1.4,brosme:1.4,lysing:1.5,piggha:1.3}},
- {k:"sild",e:"🐟",n:"Sild",pris:100,pakke:4,b:{torsk:1.6,haabrann:1.7,sei:1.4,lyr:1.4,hyse:1.3,makrellstorje:1.2}},
- {k:"akkar",e:"🦑",n:"Akkar",pris:160,pakke:4,b:{torsk:1.7,brosme:1.6,lange:1.6,haagjel:1.5,kveite:1.4,havmus:1.4,svarthaa:1.4,skolest:1.5}},
- {k:"reke",e:"🦐",n:"Reker",pris:80,pakke:4,b:{hyse:1.6,hvitting:1.6,rodspette:1.5,sandflyndre:1.5,lomre:1.5,blastal:1.5,skrubbe:1.4,brungylt:1.4,berggylte:1.4,rognkjeks:1.5,rognkall:1.5}},
- {k:"borstemark",e:"🪱",n:"Børstemark",pris:80,pakke:4,b:{sandflyndre:1.7,aalekvabbe:1.7,skrubbe:1.6,rodspette:1.6,lomre:1.6,berggylte:1.4,knurr:1.4,rognkjeks:1.4}},
- {k:"polsebiter",e:"🌭",n:"Pølsebiter",pris:50,pakke:4,b:{knurr:1.3,skrubbe:1.2,torsk:1.15}},
- {k:"blaaskjell",e:"🐚",n:"Blåskjell",pris:60,pakke:4,b:{steinbit:1.7,berggylte:1.5,hyse:1.4,brungylt:1.4}},
- {k:"fiskeboller",e:"🥣",n:"Fiskeboller",pris:50,pakke:4,b:{sei:1.25,lyr:1.2,hvitting:1.2}},
- {k:"brunost",e:"🧀",n:"Brunost",pris:70,pakke:4,b:{uer:1.3,berggylte:1.2}},
- {k:"bacon",e:"🥓",n:"Bacon",pris:90,pakke:4,b:{torsk:1.35,steinbit:1.3,knurr:1.3}},
- {k:"krabbe",e:"🦀",n:"Krabbeagn",pris:0,pakke:0,kunFangst:true,b:{steinbit:1.8,berggylte:1.5,torsk:1.3,uer:1.3}},
+ {k:"makrellhode",e:"🐟",n:"Makrellhode",pris:120,pakke:4,b:{blaakveite:7.5,kveite:2.2,breiflabb:1.8,haakjerring:1.7,haabrann:1.6,skate:1.5,lange:1.6,steinbit:1.3,haagjel:0.8,uer:0.7,brosme:0.6}},
+ {k:"sei",e:"🐟",n:"Seibiter",pris:100,pakke:4,b:{lange:3,lysing:1.5,piggha:1.3,torsk:1.3,uer:0.7,brosme:0.6}},
+ {k:"sild",e:"🐟",n:"Sild",pris:100,pakke:4,b:{sei:2.4,haabrann:1.7,torsk:1.4,lyr:1.4}},
+ {k:"akkar",e:"🦑",n:"Akkar",pris:160,pakke:4,b:{torsk:1.4,skolest:1.5,havmus:1.4,svarthaa:1.4,kveite:1.4,brosme:1.3,lange:1.3,hyse:0.7}},
+ {k:"reke",e:"🦐",n:"Reker",pris:80,pakke:4,b:{sandflyndre:2.6,uer:2,hyse:1.6,hvitting:1.6,rodspette:1.5,lomre:1.5,blastal:1.5,rognkjeks:1.5,rognkall:1.5,skrubbe:1.4,brungylt:1.4,berggylte:1.4,makrell:0.6,sei:0.6,brosme:0.7,lange:0.7,torsk:0.55}},
+ {k:"borstemark",e:"🪱",n:"Børstemark",pris:80,pakke:4,b:{sandflyndre:4.6,aalekvabbe:1.7,skrubbe:1.6,rodspette:1.6,lomre:1.6,hyse:1.4,berggylte:1.4,knurr:1.4,rognkjeks:1.4,makrell:0.55,sei:0.55,lyr:0.7}},
+ {k:"polsebiter",e:"🌭",n:"Pølsebiter",pris:50,pakke:4,b:{torsk:1.35,knurr:1.3,skrubbe:1.2,sandflyndre:1.2}},
+ {k:"blaaskjell",e:"🐚",n:"Blåskjell",pris:60,pakke:4,b:{steinbit:1.7,berggylte:1.5,brungylt:1.4,hyse:1.3,torsk:0.7}},
+ {k:"fiskeboller",e:"🥣",n:"Fiskeboller",pris:50,pakke:4,b:{sei:1.9,lyr:1.4,hvitting:1.2,sandflyndre:0.8,makrell:0.8}},
+ {k:"brunost",e:"🧀",n:"Brunost",pris:70,pakke:4,b:{uer:3.2,berggylte:1.2,hyse:1.3,lange:0.7,torsk:0.7,brosme:0.6}},
+ {k:"bacon",e:"🥓",n:"Bacon",pris:90,pakke:4,b:{torsk:1.3,steinbit:1.3,knurr:1.3,sei:1.3,hyse:0.7}},
+ {k:"krabbe",e:"🦀",n:"Krabbeagn",pris:0,pakke:0,kunFangst:true,b:{uer:3.5,steinbit:1.8,berggylte:1.5,torsk:1.3,lange:0.7,brosme:0.6}},
  {k:"rustenspesial",e:"✨",n:"Rustens Spesialagn",pris:200,pakke:1,rar:1.5},
  {k:"rustensuper",e:"💎",n:"Rustens Superagn",pris:2000,pakke:1,superLegend:true} // garantert legendar på Djuphavet + bedøver (halv kamptid)
 ];
@@ -1962,20 +1964,34 @@ function startWait(){
   var zf=FISH.filter(function(f){return iSona(f) && f.k!=="makrellstorje"}); // størja tas ALDRI på bunnsluk; allZ (steinbit) biter overalt; zb = art med to soner
   var t2=zf.filter(function(f){return f.rar===2}), t1=zf.filter(function(f){return f.rar===1}), t0=zf.filter(function(f){return !f.rar});
   var base=t0.length?t0:(t1.length?t1:zf); // sonens hverdagsfisk (i Dypt spiller de «sjeldne» hverdagsrollen)
-  // Lokking: b:1.5 på en art betyr «50 % større sjanse for den arten» — regnet på ANDEL av puljen,
-  // og lokker sluken/agnet en sjelden eller legendarisk art, øker også sjansen for at den puljen i det hele tatt kommer.
+  // Lokking: b:2 på en art betyr «denne biter dobbelt så ofte som ellers, sett mot de andre i puljen».
+  // b under 1 demper — det er slik en sluk kan ha en signatur uten at alt annet stiger med.
+  // Lokker riggen en sjelden eller legendarisk art, øker også sjansen for at den puljen kommer.
   function rigB(f){ var b=dognFaktor(f)*vaerFaktor(f)*sesongFaktor(f)*stromFaktor(f); if(agEff&&agEff.b&&agEff.b[f.k])b*=agEff.b[f.k]; if(suEff&&suEff.b&&suEff.b[f.k])b*=suEff.b[f.k]; return b; }
   function beste(pl){ var m=1; pl.forEach(function(f){ var b=rigB(f); if(b>m)m=b; }); return m; }
+  // Ren relativ vekting. Tre ting er fjernet herfra, og alle tre var feil:
+  //
+  // 1. Taket «Math.min(pi*b, 0.8)». Det klemte andelen FØR normaliseringen. På Grunt
+  //    kjører døgnfaktoren for full styrke (DOGNDYP[0]=1), så sei, lyr og makrell har
+  //    gratis multiplikatorer på 2–3,5 og ligger allerede PÅ taket før sluken nevnes.
+  //    Resultat: Blink og Seiforsats ga byte-identisk fangst på Grunt, og torskepilken
+  //    ga samme utfall enten det sto 1,6 eller 10 i tabellen.
+  // 2. «if(b>1) … if(b<1) … else». En art med b nøyaktig 1,000 falt ut av begge grener
+  //    og havnet på et restgulv. Derfor gikk sandflyndra NED når du satte på duppen —
+  //    sluken som er laget for henne gjorde henne sjeldnere. Med én vektlinje finnes
+  //    ikke hullet.
+  // 3. «if(sumB>0.9)». Bevist nulloperasjon: kalleren normaliserer selv, så faktoren
+  //    forkortes bort. Målt forskjell med og uten: 0,0000 prosentpoeng.
+  //
+  // 85 %-vakta under er derimot EKTE — den regner på andelen etter normalisering.
+  // Målt over 28 rigger × soner × 240 miljøer slår den inn i 0 av 214 680 tilfeller.
+  // Den er en sikring mot en framtidig tabell, ikke en balansemekanisme.
   function poolVekter(pl){ var raw=pl.map(function(f){ return (f.zb===depth&&f.zbw)?f.zbw:f.w; });
     var tot=0; raw.forEach(function(w){tot+=w}); if(!tot)return raw;
-    var p=raw.map(function(w){return w/tot}), sumB=0, sumR=0;
-    var ny=p.map(function(pi,i){ var b=rigB(pl[i]);
-      if(b>1){ var t=Math.min(pi*b,0.8); sumB+=t; return t; }   // løft: «+50 %» betyr eksakt det
-      if(b<1){ var d=pi*b; sumB+=d; return d; }                  // demping: døgnrytmen MÅ kunne slå ned, ikke bare opp
-      sumR+=pi; return null; });
-    if(sumB>0.9){ var k=0.9/sumB; ny=ny.map(function(v){return v==null?null:v*k}); sumB=0.9; } // hverdagsfisken kveles aldri helt
-    var rest=Math.max(0,1-sumB);
-    return ny.map(function(v,i){ return v!=null?v:(sumR>0?p[i]/sumR*rest:0); }); }
+    var v=raw.map(function(w,i){ return w/tot*rigB(pl[i]); });          // b gjør nøyaktig det tabellen lover — også nedover
+    var sum=0, mx=0, mi=0; v.forEach(function(x,i){ sum+=x; if(x>mx){mx=x;mi=i} });
+    if(sum>0 && pl.length>1 && mx>0.85*sum) v[mi]=(sum-mx)*(0.85/0.15); // ingen art tar mer enn 85 % — hverdagsfisken kommer alltid
+    return v; }
   var roll=Math.random(), pool, bc, ek=P.ekko?1+0.5*riggK():1; // ekkoloddet ser stimene: +50 % sjanse for sjelden/legendarisk
   if(agEff&&agEff.rar)ek*=agEff.rar; // Rustens Spesialagn: +50 %
   var pL=ek/150*beste(t2), pR=ek/75*beste(t1); // riggen lokker også de sjeldne fram
