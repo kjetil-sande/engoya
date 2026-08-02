@@ -490,3 +490,50 @@ now shown from the **hips up**, standing and facing **left**. A **propeller held
 one hand** at his side, the other wiping itself on a rag. Slight stoop from years
 over an engine. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered
 dithering, limited 24-colour palette. Fully transparent background, no shadow.
+
+---
+
+## 18. Rusten på nytt — i samme stil som Kjell og Målfrid
+
+Fil: **`portrett-rusten.png`** — **400 × 400**, transparent
+(samme mål og ramme som `portrett-kjell.png` og `portrett-maalfrid.png`)
+
+Rusten er tegnet i en annen oppløsning enn de to andre. Han har **myk
+skyggelegging, mange farger og fine overganger** i skjegget og strikken — det
+ser ut som en detaljert illustrasjon skalert ned. Kjell og Målfrid er **ekte
+grovkornet 16-bit**: store, tydelige piksler, hard mørk kontur rundt figuren,
+få farger. Ved siden av hverandre på dekksknappene ser de ikke ut som de hører
+til i samme spill.
+
+**Det som må matche** (dette er hele poenget med bildet):
+
+- **Store, synlige piksler.** Tegn som om ramma var ca. 96 × 96 og så forstørret
+  — ikke 400 × 400 med fine detaljer.
+- **Hard mørk kontur** hele veien rundt figuren, slik Kjell og Målfrid har.
+- **Få farger.** Skygger som flater, ikke som overganger. Ingen myk blending.
+- Ansiktet skal fylle ramma — bryst og opp. Han vises som rund avatar på 44 px.
+- Han ser mot **høyre**, som Målfrid.
+
+**Sånn ser han ut** (behold alt dette — det er samme mann):
+
+Eldre nordnorsk fisker, rundt sytti. **Mørk marineblå skipperlue med et lite
+ankermerke** foran. **Fullt hvitt skjegg og bart**, godt stelt. **Pipe av tre i
+munnviken** med en tynn røykstripe. **Mørk grønn-grå kabelstrikket
+høyhalsgenser**. **Brun slitt oljehyre-selebukse** med spenner over skuldrene.
+**Armene i kors over brystet.** Rolig, tørr, litt lur — mannen som har sett alt
+og ikke lar seg imponere.
+
+16-bit pixel art character portrait, head and chest, facing slightly right.
+An **elderly Northern Norwegian fisherman around seventy**, arms folded across
+his chest. **Dark navy skipper's cap with a small anchor badge**, **full white
+beard and moustache**, a **wooden pipe** in the corner of his mouth with a thin
+curl of smoke. Dark grey-green **cable-knit turtleneck** under **worn brown
+oilskin bib overalls** with buckled straps. Calm, dry, quietly amused
+expression. **Chunky visible pixels as if drawn on a 96×96 grid then enlarged**,
+**hard dark outline around the whole figure**, flat blocks of colour with no
+soft shading and no blending, strict pixel grid, no anti-aliasing, ordered
+dithering only, limited 24-colour palette. Fully transparent background. No
+text, no frame, no logo.
+
+**Når den er klar** kan du også lage `knapp-rusten.png` beskåret tettere om
+ansiktet, slik du gjør for de to andre. Spillet plukker den opp av seg selv.
