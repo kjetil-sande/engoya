@@ -1211,7 +1211,7 @@ var SLUK=[
  {k:"spinner",e:"🌀",n:"Spinner",pris:25,rec:[0],img:"sluk-spinner.gif",b:{lyr:1.6,makrell:1.2}},
  {k:"dupp",e:"🎈",n:"Dupp og mark",pris:20,rec:[0],img:"dupp",b:{berggylte:1.7,sandflyndre:1.3}},
  {k:"gummimakk",e:"🪱",n:"Gummimakk",pris:30,rec:[0,1],img:"gummimakk",b:{knurr:1.7,lomre:1.3}},
- {k:"sildeforsats",e:"✨",n:"Sildeforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:1.7,makrell:1.3,akkar:1.4}},
+ {k:"sildeforsats",e:"✨",n:"Seiforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:1.7,makrell:1.3,akkar:1.4}}, // het «Sildeforsats», men løfter sei og starter ikke hekle-minispillet — navnet var en felle ved siden av Sildehekla
  {k:"wobbler",e:"🐠",n:"Wobbler",pris:45,rec:[0,1],img:"sluk-wobbler.gif",b:{lysing:1.7,lyr:1.25}},
  {k:"torskepilk",e:"🎣",n:"Torskepilk",pris:50,rec:[1],img:"torskepilk",b:{torsk:1.6}},
  {k:"juksa",e:"🧵",n:"Juksa",pris:60,rec:[1],img:"sluk-juksa.gif",b:{hyse:1.6,sei:1.2}},
@@ -1742,6 +1742,10 @@ function cast(){
   if(agnDef[P.rig]&&(P.agn[P.rig]||0)<1){ var tomN=agnDef[P.rig].n, fb=SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0];
     P.rig=fb?fb.k:"blink"; updateRigChip(); notice("Tomt for "+tomN+" — du fisker med "+(fb?fb.n.toLowerCase():"sluk")+" igjen 🪝"); }
   if(P.rig==="rustensuper"&&depth!==3){ notice("Superagnet er laget for djuphavet (300–500 m) — spar det til du er der nede 💎"); return; }
+  // Forsatser fiskes i stimen oppe i sjøen. Pilkeminispillet spør aldri om dybde, så
+  // uten denne kunne man hekle sild på 500 meter og markpilke sei like langt nede.
+  if(slukDef[P.rig]&&slukDef[P.rig].pilk&&!slukAnbefalt()){
+    notice("Forsatsen fiskes i stimen oppe i sjøen — ta den med på "+ZONE[0].toLowerCase()+" eller "+ZONE[1].toLowerCase()+" 🫐"); return; }
   if(slukDef[P.rig]&&(P.lures[P.rig]||0)<1){ var tomS=slukDef[P.rig].n, fb2=SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0];
     if(fb2){ P.rig=fb2.k; updateRigChip(); notice("Tom for "+tomS+" — byttet til "+fb2.n+" 🧰"); }
     else {
@@ -1790,7 +1794,7 @@ function cast(){
 }
 /* Rustens bestilling: dato-seedet «dagens art» — hele familien får samme, selges +50 % */
 function dailyFish(){ var d=new Date(), s=d.getFullYear()*372+d.getMonth()*31+d.getDate();
-  var pool=FISH.filter(function(f){return !f.trophy&&f.z!==3&&!f.freda&&!fredetNaa(f)&&f.pris>0
+  var pool=FISH.filter(function(f){return !f.trophy&&f.z!==3&&!f.freda&&!fredetNaa(f)&&f.pris>0&&f.k!=="sild"
     &&(!f.ss||f.ss[d.getMonth()]>0); }); // ei bestilling må kunne innfriast: ikkje freda, ikkje verdlaus, og arten må finnast denne månaden
   return pool[((s*9301+49297)%233280)%pool.length]; } // djuphavsarter er ikke dagens art (ikke alle har vinsj)
 function starSumFor(pl){ var sum=0; FISH.forEach(function(f){ var rec=pl.caught&&pl.caught[f.k]; if(!rec)return;
@@ -1944,7 +1948,7 @@ function pilkSlutt(){
   $("#potTitle").textContent="🎣 Pilkefangst";
   $("#potTotal").innerHTML=total?('Solgt til Rusten: <b>'+total+' kr</b>'):'';
   // «Ta med» er feil når alt gikk ut igjen — da er det ingenting å ta med.
-  $("#potTake").textContent = total ? "Ta med" : "Lukk";
+  $("#potTake").textContent = (total||sildAgn) ? "Ta med" : "Lukk"; // silda gikk i agnboksen — da er det noe å ta med
   var fikk=pilkFangst.length>0; pilkFangst=[]; hud(); saveAll(); syncFam(); modal("potModal",true);
   if(fikk)streakTikk(); // etter oppgjøret — kortet venter til det er lukket
 }
@@ -3918,20 +3922,25 @@ function loop(now){
     // oppe og «Vil du ha lyd?» ligger nede — da skal måkene gli i det mørkeste blå helt
     // øverst, som eieren ba om. Etter panoreringen (#menu.valt) er tittelskiltet der
     // oppe, og da hører de hjemme i det gamle båndet bak det.
-    // MERK: #skyCv følger IKKE panoreringen. Den er viewport-festet (position:absolute,
-    // inset:0), så båndene er i SKJERMkoordinater, ikke i bakgrunnsbildet. Den ligger
-    // dessuten på z-index −1 med pointer-events:none, så måkene tegnes over landskapet
-    // men alltid bak knappene, og kan verken dekke dem eller stjele et trykk.
+    // MERK: #skyCv følger IKKE background-position-panoreringen — båndene er i
+    // LERRETkoordinater, ikke i bakgrunnsbildet. (Lerretet ligger inne i #menu og
+    // ruller med innholdet om siden skulle rulle; det er lobbyKart() som kompenserer
+    // for scrollTop, og bare for glitteret og røyken.) Det ligger på z-index −1 med
+    // pointer-events:none, så måkene tegnes over landskapet men alltid bak knappene,
+    // og kan verken dekke dem eller stjele et trykk.
     var foerPan=!$("#menu").classList.contains("valt");
     // 0.04, ikke 0.02: newFlyGull setter y som SENTRUM, og en måke er ~32 px høy — startet
     // båndet høyere ville toppen av vingene blitt klippet av skjermkanten. Målt.
     var gyMin=lgH*(foerPan?0.04:0.06), gyMax=lgH*(foerPan?0.14:0.34);
+    // Såingen MÅ følge samme døgnkvote som spawningen. Om natta er kvoten én måke, og
+    // en hardkodet treer ville gitt tre i en nattehimmel som skal ha én.
+    var gTak=maakeTal(3);
     if(!lobbyFylt){ lobbyFylt=true;                 // lydvalget står bare noen få sekunder,
-      for(var _i=0;_i<3;_i++){                      // og spawn-intervallet er 5–13 s — uten
+      for(var _i=0;_i<gTak;_i++){                   // og spawn-intervallet er 5–13 s — uten
         var _g=newFlyGull(gyMin,gyMax);             // såing ville himmelen vært tom det meste
         _g.x=0.05+Math.random()*0.85;               // av tida skjermen faktisk vises
         lobbyGulls.push(_g); } }
-    drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,gyMin,gyMax,maakeTal(3),lobbySpawn,0); } // øverst på lydvalget, bak tittelen etterpå
+    drawGullField(lgCtx,lgW,lgH,lobbyGulls,dt,gyMin,gyMax,gTak,lobbySpawn,0); } // øverst på lydvalget, bak tittelen etterpå
   if($("#sea").classList.contains("on")){ drawScene(dt); tegnVaer(dt); snelleSpinn(dt); Snd.dykk(phase!=="idle", dykkAndel(), depth); $("#sea").classList.toggle("fishing", phase!=="idle");
     if(boatIn>=1&&fisherT>=1&&!Snd.overflateStille()){ nysCool-=dt; if(nysCool<=0&&Math.random()<dt/140){ var rl=Math.random();
       if(rl<0.06){ Snd.fiskerFis(); dogShow(1,3); }
@@ -3957,14 +3966,20 @@ function loop(now){
     // Lokkinga er et RYKK, ikke en innhaling. Før var taket 30 % av skjermhøyden —
     // målt på Grunt er det 234 px, og med 8,1 piksler per meter blir det 29 METER.
     // Da kan du sveive sluken nesten helt opp til båten, som er nøyaktig det eieren
-    // reagerte på. Han ba om 0,5–1 meter, og det er nå det den får.
+    // reagerte på. Han ba om 0,5–1 meter.
     // Vannsøyla fra vannlinja ned til sanden svarer til sonens maksdybde, så
-    // omregningen til meter er ekte. Gulvet på 2 % av skjermhøyden MÅ være der:
-    // én meter er 8 px på Grunt, men bare ~1 px på Djuphavet, og uten gulvet ville
-    // lokkinga sett helt død ut der nede — du holder inne og ingenting skjer.
+    // omregningen til meter er ekte. Taket er én meter ELLER 1,2 % av skjermhøyden,
+    // det største av de to. Gulvet MÅ være der: én meter er få piksler på Grunt og
+    // enda færre på Djuphavet, og uten det ville lokkinga sett helt død ut — du
+    // holder inne og ingenting skjer.
+    // MÅLT PÅ EKTE MOBILFORMAT: mPx er 4–8 px per meter. Med et gulv på 1,2 % vant
+    // gulvet i ALLE soner og rykket ble 1,15–2,2 m — over det eieren ba om. Med 0,8 %
+    // vinner meterregningen der den betyr mest: nøyaktig 1,00 m på Grunt på alle
+    // skjermhøyder, og 1,0–1,5 m i de dype sonene der én meter er for få piksler til
+    // å se. Gulvet er dermed bare en synlighetssikring, ikke det som bestemmer.
     var gw=colGeom();
     var mPx=gw?(gw.imgH*(BUNNFRAC[depth]||0.9)-gw.wl)/SONEDJUP[depth]:H*0.02;
-    var tak=Math.min(H*0.30, (lureTargetW-camBottom)*0.55, Math.max(H*0.012, mPx));
+    var tak=Math.min(H*0.30, (lureTargetW-camBottom)*0.55, Math.max(H*0.008, mPx));
     // Farten følger taket. Med den gamle faste farten (0,16·H per sekund) ville et
     // tak på 16 px vært nådd på 0,13 s — et smell, ikke et rykk. Nå tar det ~0,55 s
     // opp og ~0,9 s tilbake, uansett hvor stort taket er.
@@ -4155,7 +4170,8 @@ function drawScene(dt){
       // colTop og ned, altså et HELT annet koordinatrom, og fisken havnet under sluken.
       // Feilen vokser med colTop: målt +202 px på Grunt, +109 på Mellomdyp, +72 på Dypt
       // og +54 på Djuphavet — derfor så eieren det tydeligst på Grunt, der vannlinja
-      // ligger lavest på skjermen. Gulvet på colTop+6 holder fisken under overflata.
+      // ligger lavest på skjermen. Gulvet på colTop+6 er en ren sikring mot ekstremverdier —
+      // i praksis sikter fisken alltid mot sluken, som står langt under vannlinja.
       var fx=biter?lineX:W*sceneFish.x, fy=(phase==="wait")?Math.max(colTop+6, H*sceneFish.y):(ey+rigDy);
       drawSwim(fx,fy,sceneFish.f,0, sceneFish.vx>0, goldCatch, sceneFish.sizeLen, biter);
     }
