@@ -28,7 +28,7 @@ const egen = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // aldri arve
 // Utstyr følger spilleren over nett (samme «siste innsending vinner»-regel som kroner),
 // slik at familien kan logge inn på en ny enhet og få igjen stang, vinsj, turbosnelle osv.
 const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs", "streak", "streakDag", "streakBest"];
-const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "motorOk", "sattDekk"];
+const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "belte", "motorOk", "sattDekk"];
 const GEAR_TEKST = { motor: 10, rig: 24, naadeMnd: 7 };
 // Objektfeltene vaskes TYPET (aldri rå gjennomstrømming): nøkler må være pene id-er og
 // verdier tall/boolske — da finnes det ingen vei for skript eller rare typer inn i andres lagring.
@@ -105,6 +105,84 @@ function flettTrofe(gml, ny) {
   }
   return [...sett.values()].sort((a, b) => b.ts - a.ts).slice(0, MAKS_TROFE);
 }
+function vaskFunnSett(o) {
+  if (!o || typeof o !== "object" || Array.isArray(o)) return undefined;
+  const ut = {};
+  for (const k of Object.keys(o).slice(0, 200))
+    if (PEN_NOKKEL.test(k) && !FARLIGE.has(k) && o[k]) ut[k] = 1;
+  return Object.keys(ut).length ? ut : undefined;
+}
+function vaskTur(t) {
+  if (!t || typeof t !== "object" || Array.isArray(t)) return undefined;
+  if (typeof t.fk !== "string" || !PEN_NOKKEL.test(t.fk)) return undefined;
+  return { fk: t.fk, sum: tall(t.sum, 9e9), del: tall(t.del, 1),
+           start: tall(t.start, 9e15), ferdig: tall(t.ferdig, 9e15),
+           seed: tall(t.seed, 4e9), niv: tall(t.niv, 9) };
+}
+function vaskInvest(v) {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return undefined;
+  const ut = {};
+  const tur = vaskTur(v.tur); if (tur) ut.tur = tur;
+  const utstyr = vaskTelleObjekt(v.utstyr, 30); if (utstyr) ut.utstyr = utstyr;
+  const nei = vaskTelleObjekt(v.nei, 30); if (nei) ut.nei = nei;
+  if (v.hist && typeof v.hist === "object" && !Array.isArray(v.hist)) {
+    const h = {};
+    for (const k of Object.keys(v.hist).slice(0, 30)) {
+      if (!PEN_NOKKEL.test(k) || FARLIGE.has(k)) continue;
+      const r = v.hist[k]; if (!r || typeof r !== "object") continue;
+      h[k] = { turar: tall(r.turar, 9e6), inn: tall(r.inn, 9e12), ut: tall(r.ut, 9e12) };
+    }
+    if (Object.keys(h).length) ut.hist = h;
+  }
+  for (const k of ["neste", "nesteTid"]) if (v[k] != null) ut[k] = tall(v[k], 9e15);
+  return Object.keys(ut).length ? ut : undefined;
+}
+function vaskInnboks(a) {
+  if (!Array.isArray(a)) return undefined;
+  const ut = [];
+  for (const m of a.slice(0, 30)) {
+    if (!m || typeof m !== "object") continue;
+    if (typeof m.fk !== "string" || !PEN_NOKKEL.test(m.fk)) continue;
+    if (typeof m.type !== "string" || !PEN_NOKKEL.test(m.type)) continue;
+    const e = { id: tall(m.id, 4e9), fk: m.fk, type: m.type,
+                tid: tall(m.tid, 9e15), lest: !!m.lest };
+    for (const k of ["timar", "mult", "inn", "ut"]) if (m[k] != null) e[k] = tall(m[k], 9e12);
+    if (typeof m.utfall === "string" && PEN_NOKKEL.test(m.utfall)) e.utfall = m.utfall;
+    if (typeof m.tekst === "string") e.tekst = m.tekst.slice(0, 1200);
+    ut.push(e);
+  }
+  return ut.length ? ut : undefined;
+}
+// Union på id. En melding som finnes ett sted finnes overalt.
+function flettInnboks(gml, ny) {
+  const sett = new Map();
+  for (const m of [...(Array.isArray(gml) ? gml : []), ...(Array.isArray(ny) ? ny : [])]) {
+    if (!m || m.id == null) continue;
+    const har = sett.get(m.id);
+    if (har) { if (m.lest) har.lest = true; continue; }   // lest er en enveis dør
+    sett.set(m.id, { ...m });
+  }
+  return [...sett.values()].sort((a, b) => b.tid - a.tid).slice(0, 30);
+}
+function flettInvest(gml, ny) {
+  const g = gml && typeof gml === "object" ? gml : {};
+  const n = ny && typeof ny === "object" ? ny : {};
+  const ut = { ...n };
+  // Kjøpt trålutstyr kan aldri krympe — samme regel som rod og lineOwned.
+  if (g.utstyr) { ut.utstyr = { ...(n.utstyr || {}) };
+    for (const k of Object.keys(g.utstyr))
+      ut.utstyr[k] = Math.max(tall(g.utstyr[k], 9), tall(ut.utstyr[k], 9)); }
+  // Historien er tellere som bare går oppover.
+  if (g.hist) { ut.hist = { ...(n.hist || {}) };
+    for (const k of Object.keys(g.hist)) { const a = g.hist[k], b = ut.hist[k] || {};
+      ut.hist[k] = { turar: Math.max(tall(a.turar, 9e6), tall(b.turar, 9e6)),
+                     inn: Math.max(tall(a.inn, 9e12), tall(b.inn, 9e12)),
+                     ut: Math.max(tall(a.ut, 9e12), tall(b.ut, 9e12)) }; } }
+  // En tur som er betalt for og fortsatt ute skal ALDRI slettes av en enhet
+  // som ikke vet om den. Er den ferdig, får den som henter den avgjøre.
+  if (!ut.tur && g.tur && tall(g.tur.ferdig, 9e15) > Date.now()) ut.tur = g.tur;
+  return Object.keys(ut).length ? ut : undefined;
+}
 function vaskGear(g) {
   if (!g || typeof g !== "object") return undefined;
   const ut = {};
@@ -118,6 +196,9 @@ function vaskGear(g) {
   const pots = vaskPots(g.pots); if (pots) ut.pots = pots;
   const rolex = vaskRolex(g.rolex); if (rolex) ut.rolex = rolex;
   const trofe = vaskTrofe(g.trofe); if (trofe) ut.trofe = trofe;
+  const funnSett = vaskFunnSett(g.funnSett); if (funnSett) ut.funnSett = funnSett;
+  const invest = vaskInvest(g.invest); if (invest) ut.invest = invest;
+  const innboks = vaskInnboks(g.innboks); if (innboks) ut.innboks = innboks;
   const dager = vaskDager(g.dager, undefined); if (dager) ut.dager = dager; // manglet i hvitelista — døgnloggen ble kastet
   if (typeof g.tidligereNavn === "string") {
     const tn = g.tidligereNavn.replace(/\p{Cc}/gu, "").trim().slice(0, 14);
@@ -172,11 +253,14 @@ function flettSpiller(fam, p) {
       g.dager = vaskDager(vaskDager(g.dager, undefined), gml.dager); // døgnene flettes, aldri overskrives
       const tf = flettTrofe(gml.trofe, g.trofe);                     // troféskapet vokser, krymper aldri
       if (tf.length) g.trofe = tf; else delete g.trofe;
+      if (gml.funnSett) g.funnSett = { ...gml.funnSett, ...(g.funnSett || {}) };  // hatt er hatt
+      const iv = flettInvest(gml.invest, g.invest); if (iv) g.invest = iv;
+      const ib = flettInnboks(gml.innboks, g.innboks); if (ib.length) g.innboks = ib;
       if (g.tidligereNavn == null && gml.tidligereNavn != null) g.tidligereNavn = gml.tidligereNavn;
       g.rod = Math.max(tall(gml.rod, 99), tall(g.rod, 99));         // kjøpt/opptjent kan aldri
       g.tidMs = Math.max(tall(gml.tidMs, 9e15), tall(g.tidMs, 9e15)); // krympe, uansett klokkerot
       g.streakBest = Math.max(tall(gml.streakBest, 9e15), tall(g.streakBest, 9e15)); // beste streak er en rekord — aldri ned
-      for (const k of ["vinsj", "ekko", "turbo", "sattDekk"]) if (gml[k]) g[k] = true; // sette flagg kan aldri tas tilbake
+      for (const k of ["vinsj", "ekko", "turbo", "belte", "sattDekk"]) if (gml[k]) g[k] = true; // sette flagg kan aldri tas tilbake
       if (g.pots && gml.pots) for (const k of ["lineOwned", "lineKroker"]) // kjøpt line og krokar krymper aldri
         if (gml.pots[k] != null) g.pots[k] = Math.max(tall(gml.pots[k], 99), tall(g.pots[k], 99));
       cur.gear = g;

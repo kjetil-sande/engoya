@@ -1303,10 +1303,21 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
     if((b.bestLen||0)>(a.bestLen||0)){ a.bestLen=b.bestLen; if(b.redskap)a.redskap=b.redskap; if(b.rts)a.rts=b.rts; }
     a.bestWt=Math.max(a.bestWt||0,b.bestWt||0); if(b.gold)a.gold=Math.max(a.gold||0,b.gold); });
 }
+// ⚠️ TO LISTER SOM MÅ HOLDES I TAKT.
+//
+// Alt du legger til her MÅ også inn i serverens vaskGear
+// (netlify/functions/familierekorder.mjs). Gjør du ikke det, kaster serveren
+// feltet STILLE — og spilleren mister det ved bytte av enhet uten at noen
+// får vite hvorfor.
+//
+// Det har skjedd tre ganger: troféskapet, kampbeltet, og invest med penger i.
+// Er feltet monotont (kan aldri krympe), hører det hjemme i gearLoft og i
+// serverens carry-forward-blokk — ikke i gearInn.
 function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvasker)
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
     propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
-    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, trofe:P.trofe, funnSett:P.funnSett, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd}; }
+    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, trofe:P.trofe, funnSett:P.funnSett,
+    invest:P.invest, innboks:P.innboks, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd}; }
 function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
   return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.ekko && !lp.belte
     && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
@@ -1319,6 +1330,8 @@ function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE felte
   flettTrofe(lp, g.trofe);   // troféskapet er monotont — det er derfor det ligger her og ikke i gearInn
   if(g.funnSett&&typeof g.funnSett==="object"){ lp.funnSett=lp.funnSett||{};
     Object.keys(g.funnSett).forEach(function(k){ lp.funnSett[k]=1; }); }   // union: hatt er hatt
+  flettInvest(lp, g.invest);
+  flettInnboks(lp, g.innboks);
   if(g.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,+g.streakBest||0); // rekordstreaken er monoton
   ["vinsj","ekko","turbo","belte"].forEach(function(k){ if(g[k])lp[k]=true; }); }
 function gearInn(lp,g){ if(!g||typeof g!=="object")return; // på fjernspeil: siste innsending vinner (ts-porten står utenfor)
@@ -1353,10 +1366,13 @@ function famTaImot(j){ // flett serverens familiebilde inn lokalt — erstatt al
                                                                   // men en EKTE lokal spiller med samme navn skal alltid speiles
     var rp=j.players[nm]||{};
     if(P&&nm===P.name){ famFlett(P.caught, rp.caught); // egen fremgang fra andre enheter
-      if(gearFersk(P)&&rp.gear&&+rp.ts>=(P.ts||0)){ gearInn(P,rp.gear); P.ts=+rp.ts||0; } // fersk kopi henter ALT (typisk: ny maskin før mobilen rakk å sende)
+      if(gearFersk(P)&&rp.gear&&+rp.ts>=(P.ts||0)){ gearInn(P,rp.gear);
+        if(rp.kr!=null)P.kr=+rp.kr||0;   // ELLES står ein ny telefon på 40 kr for alltid
+        P.ts=+rp.ts||0; }
       else gearLoft(P, rp.gear); }
     else if(egen(DB.players,nm)&&!DB.players[nm].remote){ var nb=DB.players[nm]; famFlett(nb.caught, rp.caught); // lokal navnebror: rekorder + utstyr
-      if(gearFersk(nb)&&rp.gear&&+rp.ts>=(nb.ts||0)){ gearInn(nb,rp.gear); nb.ts=+rp.ts||0; }
+      if(gearFersk(nb)&&rp.gear&&+rp.ts>=(nb.ts||0)){ gearInn(nb,rp.gear);
+        if(rp.kr!=null)nb.kr=+rp.kr||0; nb.ts=+rp.ts||0; }
       else gearLoft(nb, rp.gear); }
     else { var lp=egen(DB.players,nm)?DB.players[nm]:newPlayer(nm); lp.remote=true;
       if(+rp.ts>=(lp.ts||0)){ lp.kr=rp.kr||0; lp.ts=+rp.ts||0; gearInn(lp,rp.gear); }
@@ -3300,6 +3316,41 @@ function flettTrofe(lp, inn){
     indeks[n]=e; ut.push(e); });
   ut.sort(function(a,b){return b.ts-a.ts;});
   lp.trofe=ut.slice(0,160);
+}
+// Her ligg PENGER. Ein tur er betalt for og står ute i opptil fire døgn;
+// trålutstyr er kjøpt for opptil 1,3 millionar. Ei eining som ikkje veit om
+// turen skal aldri kunne slette han.
+function flettInvest(lp, inn){
+  if(!inn||typeof inn!=="object")return;
+  lp.invest=lp.invest||{};
+  var iv=lp.invest;
+  if(inn.utstyr){ iv.utstyr=iv.utstyr||{};
+    Object.keys(inn.utstyr).forEach(function(k){
+      iv.utstyr[k]=Math.max(+iv.utstyr[k]||0, +inn.utstyr[k]||0); }); }   // kjøpt kan ikkje krympe
+  if(inn.hist){ iv.hist=iv.hist||{};
+    Object.keys(inn.hist).forEach(function(k){ var a=inn.hist[k]||{}, b=iv.hist[k]||{};
+      iv.hist[k]={turar:Math.max(+b.turar||0,+a.turar||0),
+                  inn:Math.max(+b.inn||0,+a.inn||0),
+                  ut:Math.max(+b.ut||0,+a.ut||0), sist:b.sist||a.sist}; }); }
+  if(inn.nei){ iv.nei=iv.nei||{};
+    Object.keys(inn.nei).forEach(function(k){ iv.nei[k]=Math.max(+iv.nei[k]||0,+inn.nei[k]||0); }); }
+  // Ein tur som framleis er ute skal berast vidare, aldri slettast.
+  if(!iv.tur && inn.tur && (+inn.tur.ferdig||0)>Date.now()) iv.tur=inn.tur;
+  ["neste","nesteTid"].forEach(function(k){
+    if(inn[k]!=null) iv[k]=Math.max(+iv[k]||0, +inn[k]||0); });
+}
+// Union på id. «Ubesvart anrop havnar i innboksen så ingenting går tapt»
+// var ikkje sant på tvers av einingar før no.
+function flettInnboks(lp, inn){
+  if(!Array.isArray(inn)||!inn.length)return;
+  var sett={}, ut=[];
+  (Array.isArray(lp.innboks)?lp.innboks:[]).concat(inn).forEach(function(m){
+    if(!m||m.id==null)return;
+    if(sett[m.id]){ if(m.lest)sett[m.id].lest=true; return; }
+    var e={}; for(var q in m) e[q]=m[q];
+    sett[m.id]=e; ut.push(e); });
+  ut.sort(function(a,b){return (+b.tid||0)-(+a.tid||0);});
+  lp.innboks=ut.slice(0,30);
 }
 function leggITrofe(k){ if(!P)return; P.trofe=P.trofe||[];
   P.trofe.unshift({k:k, ts:Date.now()}); if(P.trofe.length>120)P.trofe.length=120; saveAll(); }
