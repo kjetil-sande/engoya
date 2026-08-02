@@ -747,7 +747,7 @@
         <button class="btn sm" id="potPullL" style="display:none"></button>
       </div>
       <div class="dekk" id="dekk">
-        <button id="openShop" title="Rustens agn &amp; redskap"><img src="spill/assets/knapp-rusten.png" class="di" onerror="this.onerror=null;this.src='spill/assets/rusten-mot-hoyre.gif'" alt=""><span class="t">Butikk</span></button>
+        <button id="openShop" title="Rustens agn &amp; redskap"><img src="spill/assets/knapp-rusten.png" class="di" onerror="this.onerror=null;this.src='spill/assets/portrett-rusten.png'" alt=""><span class="t">Butikk</span></button>
         <button id="openKjell" title="Propell-Kjell verksted"><img src="spill/assets/knapp-kjell.png" class="di" onerror="this.onerror=null;this.src='spill/assets/portrett-kjell.png'" alt=""><span class="t">Verksted</span><i class="varsel" id="kjellVarsel"></i></button>
         <button id="openBook" title="Arkivet hos Målfrid"><img src="spill/assets/knapp-maalfrid.png" class="di" onerror="this.onerror=null;this.src='spill/assets/portrett-maalfrid.png'" alt=""><span class="t">Arkivet</span></button>
       </div>
@@ -4963,8 +4963,8 @@ function pratRing(k, tekst){
 var PRAT_FOLK={
   kjell:{k:"kjell", n:"Propell-Kjell", b:"Verkstedet på Ørnes", img:"portrett-kjell.png",
          res:"logoikon-propell-kjell.gif", mal:"bm", ho:false, speil:true},   // ser mot venstre — speiles inn mot navnet
-  rusten:{k:"rusten", n:"Rusten", b:"Agn & redskap", img:"rusten-mot-hoyre.gif",
-          mal:"nn", ho:false}
+  rusten:{k:"rusten", n:"Rusten", b:"Agn & redskap", img:"portrett-rusten.png",
+          mal:"nn", ho:false, speil:true}   // ser mot venstre som dei andre — speilast inn mot namnet
 };
 function pratPerson(k){ return PRAT_FOLK[k] || fiskerVed[k] || null; }
 function pratInit(){ investInit(); var iv=P.invest;
