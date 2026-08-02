@@ -24,6 +24,30 @@
     .tall{font-size:1.85rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
     .merke{color:var(--daempa);font-size:.78rem;margin-top:2px}
     .gull{color:var(--gull)} .gronn{color:var(--gronn)} .rod{color:var(--rod)}
+    /* Én farge per kategori. Fargen ligger på venstrekanten av kortet, ikke på tallet —
+       da kan tallet fortsatt bruke grønt/rødt for «bra» og «se på dette». */
+    .folk .kort{border-left:3px solid #4aa3c7}
+    .ret  .kort{border-left:3px solid #5fc08a}
+    .tid  .kort{border-left:3px solid #9b8ad4}
+    .prog .kort{border-left:3px solid var(--gull)}
+    .utst .kort{border-left:3px solid #c98a5a}
+    .kode .kort{border-left:3px solid #7d93a0}
+    h2 .ikon{margin-right:7px;font-size:1.05rem;vertical-align:-1px}
+    /* Ukerapporten er ikke et kort blant kortene — den er svaret, og skal se sånn ut. */
+    .uke{background:linear-gradient(160deg,#1b4459,#14364a);border:1px solid var(--gull);
+      border-radius:14px;padding:17px 19px;margin:6px 0 4px}
+    .uke .tit{font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;
+      color:var(--gull);font-weight:700;margin-bottom:7px}
+    .uke p{margin:0 0 9px;font-size:1.02rem;line-height:1.5}
+    .uke .forslag{margin:0;padding-top:9px;border-top:1px solid #2b5f78;
+      color:var(--daempa);font-size:.92rem}
+    .uke .forslag b{color:var(--blekk)}
+    .uke .puls{float:right;font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;
+      padding:3px 10px;border-radius:99px;border:1px solid currentColor;font-weight:700}
+    .uke .spark{display:flex;align-items:flex-end;gap:4px;height:30px;margin:13px 0 5px}
+    .uke .spark i{flex:1;background:#2f6b86;border-radius:2px 2px 0 0;min-height:2px}
+    .uke .spark i.na{background:var(--gull)}
+    .uke .under{color:var(--daempa);font-size:.74rem;margin:0 0 11px}
     .stolpe{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:.88rem}
     .stolpe .navn{width:74px;color:var(--daempa);flex:none}
     .stolpe .bar{flex:1;height:16px;background:#0c2330;border-radius:5px;overflow:hidden}
@@ -71,6 +95,9 @@ function tid(min){
   var t = Math.floor(min/60), r = min%60;
   return r ? t + " t " + r + " min" : t + " t";
 }
+// Desimaltall skrives med komma. Serveren sender tall, ikke tekst — språket
+// hører hjemme her, i det som vises.
+function no(v){ return String(v).replace(".", ","); }
 function kort(tall, merke, klasse){
   return '<div class="kort"><div class="tall ' + (klasse||"") + '">' + esc(tall) +
          '</div><div class="merke">' + esc(merke) + '</div></div>';
@@ -84,54 +111,190 @@ function stolper(obj){
   return h;
 }
 
+// ── Uka som gikk ────────────────────────────────────────────────────────────
+// Reglene er skrevet på forhånd og leser tallene. Den later ikke som den er en
+// fersk vurdering hver søndag — men den plukker ut det som faktisk skiller seg ut
+// denne uka og sier DET først, i stedet for å fylle ut den samme malen uansett.
+// Tekstvarianten velges på ukenummer, ikke tilfeldig: samme uke gir samme ordlyd
+// uansett hvor mange ganger du laster panelet.
+function velg(liste, uk){ return liste[uk % liste.length]; }
+function flertall(n, ent, fl){ return n + " " + (n === 1 ? ent : fl); }
+
+function sparkline(serie){
+  if(!serie || !serie.length) return "";
+  var maks = 0; serie.forEach(function(u){ if(u.minutt > maks) maks = u.minutt; });
+  var h = '<div class="spark">';
+  serie.forEach(function(u, i){
+    h += '<i class="' + (i === serie.length - 1 ? "na" : "") + '" style="height:'
+       + (maks ? Math.max(2, Math.round(30 * u.minutt / maks)) : 2) + 'px" title="'
+       + u.minutt + ' min · ' + u.aktive + ' aktive"></i>';
+  });
+  return h + '</div><p class="under">Åtte uker med spilletid. Den gule er uka som gikk.</p>';
+}
+
+function ukeSetning(d){
+  var u = d.uke, r = d.retention, uk = u.ukeNr || 0, e = u.endringProsent;
+  var lead, puls, farge;
+
+  // Hva skiller seg mest ut? Rekkefølgen her er en prioritering: det som haster
+  // mest å vite om står øverst.
+  if(!u.aktive && !u.nye){
+    farge = "rod"; puls = "Blankt";
+    lead = velg([
+      "Ingen har vært på havet denne uka. Det er ingenting å tolke — og det er svaret.",
+      "Blank uke. Ingen kast, ingen nye fiskere, ingen data å lese."
+    ], uk);
+  } else if(u.ferdigeOgAktive){
+    farge = "gull"; puls = "Nedtelling";
+    lead = "<b class=\"gull\">" + flertall(u.ferdigeOgAktive, "fisker", "fiskere")
+      + "</b> har funnet alt som finnes — og logger fortsatt inn. Det er den mest "
+      + "verdifulle uka du får med dem, for de er her ennå.";
+  } else if(e != null && e <= -25){
+    farge = "rod"; puls = "Fallende";
+    lead = velg([
+      "Spilletiden falt <b class=\"rod\">" + Math.abs(e) + " %</b> fra uka før. "
+        + "Når den snur såpass bratt er det som regel noe som er blitt vanskelig "
+        + "eller ødelagt, ikke noe som er blitt kjedelig.",
+      "Ned <b class=\"rod\">" + Math.abs(e) + " %</b> i spilletid. Verdt å se etter "
+        + "årsaken før du bygger noe nytt oppå."
+    ], uk);
+  } else if(u.nye >= 5 && (!u.nyeFoer || u.nye >= u.nyeFoer * 2)){
+    farge = "gronn"; puls = "Tilstrømming";
+    lead = "<b class=\"gronn\">" + flertall(u.nye, "ny fisker", "nye fiskere")
+      + "</b> denne uka" + (u.nyeFoer ? " mot " + u.nyeFoer + " uka før" : "")
+      + ". Nå avgjøres det om de blir — ikke om de kommer.";
+  } else if(e != null && e >= 25){
+    farge = "gronn"; puls = "Stigende";
+    lead = "De som fisker, fisker mer: <b class=\"gronn\">+" + e + " %</b> spilletid "
+      + "fra uka før, " + u.minutter + " mot " + u.minutterFoer + " minutter.";
+  } else if(!u.nye && u.aktive){
+    farge = "gull"; puls = "Lukket krets";
+    lead = velg([
+      "Ingen nye kom til, men <b>" + u.aktive + "</b> fisket likevel. Spillet holder "
+        + "på dem det har — det er døren inn som er problemet.",
+      "Null nye denne uka. De som er her blir værende, så dette handler om deling, "
+        + "ikke om spillet."
+    ], uk);
+  } else {
+    farge = "gronn"; puls = "Jevnt";
+    lead = velg([
+      "Rolig og jevn uke: " + flertall(u.nye, "ny fisker", "nye fiskere") + ", <b>"
+        + u.aktive + "</b> på havet"
+        + (e != null ? ", spilletid " + (e >= 0 ? "opp" : "ned") + " " + Math.abs(e) + " %" : "")
+        + ".",
+      "Ingen store utslag. " + flertall(u.aktive, "fisker", "fiskere") + " ute, "
+        + u.minutter + " minutter til sammen"
+        + (u.nye ? ", og " + flertall(u.nye, "ny", "nye") + " kom til" : "") + "."
+    ], uk);
+  }
+
+  // Tallene eieren spurte om står alltid, uansett hvilken inngang som ble valgt.
+  var fakta = [];
+  if(u.nye || u.aktive){
+    fakta.push(flertall(u.nye, "ny", "nye"));
+    fakta.push(u.aktive + " aktive");
+    if(u.snittMinuttPerAktiv) fakta.push(tid(u.snittMinuttPerAktiv) + " hver");
+    if(e != null) fakta.push((e >= 0 ? "+" : "\u2212") + Math.abs(e) + " % tid");
+    if(r.prosent != null) fakta.push(r.prosent + " % blir værende");
+  }
+
+  var varsel = u.naerSlutten
+    ? '<p class="under" style="color:var(--gull)">\u26a0\ufe0f ' + flertall(u.naerSlutten, "fisker", "fiskere")
+      + " (" + no(u.naerSluttenAndel) + " %) nærmer seg grensen "
+      + "der det ikke er mer å finne.</p>"
+    : "";
+
+  // Forslaget peker på det svakeste leddet — det som gir mest igjen å gjøre noe med nå.
+  var f;
+  if(u.ferdigeOgAktive)
+    f = velg([
+      "Gi dem en femte sone eller et par nye arter før de går lei av seg selv. "
+        + "Det er billigere å holde på en som fortsatt logger inn enn å hente "
+        + "tilbake en som har sluttet.",
+      "Sesong. Skreien kommer bare om vinteren — noe som finnes en kort periode gir "
+        + "dem en grunn til å komme tilbake uten at du må bygge en hel sone."
+    ], uk);
+  else if(u.naerSlutten)
+    f = velg([
+      "Flere sjeldne funn i teiner og på line. Det forlenger halen uten å røre "
+        + "balansen, og treffer nøyaktig dem som har minst igjen.",
+      "Avatarene. De koster ingen ny fisk, men gir noe å bruke penger på når "
+        + "fangstboka begynner å bli full."
+    ], uk);
+  else if(r.prosent != null && r.prosent < 25 && r.modne >= 5)
+    f = "Se på de første ti minuttene. Folk kommer, men blir ikke — og det sitter "
+      + "nesten alltid i starten, ikke i innholdet lenger ute.";
+  else if(e != null && e <= -25)
+    f = "Åpne spillet på en telefon du ikke har brukt på en stund og spill deg "
+      + "gjennom de første kastene. De fleste bratte fall er en feil, ikke en stemning.";
+  else if(!u.nye && u.aktive)
+    f = velg([
+      "Dette er et delingsproblem, ikke et spillproblem. Gjør det lettere å sende "
+        + "noen en lenke enn å forklare hva spillet er.",
+      "Be dem som spiller om å ta med en. Familiekoden finnes allerede — den er "
+        + "bare ikke i noens hender ennå."
+    ], uk);
+  else if(!u.aktive)
+    f = "Vent til tallene har noe å si. Å bygge på null er å gjette.";
+  else
+    f = velg([
+      "Ingenting krever noe akkurat nå. Da er avatarene og innholdet lenger ute "
+        + "det som er verdt tiden.",
+      "Rolig uke er et godt tidspunkt å rydde på. Ta noe fra lista som ikke haster, "
+        + "men som du vet vil ta tid senere."
+    ], uk);
+
+  return '<div class="uke"><div class="tit"><span class="puls ' + farge + '">' + puls
+    + '</span>\ud83d\udcc5 Uka som gikk</div><p>' + lead + '</p>'
+    + (fakta.length ? '<p class="under">' + fakta.join(" \u00b7 ") + '</p>' : "")
+    + sparkline(u.serie) + varsel
+    + '<p class="forslag"><b>Forslag:</b> ' + f + '</p></div>';
+}
+
 function tegn(d){
   var f = d.folk, t = d.tid, r = d.retention, p = d.progresjon, u = d.utstyr;
-  var h = "";
+  var h = ukeSetning(d);
 
-  h += '<h2>Folk</h2><div class="rutenett">'
+  h += '<h2><span class="ikon">👥</span>Folk</h2><div class="rutenett folk">'
     + kort(f.fiskere, "fiskere totalt")
     + kort(f.aktiveIDag, "aktive i dag", "gronn")
     + kort(f.aktive7, "siste 7 dager")
     + kort(f.aktive30, "siste 30 dager")
     + '</div>';
 
-  h += '<h2>Holder spillet på dem?</h2><div class="rutenett">'
+  h += '<h2><span class="ikon">🔁</span>Holder spillet på dem?</h2><div class="rutenett ret">'
     + kort(r.prosent == null ? "–" : r.prosent + " %",
            "av dem som begynte for over en uke siden fisker fortsatt",
            r.prosent == null ? "" : (r.prosent >= 40 ? "gronn" : r.prosent >= 20 ? "gull" : "rod"))
     + kort(r.modne, "har spilt i mer enn en uke")
-    + kort(t.fiskedagerSnitt, "fiskedager i snitt per person")
+    + kort(no(t.fiskedagerSnitt), "fiskedager i snitt per person")
     + '</div>';
 
-  h += '<h2>Tid</h2><div class="rutenett">'
+  h += '<h2><span class="ikon">⏱️</span>Tid</h2><div class="rutenett tid">'
     + kort(t.totaltTimer + " t", "spilt til sammen")
     + kort(tid(t.medianMinutt), "median per person")
     + kort(tid(t.snittPerFiskedagMinutt), "per fiskedag")
+    + kort(tid(d.uke.snittMinuttPerAktiv), "per aktiv denne uka")
     + '</div>';
 
-  h += '<h2>Hvor langt er de kommet?</h2><div class="rutenett">'
-    + kort(p.arterSnitt + " / " + p.arterTotalt, "arter i snitt")
-    + kort(p.trofeSnitt + " / " + p.trofeTotalt, "troféer i snitt")
+  h += '<h2><span class="ikon">🎣</span>Hvor langt er de kommet?</h2><div class="rutenett prog">'
+    + kort(no(p.arterSnitt) + " / " + p.arterTotalt, "arter i snitt")
+    + kort(no(p.trofeSnitt) + " / " + p.trofeTotalt, "troféer i snitt")
     + kort(p.ferdigeMedArter, "har ALLE artene", p.ferdigeMedArter ? "gull" : "")
     + kort(p.trengerMerAaGjoere, "ferdige OG fortsatt aktive",
            p.trengerMerAaGjoere ? "rod" : "gronn")
     + '</div>'
-    + '<div class="kort" style="margin-top:10px"><div class="merke" style="margin:0 0 7px">Arter fanget</div>'
+    + '<div class="kort prog" style="margin-top:10px;border-left:3px solid var(--gull)">'
+    + '<div class="merke" style="margin:0 0 7px">Arter fanget</div>'
     + stolper(p.arterFordeling) + '</div>';
 
-  if(p.trengerMerAaGjoere)
-    h += '<div class="kort" style="margin-top:10px;border-color:var(--rod)">'
-      + '<b class="rod">' + p.trengerMerAaGjoere + ' spiller' + (p.trengerMerAaGjoere>1?'e':'')
-      + ' har alt å finne, men fisker fortsatt.</b><div class="merke" style="margin-top:4px">'
-      + 'Det er disse som trenger noe nytt — flere arter, nye funn i teina, noe å jage.</div></div>';
-
-  h += '<h2>Utstyr</h2><div class="rutenett">'
+  h += '<h2><span class="ikon">🧰</span>Utstyr</h2><div class="rutenett utst">'
     + kort(u.stangIII, "Stang III") + kort(u.vinsj, "vinsj")
     + kort(u.ekkolodd, "ekkolodd") + kort(u.turbosnelle, "turbosnelle")
     + kort(u.kampbelte, "kampbelte")
     + '</div>';
 
-  h += '<h2>Koder</h2><div class="rutenett">'
+  h += '<h2><span class="ikon">🔑</span>Koder</h2><div class="rutenett kode">'
     + kort(f.koder, "koder i bruk") + kort(f.kort, "fiskerkort delt ut")
     + kort(f.tommeKoder, "tomme (ubrukte kort)")
     + '</div>';

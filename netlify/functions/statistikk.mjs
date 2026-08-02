@@ -145,6 +145,53 @@ export default async (req) => {
       kampbelte: alle.filter((f) => f.utstyr.belte).length,
     },
 
+    // ── Uka som gikk ────────────────────────────────────────────────────────
+    // Døgnloggen gjør at vi kan sammenligne uke mot uke UTEN å lagre historikk:
+    // hver fisker har minutter per dato, så begge vinduene finnes allerede i tallene.
+    uke: (() => {
+      const iVindu = (f, fra, til) => Object.keys(f.dager)
+        .some((k) => { const d = iDag - dagNr(k); return d >= fra && d < til; });
+      const minutt = (f, fra, til) => Object.entries(f.dager)
+        .filter(([k]) => { const d = iDag - dagNr(k); return d >= fra && d < til; })
+        .reduce((a, [, v]) => a + v, 0) / 60000;
+      const startaI = (f, fra, til) => {
+        if (!Object.keys(f.dager).length) return false;
+        const d = iDag - foerste(f); return d >= fra && d < til;
+      };
+      const nye = alle.filter((f) => startaI(f, 0, 7)).length;
+      const nyeFoer = alle.filter((f) => startaI(f, 7, 14)).length;
+      const aktive = alle.filter((f) => iVindu(f, 0, 7)).length;
+      const aktiveFoer = alle.filter((f) => iVindu(f, 7, 14)).length;
+      const min = Math.round(alle.reduce((a, f) => a + minutt(f, 0, 7), 0));
+      const minFoer = Math.round(alle.reduce((a, f) => a + minutt(f, 7, 14), 0));
+      // Nær slutten: har over 85 % av artene og er fortsatt aktiv. Disse går tom
+      // for innhold snart, og det er billigere å gi dem noe nytt før de slutter
+      // enn å hente dem tilbake etterpå.
+      const naerSlutten = alle.filter((f) => f.arter >= Math.ceil(ARTER_TOTALT * 0.85) && iVindu(f, 0, 14));
+      return {
+        // Ukenummer brukes til å velge tekstvariant i panelet. Da får samme uke
+        // samme ordlyd uansett hvor mange ganger panelet lastes — variasjon uten
+        // at det ser ut som tallene endrer seg.
+        ukeNr: Math.floor(iDag / 7),
+        // Åtte uker bakover, eldst først. Én setning kan ikke vise en kurve.
+        serie: Array.from({ length: 8 }, (_, i) => {
+          const u = 7 - i;
+          return {
+            minutt: Math.round(alle.reduce((a, f) => a + minutt(f, u * 7, (u + 1) * 7), 0)),
+            aktive: alle.filter((f) => iVindu(f, u * 7, (u + 1) * 7)).length,
+          };
+        }),
+        nye, nyeFoer,
+        aktive, aktiveFoer,
+        minutter: min, minutterFoer: minFoer,
+        endringProsent: minFoer ? Math.round(100 * (min - minFoer) / minFoer) : null,
+        snittMinuttPerAktiv: aktive ? Math.round(min / aktive) : 0,
+        naerSlutten: naerSlutten.length,
+        naerSluttenAndel: alle.length ? +(100 * naerSlutten.length / alle.length).toFixed(1) : 0,
+        ferdigeOgAktive: alle.filter((f) => f.arter >= ARTER_TOTALT && iVindu(f, 0, 14)).length,
+      };
+    })(),
+
     merknad: "Fiskere telles på unikt kallenavn, så samme person under både familiekode " +
       "og fiskerkort telles én gang. To ulike personer med samme kallenavn telles også som én — " +
       "med få spillere er det uproblematisk, med mange bør tallet leses som et anslag.",
