@@ -2732,7 +2732,13 @@ function potOutcome(t,soak){ // krabbeteine — deterministisk av seed+soak: rel
     // vandrande trollkrabbe: kongekrabba går vestover og tek turen inn på grunna — sjelden, men det skjer
     if(rng()<0.004+0.026*q48){ var tk=rng(); lines.push({e:"🦀",n:"TROLLKRABBE — dyphavets ridder!",kr:Math.round(450*(0.6+0.9*tk)),img:"trollkrabbe"}); }
     // småfisk som svømte inn etter agnet og ikkje fann vegen ut att
-    if(rng()<0.16){ var sm=SMAAFISK[(rng()*SMAAFISK.length)|0]; lines.push({e:"🐟",n:sm.n,kr:sm.kr,img:sm.k}); }
+    // fk, len og wt MÅ med — uten dem stopper bokføringa på «if(!l.fk)return» og fisken
+    // havner aldri i fangstboka. Målt før fiksen: 0 av 1 000 000 teinetrekk bokførte noe,
+    // mens 16 % av trekkene viste spilleren en rognkjeks eller rognkall. Hvert sjette trekk.
+    if(rng()<0.16){ var sm=SMAAFISK[(rng()*SMAAFISK.length)|0], smf=byKey[sm.k];
+      var smL=Math.round(smf.len[0]+rng()*(smf.len[1]-smf.len[0])*0.7);   // teinefisk er små
+      var smW=+((Math.pow(smL/100,3)*smf.kg*(0.9+rng()*0.3)).toFixed(1)); if(smW<0.1)smW=0.1;
+      lines.push({e:"🐟",n:sm.n+" "+smL+" cm ("+smW+" kg)",kr:sm.kr,img:sm.k,fk:sm.k,len:smL,wt:smW}); }
     if(rng()<0.20)lines.push(potBycatch(rng,t.zone)); // eitt funn per femte trekk (var 4 % — då såg ingen dei)
   }
   var total=0; lines.forEach(function(l){total+=l.kr});
@@ -2807,9 +2813,13 @@ function pullPot(ty){ ty=ty||"k";
     else extra=brNavn+" hadde slitt seg! Rusten berget den og spanderte — du var jo blakk. ⚓";
   } else if(soak>48*3600000) extra=ty==="l"?"Lina sto over to døgn — noe har forsynt seg godt av agnet.":brNavn+" sto over to døgn — lenger gir ikke mer, krabbene spiser opp agnet.";
   var fikkKveite=false;
-  if(ty==="l") res.lines.forEach(function(l){ if(!l.fk)return; // linefisk føres i fangstboka med rekord-sporing
+  // ALLE bruk fører fangst i boka, ikke bare bunnlina. Vakta «if(ty==="l")» ble skrevet
+  // da lina var eneste fiskekilde; småfisken i teina kom til tre dager senere og havnet
+  // bak en typevakt ingen utvidet. Krabber og funn har ingen fk og faller ut av seg selv.
+  var brRedskap=ty==="l"?"Bunnline":(ty==="h"?"Hummerteine":"Krabbeteine");
+  res.lines.forEach(function(l){ if(!l.fk)return; // fisk føres i fangstboka med rekord-sporing
     var rec=P.caught[l.fk]; if(!rec)rec=P.caught[l.fk]={count:0,bestLen:0,bestWt:0};
-    rec.count++; if(l.len>rec.bestLen){rec.bestLen=l.len; rec.redskap="Bunnline"; rec.rts=Date.now();} if(l.wt>(rec.bestWt||0))rec.bestWt=l.wt;
+    rec.count++; if(l.len>rec.bestLen){rec.bestLen=l.len; rec.redskap=brRedskap; rec.rts=Date.now();} if(l.wt>(rec.bestWt||0))rec.bestWt=l.wt;
     if(l.ut)rec.sluppet=(rec.sluppet||0)+1;
     if(byKey[l.fk].trophy)fikkKveite=true; });
   var dkP=dailyFish(), bestiltIBruket=false;   // Rusten betaler +50 % same kvar fisken kom frå
