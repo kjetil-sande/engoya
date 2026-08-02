@@ -76,6 +76,12 @@
     opacity:0;transition:opacity 1.15s ease}
   #menu.svart::after{opacity:1;transition:none}
   #menu .muted{color:#f3e7cd;text-shadow:0 1px 2px rgba(0,0,0,.92),0 2px 12px rgba(0,0,0,.78)}
+  /* Personvernlenka skal være synlig uten å ta plass fra «Dra på lopphavet». Den toner inn
+     sammen med resten av lobbyen, etter panoreringen. */
+  #menu .pvlenke{order:2;margin:10px 0 0;font-size:11.5px;text-align:center;
+    color:#e8dcc2;text-shadow:0 1px 2px rgba(0,0,0,.9);opacity:0;pointer-events:none}
+  #menu .pvlenke a{color:#f6ecd0;text-decoration:underline;text-underline-offset:2px}
+  #menu.landa .pvlenke{animation:fadeUp .7s ease .86s both;pointer-events:auto}
   /* Logoen får toppen; «Hvem fisker», teksten og knappen skyv seg ned slik at
      «Dra på lopphavet» hamnar lågt. order flyttar forklaringsteksten under knappen. */
   #menu .who{margin-top:auto;box-shadow:0 5px 0 rgba(0,0,0,.15),0 16px 30px rgba(0,0,0,.45)}
@@ -686,6 +692,7 @@
       <div class="plist" id="plist"></div>
     </div>
     <button class="btn big gold" id="playBtn" disabled>Dra på lopphavet <img src="spill/assets/ikon-pipe.png" class="pipa" alt="" onerror="this.outerHTML='→'"></button>
+    <p class="pvlenke"><a href="personvern.html">Personvern</a> · spillet spør aldri om navn, e-post eller alder</p>
   </section>
 
   <!-- SEA -->
@@ -1593,7 +1600,10 @@ function renderPlayers(){
     box.appendChild(b);
   });
   var add=document.createElement("button"); add.className="btn sm"; add.textContent="+ Ny spiller";
-  add.onclick=function(){var nm=(prompt("Navn på spiller?")||"").trim().slice(0,14); if(!nm)return;
+  // Ber om KALLENAVN med vilje. Velger ingen å oppgi ekte navn, finnes det heller ingen
+  // personopplysninger å beskytte — og da slipper vi aldersgrenser og foreldresamtykke
+  // for et spill barna faktisk spiller. Se personvern.html.
+  add.onclick=function(){var nm=(prompt("Hva heter fiskeren? Bruk gjerne et kallenavn — spillet trenger ikke ditt virkelige navn 🎣")||"").trim().slice(0,14); if(!nm)return;
     if(nm==="__proto__"||nm==="constructor"||nm==="prototype"){ alert("Velg et annet navn 🙂"); return; }
     if(!Object.prototype.hasOwnProperty.call(DB.players,nm))DB.players[nm]=newPlayer(nm); DB.last=nm; chosen(nm); saveAll(); renderPlayers()};
   box.appendChild(add);
@@ -3258,6 +3268,8 @@ function visProfil(){
       +'<button class="btn sm ghost" id="pfKortHent">🎣 Hent med kort</button></div></div>';
   }
 
+  h+='<div class="pfbolk" style="text-align:center;padding-top:4px"><a href="personvern.html" class="muted" style="font-size:12px">Personvern — hva spillet lagrer</a></div>';
+
   h+='<div class="pfbolk"><h4>Sikkerhetskopi</h4>'
     +'<p class="muted" style="font-size:12.5px;margin:2px 0 8px">Troféskapet og funnene dine ligger bare på denne enheten. Last ned en kopi og legg den et trygt sted — da kan alt hentes tilbake på en ny telefon.</p>'
     +'<div class="row" style="gap:8px"><button class="btn sm" id="pfKopiUt">💾 Last ned kopi</button>'
@@ -3300,7 +3312,7 @@ function visProfil(){
 function byttNavn(){
   if(!P)return;
   var gml=P.name;
-  var nytt=(prompt("Nytt navn? (maks 14 tegn)", gml)||"").trim().slice(0,14);
+  var nytt=(prompt("Nytt navn på fiskeren? Kallenavn holder — maks 14 tegn.", gml)||"").trim().slice(0,14);
   if(!nytt||nytt===gml)return;
   if(nytt==="__proto__"||nytt==="constructor"||nytt==="prototype"){ alert("Velg et annet navn 🙂"); return; }
   if(Object.prototype.hasOwnProperty.call(DB.players,nytt)){
