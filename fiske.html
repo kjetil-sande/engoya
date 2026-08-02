@@ -5359,12 +5359,19 @@ lydIkon();
 // ikke inne i openBook(), fordi den også kalles når boka ÅPNES, og da spiller
 // blaIBok allerede. To lyder oppå hverandre høres ut som en feil.
 //
-// Siden bytter ikke med én gang. Papirlyden varer 1,3 sekund, og når arket kom
-// ETTER at siden alt var byttet, hørtes det ut som en forsinkelse i appen. Nå
-// starter lyden straks, fanen lyser opp straks — så du kjenner at trykket satt —
-// men selve siden lander 170 ms senere, omtrent når arket faller. Å vente ut hele
-// lyden ville vært ti ganger for lenge; det er forspranget som gjør susen.
-var BLA_MS=170, blaTimer=null;
+// Siden bytter ikke med én gang. Fanen lyser opp straks — så du kjenner at
+// trykket satt — men selve siden lander et lite øyeblikk etter, som et blad
+// som blir løftet og så faller.
+//
+// Lydfila var på 1,515 s, men de FØRSTE 0,56 av dem var ren stillhet. Derfor
+// hørtes den ut som den hang etter uansett hva vi gjorde her. Stillheten er
+// klippet bort i begge ender og resten er 20 % raskere: 0,576 s som starter på
+// første millisekund. Løftet topper på 0,14 og arket lander på 0,36.
+//
+// 200 ms setter sidebytet rett etter løftet, mens arket ennå er i lufta. Å vente
+// helt til landingen ville vært 360 ms, og da begynner et fanetrykk å kjennes
+// tregt. Vil du prøve deg fram, er dette det eneste tallet du trenger å røre.
+var BLA_MS=200, blaTimer=null;
 function bla(fane){ return function(){
   Snd.blaSide();
   var id = "tab" + fane.charAt(0).toUpperCase() + fane.slice(1);   // mine → tabMine
