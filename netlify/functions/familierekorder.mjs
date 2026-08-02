@@ -14,7 +14,10 @@ import { getStore } from "@netlify/blobs";
 import { createHash } from "node:crypto";
 
 const MAKS_SPILLERE = 30;      // en familie, ikke en liga
-const MAKS_ARTER = 40;         // 16 arter i dag — god margin
+const MAKS_ARTER = 80;         // 37 arter i dag. Taket er en STILLE grense: er den nådd,
+                               // slutter nye arter å synkes uten at noen får beskjed. 40 ga bare
+                               // tre plassers margin, og en eneste rusk-nøkkel kunne låst en
+                               // spiller ute for godt. 80 er dobbelt opp av alt som finnes.
 const MAKS_KROPP = 60_000;     // byte; mot tilfeldig søppel
 const FARLIGE = new Set(["__proto__", "constructor", "prototype"]);
 

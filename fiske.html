@@ -1260,7 +1260,7 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
     Object.keys(ny.players).forEach(function(nm){ if(famFarlig(nm))return; var np=ny.players[nm]; if(!np)return;
       if(!egen(DB.players,nm)){ DB.players[nm]=np; return; }
       var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
-      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.dager)lp.dager=flettDager(lp.dager,np.dager); if(np.tidligereNavn)lp.tidligereNavn=np.tidligereNavn; if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; }
+      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.belte)lp.belte=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.dager)lp.dager=flettDager(lp.dager,np.dager); if(np.tidligereNavn)lp.tidligereNavn=np.tidligereNavn; if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; }
     });
   }catch(e){} });
 /* ---------- Familierekorder på nett (Netlify Blobs via familiekode) ---------- */
@@ -1285,10 +1285,10 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
 }
 function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvasker)
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
-    propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
+    propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
     lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd}; }
 function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
-  return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.ekko
+  return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.ekko && !lp.belte
     && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
 function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE feltene — trygt å løfte inn overalt, kan aldri krympe noe
   if(g.rod!=null)lp.rod=Math.max(lp.rod||0,+g.rod||0); // kjøpt utstyr kan aldri nedgraderes av en gammel innsending
@@ -1297,7 +1297,7 @@ function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE felte
   if(g.tidligereNavn)lp.tidligereNavn=g.tidligereNavn;
   if(g.sattDekk)lp.sattDekk=1;
   if(g.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,+g.streakBest||0); // rekordstreaken er monoton
-  ["vinsj","ekko","turbo"].forEach(function(k){ if(g[k])lp[k]=true; }); }
+  ["vinsj","ekko","turbo","belte"].forEach(function(k){ if(g[k])lp[k]=true; }); }
 function gearInn(lp,g){ if(!g||typeof g!=="object")return; // på fjernspeil: siste innsending vinner (ts-porten står utenfor)
   ["fuel","fuelMax","svc","forsTil","havnNeste","smorTs","propOk","motorOk","rolex","lures","agn","streak","streakDag","naadeMnd"].forEach(function(k){ if(g[k]!=null)lp[k]=g[k]; });
   if(g.pots)lp.pots=Object.assign({},lp.pots||{},g.pots); // ALDRI rått bytte: felt serveren ikkje kjenner (bunnline o.l.) skal overleve
@@ -1418,6 +1418,7 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.agn==null)P.agn={}; // agnbeholdning
   if(P.rolex===undefined||P.rolex==="raa"||P.rolex==="klar")P.rolex=(P.rolex==="klar")?{bud:50000}:null; // null | {ferdig:ts} | {bud:kr}
   if(P.turbo==null)P.turbo=false; // turbosnelle (halv kamptid)
+  if(P.belte==null)P.belte=false; // kampbelte (25 % saktere spenn)
   if(typeof investInit==="function"){ investInit(); innRydd(); setTimeout(innPrikk,0); }
   P.motor="stor"; if(P.motorOk==null)P.motorOk=true; // éin motor på båten — sett ubetinga, så gamle saves med "liten" ikkje står fast
   if(P.pots.lineKroker==null)P.pots.lineKroker=3; // bunnlinekroker (3 standard, 10 maks)
@@ -1914,6 +1915,7 @@ function reelStep(dt){
   if(P.turbo) reelSec*=0.5;  // turbosnella: halverer kamptida
   if(hookedSuper) reelSec*=0.5; // superagnet bedøver — halv kamptid
   var tRise = 3.4*f.pull;   // spenn opp/sek når man holder
+  if(P&&P.belte) tRise *= 0.75;   // kampbeltet: du tar imot med kroppen, ikke med snøret
   var tFall = 16;           // spenn ned/sek når man slipper
   var pRise = 100/reelSec;  // innhaling %/sek når man holder
   var utras=runT>0; // fisken tar ut line: snella hviner, og den vanlige snellelyden tar over straks den slapper av
@@ -3017,6 +3019,9 @@ function openShop(){
     function(){ P.agn.rustenspesial=(P.agn.rustenspesial||0)+3; updateRigChip(); });
   } // slutt Agn
   if(shopTab==="utstyr"){
+  if(P.rod>=2&&!P.belte) addShop(L,'<img src="spill/assets/kampbelte.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎽 \'" alt=""> Kampbelte',
+    "Stangenden står i koppen på beltet, så du tar imot med hoftene i stedet for med armene. Spennet stiger 25 % saktere — storfisken fra Dypt og Djuphavet får deg ikke like lett.",12000,false,
+    function(){P.belte=true; notice("Kampbeltet sitter! 🎽 «Det er ikkje fisken som ryk snøret, gut — det er båten som rullar.»");});
   if(P.rod>=1&&!P.ekko) addShop(L,'<img src="spill/assets/ekkolodd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Ekkolodd',"Ser stimene før de ser deg — 50 % større sjanse for sjelden og legendarisk fisk.",4000,false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");});
   if(P.rod>=2){ if(vinsjKlar()){ if(!P.vinsj) addShop(L,'<img src="spill/assets/sluk-agnrigg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪛 \'" alt=""> Vinsj og dyphavsrigg',"Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
@@ -3663,7 +3668,8 @@ function drawScene(dt){
         if(j===0)cx.moveTo(sx,sy); else cx.lineTo(sx,sy); }
       cx.strokeStyle=gr; cx.lineWidth=2; cx.stroke();
       cx.restore();
-    } else drawBoat(bx,by,mn*0.14); }
+    } else drawBoat(bx,by,mn*0.14);
+    drawFangstPaaRipa(bx,by,bw,bh,bTilt); }
   // teiner i sona: blåse på vannlinja, grønt tau ned, teine ved bunnen av bildet
   var BPOS=[0.15,0.85,0.22,0.78,0.29,0.72]; // annenhver side av båten — klar av motor, skrog OG kamp-barene i kantene
   var barKlar=44; // spenn-/dybdebaren dekker x 10-32 fra hver kant — 44 gir 12 px luft
@@ -3829,6 +3835,19 @@ function snelleSpinn(dt){
   im.style.transform="rotate("+snelleGrad.toFixed(1)+"deg)";
 }
 var starImg=new Image(); starImg.src="spill/assets/stjerne-full.png";
+function drawFangstPaaRipa(bx,by,bw,bh,bTilt){
+  if(!pending||!pending.f)return;
+  var m=document.getElementById("catchModal");
+  if(!m||!m.classList.contains("on"))return;
+  var im=fiskBilde(pending.f); if(!im||!im.complete||!im.naturalWidth)return;
+  var w=Math.min(bw*0.62, fishScale(pending.f, pending.len)*0.92);
+  var h=w*im.naturalHeight/im.naturalWidth;
+  cx.save();
+  cx.translate(bx,by); cx.rotate(bTilt);
+  cx.globalAlpha=Math.min(1,liftT*3.2);        // siger inn i takt med at han løfter armen
+  cx.drawImage(im, -bw*0.19-w*0.5, -bh*0.17-h*0.5, w, h);
+  cx.restore();
+}
 function drawSwim(x,y,f,angle,flip,gold,len,munnPivot){ var im=fiskBilde(f), tw=fishScale(f,len);
   var vagg=Math.sin(bob*3.1+x*0.055); // −1..1, ute av takt fra fisk til fisk
   cx.save(); cx.translate(x,y); cx.rotate((angle||0)+vagg*0.035); if(flip)cx.scale(-1,1);
