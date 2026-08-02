@@ -179,7 +179,12 @@
   .depthsel button small{display:block;font-size:12px;font-weight:600;opacity:.85;margin-top:2px}
   /* Egen linje: emojien er breiare på iOS enn i nettlesaren, og fire soner på
      402 px har ikkje plass til henne på same linja som djupet. */
-  .depthsel button small.bens{font-size:11px;opacity:.7;margin-top:1px;letter-spacing:-.02em}
+  .depthsel button small.bens{font-size:11px;opacity:.75;margin-top:1px;letter-spacing:-.02em;
+    display:flex;align-items:center;justify-content:center;gap:3px}
+  /* Kanna leses raskere enn ordet «bensin» og raskere enn ⛽, som på mange
+     telefoner tegnes som en hel bensinstasjon med tak og alt. */
+  .depthsel button small.bens img{height:13px;width:auto;image-rendering:pixelated;
+    flex:none;vertical-align:middle}
   .depthsel button.on{background:var(--paper);color:var(--ink)}
   .depthsel button.locked{opacity:.4}
   .depthsel.four button{padding:8px 8px;font-size:15px}
@@ -595,6 +600,9 @@
   .shopimg img.shoplogo{height:auto;max-height:44px;margin:0;vertical-align:baseline}
   .shopimg img.shoplogo.rund{max-height:44px;border-radius:50%}
   #rustenPortrett{display:block;margin:2px auto 0;height:150px;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
+  #kjellPortrett{display:block;margin:-4px auto 0;height:176px;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
+  /* Målfrid er stående figur som Rusten, ikke kvadratisk portrett som Kjell. */
+  #maalfridPortrett{display:block;margin:-6px auto 0;height:150px;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
   .fam .frow.rek{display:block;font-size:12px} /* linje 1: fisk til venstre, hvem til høyre. linje 2: målene */
   .fam .frow.rek .r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .fam .frow.rek .r1 b{display:flex;align-items:center;gap:7px;min-width:0;font-size:13px}
@@ -726,13 +734,13 @@
       <div class="dekk" id="dekk">
         <button id="openShop" title="Rustens agn &amp; redskap"><img src="spill/assets/rusten-mot-hoyre.gif" class="di" onerror="this.outerHTML='🛒'" alt=""><span class="t">Rusten</span></button>
         <button id="openKjell" title="Propell-Kjell verksted"><img src="spill/assets/logoikon-propell-kjell.gif" class="di" onerror="this.outerHTML='🔧'" alt=""><span class="t">Verksted</span><i class="varsel" id="kjellVarsel"></i></button>
-        <button id="openBook" title="Fangstboka"><img src="spill/assets/fangstbok.png" class="di" onerror="this.outerHTML='<span class=&quot;di e&quot;>📖</span>'" alt=""><span class="t">Boka</span></button>
+        <button id="openBook" title="Arkivet hos Målfrid"><img src="spill/assets/arkivet-ikon.png" class="di" onerror="this.onerror=null;this.src='spill/assets/fangstbok.png'" alt=""><span class="t">Arkivet</span></button>
       </div>
       <div class="depthsel" id="depthsel">
-        <button data-d="0" class="on">Grunt<small>0–50 m</small><small class="bens">1 ⛽</small></button>
-        <button data-d="1">Mellomdyp<small>50–150 m</small><small class="bens">2 ⛽</small></button>
-        <button data-d="2">Dypt<small>150–300 m</small><small class="bens">2 ⛽</small></button>
-        <button data-d="3" style="display:none">Djuphavet<small>300–500 m</small><small class="bens">4 ⛽</small></button>
+        <button data-d="0" class="on">Grunt<small>0–50 m</small><small class="bens"><img src="spill/assets/bensinkanne.png" alt="bensin" onerror="this.outerHTML='&#9981;'"> x 1</small></button>
+        <button data-d="1">Mellomdyp<small>50–150 m</small><small class="bens"><img src="spill/assets/bensinkanne.png" alt="bensin" onerror="this.outerHTML='&#9981;'"> x 2</small></button>
+        <button data-d="2">Dypt<small>150–300 m</small><small class="bens"><img src="spill/assets/bensinkanne.png" alt="bensin" onerror="this.outerHTML='&#9981;'"> x 3</small></button>
+        <button data-d="3" style="display:none">Djuphavet<small>300–500 m</small><small class="bens"><img src="spill/assets/bensinkanne.png" alt="bensin" onerror="this.outerHTML='&#9981;'"> x 4</small></button>
       </div>
       <div class="kastrad" id="kastrad">
         <button id="hudLure" title="Sluksettet — velg agn og sluk"><img id="lureBilde" src="spill/assets/fiskeskrin.png" class="di" onerror="this.src='spill/assets/fiskeskrin.png'" alt=""><span class="t" id="lureNavn">Sluksett</span></button>
@@ -796,16 +804,20 @@
   <div class="modal" id="kjellModal"><div class="cardwrap">
     <img src="spill/assets/knapp-lukk.png" id="kjellClose" class="lukkx" alt="Lukk verkstedet">
     <div class="card">
-    <img src="spill/assets/logo-propell-kjell.gif" alt="Propell-Kjell" style="display:block;margin:0 auto 6px;max-width:88%;max-height:130px;image-rendering:pixelated" onerror="this.style.display='none'">
+    <img id="kjellPortrett" src="spill/assets/portrett-kjell-helfigur.png" onerror="this.onerror=null;this.src='spill/assets/portrett-kjell.png'" alt="Propell-Kjell">
+    <img src="spill/assets/logo-propell-kjell.gif" alt="Propell-Kjell" style="display:block;margin:-52px auto 6px;position:relative;z-index:2;max-width:96%;max-height:130px;image-rendering:pixelated" onerror="this.style.display='none'">
     <p class="muted" id="kjellKr"></p>
     <div id="kjellList"></div>
   </div></div></div>
 
   <!-- BOOK -->
   <div class="modal" id="bookModal"><div class="cardwrap">
-    <img src="spill/assets/knapp-lukk.png" id="bookClose" class="lukkx" alt="Lukk fangstboka">
+    <img src="spill/assets/knapp-lukk.png" id="bookClose" class="lukkx" alt="Lukk Arkivet">
     <div class="card">
-    <h2>📖 Fangstboka</h2>
+    <img id="maalfridPortrett" src="spill/assets/maalfrid-staaende.png" onerror="this.style.display='none'" alt="Arkiv-Målfrid">
+    <img src="spill/assets/arkivet-logo.png" alt="Arkivet" style="display:none;margin:-26px auto 6px;position:relative;z-index:2;max-width:96%;max-height:130px;image-rendering:pixelated"
+      onload="this.style.display='block';this.nextElementSibling.style.display='none'">
+    <h2>📖 Arkivet</h2>
     <div class="tabs"><button class="on" id="tabMine">Min bok</button><button id="tabRek">Rekorder</button><button id="tabFam">Familien</button><button id="tabTrofe">Troféer</button><button id="tabAar">Året</button></div>
     <div id="bookMine"></div>
     <div id="bookTrofe" style="display:none"></div>
@@ -1868,7 +1880,11 @@ function startGame(){
 function cast(){
   if(phase!=="idle")return;
   if(document.querySelector(".modal.on"))return; // ikke kast bak en åpen popup
-  var needF = [1,2,2,4][depth] + (P.svc>250?1:0) + (smorPct()<=0?1:0); // bensin etter AVSTAND: Grunt ligger rett utenfor øya, Djuphavet langt ute
+  // Bensin etter AVSTAND: Grunt ligger rett utenfor øya, Djuphavet langt ute.
+  // Sto [1,2,2,4] — Mellomdyp og Dypt kostet det samme, så det siste steget ned
+  // var gratis. Nå ett hakk per sone. Fisken i Dypt selges for 200–420 kr, så
+  // 17 kr ekstra flytter ikke økonomien; det gjør bare stigen sann.
+  var needF = [1,2,3,4][depth] + (P.svc>250?1:0) + (smorPct()<=0?1:0);
   // (+1 for hostende motor, +1 for begrodd skrog)
   // Finnes det i det hele tatt en vei til inntekt slik spilleren står nå? Dette må regnes
   // FØR bensingrenen, ikke bare i motorgrenen: med havarert motor og for lite penger til å
@@ -3070,7 +3086,7 @@ function pullPot(ty){ ty=ty||"k";
       $("#potTotal").insertAdjacentHTML("beforeend", knapper+'</div>');
       var laas=function(){ ["vTrofe","vSelg","vAuksjon","vKast","vLaas"].forEach(function(id){ var b=$("#"+id); if(b)b.disabled=true; }); };
       $("#vTrofe").onclick=function(){ if(tatt)return; tatt=true; laas(); leggITrofe(v.k); Snd.trophy();
-        notice("Satt i troféskapet — se den i Fangstboka 🏺"); };
+        notice("Satt i troféskapet — se den i Arkivet 🏺"); };
       if($("#vSelg")) $("#vSelg").onclick=function(){ if(tatt)return; tatt=true; laas();
         var kr=v.trofeSelg||(auk?auk.selg:0); P.kr+=kr; hud(); saveAll(); Snd.coin(); notice("Solgt til Rusten — "+kr+" kr 💰"); };
       if($("#vAuksjon")) $("#vAuksjon").onclick=function(){ if(tatt)return; tatt=true; laas();
@@ -3235,7 +3251,7 @@ function visProfil(){
     +'<button class="btn sm ghost" id="pfLyd"></button>'
     +'</div></div>';
 
-  h+='<div class="pfbolk"><h4>Fangstboka</h4>'
+  h+='<div class="pfbolk"><h4>Arkivet</h4>'
     +'<div class="pfrad"><span>Arter fanget</span><b>'+arter+' av '+tot+'</b></div>'
     +'<div class="pfstolpe"><i style="width:'+Math.round(arter/tot*100)+'%"></i></div>'
     +'<div class="pfrad" style="margin-top:6px"><span>Stjerner</span><b>★ '+starSumFor(P)+'</b></div>'
@@ -3268,7 +3284,7 @@ function visProfil(){
   h+='<div class="pfbolk"><h4>Familien</h4>'
     +(code ? '<div class="pfrad"><span>Koblet sammen</span><b>👨‍👩‍👧 '+famAnt+' fiskere</b></div>'
              +'<div class="pfrad"><span>Familiekode</span><b>'+esc(code)+'</b></div>'
-           : '<p class="muted" style="font-size:13px;margin:2px 0">Ikke koblet ennå. Under <b>Fangstboka → Familien</b> kan dere dele rekorder mellom alle enhetene.</p>')
+           : '<p class="muted" style="font-size:13px;margin:2px 0">Ikke koblet ennå. Under <b>Arkivet → Familien</b> kan dere dele rekorder mellom alle enhetene.</p>')
     +'</div>';
 
   // Familiekoden henter bare tilbake det serveren har sett. Troféskapet, funnene og

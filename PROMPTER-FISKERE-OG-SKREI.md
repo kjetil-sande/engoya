@@ -368,3 +368,101 @@ Fully transparent background, no drop shadow, no frame, no border box.
 **Alternativ, hvis du heller vil ha stempel enn skilt:** bytt «weathered wooden
 sign» mot *circular red ink stamp, rough uneven ink coverage, slightly rotated
 letterpress look* — men da må teksten fortsatt være vannrett og lesbar ved 72 px.
+
+---
+
+## 15. Arkivet — logoen
+
+Fil: **`arkivet-logo.png`** — ca. **700 × 520**, transparent
+
+Erstatter «Boka». Ligger øverst i modalen på samme plass som Propell-Kjells logo,
+og vises maks 130 px høy. Alt som er finere enn det forsvinner.
+
+En **lukket** bok, sett litt fra siden og ovenfra, med **ARKIVET** preget inn i
+permen. Ikke en åpen bok — poenget er at det er et sted du går til, ikke et skjema
+du fyller ut.
+
+16-bit pixel art of a **closed hardbound ledger book** resting at a slight
+three-quarter angle, seen from just above. Thick weathered leather cover in deep
+sea-green with brass corner protectors and a heavy brass clasp on the fore-edge.
+The word **ARKIVET** stamped into the cover in worn gold serif capitals, slightly
+uneven as if pressed by hand decades ago. Visible thick paper block along the
+edges, faintly yellowed, a few pages not quite flush. A dark ribbon bookmark
+trailing from the bottom. The whole object should read as **old, heavy and
+looked-after** — a book someone dusts. Strict pixel grid, hard-edged pixels, no
+anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette.
+Fully transparent background, no shadow, no frame, no desk beneath it.
+
+**Liten utgave til knappen på dekket:** `arkivet-ikon.png`, ca. **256 × 256**,
+samme bok men tettere beskåret, slik at klaffen og ordet ARKIVET fortsatt leses
+ved 26 px. Lag den gjerne som et eget bilde heller enn å skalere ned den store —
+tekst på 26 px må tegnes for 26 px.
+
+---
+
+## 16. Arkiv-Målfrid
+
+Hun som holder Arkivet. Navnet følger samme mønster som Propell-Kjell, så det
+sitter med én gang: **Arkiv-Målfrid**. Målfrid er nordnorsk, litt gammeldags og
+ikke i bruk andre steder i spillet.
+
+**Hvem hun er** (til dialogen senere): rundt seksti, var bibliotekar på Ørnes til
+skolen ble lagt ned, og fører nå arkivet over hva folk får. Hun snakker **bokmål**
+— Rusten har nynorsken, og de to skal ikke låte likt. Tørr, presis, og litt stolt
+på arkivets vegne. Hun husker hva du fikk i fjor. Hun sier ifra når du mangler noe:
+*«Du står fortsatt uten blålange. Den er ikke ført her hos noen andre heller, så
+det er ingen skam i det.»* Under det tørre er hun varm — hun heier, hun bare
+gjør det uten å heve stemmen.
+
+### 16a. Portrett til telefonen
+
+Fil: **`portrett-maalfrid.png`** — **400 × 400**, transparent
+(samme mål og ramme som `portrett-kjell.png`)
+
+Vises som rund avatar 44 px i SMS-en, så **ansiktet må fylle rammen** — bryst og
+opp. Hun ser mot **høyre**, inn mot navnet (motsatt av Kjell, som speiles).
+
+16-bit pixel art character portrait, head and shoulders, facing slightly right.
+A **Norwegian woman of about sixty** who has spent her life indoors with books but
+grew up on this coast. Sharp, attentive eyes behind **reading glasses worn low on
+the nose**, with a thin chain looping down past her cheeks. Grey hair, still
+partly dark, gathered back without fuss — practical, not styled. Fine lines around
+the eyes from reading, not from weather. She wears a **plain wool cardigan in
+muted heather** over a collared blouse, one pen tucked in the breast pocket. Her
+expression is **level and unimpressed but not unkind** — the face of someone about
+to tell you something true. Cool, quiet palette: heather, oatmeal, slate,
+brass-rimmed glasses. Strict pixel grid, hard-edged pixels, no anti-aliasing,
+ordered dithering, limited 24-colour palette. Fully transparent background. No
+text, no frame, no logo.
+
+### 16b. Målfrid i full figur, til Arkivet-modalen
+
+Fil: **`maalfrid-staaende.png`** — ca. **380 × 500**, transparent
+(samme mål og bruk som `rusten-mot-venstre.gif`)
+
+Står bak logoen i modalen, 150 px høy. Hun **ser mot venstre**, ned mot boka.
+
+Same character as above, now **full upper body down to the hips**, standing and
+facing **left**. She holds a **closed ledger against her chest with one arm**, the
+other hand resting flat on the cover. Slight forward lean, chin a little down —
+she is looking at whoever just walked in, over the top of her glasses. Same
+cardigan and chain. Calm, rooted stance, feet not visible. Strict pixel grid,
+hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette.
+Fully transparent background, no shadow, no floor.
+
+---
+
+## 17. Kjell i full figur (valgfritt — kan vente)
+
+Kjell-portrettet du allerede har (`portrett-kjell.png`) settes nå inn over logoen
+i verkstedet, så dette haster ikke. Vil du senere ha samme løsning som Rusten, med
+en **stående** figur bak logoen, er dette prompten:
+
+Fil: **`kjell-staaende.png`** — ca. **380 × 500**, transparent
+
+Same character as `portrett-kjell.png` — bald on top with grey hair at the sides,
+wire-rimmed glasses, deep lines, blue work overalls over a stained work shirt —
+now shown from the **hips up**, standing and facing **left**. A **propeller held in
+one hand** at his side, the other wiping itself on a rag. Slight stoop from years
+over an engine. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered
+dithering, limited 24-colour palette. Fully transparent background, no shadow.
