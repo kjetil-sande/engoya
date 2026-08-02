@@ -379,30 +379,42 @@ Skiltet henger foran Målfrid, akkurat som Propell-Kjell-skiltet henger foran Kj
 Derfor må boka ligge **på tvers** — bred og lav. En bok som står på høykant blir en
 smal søyle, og da har hun ingen plass å stå bak.
 
-Tenk deg boka **liggende flatt på et bord, sett litt ovenfra og litt forfra**. Da er
-det permen du ser — et bredt rektangel — med papirblokka som en tydelig stripe langs
-forkanten. Det er den formen vi er ute etter. Ikke en bok på hylla, ikke en oppslått
-bok: en tung protokoll som ligger og venter.
+**Dette er feilen som går igjen:** hver gang det står «sett ovenfra» eller
+«liggende», tegner generatoren boka i **isometri** — vridd på skrå, med toppen
+som en rombe. Da blir skiltet en diamant, og Målfrid får ingen rett kant å stå
+bak. Løsningen er å be om det motsatte: **rett forfra, helt flatt, uten dybde.**
+
+Tenk deg boka **hengt opp på en vegg** som et skilt — ikke liggende på et bord.
+Du ser permen rett forfra. Øverste kant er en **vannrett strek** tvers over.
+Ingen vridning, ingen perspektiv, ingen hjørne som stikker mot deg.
 
 **Målene som betyr noe:**
 
-- **Klart bredere enn høy** — sikt mot dobbelt så bred. Blir den kvadratisk, er den feil.
-- Vises maks 130 px høy, samme som Kjell-skiltet. Ingen tynne streker, ingen liten skrift.
-- **ARKIVET må kunne leses ved 130 px.** Store, tykke bokstaver, godt fordelt over
-  hele bredden av permen — ikke et lite stempel i hjørnet.
-- Ingenting rundt boka: intet bord, ingen skygge under, ingen ramme. Bare boka,
-  på gjennomsiktig bunn. Alt som ligger under blir liggende oppå Målfrid.
+- **Toppkanten skal være helt vannrett.** Dette er det viktigste.
+- **Klart bredere enn høy** — sikt mot dobbelt så bred.
+- Vises maks 130 px høy. Ingen tynne streker, ingen liten skrift.
+- **ARKIVET må kunne leses ved 130 px** — store, tykke bokstaver som fyller
+  bredden, ikke et lite stempel i hjørnet.
+- Ingenting rundt boka: intet bord, ingen skygge, ingen ramme. Alt som ligger
+  under blir liggende oppå Målfrid.
 
-16-bit pixel art of a **large closed ledger book lying flat**, seen slightly from
-above, in a **wide landscape composition twice as wide as it is tall**. The cover
-fills the frame as a broad rectangle of worn deep sea-green leather with **brass
-corner protectors** and a heavy brass clasp. **ARKIVET** is stamped across it in
-**large, thick, worn gold serif capitals** spread over the full width, slightly
-uneven as if pressed by hand decades ago. Along the front edge, a band of thick
-yellowed paper with the pages faintly separated. Old, heavy, well kept. Strict
+16-bit pixel art of a **closed ledger book seen straight on, flat front view,
+completely orthographic — no perspective, no isometric angle, no rotation, no
+tilt**. The top edge is a **perfectly horizontal straight line** all the way
+across, as if the book were mounted flat on a wall. **Wide landscape shape, twice
+as wide as it is tall.** The cover fills the frame: worn deep sea-green leather
+with **brass corner protectors** at all four corners and a brass clasp on the
+right edge. **ARKIVET** stamped across it in **large, thick, worn gold serif
+capitals**, spread over the full width, level and upright, slightly uneven as if
+pressed by hand. A thin band of yellowed page edges along the bottom. Strict
 pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering
-only, limited 24-colour palette. Fully transparent background, no shadow, no table,
-no frame, nothing behind or beneath the book.
+only, limited 24-colour palette. Fully transparent background, no shadow, no
+table, no floor, nothing behind or beneath the book.
+
+**Hvis den fortsatt kommer på skrå,** legg til dette til slutt og fjern alt annet
+som antyder rom: *«front view only, like a flat sticker or a wall sign, zero
+perspective»*. Ordene «lying», «resting», «on a table» og «from above» er det
+som utløser isometrien — de må ikke stå der.
 
 **Liten utgave til knappen på dekket:** `arkivet-ikon.png`, ca. **256 × 256**.
 Her har du ikke plass til ordet — dette vises på **26 piksler**. Tegn bare boka:
