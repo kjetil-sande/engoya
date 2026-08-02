@@ -463,6 +463,8 @@
   .catch-fish canvas{position:static;width:auto;height:100px}
   .statline{font-family:var(--mono);font-size:14px;margin:3px 0}
   .statline b{color:var(--wood-dark)}
+  /* Inline, ikke en blokk med ramme — .verna la seg oppå linjene over og under. */
+  .statline b.utsatt{color:#3d6a49;font-weight:700;white-space:normal}
   .newtag{display:inline-block;background:var(--good);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;margin-left:6px}
   .row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:10px}
   #catchModal .row.berreut{display:block}
@@ -1789,12 +1791,14 @@ function pilkSlutt(){
     if(vern||umaal)rec.sluppet=(rec.sluppet||0)+1;      // godt fiskarskap telles også her
     total+=kr;
     L2.insertAdjacentHTML("beforeend",'<div class="statline"><img src="spill/assets/'+(FIMG[f.k]||f.k)+'.png" onerror="this.style.display=\'none\'" style="height:24px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">'+f.n+' '+pf.len+' cm ('+wt+' kg) — '
-      +((vern||umaal)?'<b class="verna">🤍 '+esc(umaal?("under målet på "+umaal+" cm"):vern)+' — satt ut</b>':'<b>'+kr+' kr</b>')+'</div>');
+      +((vern||umaal)?'<b class="utsatt">🤍 '+esc(umaal?("under målet på "+umaal+" cm"):vern)+' — satt ut</b>':'<b>'+kr+' kr</b>')+'</div>');
   });
   if(total){ P.kr+=total; Snd.coin(); } // ingen mynt når alt vart sett ut — lyden skal fortelje same historia som lista
   if(pilkFangst.length>=3)setTimeout(Snd.fiskerLettet,300);
   $("#potTitle").textContent="🎣 Pilkefangst";
   $("#potTotal").innerHTML=total?('Solgt til Rusten: <b>'+total+' kr</b>'):'';
+  // «Ta med» er feil når alt gikk ut igjen — da er det ingenting å ta med.
+  $("#potTake").textContent = total ? "Ta med" : "Lukk";
   var fikk=pilkFangst.length>0; pilkFangst=[]; hud(); saveAll(); syncFam(); modal("potModal",true);
   if(fikk)streakTikk(); // etter oppgjøret — kortet venter til det er lukket
 }
