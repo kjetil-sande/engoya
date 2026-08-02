@@ -329,3 +329,42 @@ stripes — the clean silver is what separates her from the mackerel, which has
 dark wavy bars. Large, visible, slightly loose scales catching the light. Strict
 pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering
 only, limited 24-colour palette. Fully transparent background, no shadow, no frame.
+
+---
+
+## 14. «NY ART!»-stempelet
+
+Fil: **`ny-art.png`** — ca. **512 × 220**, transparent
+
+Dette er merket som spretter opp øverst til høyre på fangstplansjen første gang
+du får en art du aldri har hatt før. Akkurat nå står det et rødt tekstmerke der
+i stedet — koden bytter til bildet av seg selv i det fila lander i mappa.
+
+**Teknisk, viktig:**
+
+- Vises **72 piksler høyt**. Alt som er finere enn det forsvinner — ingen tynne
+  streker, ingen skygge under teksten, ingen detaljer i bakgrunnen.
+- Bredden er fri, men hold deg under 3 ganger høyden, ellers stikker det ut av
+  plansjen på en 320 px-skjerm.
+- Teksten **NY ART!** må stå i selve bildet. Den kommer ikke på oppå.
+- Det skaleres med `image-rendering: pixelated`, så det må være ekte pixel art
+  i den samme stilen som spill-logoen — ikke et glatt bilde som blir skalert ned.
+
+Spillet legger selv på en liten sprett-animasjon (skalerer fra 0 til 115 % og
+tilbake), så bildet skal stå **helt rolig og rett** — ikke tegn inn bevegelse,
+fartsstriper eller skrå vinkel.
+
+16-bit pixel art **stamp badge** reading **"NY ART!"** in bold condensed
+Norwegian-style block capitals. Designed to look like a **weathered wooden sign
+or an inked rubber stamp** in the same handmade harbour style as the game's
+wooden title sign: warm timber tones, thick dark outline, chunky letterforms
+with a soft cream fill and a darker bevel underneath. A small decorative accent
+is welcome — a tiny fish silhouette, a hook, or a starburst behind the text —
+but keep it to one. Slight wear and chipping at the edges, as if it has been
+nailed to a boathouse wall for years. Strict pixel grid, hard-edged pixels, no
+anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette.
+Fully transparent background, no drop shadow, no frame, no border box.
+
+**Alternativ, hvis du heller vil ha stempel enn skilt:** bytt «weathered wooden
+sign» mot *circular red ink stamp, rough uneven ink coverage, slightly rotated
+letterpress look* — men da må teksten fortsatt være vannrett og lesbar ved 72 px.

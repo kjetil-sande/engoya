@@ -1221,11 +1221,20 @@ var RODS=[{n:"Stang I",max:1.2},{n:"Stang II",max:2.3},{n:"Stang III",max:3.6}];
 var SLUK=[
  // Signaturarten står FØRST i hver b:{}. Tallene under 1 er like viktige som de over:
  // uten demping stiger hele puljen sammen og signaturen forsvinner i normaliseringen.
+ //
+ // MERK — vektingen er RELATIV: andelen er w·b delt på summen av alle w·b. Løfter du
+ // én art kraftig, synker alle de andre, også de med b litt over 1. Et tall som 1,3 ved
+ // siden av en signatur på 7,5 er derfor ikke et løft i det hele tatt — arten blir
+ // sjeldnere, ikke vanligere. Tre slike sto her og lovet noe tabellen ikke kunne holde
+ // (Seiforsats/makrell målt ×0,62, Djuphavs-agnrigg/uer ×0,80, Storpirk/lange ×0,87).
+ // De er fjernet. Skal en sekundær art virkelig løftes ved siden av en sterk signatur,
+ // må den opp i samme størrelsesorden — og da er den ikke lenger sekundær.
+ // verktoy-spillrevisjon.mjs måler dette og faller hvis noen sniker inn et nytt.
  {k:"blink",e:"🥄",n:"Blink",pris:15,rec:[0],img:"blink-sluk",b:{makrell:3,sei:0.7,sandflyndre:0.7}},
  {k:"spinner",e:"🌀",n:"Spinner",pris:25,rec:[0],img:"sluk-spinner.gif",b:{lyr:4.5,sei:0.6,sandflyndre:0.7}},
  {k:"dupp",e:"🎈",n:"Dupp og mark",pris:20,rec:[0],img:"dupp",b:{sandflyndre:4.6,berggylte:1.7,sei:0.55,makrell:0.55,lyr:0.7}},
  {k:"gummimakk",e:"🪱",n:"Gummimakk",pris:30,rec:[0,1],img:"gummimakk",b:{hyse:1.3,sandflyndre:2,knurr:1.7,lomre:1.3,sei:0.75,makrell:0.7,torsk:0.6}},
- {k:"sildeforsats",e:"✨",n:"Seiforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:3.6,sild:7.5,akkar:1.4,makrell:1.3,torsk:0.6,hyse:0.6}}, // het «Sildeforsats», men løfter sei og starter ikke hekle-minispillet — navnet var en felle ved siden av Sildehekla
+ {k:"sildeforsats",e:"✨",n:"Seiforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:3.6,sild:7.5,akkar:1.4,torsk:0.6,hyse:0.6}}, // het «Sildeforsats», men løfter sei og starter ikke hekle-minispillet — navnet var en felle ved siden av Sildehekla
  {k:"wobbler",e:"🐠",n:"Wobbler",pris:45,rec:[0,1],img:"sluk-wobbler.gif",b:{lyr:3.2,lysing:1.7,sei:0.8,sild:0.8,torsk:0.55,hyse:0.55}},
  {k:"torskepilk",e:"🎣",n:"Torskepilk",pris:50,rec:[1],img:"torskepilk",b:{torsk:1.5,hyse:0.75,lyr:0.8}},
  {k:"juksa",e:"🧵",n:"Juksa",pris:60,rec:[1],img:"sluk-juksa.gif",b:{hyse:1.6,torsk:0.55}},
@@ -1235,8 +1244,8 @@ var SLUK=[
  {k:"dyppilk",e:"🌑",n:"Djuphavspilk",pris:120,rec:[2],img:"sluk-djuphavs",b:{lange:3.2,uer:0.8,brosme:0.7}},
  {k:"lysende",e:"💡",n:"Selvlysende pilk",pris:150,rec:[2,3],img:"sluk-lysende.gif",b:{brosme:2.7,havmus:1.7,akkar:1.5,haagjel:0.8,blaakveite:0.8}},
  {k:"kveitepilk",e:"🏆",n:"Kveitepilk",pris:250,rec:[2],img:"sluk-kveitepilk.gif",b:{torsk:1.9,kveite:1.6,brosme:0.7,lange:0.8}},
- {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{haagjel:4.2,skolest:1.6,uer:1.3,lange:0.8,brosme:0.6}},
- {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpilk.gif",b:{blaakveite:7.4,svarthaa:1.3,lange:1.3,uer:0.7,haagjel:0.7,brosme:0.6}},
+ {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{haagjel:4.2,skolest:1.6,lange:0.8,brosme:0.6}},
+ {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpilk.gif",b:{blaakveite:7.4,svarthaa:1.3,uer:0.7,haagjel:0.7,brosme:0.6}},
  {k:"kjeks",e:"🍪",n:"Kjekssluk",pris:10,rec:[0],img:"sluk-oreo.gif",dud:true,b:{}}, // spøkesluk: fisk har IKKE søtsug — «Den er til kaffen.» — Rusten
  {k:"markpilk",e:"🪱",n:"Markpilk",pris:90,rec:[0,1],img:"sluk-markpilk",pilk:true,b:{}}, // forsats med mange makker — pump og hent småfisk (juksa-teknikk)
  // Sildehekle: forsats med små kroker og røde perler som ligner tyttebær. Båten står i
@@ -1253,7 +1262,7 @@ function slukAnbefalt(){ var u=aktivSluk(); return !u||u.rec.indexOf(depth)>=0; 
 var AGN=[
  {k:"makrellhode",e:"🐟",n:"Makrellhode",pris:120,pakke:4,b:{blaakveite:7.5,kveite:2.2,breiflabb:1.8,haakjerring:1.7,haabrann:1.6,skate:1.5,lange:1.6,steinbit:1.3,haagjel:0.8,uer:0.7,brosme:0.6}},
  {k:"sei",e:"🐟",n:"Seibiter",pris:100,pakke:4,b:{lange:3,lysing:1.5,piggha:1.3,torsk:1.3,uer:0.7,brosme:0.6}},
- {k:"sild",e:"🐟",n:"Sild",pris:100,pakke:4,b:{sei:2.4,haabrann:1.7,torsk:1.4,lyr:1.4}},
+ {k:"sild",e:"🐟",n:"Sild",pris:100,pakke:4,b:{sei:2.4,haabrann:1.7,torsk:1.4,lyr:1.8}},
  {k:"akkar",e:"🦑",n:"Akkar",pris:160,pakke:4,b:{torsk:1.4,skolest:1.5,havmus:1.4,svarthaa:1.4,kveite:1.4,brosme:1.3,lange:1.3,hyse:0.7}},
  {k:"reke",e:"🦐",n:"Reker",pris:80,pakke:4,b:{sandflyndre:2.6,uer:2,hyse:1.6,hvitting:1.6,rodspette:1.5,lomre:1.5,blastal:1.5,rognkjeks:1.5,rognkall:1.5,skrubbe:1.4,brungylt:1.4,berggylte:1.4,makrell:0.6,sei:0.6,brosme:0.7,lange:0.7,torsk:0.55}},
  {k:"borstemark",e:"🪱",n:"Børstemark",pris:80,pakke:4,b:{sandflyndre:4.6,aalekvabbe:1.7,skrubbe:1.6,rodspette:1.6,lomre:1.6,hyse:1.4,berggylte:1.4,knurr:1.4,rognkjeks:1.4,makrell:0.55,sei:0.55,lyr:0.7}},
@@ -1883,7 +1892,14 @@ function cast(){
       P.kr-=bpris; P.fuel+=kan; hud(); saveAll(); Snd.buy(); });
     return;
   }
-  if(!P.propOk){ notice("Propellen er ødelagt — Propell-Kjell har ny 🛠️"); return; }
+  if(!P.propOk){
+    // Samme nåde som motoren har. Propellen ryker bare når du har råd til ny (1900),
+    // men INGENTING hindret deg i å handle opp pengene etterpå — og da sto du fast for
+    // godt: uten propell kan du ikke kaste, og uten kast ingen inntekt. Teiner går
+    // fortsatt an, så vakta spør om det finnes en vei til penger i det hele tatt.
+    if(!kanTjene){ P.propOk=true; saveAll(); hud(); Snd.fiskerLettet();
+      notice("Kjell hadde en brukt propell liggende — du fikk den på krita 🛠️🤝"); return; }
+    notice("Propellen er ødelagt — Propell-Kjell har ny 🛠️"); return; }
   if(!P.motorOk){
     // står spilleren HELT fast (ingen vei til inntekt), fikser Kjell motoren på krita — aldri softlock
     if(!kanTjene){ P.motorOk=true; saveAll(); hud(); Snd.fiskerLettet();
@@ -2683,6 +2699,7 @@ function renderRig(){
         // samme vakt som i butikken: med havarert motor skal ingenting kunne spise opp
         // reparasjonspengene. Uten den kan man handle seg ned til gratis reparasjon.
         if(!P.motorOk && P.kr-kjop.pris<8000){ notice("Spar pengene til motorreparasjonen hos Propell-Kjell — 8000 kr ⚙️"); return; }
+        if(!P.propOk && P.kr-kjop.pris<1900){ notice("Spar pengene til propellen hos Propell-Kjell — 1900 kr 🛠️"); return; }
         P.kr-=kjop.pris; kjop.fn();
         Snd.buy(); hud(); saveAll(); updateRigChip(); renderRig(); };
       d.appendChild(kb); }
@@ -3544,6 +3561,7 @@ function addShop(L,title,desc,cost,owned,buy,krav){
   else{b.textContent=(cost<0?"+"+(-cost):cost)+" kr"; b.disabled=P.kr<cost || cost<=0 && title.indexOf("bensin")>-1 && P.fuel>=P.fuelMax;
     b.onclick=function(){ if(shopLock||P.kr<cost)return; shopLock=true; setTimeout(function(){shopLock=false},400); // dobbeltklikk-vern
       if(!P.motorOk && cost>0 && cost<8000 && P.kr-cost<8000){ notice("Spar pengene til motorreparasjonen hos Propell-Kjell — 8000 kr ⚙️"); return; } // aldri shoppe-seg-til-softlock (reparasjon/motorer slipper gjennom)
+      if(!P.propOk && cost>0 && cost<1900 && P.kr-cost<1900){ notice("Spar pengene til propellen hos Propell-Kjell — 1900 kr 🛠️"); return; } // samme vern for propellen (selve propellen koster 1900 og slipper gjennom)
       var sEl=null, sTop=0, sN=div; // ta vare på kvar i lista vi står — elles ryk du til toppen for kvart kjøp
       while(sN&&sN!==document.body){ if(sN.scrollHeight-sN.clientHeight>4){ sEl=sN; sTop=sN.scrollTop; break; } sN=sN.parentNode; }
       P.kr-=cost; buy(); Snd.buy(); saveAll(); hud(); updateDepthLocks(); updatePotBtn(); (shopRefresh||openShop)();

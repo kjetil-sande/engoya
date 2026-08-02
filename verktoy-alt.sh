@@ -45,7 +45,6 @@ for n in navn:
 # Filer som med vilje ikke finnes. Uten denne lista roper sjekken ulv hver
 # eneste kjøring, og da slutter man å lese den.
 VENTA = {
-    "ny-art.png":      "plassholder — plugges inn når eieren har tegnet den",
     "funn-rolex.gif":  "død reservesti; funn-rolex-rusten.png finnes og brukes",
 }
 
@@ -69,6 +68,62 @@ echo "── Data og synk ──────────────────
 python3 verktoy-synkvakt.py     | tail -1
 python3 verktoy-datatapstest.py | tail -1
 python3 verktoy-kopitest.py     | tail -1
+
+echo ""
+echo "── Spillmekanikk ────────────────────────────────────"
+node verktoy-spillrevisjon.mjs | tail -1
+node verktoy-softlocktest.mjs  | tail -1
+# Kontrollen: softlocktesten skal FALLE uten propellvakta. Består den begge veier,
+# beviser den ingenting — den fella gikk vi i med datatapstesten i første forsøk.
+node verktoy-softlocktest.mjs --uten-propellvakt >/dev/null 2>&1 \
+  && echo "  OK  kontroll: softlocktesten fanger fella uten vakta" \
+  || { echo "  FEIL  softlocktesten består UTEN vakta — den beviser ingenting"; exit 1; }
+
+python3 - <<'PY'
+# Kamp-UI-en ligger over dekksknappene. Slippes den ikke når du er tilbake på dekk,
+# blir strømpila og dybdesøyla liggende oppå Rusten- og Verksted-knappene. Regelen:
+# HVER gang phase settes til "idle", skal #reelui slås av i samme åndedrag.
+import io, re, sys
+s = io.open('fiske.html', encoding='utf-8').read()
+L = s.split('\n')
+mangler = []
+for i, l in enumerate(L):
+    if not re.search(r'phase\s*=\s*"idle"', l): continue
+    if re.match(r'\s*var\s+depth\s*=', l): continue          # deklarasjonen; av frå start
+    if 'reelui").classList.remove("on")' not in '\n'.join(L[max(0,i-2):i+4]):
+        mangler.append(i+1)
+print("  OK  #reelui slås av alle %d stedene phase blir «idle»" % sum(
+        1 for l in L if re.search(r'phase\s*=\s*"idle"', l))
+      if not mangler else "  FEIL  #reelui blir liggende — linje " + ", ".join(map(str, mangler)))
+sys.exit(1 if mangler else 0)
+PY
+
+python3 - <<'PY'
+# verktoy-rapportdata.js har en HÅNDKOPIERT utgave av FISH, SLUK og AGN, og
+# PDF-rapporten til svogeren bygger på den. Driver kopien fra spillet, begynner
+# rapporten å lyve uten at noe annet merker det.
+import io, re, sys
+def tab(s, namn):
+    i = s.index('var ' + namn + '=['); d = 0
+    for j in range(s.index('[', i), len(s)):
+        if s[j] == '[': d += 1
+        elif s[j] == ']':
+            d -= 1
+            if not d: return s[i:j+1]
+sp = io.open('fiske.html', encoding='utf-8').read()
+rp = io.open('verktoy-rapportdata.js', encoding='utf-8').read()
+def bmap(t):
+    return {m.group(1): m.group(2).replace(' ', '')
+            for m in re.finditer(r'\{k:"([^"]+)".*?b:\{([^}]*)\}', t)}
+avvik = []
+for n in ('SLUK', 'AGN'):
+    a, b = bmap(tab(sp, n)), bmap(tab(rp, n))
+    for k in sorted(set(a) | set(b)):
+        if a.get(k) != b.get(k): avvik.append('%s/%s' % (n, k))
+print("  OK  rapporttabellen er lik spillets" if not avvik
+      else "  FEIL  rapportdata har drevet fra spillet: " + ", ".join(avvik))
+sys.exit(1 if avvik else 0)
+PY
 
 echo ""
 echo "── Server og panel ──────────────────────────────────"
