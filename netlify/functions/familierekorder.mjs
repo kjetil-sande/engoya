@@ -357,7 +357,9 @@ export default async (req) => {
       const kort = ord.join("-") + "-" + (1000 + (b[8] % 9000));
       const nk = createHash("sha256").update("storkveita:" + kort).digest("hex");
       if (await lagerK.get(nk, { type: "json" })) continue;   // alt tatt — trekk på nytt
-      await lagerK.setJSON(nk, { players: {}, updatedAt: naa });
+      // Merkes som kort, ikke familiekode. Kontrollpanelet trenger å kunne skille dem
+      // for å telle ærlig — uten merket ser et kort ut som en familie på én.
+      await lagerK.setJSON(nk, { players: {}, kort: true, updatedAt: naa });
       return Response.json({ kort }, { headers: { "Cache-Control": "no-store" } });
     }
     return Response.json({ feil: "Fikk ikke laget kort akkurat nå. Prøv igjen." }, { status: 503 });

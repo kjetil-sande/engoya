@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Kontrollpanel · Jakten på storkveita</title>
+  <meta name="theme-color" content="#0f2c3a">
+  <link rel="icon" href="engoya-logo.png">
+  <style>
+    :root{--bg:#0f2c3a;--kort:#16394a;--kant:#22536a;--blekk:#eaf2f5;--daempa:#8fb3c2;
+      --gull:#e6b34a;--gronn:#5fc08a;--rod:#e2705f}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--blekk);
+      font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      padding:22px 16px calc(50px + env(safe-area-inset-bottom))}
+    main{max-width:900px;margin:0 auto}
+    h1{font-size:1.5rem;margin:0 0 2px}
+    .sub{color:var(--daempa);font-size:.86rem;margin:0 0 20px}
+    h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.09em;color:var(--daempa);
+      margin:26px 0 10px;font-weight:600}
+    .rutenett{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+    .kort{background:var(--kort);border:1px solid var(--kant);border-radius:12px;padding:13px 15px}
+    .tall{font-size:1.85rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+    .merke{color:var(--daempa);font-size:.78rem;margin-top:2px}
+    .gull{color:var(--gull)} .gronn{color:var(--gronn)} .rod{color:var(--rod)}
+    .stolpe{display:flex;align-items:center;gap:9px;margin:5px 0;font-size:.88rem}
+    .stolpe .navn{width:74px;color:var(--daempa);flex:none}
+    .stolpe .bar{flex:1;height:16px;background:#0c2330;border-radius:5px;overflow:hidden}
+    .stolpe .bar i{display:block;height:100%;background:var(--gull)}
+    .stolpe .v{width:34px;text-align:right;font-variant-numeric:tabular-nums;flex:none}
+    input,button{font:inherit}
+    input{background:#0c2330;border:1px solid var(--kant);color:var(--blekk);
+      border-radius:9px;padding:10px 12px;width:100%;max-width:320px}
+    button{background:var(--gull);color:#231a06;border:0;border-radius:9px;
+      padding:10px 16px;font-weight:700;cursor:pointer;margin-top:9px}
+    .melding{background:var(--kort);border:1px solid var(--kant);border-radius:12px;padding:16px}
+    .fot{margin-top:26px;color:var(--daempa);font-size:.78rem;line-height:1.5}
+    a{color:var(--gull)}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Kontrollpanel</h1>
+  <p class="sub" id="sub">Jakten på storkveita</p>
+  <div id="ut"><div class="melding">Henter …</div></div>
+  <p class="fot" id="fot"></p>
+</main>
+
+<script>
+var NOKKEL = "storkveita-panelnokkel";
+var $ = function(s){ return document.querySelector(s); };
+var esc = function(t){ var d=document.createElement("div"); d.textContent=t==null?"":t; return d.innerHTML; };
+
+function spor(feil){
+  $("#ut").innerHTML =
+    '<div class="melding"><p>' + (feil || "Skriv panelnøkkelen for å se tallene.") + '</p>' +
+    '<input id="n" type="password" placeholder="panelnøkkel" autocomplete="off">' +
+    '<br><button id="g">Vis tallene</button></div>';
+  $("#g").onclick = function(){
+    var v = $("#n").value.trim(); if(!v) return;
+    try{ localStorage.setItem(NOKKEL, v); }catch(e){}
+    hent();
+  };
+  $("#n").onkeydown = function(e){ if(e.key === "Enter") $("#g").click(); };
+}
+
+function tid(min){
+  if(!min) return "0 min";
+  if(min < 60) return min + " min";
+  var t = Math.floor(min/60), r = min%60;
+  return r ? t + " t " + r + " min" : t + " t";
+}
+function kort(tall, merke, klasse){
+  return '<div class="kort"><div class="tall ' + (klasse||"") + '">' + esc(tall) +
+         '</div><div class="merke">' + esc(merke) + '</div></div>';
+}
+function stolper(obj){
+  var maks = 0; for(var k in obj) if(obj[k] > maks) maks = obj[k];
+  var h = "";
+  for(var k2 in obj) h += '<div class="stolpe"><span class="navn">' + esc(k2) + '</span>' +
+    '<span class="bar"><i style="width:' + (maks ? Math.round(100*obj[k2]/maks) : 0) + '%"></i></span>' +
+    '<span class="v">' + obj[k2] + '</span></div>';
+  return h;
+}
+
+function tegn(d){
+  var f = d.folk, t = d.tid, r = d.retention, p = d.progresjon, u = d.utstyr;
+  var h = "";
+
+  h += '<h2>Folk</h2><div class="rutenett">'
+    + kort(f.fiskere, "fiskere totalt")
+    + kort(f.aktiveIDag, "aktive i dag", "gronn")
+    + kort(f.aktive7, "siste 7 dager")
+    + kort(f.aktive30, "siste 30 dager")
+    + '</div>';
+
+  h += '<h2>Holder spillet på dem?</h2><div class="rutenett">'
+    + kort(r.prosent == null ? "–" : r.prosent + " %",
+           "av dem som begynte for over en uke siden fisker fortsatt",
+           r.prosent == null ? "" : (r.prosent >= 40 ? "gronn" : r.prosent >= 20 ? "gull" : "rod"))
+    + kort(r.modne, "har spilt i mer enn en uke")
+    + kort(t.fiskedagerSnitt, "fiskedager i snitt per person")
+    + '</div>';
+
+  h += '<h2>Tid</h2><div class="rutenett">'
+    + kort(t.totaltTimer + " t", "spilt til sammen")
+    + kort(tid(t.medianMinutt), "median per person")
+    + kort(tid(t.snittPerFiskedagMinutt), "per fiskedag")
+    + '</div>';
+
+  h += '<h2>Hvor langt er de kommet?</h2><div class="rutenett">'
+    + kort(p.arterSnitt + " / " + p.arterTotalt, "arter i snitt")
+    + kort(p.trofeSnitt + " / " + p.trofeTotalt, "troféer i snitt")
+    + kort(p.ferdigeMedArter, "har ALLE artene", p.ferdigeMedArter ? "gull" : "")
+    + kort(p.trengerMerAaGjoere, "ferdige OG fortsatt aktive",
+           p.trengerMerAaGjoere ? "rod" : "gronn")
+    + '</div>'
+    + '<div class="kort" style="margin-top:10px"><div class="merke" style="margin:0 0 7px">Arter fanget</div>'
+    + stolper(p.arterFordeling) + '</div>';
+
+  if(p.trengerMerAaGjoere)
+    h += '<div class="kort" style="margin-top:10px;border-color:var(--rod)">'
+      + '<b class="rod">' + p.trengerMerAaGjoere + ' spiller' + (p.trengerMerAaGjoere>1?'e':'')
+      + ' har alt å finne, men fisker fortsatt.</b><div class="merke" style="margin-top:4px">'
+      + 'Det er disse som trenger noe nytt — flere arter, nye funn i teina, noe å jage.</div></div>';
+
+  h += '<h2>Utstyr</h2><div class="rutenett">'
+    + kort(u.stangIII, "Stang III") + kort(u.vinsj, "vinsj")
+    + kort(u.ekkolodd, "ekkolodd") + kort(u.turbosnelle, "turbosnelle")
+    + kort(u.kampbelte, "kampbelte")
+    + '</div>';
+
+  h += '<h2>Koder</h2><div class="rutenett">'
+    + kort(f.koder, "koder i bruk") + kort(f.kort, "fiskerkort delt ut")
+    + kort(f.tommeKoder, "tomme (ubrukte kort)")
+    + '</div>';
+
+  $("#ut").innerHTML = h;
+  $("#sub").textContent = "Hentet " + new Date(d.hentet).toLocaleString("nb");
+  $("#fot").textContent = d.merknad + " Tallene er samlet — ingen navn forlater serveren.";
+}
+
+function hent(){
+  var n = "";
+  try{ n = localStorage.getItem(NOKKEL) || ""; }catch(e){}
+  if(!n) return spor();
+  $("#ut").innerHTML = '<div class="melding">Henter …</div>';
+  fetch("/.netlify/functions/statistikk", { headers: { "x-nokkel": n } })
+    .then(function(r){
+      if(r.status === 401){ try{ localStorage.removeItem(NOKKEL); }catch(e){}
+        spor("Feil nøkkel. Prøv igjen."); return null; }
+      return r.json();
+    })
+    .then(function(d){ if(!d) return; if(d.feil){ spor(esc(d.feil)); return; } tegn(d); })
+    .catch(function(){ $("#ut").innerHTML =
+      '<div class="melding">Fikk ikke kontakt med serveren. Panelet virker bare på engoya.no, ikke lokalt.</div>'; });
+}
+hent();
+</script>
+</body>
+</html>
