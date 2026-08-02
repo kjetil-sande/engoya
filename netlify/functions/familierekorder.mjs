@@ -76,7 +76,9 @@ function vaskPots(p) {
 }
 function vaskRolex(r) {
   if (!r || typeof r !== "object") return undefined;
-  if (r.ferdig != null) return { ferdig: tall(r.ferdig, 9e15) };
+  // Rolexen ligger hos urmakeren i 30 døgn. Uten taket kunne en gal klokke parkere den
+  // for alltid — og klokka er det dyreste enkeltfunnet i spillet.
+  if (r.ferdig != null) return { ferdig: Math.min(tall(r.ferdig, 9e15), Date.now() + 31 * 864e5) };
   if (r.bud != null) return { bud: tall(r.bud, 1e6) };
   return undefined;
 }
@@ -116,7 +118,11 @@ function vaskTur(t) {
   if (!t || typeof t !== "object" || Array.isArray(t)) return undefined;
   if (typeof t.fk !== "string" || !PEN_NOKKEL.test(t.fk)) return undefined;
   return { fk: t.fk, sum: tall(t.sum, 9e9), del: tall(t.del, 1),
-           start: tall(t.start, 9e15), ferdig: tall(t.ferdig, 9e15),
+           start: tall(t.start, 9e15),
+           // Samme grep som smorTs under: serverens klokke er til å stole på, klientens er
+           // ikke. Lengste lovlige tur er 100 timer, så fem døgn kapper aldri en ekte tur —
+           // men en telefon med klokka stilt til 2035 låser ikke lenger turen for alltid.
+           ferdig: Math.min(tall(t.ferdig, 9e15), Date.now() + 5 * 864e5),
            seed: tall(t.seed, 4e9), niv: tall(t.niv, 9) };
 }
 function vaskInvest(v) {

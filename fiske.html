@@ -1356,6 +1356,15 @@ function famTaImot(j){ // flett serverens familiebilde inn lokalt — erstatt al
     if(!egen(DB.players,gml))return;
     var fra=DB.players[gml];
     if(!fra.remote)return;   // EKTE lokal profil foldes ALDRI: kroner og troféskap finnes kun her
+    // …og en EKTE lokal profil er ALDRI FOLDEMÅL heller. Vernet over dekket bare kilden.
+    // Uten denne linja: to enheter, «Nina» på telefonen døper seg om til «Kari», et navn
+    // telefonen ikke har lokalt (byttNavn sperrer bare mot egne navn). Neste synk på iPaden
+    // folder speilet av Nina inn i den EKTE Kari, setter Kari.remote=true, og hovedløkken
+    // overskriver da kr, fuel, sluker og agn med Ninas tall. Målt i A/B-kjøring mot ekte
+    // kode: 250 000 kr → 17 kr. Deretter sletter opprydningen hele profilen ved neste synk
+    // mot et familiebilde uten navnet. Et navnesammenfall skal gi en synlig tvilling,
+    // aldri en overskrevet konto.
+    if(egen(DB.players,nytt)&&!DB.players[nytt].remote)return;
     var til=egen(DB.players,nytt)?DB.players[nytt]:(DB.players[nytt]=newPlayer(nytt));
     til.remote=true;         // foldemålet er et speil, ikke en lokal spiller — ellers fryses kr på 40
     til.caught=til.caught||{}; famFlett(til.caught, fra.caught);   // alt av fangst blir med over
@@ -1673,8 +1682,22 @@ function cast(){
   if(document.querySelector(".modal.on"))return; // ikke kast bak en åpen popup
   var needF = [1,2,2,4][depth] + (P.svc>250?1:0) + (smorPct()<=0?1:0); // bensin etter AVSTAND: Grunt ligger rett utenfor øya, Djuphavet langt ute
   // (+1 for hostende motor, +1 for begrodd skrog)
+  // Finnes det i det hele tatt en vei til inntekt slik spilleren står nå? Dette må regnes
+  // FØR bensingrenen, ikke bare i motorgrenen: med havarert motor og for lite penger til å
+  // fylle uten å gå under 8000 returnerer bensingrenen for alltid, og nåden i motorgrenen
+  // under blir aldri nådd. To feller er tettet samtidig: en teine koster 2 bensin
+  // (setPot), så uten bensin er den ingen utvei — og «P.kr>=175» var en innbilt utvei,
+  // for butikkvakta nekter ethvert kjøp under 8000 så lenge motoren er havarert.
+  var kanSette = P.fuel>=2;
+  var kanKjope = function(pris){ return P.kr-pris>=8000; };
+  var kanTjene = P.kr>=8000 || (P.pots.out||[]).length>0 || (P.rolex&&P.rolex.bud)
+    || (kanSette && (P.pots.owned||0)>0     && ((P.pots.bait||0)>0    || kanKjope(25)))
+    || (kanSette && (P.pots.lineOwned||0)>0 && ((P.pots.lineAgn||0)>0 || kanKjope(60)))
+    || (kanSette && hummerSeason() && (P.pots.ownedH||0)>0 && ((P.pots.bait||0)>0 || kanKjope(25)));
   if(P.fuel<needF){
     if(P.kr<17){ P.fuel=Math.min(P.fuelMax,P.fuel+8); hud(); saveAll(); notice("Blakk og tom — naboen spanderte litt bensin ⛽"); return; } // aldri softlock
+    if(!P.motorOk && !kanTjene){ P.motorOk=true; saveAll(); hud(); Snd.fiskerLettet();
+      notice("Kjell så nøden og fikset motoren på krita — du skylder ham en tjeneste ⚙️🤝"); return; }
     var mangler=P.fuelMax-P.fuel, kan=Math.min(mangler,Math.floor(P.kr/17)), bpris=kan*17;
     noticeMedKnapp("Tom for bensin!","⛽ Fyll opp tanken ("+bpris+" kr)",function(){
       if(!P.motorOk&&P.kr-bpris<8000){ notice("Spar pengene til motorreparasjonen hos Propell-Kjell — 8000 kr ⚙️"); return; } // aldri bensin-deg-til-softlock
@@ -1684,11 +1707,6 @@ function cast(){
   if(!P.propOk){ notice("Propellen er ødelagt — Propell-Kjell har ny 🛠️"); return; }
   if(!P.motorOk){
     // står spilleren HELT fast (ingen vei til inntekt), fikser Kjell motoren på krita — aldri softlock
-    var kanTjene = P.kr>=8000 || (P.pots.out||[]).length>0 || P.rolex
-      || ((P.pots.owned||0)>0 && ((P.pots.bait||0)>0 || P.kr>=25))
-      || ((P.pots.lineOwned||0)>0 && ((P.pots.lineAgn||0)>0 || P.kr>=60))
-      || (hummerSeason() && (P.pots.ownedH||0)>0 && ((P.pots.bait||0)>0 || P.kr>=25))
-      || P.kr>=175; // 175 = krabbeteine + agn hos Rusten
     if(!kanTjene){ P.motorOk=true; saveAll(); hud(); Snd.fiskerLettet();
       notice("Kjell så nøden og fikset motoren på krita — du skylder ham en tjeneste ⚙️🤝"); return; }
     notice("Motoren har havarert! Propell-Kjell venter på deg ⚙️💥"); return; }
@@ -1697,7 +1715,21 @@ function cast(){
   if(P.rig==="rustensuper"&&depth!==3){ notice("Superagnet er laget for djuphavet (300–500 m) — spar det til du er der nede 💎"); return; }
   if(slukDef[P.rig]&&(P.lures[P.rig]||0)<1){ var tomS=slukDef[P.rig].n, fb2=SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0];
     if(fb2){ P.rig=fb2.k; updateRigChip(); notice("Tom for "+tomS+" — byttet til "+fb2.n+" 🧰"); }
-    else { notice("Tom for sluker! Kjøp nye i butikken 🛒"); return; } }
+    else {
+      // Samme nåde som bensin og motor har hatt hele tiden. Uten den er dette en død fil:
+      // billigste sluk koster 10 kr, og en spiller under 10 kr kan aldri kjøpe seg ut.
+      // Blink, ikke Kjekssluk — kjekssluken er en spøkesluk med dud:true som ganger
+      // fiskens budsjett med 2,5. En nåde som gjør spillet uutholdelig er ingen nåde.
+      var harAgn=Object.keys(P.agn||{}).some(function(k){ return (P.agn[k]||0)>0; });
+      var kanFiske = harAgn || P.kr>=10 || (P.pots.out||[]).length>0 || (P.rolex&&P.rolex.bud)
+        || (P.trofe||[]).some(function(t){ return !t.borte; })
+        || (P.invest && P.invest.tur)
+        || ((P.pots.owned||0)>0     && ((P.pots.bait||0)>0    || P.kr>=25))
+        || ((P.pots.lineOwned||0)>0 && ((P.pots.lineAgn||0)>0 || P.kr>=60));
+      if(!kanFiske){ P.lures.blink=(P.lures.blink||0)+1; P.rig="blink";
+        updateRigChip(); hud(); saveAll(); Snd.fiskerLettet(); syncFam(true);
+        notice("Blakk og tom for sluker — Rusten fant en gammel blink i skuffen 🥄"); return; }
+      notice("Tom for sluker! Kjøp nye i butikken 🛒"); return; } }
   // uhell på sjøen: propellen kan slå i noe — oftere når motoren skulle vært på service.
   // (ruller bare når du har råd til ny propell (1900) pluss bensin, eller er forsikret — aldri softlock)
   if(Math.random()<(P.svc>250?1/120:1/800) && (Date.now()<P.forsTil||P.kr>=2200)){
@@ -2428,7 +2460,11 @@ function renderRig(){
       +'<b>'+navn+'</b><span class="ant">'+antall+'</span>';
     if(kjop){ var kb=document.createElement("button"); kb.className="btn sm kjopknapp"; kb.textContent=kjop.pris+" kr";
       kb.disabled=P.kr<kjop.pris;
-      kb.onclick=function(ev){ ev.stopPropagation(); if(P.kr<kjop.pris)return; P.kr-=kjop.pris; kjop.fn();
+      kb.onclick=function(ev){ ev.stopPropagation(); if(P.kr<kjop.pris)return;
+        // samme vakt som i butikken: med havarert motor skal ingenting kunne spise opp
+        // reparasjonspengene. Uten den kan man handle seg ned til gratis reparasjon.
+        if(!P.motorOk && P.kr-kjop.pris<8000){ notice("Spar pengene til motorreparasjonen hos Propell-Kjell — 8000 kr ⚙️"); return; }
+        P.kr-=kjop.pris; kjop.fn();
         Snd.buy(); hud(); saveAll(); updateRigChip(); renderRig(); };
       d.appendChild(kb); }
     if(kanVelges)d.onclick=function(){ P.rig=nokkel; saveAll(); updateRigChip(); renderRig(); Snd.click();
@@ -3409,7 +3445,9 @@ function flettInnboks(lp, inn){
   lp.innboks=ut.slice(0,30);
 }
 function leggITrofe(k){ if(!P)return; P.trofe=P.trofe||[];
-  P.trofe.unshift({k:k, ts:Date.now()}); if(P.trofe.length>120)P.trofe.length=120; saveAll(); }
+  // 160, ikke 120: serveren og flettingen bruker 160 (MAKS_TROFE). Med 120 her kastet
+  // klienten troféer som kom rett tilbake ved neste synk, og skapet pendlet fram og tilbake.
+  P.trofe.unshift({k:k, ts:Date.now()}); if(P.trofe.length>160)P.trofe.length=160; saveAll(); }
 // SESONGKALENDER — gjør sesongen til samling i stedet for hindring. Uten den vet ikke
 // spilleren om makrellen mangler fordi han er uheldig eller fordi det er februar.
 var MNDKORT=["J","F","M","A","M","J","J","A","S","O","N","D"];
@@ -4768,7 +4806,13 @@ function investNei(){
 }
 
 function investSjekk(){
-  investInit(); var t=P.invest.tur; if(!t||Date.now()<t.ferdig)return;
+  investInit(); var t=P.invest.tur; if(!t)return;
+  // Lengste lovlige tur er 100 timer (Trygve Bang). Står ferdig-tidspunktet lenger unna enn
+  // fem døgn, er klokka gal — enten her eller på enheten som sendte turen. Da skal turen
+  // gjøres opp NÅ i stedet for å stå låst til 2035. Oppgjøret bruker den lagrede seeden,
+  // så spilleren får nøyaktig det trekket han skulle hatt.
+  if(t.ferdig-Date.now() > 5*864e5) t.ferdig=Date.now();
+  if(Date.now()<t.ferdig)return;
   var f=fiskerVed[t.fk]; if(!f){ P.invest.tur=null; saveAll(); return; }
   var rng=mulberry32(t.seed), u=investTrekk(f, t.niv||0, rng);
   var ut=Math.round(t.sum*u.mult);
