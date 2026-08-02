@@ -48,7 +48,7 @@ var SLUK=[
  {k:"spinner",e:"🌀",n:"Spinner",pris:25,rec:[0],img:"sluk-spinner.gif",b:{lyr:4.5,sei:0.6,sandflyndre:0.7}},
  {k:"dupp",e:"🎈",n:"Dupp og mark",pris:20,rec:[0],img:"dupp",b:{sandflyndre:4.6,berggylte:1.7,sei:0.55,makrell:0.55,lyr:0.7}},
  {k:"gummimakk",e:"🪱",n:"Gummimakk",pris:30,rec:[0,1],img:"gummimakk",b:{hyse:1.3,sandflyndre:2,knurr:1.7,lomre:1.3,sei:0.75,makrell:0.7,torsk:0.6}},
- {k:"sildeforsats",e:"✨",n:"Seiforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:3.6,sild:7.5,akkar:1.4,makrell:1.3,torsk:0.6,hyse:0.6}}, // het «Sildeforsats», men løfter sei og starter ikke hekle-minispillet — navnet var en felle ved siden av Sildehekla
+ {k:"sildeforsats",e:"✨",n:"Seiforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:3.6,sild:7.5,akkar:1.4,torsk:0.6,hyse:0.6}}, // het «Sildeforsats», men løfter sei og starter ikke hekle-minispillet — navnet var en felle ved siden av Sildehekla
  {k:"wobbler",e:"🐠",n:"Wobbler",pris:45,rec:[0,1],img:"sluk-wobbler.gif",b:{lyr:3.2,lysing:1.7,sei:0.8,sild:0.8,torsk:0.55,hyse:0.55}},
  {k:"torskepilk",e:"🎣",n:"Torskepilk",pris:50,rec:[1],img:"torskepilk",b:{torsk:1.5,hyse:0.75,lyr:0.8}},
  {k:"juksa",e:"🧵",n:"Juksa",pris:60,rec:[1],img:"sluk-juksa.gif",b:{hyse:1.6,torsk:0.55}},
@@ -58,8 +58,8 @@ var SLUK=[
  {k:"dyppilk",e:"🌑",n:"Djuphavspilk",pris:120,rec:[2],img:"sluk-djuphavs",b:{lange:3.2,uer:0.8,brosme:0.7}},
  {k:"lysende",e:"💡",n:"Selvlysende pilk",pris:150,rec:[2,3],img:"sluk-lysende.gif",b:{brosme:2.7,havmus:1.7,akkar:1.5,haagjel:0.8,blaakveite:0.8}},
  {k:"kveitepilk",e:"🏆",n:"Kveitepilk",pris:250,rec:[2],img:"sluk-kveitepilk.gif",b:{torsk:1.9,kveite:1.6,brosme:0.7,lange:0.8}},
- {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{haagjel:4.2,skolest:1.6,uer:1.3,lange:0.8,brosme:0.6}},
- {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpilk.gif",b:{blaakveite:7.4,svarthaa:1.3,lange:1.3,uer:0.7,haagjel:0.7,brosme:0.6}},
+ {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{haagjel:4.2,skolest:1.6,lange:0.8,brosme:0.6}},
+ {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpilk.gif",b:{blaakveite:7.4,svarthaa:1.3,uer:0.7,haagjel:0.7,brosme:0.6}},
  {k:"kjeks",e:"🍪",n:"Kjekssluk",pris:10,rec:[0],img:"sluk-oreo.gif",dud:true,b:{}}, // spøkesluk: fisk har IKKE søtsug — «Den er til kaffen.» — Rusten
  {k:"markpilk",e:"🪱",n:"Markpilk",pris:90,rec:[0,1],img:"sluk-markpilk",pilk:true,b:{}}, // forsats med mange makker — pump og hent småfisk (juksa-teknikk)
  // Sildehekle: forsats med små kroker og røde perler som ligner tyttebær. Båten står i
@@ -69,7 +69,7 @@ var SLUK=[
 ];var AGN=[
  {k:"makrellhode",e:"🐟",n:"Makrellhode",pris:120,pakke:4,b:{blaakveite:7.5,kveite:2.2,breiflabb:1.8,haakjerring:1.7,haabrann:1.6,skate:1.5,lange:1.6,steinbit:1.3,haagjel:0.8,uer:0.7,brosme:0.6}},
  {k:"sei",e:"🐟",n:"Seibiter",pris:100,pakke:4,b:{lange:3,lysing:1.5,piggha:1.3,torsk:1.3,uer:0.7,brosme:0.6}},
- {k:"sild",e:"🐟",n:"Sild",pris:100,pakke:4,b:{sei:2.4,haabrann:1.7,torsk:1.4,lyr:1.4}},
+ {k:"sild",e:"🐟",n:"Sild",pris:100,pakke:4,b:{sei:2.4,haabrann:1.7,torsk:1.4,lyr:1.8}},
  {k:"akkar",e:"🦑",n:"Akkar",pris:160,pakke:4,b:{torsk:1.4,skolest:1.5,havmus:1.4,svarthaa:1.4,kveite:1.4,brosme:1.3,lange:1.3,hyse:0.7}},
  {k:"reke",e:"🦐",n:"Reker",pris:80,pakke:4,b:{sandflyndre:2.6,uer:2,hyse:1.6,hvitting:1.6,rodspette:1.5,lomre:1.5,blastal:1.5,rognkjeks:1.5,rognkall:1.5,skrubbe:1.4,brungylt:1.4,berggylte:1.4,makrell:0.6,sei:0.6,brosme:0.7,lange:0.7,torsk:0.55}},
  {k:"borstemark",e:"🪱",n:"Børstemark",pris:80,pakke:4,b:{sandflyndre:4.6,aalekvabbe:1.7,skrubbe:1.6,rodspette:1.6,lomre:1.6,hyse:1.4,berggylte:1.4,knurr:1.4,rognkjeks:1.4,makrell:0.55,sei:0.55,lyr:0.7}},
