@@ -229,3 +229,23 @@ ansiktet må fylle rammen. Bryst og opp, ikke helfigur.
 
 **Merk:** han skal se mot HØYRE, som de seks fiskerne vi speilvendte — alle ser
 inn mot navnet sitt.
+
+---
+
+## 10. Bensinpumpe til «Fyll bensin»
+
+Fil: **`bensinpumpe.png`** — ca. **400 × 400**, transparent
+
+Ligger til venstre i «Fyll bensin»-raden hos Rusten. Vises som **44 px høy** i
+butikklista, så formen må lese på det målet — detaljer under et par piksler
+forsvinner.
+
+Plassen er allerede laget i koden. Fram til fila finnes brukes ⛽ som reserve,
+så ingenting brekker.
+
+**Merk:** raden rett under er «Ekstra bensinkanne» med en rød kanne. Pumpa bør
+derfor **ikke** være rød — ellers ser de to radene like ut på et lite skjermbilde.
+Grønn slange og messingfarget håndtak skiller dem tydelig, og grønt er dessuten
+det man forbinder med bensinpumper på norske stasjoner.
+
+16-bit pixel art of a **fuel pump nozzle** (the handheld part only, not the whole pump), seen from the side at a slight three-quarter angle, hanging with the spout pointing down-left. Chunky brass-and-steel body with a visible trigger guard and squeeze handle, a short curved metal spout, and a thick dark-green rubber hose curling away from the back of the grip and out of frame. A few drops of fuel at the spout tip. Weathered and well used — scuffed metal, a little grime in the seams, one small dent. Warm brass, pale steel and deep green; **no red anywhere**. Chunky and readable: it must be recognisable at 44 pixels high, so no fine text, no gauge dials, no small logos. Strict pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette. Fully transparent background, no shadow, no frame.
