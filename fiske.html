@@ -482,7 +482,9 @@
   /* Book */
   .bookgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:8px}
   /* troféskapet: god plass — bilde i egen rute til venstre, historien til høyre */
-  .trofegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:8px}
+  /* Alltid ett trofé per linje. To i bredden ble trangt og urolig — hvert
+     funn har en historie som skal få plass til å leses. */
+  .trofegrid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
   /* Rekordkort — samme form som troféene: fisken stor til venstre, teksten til høyre */
   .rekgrid{display:grid;grid-template-columns:1fr;gap:7px}
   .rekkort{display:flex;gap:10px;align-items:center;background:#fff8ea;border:2px solid var(--paper-2);border-radius:10px;padding:8px}
