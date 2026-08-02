@@ -49,8 +49,12 @@ VENTA = {
     # Arkivet — eieren tegner disse. Spillet faller pent tilbake i mellomtiden:
     # ikonet bruker den gamle boka, og overskriften «📖 Arkivet» står til logoen
     # lander. Fjern linjene her når filene kommer, så vokter sjekken dem videre.
-    "arkivet-logo.png":     "under arbeid — h2-overskriften vises til den finnes",
     "arkivet-ikon.png":     "under arbeid — faller tilbake til fangstbok.png",
+    # Tettere beskårne portretter til de tre dekksknappene. Faller tilbake på
+    # portrett-*.png til de kommer, så knappene ser riktige ut i mellomtiden.
+    "knapp-rusten.png":     "under arbeid — faller tilbake til rusten-mot-hoyre.gif",
+    "knapp-kjell.png":      "under arbeid — faller tilbake til portrett-kjell.png",
+    "knapp-maalfrid.png":   "under arbeid — faller tilbake til portrett-maalfrid.png",
 }
 
 har = set(p.split('/')[-1] for p in subprocess.run(

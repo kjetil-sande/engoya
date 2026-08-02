@@ -78,7 +78,7 @@
   #menu .muted{color:#f3e7cd;text-shadow:0 1px 2px rgba(0,0,0,.92),0 2px 12px rgba(0,0,0,.78)}
   /* Personvernlenka skal være synlig uten å ta plass fra «Dra på lopphavet». Den toner inn
      sammen med resten av lobbyen, etter panoreringen. */
-  #menu .pvlenke{order:2;margin:10px 0 0;font-size:11.5px;text-align:center;
+  #menu .pvlenke{order:2;margin:10px 0 0;font-size:13px;text-align:center;
     color:#e8dcc2;text-shadow:0 1px 2px rgba(0,0,0,.9);opacity:0;pointer-events:none}
   #menu .pvlenke a{color:#f6ecd0;text-decoration:underline;text-underline-offset:2px}
   #menu.landa .pvlenke{animation:fadeUp .7s ease .86s both;pointer-events:auto}
@@ -170,16 +170,19 @@
   #muteBtnMenu{font-size:24px}
 
   /* Sea controls */
-  #sea .bottom{position:absolute;left:0;right:0;bottom:0;padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;
+  /* Radene nederst går like langt ut som pengebrikka oppe til venstre og
+     avataren oppe til høyre — altså 10 px fra kanten, samme som #hud. Taket på
+     560 px hindrer at de blir absurd brede på en iPad. */
+  #sea .bottom{position:absolute;left:0;right:0;bottom:0;padding:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;
     align-items:center;z-index:5}
   .depthsel{display:flex;gap:6px;background:rgba(18,58,71,.72);padding:5px;border-radius:12px;
-    width:min(90%,340px);min-width:0;box-sizing:border-box;justify-content:space-between} /* samme bredde som «Kast ut» (min-width:0 hindrer at teksten sprenger boksen) */
+    width:min(100%,560px);min-width:0;box-sizing:border-box;justify-content:space-between} /* samme bredde som «Kast ut» (min-width:0 hindrer at teksten sprenger boksen) */
   .depthsel button{border:0;background:transparent;color:#cfe6e2;font-weight:700;padding:9px 6px;border-radius:9px;cursor:pointer;font-size:17px;font-family:var(--font);line-height:1.1;
     flex:1 1 auto;min-width:0;white-space:nowrap} /* auto-basis: bredden følger teksten, resten deles likt */
-  .depthsel button small{display:block;font-size:12px;font-weight:600;opacity:.85;margin-top:2px}
+  .depthsel button small{display:block;font-size:13.5px;font-weight:600;opacity:.85;margin-top:2px}
   /* Egen linje: emojien er breiare på iOS enn i nettlesaren, og fire soner på
      402 px har ikkje plass til henne på same linja som djupet. */
-  .depthsel button small.bens{font-size:11px;opacity:.75;margin-top:1px;letter-spacing:-.02em;
+  .depthsel button small.bens{font-size:12.5px;opacity:.75;margin-top:1px;letter-spacing:-.02em;
     display:flex;align-items:center;justify-content:center;gap:3px}
   /* Kanna leses raskere enn ordet «bensin» og raskere enn ⛽, som på mange
      telefoner tegnes som en hel bensinstasjon med tak og alt. */
@@ -188,7 +191,7 @@
   .depthsel button.on{background:var(--paper);color:var(--ink)}
   .depthsel button.locked{opacity:.4}
   .depthsel.four button{padding:8px 8px;font-size:15px}
-  .depthsel.four button small{font-size:11px}
+  .depthsel.four button small{font-size:12.5px}
   #sea.fishing #depthsel,#sea.fishing #potRow,#sea.fishing #dekk{display:none!important}
   #sea.fishing #hudLure{display:none}                 /* sluksettet skal vekk med resten av valgene */
   #sea.fishing #hud .fiskerknapp{opacity:0;pointer-events:none} /* barnet arver ikke forelderens pointer-events */ /* snøret er ute — ned med valgene til fisken er i båten */
@@ -196,9 +199,9 @@
   #sea.fishing #hud{opacity:0;pointer-events:none} /* menyen fader bort mens snøret står ute — full ro på havet */
   #sea.fishing #notice{opacity:0;transition:opacity .3s}
   #actionBtn{touch-action:none}   /* ELLES tek Chrome på Android gesten som rulling og slepper sveiven */
-  .actionbtn{width:min(90%,340px);box-sizing:border-box;text-align:center;padding-top:19px;padding-bottom:19px;font-size:18px}
+  .actionbtn{width:min(100%,560px);box-sizing:border-box;text-align:center;padding-top:19px;padding-bottom:19px;font-size:18px}
   /* Botnraden: sluksettet til venstre, kastet til høgre. Begge i tommelbuen. */
-  .kastrad{display:flex;gap:8px;align-items:stretch;width:min(90%,340px);box-sizing:border-box}
+  .kastrad{display:flex;gap:8px;align-items:stretch;width:min(100%,560px);box-sizing:border-box}
   .kastrad .actionbtn{flex:0 0 118px;width:auto;min-width:0;font-size:17px;padding-left:6px;padding-right:6px}
   .kastrad #hudLure{flex:1 1 auto;min-width:0}
   /* når snella tek over blir raden berre snella — sluksettet har ingen plass midt i kampen */
@@ -206,17 +209,19 @@
   .kastrad.kjemper #hudLure{display:none}
   /* Freda eller undermåls fangst: hvit, rolig og hedrende — ikke rød og straffende */
   .baro{margin-top:7px;padding:7px 9px;border-radius:8px;background:#eef3f6;border:1px solid #cddbe3;
-    font-size:12.5px;line-height:1.35;color:#41525c}
+    font-size:14px;line-height:1.35;color:#41525c}
   /* Dekksraden: alt du kan trykke på mellom kast, samlet i tommelsonen — og med NAVN,
      for navnløsheten var det egentlige problemet, ikke antallet knapper. */
-  .dekk{display:flex;gap:5px;width:min(90%,340px);box-sizing:border-box}
-  .dekk button{flex:1 1 0;min-width:0;height:64px;border:0;border-radius:11px;position:relative;cursor:pointer;
+  .dekk{display:flex;gap:5px;width:min(100%,560px);box-sizing:border-box}
+  .dekk button{flex:1 1 0;min-width:0;height:74px;border:0;border-radius:11px;position:relative;cursor:pointer;
     background:var(--paper);color:var(--ink);box-shadow:0 4px 0 var(--paper-2);
     font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 2px;
     transition:transform .05s}
   .dekk button:active{transform:translateY(2px);box-shadow:0 2px 0 var(--paper-2)}
-  .dekk .di{height:30px;max-width:40px;object-fit:contain;image-rendering:pixelated}
-  .dekk .di.e{font-size:26px;line-height:30px}
+  /* Tre portretter, ikke tre redskaper — det er mennesker du går til. De er
+     kvadratiske, så max-width må følge høyden, ellers klipper object-fit ansiktet. */
+  .dekk .di{height:35px;max-width:46px;object-fit:contain;image-rendering:pixelated}
+  .dekk .di.e{font-size:30px;line-height:35px}
   .dekk .t{font-size:14px;font-weight:700;line-height:1;white-space:nowrap}
   /* Sluksettet er større enn dekksknappane — det er her du faktisk gjer eit val */
   /* Sluksettet: sluken skal SYNAST, og namnet står ved sida i same storleik som «Kast ut» */
@@ -228,7 +233,7 @@
   #hudLure .di{height:42px;max-width:46px;flex:0 0 auto;object-fit:contain;image-rendering:pixelated}
   #hudLure .t{font-size:16px;line-height:1.1;text-align:left;min-width:0;overflow-wrap:anywhere}
   .dekk .ant{position:absolute;top:3px;right:4px;min-width:15px;height:15px;padding:0 3px;box-sizing:border-box;
-    border-radius:8px;background:var(--wood-dark);color:#fff;font-family:var(--mono);font-size:10px;
+    border-radius:8px;background:var(--wood-dark);color:#fff;font-family:var(--mono);font-size:11.5px;
     font-style:normal;line-height:15px;text-align:center;box-shadow:0 0 0 2px #fff}
   .dekk .ant.tom{background:#c0392b}
   .varsel{position:absolute;top:4px;right:4px;width:10px;height:10px;border-radius:50%;
@@ -250,11 +255,11 @@
   .pfnavn h3{margin:0;font-size:20px;line-height:1.15;word-break:break-word}
   .pfbytt{background:none;border:0;cursor:pointer;font-size:14px;opacity:.55;padding:2px 4px;line-height:1}
   .pfbytt:hover{opacity:1}
-  .pfstreak{font-size:12px;color:var(--ink-soft);margin-top:3px}
+  .pfstreak{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
   .pfhode > div{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
-  #pfLyd{margin-top:9px;font-size:12px;padding:6px 11px}
+  #pfLyd{margin-top:9px;font-size:13.5px;padding:6px 11px}
   .pfbolk{margin-top:12px}
-  .pfbolk h4{margin:0 0 5px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  .pfbolk h4{margin:0 0 5px;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
   /* Fiskerkortet skal kunne leses høyt fra skjermen og tastes inn på en annen telefon.
      Monospace og god luft mellom tegnene, så «rn» ikke leses som «m». */
   .pfkort{font-family:var(--mono);font-size:15px;font-weight:700;letter-spacing:.04em;
@@ -270,19 +275,19 @@
   #strompil{position:absolute;left:50%;bottom:calc(var(--snelle) + 16px);transform:translateX(-50%);
     display:none;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
   #reelui.on #strompil{display:flex}
-  #strompil .strlab{font-family:var(--mono);font-size:10px;color:#eaf3ee;text-shadow:0 1px 3px #000a;line-height:1;letter-spacing:.04em}
+  #strompil .strlab{font-family:var(--mono);font-size:11.5px;color:#eaf3ee;text-shadow:0 1px 3px #000a;line-height:1;letter-spacing:.04em}
   #strompilIkon{font-family:var(--mono);font-size:15px;color:#cfe6e2;text-shadow:0 1px 3px #000a;line-height:1}
   #strompilStyrke{display:block;width:38px;height:4px;border-radius:3px;background:rgba(13,33,41,.55);overflow:hidden;position:relative}
   #strompilStyrke::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--str,0%);
     background:linear-gradient(90deg,#4f9d6b,#7fd0dd);transition:width .6s ease}
   /* Sesongkalender */
   .aarwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table.aar{border-collapse:collapse;font-size:12px;width:100%;min-width:320px}
+  table.aar{border-collapse:collapse;font-size:13.5px;width:100%;min-width:320px}
   table.aar th{font-weight:700;text-align:left;padding:2px 6px 2px 0;white-space:nowrap;color:var(--ink)}
-  table.aar thead th{text-align:center;padding:0 0 3px;font-family:var(--mono);color:var(--ink-soft);font-size:11px}
+  table.aar thead th{text-align:center;padding:0 0 3px;font-family:var(--mono);color:var(--ink-soft);font-size:12.5px}
   table.aar thead th.naa{color:var(--trophy,#b3402c);font-weight:800}
   table.aar th.ukjent{color:var(--ink-soft);font-style:italic}
-  table.aar td{width:7.2%;height:17px;border:1px solid #e2d6ba;text-align:center;font-size:9px;line-height:1}
+  table.aar td{width:7.2%;height:17px;border:1px solid #e2d6ba;text-align:center;font-size:10.5px;line-height:1}
   table.aar td.v0{background:#f6f1e4}
   table.aar td.v1{background:#dfe6d2}
   table.aar td.v2{background:#a9c091}
@@ -291,8 +296,8 @@
   table.aar td.naa{outline:2px solid #b3402c;outline-offset:-2px}
   /* Fiskeværet-tavla hos Rusten */
   .tavle{background:#12313d;border:2px solid #2a5462;border-radius:11px;padding:9px 11px;margin:0 0 8px;color:#dbeae6}
-  .tavlerad{display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em}
-  .tavlesol{font-family:var(--mono);font-size:11px;color:#8fb3ae;margin-top:3px}
+  .tavlerad{display:flex;flex-wrap:wrap;gap:4px 14px;font-family:var(--mono);font-size:14px;letter-spacing:.03em}
+  .tavlesol{font-family:var(--mono);font-size:12.5px;color:#8fb3ae;margin-top:3px}
   .tavleraad{margin-top:7px;font-size:14px;font-style:italic;line-height:1.4;color:#f2e4c7}
   .verna{background:#e8f0ea;border:2px solid #9fc0a8;border-radius:10px;padding:8px 12px;margin:6px 0 4px;
     color:#2c4a34;font-weight:700;font-size:14px;line-height:1.35}
@@ -346,10 +351,10 @@
   .vbar > i{position:absolute;left:0;right:0;bottom:0;transition:height .05s linear}
   .vbar.tension > i{background:linear-gradient(0deg,#4f9d6b,#e6b45a 60%,#cc4b3a)}
   .vbar.prog > i{background:linear-gradient(0deg,#0d3b4a,#2e8b9e,#7fd0dd)}
-  .vbar .lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:#eaf3ee;white-space:nowrap}
+  .vbar .lab{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11.5px;color:#eaf3ee;white-space:nowrap}
 
   #profilPrikk{position:absolute;top:-5px;left:-5px;min-width:20px;height:20px;border-radius:10px;
-    background:var(--red);color:#fff;font-size:12px;font-weight:800;line-height:20px;text-align:center;
+    background:var(--red);color:#fff;font-size:13.5px;font-weight:800;line-height:20px;text-align:center;
     padding:0 5px;box-shadow:0 0 0 2px #fff;display:none;pointer-events:none;z-index:2}
   #profilPrikk.on{display:block}
   /* Innboksen — meldingar frå fiskarane, uleste øvst og i feit skrift. */
@@ -361,9 +366,9 @@
     background:#a7cac8;flex:0 0 38px}
   .innrad .it{flex:1;min-width:0}
   .innrad .in{font-weight:700;font-size:14px;color:var(--wood-dark)}
-  .innrad.ulest .in::after{content:"●";color:var(--red);font-size:11px;margin-left:6px;vertical-align:2px}
-  .innrad .ib{font-size:12.5px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .innrad .id2{font-size:11px;color:var(--ink-soft);opacity:.7;flex:0 0 auto}
+  .innrad.ulest .in::after{content:"●";color:var(--red);font-size:12.5px;margin-left:6px;vertical-align:2px}
+  .innrad .ib{font-size:14px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .innrad .id2{font-size:12.5px;color:var(--ink-soft);opacity:.7;flex:0 0 auto}
   /* Innkomande anrop. Stort bilete, namn, og to knappar — som ein telefon. */
   #ringModal .card{max-width:340px;padding:0;overflow:hidden;background:#1b2530}
   .ringtopp{padding:26px 20px 18px;text-align:center;color:#eef3f6}
@@ -372,7 +377,7 @@
     image-rendering:pixelated;box-shadow:0 6px 18px rgba(0,0,0,.45)}
   .ringtopp .rn{font-size:22px;font-weight:800;margin-top:14px;line-height:1.2}
   .ringtopp .rb{font-size:14px;opacity:.7;font-style:italic;margin-top:2px}
-  .ringtopp .rs{font-family:var(--mono);font-size:12px;opacity:.55;margin-top:12px;letter-spacing:.06em}
+  .ringtopp .rs{font-family:var(--mono);font-size:13.5px;opacity:.55;margin-top:12px;letter-spacing:.06em}
   .ringknapp{display:flex;gap:14px;padding:6px 22px 26px;justify-content:center}
   .ringknapp button{flex:1;border:0;border-radius:12px;padding:14px 6px;font-family:var(--font);
     font-weight:800;font-size:15px;color:#fff;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.3)}
@@ -399,7 +404,7 @@
     border-radius:9px;padding:7px 2px;cursor:pointer;font-family:var(--font);line-height:1.15}
   @media (min-width:430px){ .lottrad button{flex:1 1 0} }   /* seks på rad når det er plass */
   .lottrad button .lp{display:block;font-weight:800;font-size:15px;color:var(--wood-dark)}
-  .lottrad button .lk{display:block;font-size:10.5px;color:var(--ink-soft);font-family:var(--mono)}
+  .lottrad button .lk{display:block;font-size:12px;color:var(--ink-soft);font-family:var(--mono)}
   .lottrad button.valt{border-color:var(--gold);background:#fdf3d6}
   .lottrad button:disabled{opacity:.32;cursor:default}
   #smsJa:disabled{opacity:.5}
@@ -412,7 +417,7 @@
      og baren si eiga farge fyller ut sidene. Klokka blir teikna i kode — ekte tid. */
   .smsstatus{height:27px;background:#1e262d;flex:0 0 27px;display:flex;align-items:center;
     gap:7px;padding:0 13px}
-  .smsstatus b{font-family:var(--mono);font-size:12px;font-weight:700;color:#eef3f6;letter-spacing:.02em}
+  .smsstatus b{font-family:var(--mono);font-size:13.5px;font-weight:700;color:#eef3f6;letter-spacing:.02em}
   .smsstatus img{height:13px;width:auto;image-rendering:pixelated;display:block}
   .smsstatus .sfyll{flex:1}
   .smsbunn{height:16px;background:#1e262d;flex:0 0 16px;
@@ -423,14 +428,14 @@
     background:#a7cac8;flex:0 0 86px}   /* same tonen som ikon-fiskeren har innbakt */
   .smstopp img.speil{transform:scaleX(-1)}   /* alle ser mot namnet sitt */
   .smstopp .stk{min-width:0;text-align:left}
-  .smstopp .sb{font-size:12px;opacity:.66;letter-spacing:.07em;text-transform:uppercase}
+  .smstopp .sb{font-size:13.5px;opacity:.66;letter-spacing:.07em;text-transform:uppercase}
   .smstopp .sn{font-weight:800;font-size:21px;line-height:1.15;margin-top:1px}
-  .smstopp .sy{font-size:12.5px;opacity:.8;font-style:italic;margin-top:4px}
+  .smstopp .sy{font-size:14px;opacity:.8;font-style:italic;margin-top:4px}
   .smsboble{margin:13px;padding:11px 13px;background:#e8eef2;border-radius:14px 14px 14px 4px;
     font-size:15px;line-height:1.45;color:#28323a;text-align:left;white-space:pre-line;
     flex:1 1 auto;min-height:56px;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .smssum{margin:0 13px 4px;font-family:var(--mono);font-size:15px;color:var(--wood-dark);text-align:left}
-  .smsfakta{margin:0 13px 12px;font-size:12.5px;color:var(--ink-soft);text-align:left;line-height:1.4}
+  .smsfakta{margin:0 13px 12px;font-size:14px;color:var(--ink-soft);text-align:left;line-height:1.4}
   /* Fasiten med denne fiskaren. Står rett over knappane, der valet blir teke. */
   .smshist{margin:2px 13px 11px;padding:7px 11px;border-radius:9px;text-align:left;
     font-size:13px;line-height:1.35;color:var(--ink);
@@ -445,12 +450,12 @@
     .smstopp{gap:10px;padding:9px 12px}
     .smstopp img{width:62px;height:62px;flex-basis:62px}
     .smstopp .sn{font-size:17px}
-    .smstopp .sy,.smstopp .sb{font-size:11px}
+    .smstopp .sy,.smstopp .sb{font-size:12.5px}
     .smsboble{margin:9px 11px;padding:9px 11px;font-size:14px}
-    .smsfakta{margin-bottom:8px;font-size:11.5px}
+    .smsfakta{margin-bottom:8px;font-size:13px}
     .lottrad button{padding:4px 2px}
     .lottrad button .lp{font-size:13.5px}
-    .smshist{margin:0 11px 8px;padding:5px 9px;font-size:12px}
+    .smshist{margin:0 11px 8px;padding:5px 9px;font-size:13.5px}
     .smsknapp{padding:0 11px 10px}
   }
   /* Popups / panels */
@@ -484,9 +489,9 @@
   .rigrow img,.rigrow .emo{width:34px;height:26px;object-fit:contain;image-rendering:pixelated;font-size:22px;display:grid;place-items:center;flex:0 0 auto}
   .rigrow b{font-size:14px}
   .rigrow .ant{margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--ink-soft)}
-  .rigrow .kjopknapp{flex:0 0 auto;padding:5px 9px;font-size:12px;margin-left:6px}
+  .rigrow .kjopknapp{flex:0 0 auto;padding:5px 9px;font-size:13.5px;margin-left:6px}
   .rigrow.tom{opacity:.45;cursor:default}
-  .recchip{font-size:9px;font-weight:800;letter-spacing:.4px;background:#e8ddc6;color:#7a5b3a;border-radius:5px;padding:1px 5px;vertical-align:1px}
+  .recchip{font-size:10.5px;font-weight:800;letter-spacing:.4px;background:#e8ddc6;color:#7a5b3a;border-radius:5px;padding:1px 5px;vertical-align:1px}
   .recchip.ok{background:#cfe4c7;color:#2f5d33} /* anbefalt for sona du står i */
   .catch-fish{height:104px;display:grid;place-items:center;margin:2px 0 0}
   .catch-fish canvas{position:static;width:auto;height:100px}
@@ -494,7 +499,7 @@
   .statline b{color:var(--wood-dark)}
   /* Inline, ikke en blokk med ramme — .verna la seg oppå linjene over og under. */
   .statline b.utsatt{color:#3d6a49;font-weight:700;white-space:normal}
-  .newtag{display:inline-block;background:var(--good);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;margin-left:6px}
+  .newtag{display:inline-block;background:var(--good);color:#fff;font-size:12.5px;font-weight:700;border-radius:6px;padding:2px 8px;margin-left:6px}
   .row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:10px}
   #catchModal .row.berreut{display:block}
   #catchModal .row.berreut #catchRelease{width:100%;font-size:16px;padding:12px 18px}
@@ -503,7 +508,7 @@
   .shopitem{display:flex;gap:10px;align-items:center;background:#fff8ea;border:2px solid var(--paper-2);border-radius:11px;padding:10px;margin:8px 0}
   .shopitem .t{flex:1}
   .shopitem .t b{display:block;font-size:15px}
-  .shopitem .t span{font-size:12px;color:var(--ink-soft)}
+  .shopitem .t span{font-size:13.5px;color:var(--ink-soft)}
 
   /* Book */
   .bookgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:8px}
@@ -521,35 +526,35 @@
   .rekkort .tx{min-width:0;display:flex;flex-direction:column;gap:1px}
   .rekkort .tx b{font-size:13.5px;line-height:1.15;overflow-wrap:anywhere}
   .rekkort .maal{font-family:var(--mono);font-size:13px;color:var(--ink)}
-  .rekkort .hvem{font-size:12px;color:var(--ink-soft)}
-  .rekkort .redsk{font-size:11px;color:var(--ink-soft);opacity:.85;overflow-wrap:anywhere}
+  .rekkort .hvem{font-size:13.5px;color:var(--ink-soft)}
+  .rekkort .redsk{font-size:12.5px;color:var(--ink-soft);opacity:.85;overflow-wrap:anywhere}
   @media(min-width:700px){ .rekgrid{grid-template-columns:1fr 1fr} }
   .trofekort{display:flex;gap:10px;align-items:center;background:#fff8ea;border:2px solid var(--paper-2);border-radius:10px;padding:8px}
   .trofekort .ramme{width:66px;min-width:66px;height:66px;display:grid;place-items:center;background:rgba(93,78,55,.07);border-radius:9px}
   .trofekort .ramme img{max-width:58px;max-height:58px;image-rendering:pixelated}
   .trofekort .tx{min-width:0}
-  .trofekort .tx b{display:block;font-size:12.5px;line-height:1.15;overflow-wrap:anywhere}
-  .trofekort .tx .hist{display:block;font-size:11.5px;color:var(--ink-soft);line-height:1.3;margin-top:3px}
-  .trofekort .tx .naar{display:block;font-family:var(--mono);font-size:10px;opacity:.65;margin-top:4px}
-  .trofekort .tx .trofeselg{margin-top:6px;padding:5px 10px;font-size:12px;box-shadow:0 2px 0 var(--wood-dark)}
+  .trofekort .tx b{display:block;font-size:14px;line-height:1.15;overflow-wrap:anywhere}
+  .trofekort .tx .hist{display:block;font-size:13px;color:var(--ink-soft);line-height:1.3;margin-top:3px}
+  .trofekort .tx .naar{display:block;font-family:var(--mono);font-size:11.5px;opacity:.65;margin-top:4px}
+  .trofekort .tx .trofeselg{margin-top:6px;padding:5px 10px;font-size:13.5px;box-shadow:0 2px 0 var(--wood-dark)}
   /* Låst vare: synleg, men tydeleg ikkje til salgs enno. */
   .shopitem.laast{opacity:.55}
-  .shopitem .krav{display:block;margin-top:3px;font-size:12px;font-weight:700;color:var(--wood-dark)}
+  .shopitem .krav{display:block;margin-top:3px;font-size:13.5px;font-weight:700;color:var(--wood-dark)}
   .trofemerke{display:inline-block;margin-left:7px;padding:1px 7px;border-radius:6px;
-    font-size:10px;font-weight:800;letter-spacing:.05em;vertical-align:2px;
+    font-size:11.5px;font-weight:800;letter-spacing:.05em;vertical-align:2px;
     background:#e6ded0;color:#8a7a62;border:1px solid #cfc3ac}
   .trofemerke.puss{background:#fdf3d6;color:#9a7418;border-color:var(--gold)}
-  .trofekort .tx .trofepuss{margin-top:6px;margin-left:5px;padding:5px 10px;font-size:12px;box-shadow:0 2px 0 #a8801d}
+  .trofekort .tx .trofepuss{margin-top:6px;margin-left:5px;padding:5px 10px;font-size:13.5px;box-shadow:0 2px 0 #a8801d}
   .trofekort .tx .trofepuss:disabled{opacity:.45;cursor:default}
   .trofetel{text-align:center;margin:2px 0 6px;font-size:14px;color:var(--ink)}
   .trofetel b{font-size:16px}
   .slot{background:#fff8ea;border:2px solid var(--paper-2);border-radius:10px;padding:6px 4px;text-align:center;min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-  .slot .redsk{border-top:1px solid rgba(93,78,55,.16);padding-top:2px;margin-top:1px;width:88%;font-size:9px;
+  .slot .redsk{border-top:1px solid rgba(93,78,55,.16);padding-top:2px;margin-top:1px;width:88%;font-size:10.5px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* svak, tynn strek skiller fiskene; lange agnnavn kuttes pent */
   .bookgrid .slot .nm{border-top:1px solid rgba(93,78,55,.14);padding-top:3px;margin-top:2px;width:88%}
   .slot canvas{position:static;width:56px;height:34px}
-  .slot .nm{font-size:11px;font-weight:700;line-height:1.1;overflow-wrap:anywhere} /* lange funnnavn brekkes i stedet for å kuttes */
-  .slot .best{font-family:var(--mono);font-size:10px;color:var(--ink-soft)}
+  .slot .nm{font-size:12.5px;font-weight:700;line-height:1.1;overflow-wrap:anywhere} /* lange funnnavn brekkes i stedet for å kuttes */
+  .slot .best{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
   .slot .stars{display:flex;gap:1px;justify-content:center;margin-top:2px}
   .stars img{width:12px;height:12px;image-rendering:pixelated} /* gjelder også utenfor kortene (artsdetaljen) */
   .slot .stars img{width:12px;height:12px;image-rendering:pixelated}
@@ -581,12 +586,12 @@
   .curtain.anim{transition:transform .55s ease-in}
   #curtainL.on,#curtainR.on{transform:translateX(0)}
   .curtain.out{transition:transform .7s ease-out}
-  .rlab{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;border-radius:6px;padding:1px 6px;margin-top:2px}
+  .rlab{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;border-radius:6px;padding:1px 6px;margin-top:2px}
   .rlab.r0{background:#eee9dc;color:#7c7263;border:1px solid #cfc6b2}
   .rlab.r1{background:#dcebf7;color:#2f6ea0;border:1px solid #9cc4e0}
   .rlab.r2{background:#fdf3d6;color:#9a7418;border:1px solid var(--gold)}
   @media (max-height:430px){
-    .dekk button{height:52px;gap:3px} .dekk .di{height:24px} .dekk .di.e{font-size:21px;line-height:24px} .dekk .t{font-size:12px} /* mobil i landskap: kompakt bunnpanel så fisken synes under kamp */
+    .dekk button{height:60px;gap:3px} .dekk .di{height:28px} .dekk .di.e{font-size:24px;line-height:28px} .dekk .t{font-size:13.5px} /* mobil i landskap: kompakt bunnpanel så fisken synes under kamp */
     .vbar{height:64px} #reelui .bars{gap:10px}
     #sea .bottom{gap:4px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
     #rekModal,#catchModal{padding-bottom:calc(6px + env(safe-area-inset-bottom))}
@@ -613,7 +618,7 @@
   #kjellPortrett{display:block;margin:-4px auto 0;height:176px;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
   /* Målfrid er stående figur som Rusten, ikke kvadratisk portrett som Kjell. */
   #maalfridPortrett{display:block;margin:-6px auto 0;height:150px;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
-  .fam .frow.rek{display:block;font-size:12px} /* linje 1: fisk til venstre, hvem til høyre. linje 2: målene */
+  .fam .frow.rek{display:block;font-size:13.5px} /* linje 1: fisk til venstre, hvem til høyre. linje 2: målene */
   .fam .frow.rek .r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .fam .frow.rek .r1 b{display:flex;align-items:center;gap:7px;min-width:0;font-size:13px}
   .fam .frow.rek .r1 canvas{position:static;width:40px;height:24px;flex:0 0 auto}
@@ -626,15 +631,15 @@
   .famkort.meg{border-color:var(--gold);background:#fffaf0}
   .famkort .fnavn{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px}
   .famkort .fnavn b{font-size:15px;overflow-wrap:anywhere}
-  .famkort .dutag{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  .famkort .dutag{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
     background:var(--gold);color:#3a2e05;border-radius:6px;padding:2px 6px}
-  .famkort .fstreak{margin-left:auto;font-size:12px;font-family:var(--mono);color:var(--ink-soft)}
+  .famkort .fstreak{margin-left:auto;font-size:13.5px;font-family:var(--mono);color:var(--ink-soft)}
   .famkort .ftall{display:flex;flex-wrap:wrap;gap:5px 14px}
   .famkort .ftall span{display:flex;flex-direction:column;font-family:var(--mono);font-size:13px;line-height:1.15}
-  .famkort .ftall i{font-style:normal;font-family:var(--font);font-size:10px;letter-spacing:.05em;
+  .famkort .ftall i{font-style:normal;font-family:var(--font);font-size:11.5px;letter-spacing:.05em;
     text-transform:uppercase;color:var(--ink-soft);font-weight:700}
-  .fbeste{text-align:center;font-size:12px;color:var(--ink-soft);margin:10px 0 0}
-  .muted{color:var(--ink-soft);font-size:12px}
+  .fbeste{text-align:center;font-size:13.5px;color:var(--ink-soft);margin:10px 0 0}
+  .muted{color:var(--ink-soft);font-size:13.5px}
   .center{text-align:center}
   .mapwrap{position:relative;width:100%;border-radius:10px;overflow:hidden;line-height:0}
   .mapwrap img{display:block;width:100%;height:auto}
@@ -654,7 +659,7 @@
     width:max-content;max-width:min(86%,30em);text-align:center;color:var(--ink);font-weight:700;font-size:17px;line-height:1.35;
     box-shadow:0 8px 0 rgba(0,0,0,.15);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
   #notice.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  #notice .lukkhint{margin-top:8px;font-size:11px;font-weight:600;letter-spacing:.06em;
+  #notice .lukkhint{margin-top:8px;font-size:12.5px;font-weight:600;letter-spacing:.06em;
     text-transform:uppercase;opacity:.45}
   /* Éin beskjed om gongen. #hintMid er den som faktisk kolliderer — botn-hintet er alt
      skjult av «#sea.fishing .bottom #hint{display:none}» medan snøret står ute. */
@@ -666,7 +671,7 @@
     .depthsel button{flex:1 1 auto;font-size:19px;padding:12px 8px}
     .depthsel.four button{font-size:14px;padding:12px 6px}
     #hudLure .t{font-size:14px}
-    .depthsel.four button small{font-size:12px}
+    .depthsel.four button small{font-size:13.5px}
     .depthsel button small{font-size:14px;margin-top:2px}
     #hud{gap:6px;padding-right:56px;padding-bottom:8px;padding-left:8px;
       padding-top:calc(14px + env(safe-area-inset-top))}  /* ALDRI kortforma her — ho et opp safe-area */
@@ -681,11 +686,11 @@
     .depthsel{gap:3px;padding:4px}
     .depthsel button{font-size:16px;padding:12px 6px}
     .depthsel button small{font-size:13px}
-    .depthsel.four button{font-size:12px;padding:12px 4px}
-    #hudLure .t{font-size:12px}
-    .dekk .t{font-size:12px} .dekk button{height:60px}
+    .depthsel.four button{font-size:13.5px;padding:12px 4px}
+    #hudLure .t{font-size:13.5px}
+    .dekk .t{font-size:13.5px} .dekk button{height:60px}
     .kastrad .actionbtn{flex-basis:104px;font-size:16px}
-    .depthsel.four button small{font-size:11px}
+    .depthsel.four button small{font-size:12.5px}
     #hud .chip{padding:8px 8px}
     #hud .fuel{width:40px}
     .fiskerknapp{width:40px;height:40px;right:8px;top:calc(14px + env(safe-area-inset-top))}
@@ -742,9 +747,9 @@
         <button class="btn sm" id="potPullL" style="display:none"></button>
       </div>
       <div class="dekk" id="dekk">
-        <button id="openShop" title="Rustens agn &amp; redskap"><img src="spill/assets/rusten-mot-hoyre.gif" class="di" onerror="this.outerHTML='🛒'" alt=""><span class="t">Rusten</span></button>
-        <button id="openKjell" title="Propell-Kjell verksted"><img src="spill/assets/logoikon-propell-kjell.gif" class="di" onerror="this.outerHTML='🔧'" alt=""><span class="t">Verksted</span><i class="varsel" id="kjellVarsel"></i></button>
-        <button id="openBook" title="Arkivet hos Målfrid"><img src="spill/assets/arkivet-ikon.png" class="di" onerror="this.onerror=null;this.src='spill/assets/fangstbok.png'" alt=""><span class="t">Arkivet</span></button>
+        <button id="openShop" title="Rustens agn &amp; redskap"><img src="spill/assets/knapp-rusten.png" class="di" onerror="this.onerror=null;this.src='spill/assets/rusten-mot-hoyre.gif'" alt=""><span class="t">Butikk</span></button>
+        <button id="openKjell" title="Propell-Kjell verksted"><img src="spill/assets/knapp-kjell.png" class="di" onerror="this.onerror=null;this.src='spill/assets/portrett-kjell.png'" alt=""><span class="t">Verksted</span><i class="varsel" id="kjellVarsel"></i></button>
+        <button id="openBook" title="Arkivet hos Målfrid"><img src="spill/assets/knapp-maalfrid.png" class="di" onerror="this.onerror=null;this.src='spill/assets/portrett-maalfrid.png'" alt=""><span class="t">Arkivet</span></button>
       </div>
       <div class="depthsel" id="depthsel">
         <button data-d="0" class="on">Grunt<small>0–50 m</small><small class="bens"><img src="spill/assets/bensinkanne.png" alt="bensin" onerror="this.outerHTML='&#9981;'"> x 1</small></button>
@@ -825,7 +830,7 @@
     <img src="spill/assets/knapp-lukk.png" id="bookClose" class="lukkx" alt="Lukk Arkivet">
     <div class="card">
     <img id="maalfridPortrett" src="spill/assets/portrett-maalfrid-staaende.png" onerror="this.style.display='none'" alt="Arkiv-Målfrid">
-    <img src="spill/assets/arkivet-logo.png" alt="Arkivet" style="display:none;margin:-26px auto 6px;position:relative;z-index:2;max-width:96%;max-height:130px;image-rendering:pixelated"
+    <img src="spill/assets/arkivet-logo.png" alt="Arkivet" style="display:none;margin:-22px auto 16px;position:relative;z-index:2;max-width:80%;max-height:104px;image-rendering:pixelated"
       onload="this.style.display='block';this.nextElementSibling.style.display='none'">
     <h2>Arkivet</h2>
     <div class="tabs"><button class="on" id="tabMine">Min bok</button><button id="tabRek">Rekorder</button><button id="tabFam">Familien</button><button id="tabTrofe">Troféer</button><button id="tabAar">Året</button></div>
@@ -2140,7 +2145,7 @@ function pilkSlutt(){
     if(vern||umaal)rec.sluppet=(rec.sluppet||0)+1;      // godt fiskarskap telles også her
     total+=kr;
     L2.insertAdjacentHTML("beforeend",'<div class="statline"><img src="spill/assets/'+(FIMG[f.k]||f.k)+'.png" onerror="this.style.display=\'none\'" style="height:24px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">'+f.n+' '+pf.len+' cm ('+wt+' kg) — '
-      +((vern||umaal)?'<b class="utsatt">🤍 '+esc(umaal?("under målet på "+umaal+" cm"):vern)+' — satt ut</b>'
+      +((vern||umaal)?'<b class="utsatt">💙 '+esc(umaal?("under målet på "+umaal+" cm"):vern)+' — satt ut</b>'
         :(f.k==="sild"?'<b>i agnboksen</b>':'<b>'+kr+' kr</b>'))+'</div>');
   });
   // Sild går rett i agnboksen i stedet for i kassa. Hun er verdt 8 kr hos Rusten og
@@ -2381,19 +2386,19 @@ function land(){
   $("#catchAgn").style.display=(agnAv&&!uteHelt)?"inline-block":"none"; pending.agnAv=uteHelt?null:agnAv;
   $("#catchKeep").style.display=uteHelt?"none":"";
   var utKn=$("#catchRelease");
-  utKn.textContent=uteHelt?"Sett den ut 🤍":"Slipp ut";
+  utKn.textContent=uteHelt?"Sett den ut 💙":"Slipp ut";
   utKn.className=uteHelt?"btn":"btn ghost sm";
   utKn.parentNode.classList.toggle("berreut", uteHelt);
   drawFishInto($("#catchFish"),f,110);
   var cT=$("#catchTitle");
-  cT.textContent = (vern||umaal) ? (f.trophy?"STORKVEITA! 🏆":"Godt fiskarskap 🤍") : (f.trophy ? "STORKVEITA! 🏆" : (gold?"GYLLEN FISK! ✨" : isNew?"Ny art!":"Fisk!"));
+  cT.textContent = (vern||umaal) ? (f.trophy?"STORKVEITA! 🏆":"Godt fiskarskap 💙") : (f.trophy ? "STORKVEITA! 🏆" : (gold?"GYLLEN FISK! ✨" : isNew?"Ny art!":"Fisk!"));
   cT.style.display = cT.textContent==="Fisk!" ? "none" : ""; // vanleg fangst treng ingen overskrift — bildet seier alt
   visNyArt(isNew&&!f.trophy); // stempel over plansjen ved førstegangsfangst (storkveita har sin egen fest)
   $("#catchName").innerHTML="<b>"+artNavn(f)+"</b>"+(gold?' ✨':'')+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>'+(isNew?'<span class="newtag">NY</span>':'')+(isRecord&&!isNew?'<span class="newtag">REKORD</span>':'');
   $("#catchSize").innerHTML="Lengde <b>"+len+" cm</b> · vekt <b>"+wt+" kg</b>";
   $("#catchRig").textContent="Tatt på: "+rigNavn(); // samme opplysning som på rekordkortene
   $("#catchKr").innerHTML=(vern||umaal
-      ? '<div class="verna">🤍 '+(umaal?("Under minstemålet på "+umaal+" cm"):vern)+' · sett varsomt ut igjen</div>'
+      ? '<div class="verna">💙 '+(umaal?("Under minstemålet på "+umaal+" cm"):vern)+' · sett varsomt ut igjen</div>'
         +'<div class="rustensier">«'+esc(FREDET_ORD[f.k]||"Han skal ut att. Slik er det.")+'» — Rusten</div>'
       : "Verdi: <b>"+kr+" kr</b>")
     +(isDaily&&!vern&&!umaal?' <span class="newtag" title="Rustens bestilling i dag">BESTILLING +50%</span>':'')
@@ -2426,7 +2431,7 @@ function resolveCatch(sell){
   else if(sell===true){ P.kr+=pc.kr; P.solgt=(P.solgt||0)+pc.kr; Snd.coin(); }
   else { /* slipp ut: arten er registrert i boka, men ingen penger */ }
   pending=null; modal("catchModal",false); hud(); saveAll(); updateRigChip();
-  setHint(sell==="agn"?("Skjært opp til agn — +3 "+agnDef[pc.agnAv].n.toLowerCase()+" i sluksettet 🧰"):sell===true?("Solgt for "+pc.kr+" kr."):(pc.vern||pc.umaal)?"Satt varsomt ut igjen 🤍":"Sluppet ut."); setAction("Kast ut");
+  setHint(sell==="agn"?("Skjært opp til agn — +3 "+agnDef[pc.agnAv].n.toLowerCase()+" i sluksettet 🧰"):sell===true?("Solgt for "+pc.kr+" kr."):(pc.vern||pc.umaal)?"Satt varsomt ut igjen 💙":"Sluppet ut."); setAction("Kast ut");
 }
 
 /* ---------- Vær: regn, vind, torden + motorrøyk ---------- */
@@ -2687,14 +2692,14 @@ function visRekordKort(){
 }
 function tegnRekKort(){
   var r=rekKort[rekIdx], f=byKey[r.k], m=$("#rekKort"); m.innerHTML="";
-  m.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:0;font-size:12px">Siste nytt fra Lopphavet ('+(rekIdx+1)+'/'+rekKort.length+')</p>'
+  m.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:0;font-size:13.5px">Siste nytt fra Lopphavet ('+(rekIdx+1)+'/'+rekKort.length+')</p>'
     +'<h2 style="margin:.2em 0">'+((P&&r.nm===P.name)?"Du":esc(r.nm))+' tok familierekord!</h2>');
   var cv=document.createElement("canvas"); cv.style.cssText="position:static;display:block;margin:4px auto;width:150px;height:86px"; m.appendChild(cv);
   drawFish(cv,f,150,86,false);
   m.insertAdjacentHTML("beforeend",'<div class="statline"><b>'+f.n+'</b>'+(r.gold?' ✨':'')+'</div>'
     +'<div class="statline">'+r.len+' cm · '+(r.wt||"?")+' kg</div>'
     +(r.redskap?'<div class="statline muted">Tatt på: '+esc(r.redskap)+'</div>':'')
-    +'<div class="statline muted" style="font-size:12px">'+tidSiden(r.rts)+'</div>'
+    +'<div class="statline muted" style="font-size:13.5px">'+tidSiden(r.rts)+'</div>'
     +'<div class="row" style="margin-top:10px">'
     +(rekIdx>0?'<button class="btn sm ghost" id="rekForrige">Forrige</button>':'<span></span>')
     +'<button class="btn gold sm" id="rekNeste">'+(rekIdx<rekKort.length-1?"Neste →":"Ut og fisk! 🎣")+'</button></div>');
@@ -2737,12 +2742,12 @@ function renderRig(){
     };
     L.appendChild(d);
   }
-  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0;font-weight:700;font-size:12px">— Sluker (ryker bare med snøret) —</p>');
+  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0;font-weight:700;font-size:13.5px">— Sluker (ryker bare med snøret) —</p>');
   SLUK.forEach(function(u){ var n=P.lures[u.k]||0;
     rad(u.k,u.e,u.n+' <span class="recchip'+(u.rec.indexOf(depth)>=0?" ok":"")+'">'+recTekst(u)+'</span>',n+" stk",P.rig===u.k,n>0,u.img,
       (u.k!=="agnrigg"||P.vinsj)?{pris:u.pris,fn:function(){P.lures[u.k]=(P.lures[u.k]||0)+1;}}:null);
   });
-  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:8px 0 2px;font-weight:700;font-size:12px">— Agn (brukes opp når fisken tar) —</p>');
+  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:8px 0 2px;font-weight:700;font-size:13.5px">— Agn (brukes opp når fisken tar) —</p>');
   AGN.forEach(function(a){ var n=P.agn[a.k]||0;
     if(n<1&&P.rig!==a.k&&a.kunFangst)return; // krabbeagn vises først når man har fått noe fra teina
     var dsr=agnDagsStatus(), erUtsolgt=dsr.utsolgt===a.k;
@@ -2750,7 +2755,7 @@ function renderRig(){
       n+" stk",P.rig===a.k,n>0,agnImg(a),
       (a.kunFangst||erUtsolgt)?null:{pris:agnPris(a),fn:function(){P.agn[a.k]=(P.agn[a.k]||0)+a.pakke;}});
   });
-  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="font-size:12px;margin:8px 0 0">Kjøp mer agn hos Rusten 🛒 — makrell, sild, sei og krabbe kan du beholde som agn i stedet for å selge. Sild hekler du selv med sildehekla 🫐</p>');
+  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="font-size:13.5px;margin:8px 0 0">Kjøp mer agn hos Rusten 🛒 — makrell, sild, sei og krabbe kan du beholde som agn i stedet for å selge. Sild hekler du selv med sildehekla 🫐</p>');
 }
 /* ---------- Teiner (fase 1: krabbeteine) ---------- */
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
@@ -2794,7 +2799,7 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"blyblink",e:"🎣",n:"Blyblink, blank som ny",kr:25,w:10,img:"funn-blyblink.png",t:"Ein gammal favoritt. Nokon sakna henne meir enn han sa."},
  {k:"nokkelknippe",e:"🔑",n:"Nøkkelknippe med naustnøkkel",kr:0,w:9,img:"funn-nokkelknippe.png",trofeKun:true,t:"Tre nøklar og ein flaskeopnar. Det siste var det viktigaste."},
  {k:"slipsknute",e:"👔",n:"Slips, framleis knytt",kr:0,w:8,img:"funn-slipsknute.png",trofeKun:true,t:"Knuten sit. Nokon drog det over hovudet og var ferdig med den jobben."},
- {k:"spokelsesgarn",e:"🕸️",n:"Spøkelsesgarn — tatt opp av havet 🤍",kr:0,w:7,img:"funn-spokelsesgarn.png",trofeKun:true,t:"Fiskar vidare i årevis om det får liggje. No gjer det ikkje det."},
+ {k:"spokelsesgarn",e:"🕸️",n:"Spøkelsesgarn — tatt opp av havet 💙",kr:0,w:7,img:"funn-spokelsesgarn.png",trofeKun:true,t:"Fiskar vidare i årevis om det får liggje. No gjer det ikkje det."},
  {k:"annensteine",e:"🦞",n:"Ei anna sin teine — merkt og full",kr:0,w:6,img:"funn-annens-teine.png",trofeKun:true,t:"Vi merkte kor ho låg og sette henne ned att. Slik gjer ein."},
 
  // Levande ting
@@ -2803,7 +2808,7 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"eremittkork",e:"🦐",n:"Eremittkreps som har flytta inn i ein kork",kr:0,w:9,img:"funn-eremittkreps-kork.png",trofeKun:true,t:"Skalet var opptatt. Han tok det han fann, og bar det med verdigheit."},
  {k:"sjopolse",e:"🥒",n:"Sjøpølse",kr:20,w:9,img:"funn-sjopolse.png",t:"Ho spytta ut innmaten sin av skrekk. Ho lagar seg ny."},
  {k:"blekksprutunge",e:"🦑",n:"Blekkspruunge",kr:25,w:8,img:"funn-blekksprutunge.png",t:"På storleik med ein tommel, og sinna som ein bikkje."},
- {k:"uermedkrok",e:"🪝",n:"Uer med gammel krok i kjeften 🤍",kr:0,w:6,img:"funn-uer-med-krok.png",trofeKun:true,t:"Han har gått med han lenge. Vi klipte han laus og sette ueren ut."},
+ {k:"uermedkrok",e:"🪝",n:"Uer med gammel krok i kjeften 💙",kr:0,w:6,img:"funn-uer-med-krok.png",trofeKun:true,t:"Han har gått med han lenge. Vi klipte han laus og sette ueren ut."},
  {k:"aalikar",e:"🪣",n:"Ål i eit gammalt kar",kr:0,w:5,img:"funn-aal-i-kar.png",trofeKun:true,t:"Han hadde budd der ei stund. Vi bar karet ut på djupet og velta det."},
  {k:"hummerstrikk",e:"🦞",n:"Hummer med strikk på klørne",kr:220,w:5,img:"funn-hummer-strikk.png",hummer:true,t:"Nokon mista henne på veg heim. No er ho vår — om sesongen tillèt det."},
  {k:"nisereskalle",e:"💀",n:"Nisereskalle",kr:0,w:3,img:"funn-nisereskalle.png",djup:true,trofeKun:true,t:"Rein og kvit. Ho svømte her lenge før nokon av oss."},
@@ -2924,7 +2929,7 @@ function potBycatch(rng,sone){ // djuphavsrariteter dukker BARE opp på 300-500 
   var l={e:v.e,n:v.n,kr:v.kr,img:v.fimg||v.img, funnK:v.k}; // MERK: ikke «fk» — det betyr fiskenøkkel i linekoden
   if(P&&erSkatt(v)){ P.funnSett=P.funnSett||{}; P.funnSett[v.k]=1; }   // hatt én gang er nok
   if(v.hummer&&!hummerSeason()){ // strikk på klørne betyr at nokon alt har fanga henne — men lova gjeld
-    l.n="Hummer med strikk på klørne — freda no, sett ut att 🤍"; l.kr=0; l.valg=null; l.ut=true; }
+    l.n="Hummer med strikk på klørne — freda no, sett ut att 💙"; l.kr=0; l.valg=null; l.ut=true; }
   if(v.trofeKun||v.trofeSelg||v.auksjon||v.museum||v.laas){ l.valg=v; l.kr=0; } // valget avgjør pengene — ikke utbetal på forhånd
   if(l.kr>0&&!v.rolexFunn) l.kr=Math.max(1,Math.round(l.kr*verdiSkala()/5)*5); // formuen styrer prisen på skattene
   if(v.k==="flaskepost"){ var r2=rng(); // 90-tallsklassikeren
@@ -2977,7 +2982,7 @@ function potOutcomeH(t,soak){ // hummerteine: best med natt (22–06) i soaket; 
     else{ var len=Math.round(22+rng()*13);
       if(len<25) lines.push({e:"🦞",n:"Hummer "+len+" cm — under minstemålet (25 cm), satt ut",kr:0,img:"hummer"});
       else if(len>32) lines.push({e:"🦞",n:"Diger hummer "+len+" cm — over maksmålet (32 cm), satt ut!",kr:0,img:"hummer"});
-      else if(!hummerSeason()) lines.push({e:"🦞",n:"Hummer "+len+" cm — sesongen er slutt, sett varsomt ut igjen 🤍",kr:0,img:"hummer",ut:true});
+      else if(!hummerSeason()) lines.push({e:"🦞",n:"Hummer "+len+" cm — sesongen er slutt, sett varsomt ut igjen 💙",kr:0,img:"hummer",ut:true});
       else lines.push({e:"🦞",n:"HUMMER "+len+" cm — havets kardinal!",kr:Math.round(500*(0.6+0.9*(len-25)/7)),img:"hummer"});
     }
   } else if(r1<hc+0.30*q){ var n2=1+(rng()<0.4?1:0);
@@ -2990,8 +2995,8 @@ function lineFisk(rng,k){ var f=byKey[k], t=rng(), len=Math.round(f.len[0]+(f.le
   var wt=+((Math.pow(len/100,3)*f.kg*(0.9+rng()*0.3))).toFixed(1); if(wt<0.1)wt=0.1; if(f.trophy&&wt>40)wt=+(38+rng()*2).toFixed(1);
   var vern=fredetNaa(f), umaal=underMaal(f,len);        // lova gjelder uansett redskap
   var kr=(vern||umaal)?0:Math.max(1,Math.round(f.pris*(0.6+0.9*t)*artPris(f)));
-  var n=artNavn(f)+" "+len+" cm ("+wt+" kg)"+((vern||umaal)?" — 🤍 "+(umaal?("under målet på "+umaal+" cm"):vern)+", satt ut":"");
-  return {e:(vern||umaal)?"🤍":"🐟", n:n, kr:kr, img:f.k, fk:k, len:len, wt:wt, ut:!!(vern||umaal)}; }
+  var n=artNavn(f)+" "+len+" cm ("+wt+" kg)"+((vern||umaal)?" — 💙 "+(umaal?("under målet på "+umaal+" cm"):vern)+", satt ut":"");
+  return {e:(vern||umaal)?"💙":"🐟", n:n, kr:kr, img:f.k, fk:k, len:len, wt:wt, ut:!!(vern||umaal)}; }
 function lineOutcome(t,soak){ // bunnline: kveitesjansen er BETRAKTELIG større enn med stang — men den vil stå natta over
   var rng=mulberry32(t.seed^((soak/60000)|0)), q=Math.max(0,Math.min(1,soak/(10*3600000))), lines=[];
   if(soak<20*60000) return {lines:[],total:0,early:true};
@@ -3275,7 +3280,7 @@ function visProfil(){
                     :'<div class="pfrad"><span>Største kveite</span><b class="muted">ikke ennå</b></div>')
     // Sluppet ut står med vilje ved siden av fangsttallene, ikke gjemt bort. Fredet fisk
     // og fisk under målet er noe man skal kunne være stolt av å ha satt tilbake.
-    +(T.sluppet?'<div class="pfrad"><span>Satt ut igjen</span><b>🤍 '+T.sluppet.toLocaleString("nb")+'</b></div>':'')
+    +(T.sluppet?'<div class="pfrad"><span>Satt ut igjen</span><b>💙 '+T.sluppet.toLocaleString("nb")+'</b></div>':'')
     +'<div class="pfrad"><span>Troféer i skapet</span><b>'+T.trofe+' av '+trofeMulige()
       +(T.solgteTrofe?' <span class="muted" style="font-weight:400">· '+T.solgteTrofe+' solgt</span>':'')+'</b></div>'
     +'</div>';
@@ -3292,7 +3297,7 @@ function visProfil(){
     +'<div class="pfrad"><span>Siste 7 dager</span><b>'+tidTekstKort(tidSum(P,Date.now()-6*864e5))+'</b></div>'
     +'<div class="pfrad"><span>Denne måneden</span><b>'+tidTekstKort(tidDenneMnd(P))+'</b></div>'
     +'<div class="pfrad"><span>Totalt</span><b>'+tidTekstKort(P.tidMs)+'</b></div>'
-    +(loggEldre<60000 ? '<p class="muted" style="font-size:11px;margin:6px 0 0;line-height:1.4">Døgnloggen startet i dag — «Totalt» har fulgt deg hele veien, de andre tallene fylles ut etter hvert.</p>' : '')
+    +(loggEldre<60000 ? '<p class="muted" style="font-size:12.5px;margin:6px 0 0;line-height:1.4">Døgnloggen startet i dag — «Totalt» har fulgt deg hele veien, de andre tallene fylles ut etter hvert.</p>' : '')
     +'</div>';
 
   h+='<div class="pfbolk"><h4>Familien</h4>'
@@ -3306,7 +3311,7 @@ function visProfil(){
   // Kortet vises først når det finnes noe å miste — se kortModent().
   if(kortModent()){
     h+='<div class="pfbolk"><h4>Fiskerkortet ditt</h4>'
-      +'<p class="muted" style="font-size:12.5px;margin:2px 0 6px">Din egen nøkkel. Skriv den ned — med den henter du profilen din tilbake på en ny telefon, uten å røre familiekoden.</p>'
+      +'<p class="muted" style="font-size:14px;margin:2px 0 6px">Din egen nøkkel. Skriv den ned — med den henter du profilen din tilbake på en ny telefon, uten å røre familiekoden.</p>'
       +(P.kort ? '<div class="pfkort" id="pfKortKode">'+esc(P.kort)+'</div>'
                : '<div class="pfkort muted" id="pfKortKode">'+(kortVenter?"lager kortet ditt …":"trykk «Lag kort» under")+'</div>')
       +'<div class="row" style="gap:8px;margin-top:8px">'
@@ -3315,10 +3320,10 @@ function visProfil(){
       +'<button class="btn sm ghost" id="pfKortHent">Hent med kort</button></div></div>';
   }
 
-  h+='<div class="pfbolk" style="text-align:center;padding-top:4px"><a href="personvern.html" class="muted" style="font-size:12px">Personvern — hva spillet lagrer</a></div>';
+  h+='<div class="pfbolk" style="text-align:center;padding-top:4px"><a href="personvern.html" class="muted" style="font-size:13.5px">Personvern — hva spillet lagrer</a></div>';
 
   h+='<div class="pfbolk"><h4>Sikkerhetskopi</h4>'
-    +'<p class="muted" style="font-size:12.5px;margin:2px 0 8px">Troféskapet og funnene dine ligger bare på denne enheten. Last ned en kopi og legg den et trygt sted — da kan alt hentes tilbake på en ny telefon.</p>'
+    +'<p class="muted" style="font-size:14px;margin:2px 0 8px">Troféskapet og funnene dine ligger bare på denne enheten. Last ned en kopi og legg den et trygt sted — da kan alt hentes tilbake på en ny telefon.</p>'
     +'<div class="row" style="gap:8px"><button class="btn sm" id="pfKopiUt">Last ned kopi</button>'
     +'<button class="btn sm ghost" id="pfKopiInn">Les inn kopi</button></div></div>';
 
@@ -3719,7 +3724,7 @@ function renderArtDetalj(f){ // MIN side om arten (familiens tall står i Rekord
   var cv=document.createElement("canvas"); cv.style.cssText="position:static;display:block;margin:6px auto;width:140px;height:80px"; m.appendChild(cv);
   drawFish(cv,f,140,80,!r);
   m.insertAdjacentHTML("beforeend",'<h2 style="text-align:center;margin:0">'+vis+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span></h2>'
-    +'<p class="muted center" style="margin:2px 0 8px;font-size:12px">Arten blir '+f.len[0]+'–'+f.len[1]+' cm</p>');
+    +'<p class="muted center" style="margin:2px 0 8px;font-size:13.5px">Arten blir '+f.len[0]+'–'+f.len[1]+' cm</p>');
   var box=document.createElement("div"); box.className="fam"; m.appendChild(box);
   if(!r) box.innerHTML='<p class="muted center">Denne har du ikke fått ennå — lykke til! 🎣</p>';
   else{
@@ -3833,7 +3838,7 @@ function renderAar(){
   var naa=new Date().getMonth();
   var med=FISH.filter(function(f){ return f.ss||f.fredet||f.freda; });
   var uten=FISH.filter(function(f){ return !(f.ss||f.fredet||f.freda); });
-  L.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:2px 0 8px;font-size:13px">Når er artene inne? Mørk rute = god sesong, tom = borte, 🤍 = freda (kveita 20.12–20.04, ueren utenom 1.6–31.8). Måneden nå er uthevet.</p>');
+  L.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:2px 0 8px;font-size:13px">Når er artene inne? Mørk rute = god sesong, tom = borte, 💙 = freda (kveita 20.12–20.04, ueren utenom 1.6–31.8). Måneden nå er uthevet.</p>');
   var h='<div class="aarwrap"><table class="aar"><thead><tr><th></th>'
     +MNDKORT.map(function(m,i){return '<th'+(i===naa?' class="naa"':'')+'>'+m+'</th>'}).join('')+'</tr></thead><tbody>';
   med.forEach(function(f){
@@ -3842,13 +3847,13 @@ function renderAar(){
     for(var m=0;m<12;m++){
       var fr=fredetMnd(f,m), v=f.ss?f.ss[m]:1;
       var kl = fr ? "fr" : v<=0.05 ? "v0" : v<0.6 ? "v1" : v<1.15 ? "v2" : "v3";
-      h+='<td class="'+kl+(m===naa?' naa':'')+'" title="'+(fr?"freda":Math.round(v*100)+" %")+'">'+(fr?'🤍':'')+'</td>';
+      h+='<td class="'+kl+(m===naa?' naa':'')+'" title="'+(fr?"freda":Math.round(v*100)+" %")+'">'+(fr?'💙':'')+'</td>';
     }
     h+='</tr>';
   });
   h+='</tbody></table></div>';
   L.insertAdjacentHTML("beforeend",h);
-  L.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:10px 0 2px;font-size:12.5px">Uten dokumentert sesong — like gode hele året: '
+  L.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:10px 0 2px;font-size:14px">Uten dokumentert sesong — like gode hele året: '
     +uten.map(function(f){return esc(f.n)}).join(", ")+'.</p>');
 }
 function renderTrofe(){
@@ -3913,8 +3918,8 @@ function renderFam(){
     +beste.map(function(x){return (P&&x.nm===P.name?"deg":esc(x.nm))+' '+x.b+' d'}).join(' · ')+'</p>');
   if(!rows.length)box.innerHTML='<p class="muted center">Ingen spillere ennå.</p>';
   box.insertAdjacentHTML("beforeend", code
-    ? '<p class="muted center" style="margin-top:10px;font-size:12px">Familiekode: <b>'+esc(code)+'</b>'+(famInfo?' · '+esc(famInfo):'')+' <button class="btn sm" id="famBytt">Bytt</button></p>'
-    : '<p class="muted center" style="margin-top:10px"><button class="btn sm gold" id="famKoble">Koble familien sammen på nett</button><br><span class="muted" style="font-size:11px">Samme kode på alle enheter → felles rekorder på hytta og hjemme</span></p>');
+    ? '<p class="muted center" style="margin-top:10px;font-size:13.5px">Familiekode: <b>'+esc(code)+'</b>'+(famInfo?' · '+esc(famInfo):'')+' <button class="btn sm" id="famBytt">Bytt</button></p>'
+    : '<p class="muted center" style="margin-top:10px"><button class="btn sm gold" id="famKoble">Koble familien sammen på nett</button><br><span class="muted" style="font-size:12.5px">Samme kode på alle enheter → felles rekorder på hytta og hjemme</span></p>');
   var kb=$("#famKoble")||$("#famBytt");
   if(kb)kb.onclick=function(){ var c=(prompt("Kode (4–40 tegn) — familiens felles, eller din egen personlige. Hold den hemmelig!", code||"")||"").trim();
     if(!c)return; if(c.length<4){ alert("Minst 4 tegn 🙂"); return; } if(c.length>40){ alert("Maks 40 tegn 🙂"); return; }
@@ -3958,7 +3963,7 @@ function renderRek(){
   });
   box.appendChild(g);
   if(Object.keys(DB.players).length<2&&!famCode())
-    box.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin-top:10px;font-size:12px">Koble familien sammen i Familien-fanen, så kjemper dere om rekordene på tvers av enheter! 👨‍👩‍👧</p>');
+    box.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin-top:10px;font-size:13.5px">Koble familien sammen i Familien-fanen, så kjemper dere om rekordene på tvers av enheter! 👨‍👩‍👧</p>');
 }
 
 
@@ -5331,7 +5336,7 @@ $("#openShop").onclick=function(){ if(document.querySelector(".modal.on"))return
 $("#shopClose").onclick=function(){modal("shopModal",false); shopRefresh=null; updatePotBtn();};
 $("#openKjell").onclick=function(){ if(document.querySelector(".modal.on"))return; Snd.verkstedlyd(); openKjell(); };
 $("#kjellClose").onclick=function(){modal("kjellModal",false); shopRefresh=null; updatePotBtn();};
-$("#openBook").onclick=function(){ Snd.blaIBok(); openBook("mine"); }; $("#bookClose").onclick=function(){modal("bookModal",false)};
+$("#openBook").onclick=function(){ Snd.blaIBok(); openBook("mine"); }; $("#bookClose").onclick=function(){ clearTimeout(blaTimer); modal("bookModal",false); };
 $("#mapClose").onclick=function(){modal("mapModal",false)};
 document.querySelectorAll(".mappin").forEach(function(p){ p.onclick=function(){ var d=+p.dataset.d;
   if(d>P.rod){ $("#mapHint").textContent=RODS[d].n+" trengs for "+ZONE[d].toLowerCase()+" ("+DEPM[d]+")"; return; }
@@ -5353,7 +5358,22 @@ lydIkon();
 // Fanene i Arkivet er sidene i boka — hvert bytte skal høres. Lyden ligger her og
 // ikke inne i openBook(), fordi den også kalles når boka ÅPNES, og da spiller
 // blaIBok allerede. To lyder oppå hverandre høres ut som en feil.
-function bla(fane){ return function(){ Snd.blaSide(); openBook(fane); }; }
+//
+// Siden bytter ikke med én gang. Papirlyden varer 1,3 sekund, og når arket kom
+// ETTER at siden alt var byttet, hørtes det ut som en forsinkelse i appen. Nå
+// starter lyden straks, fanen lyser opp straks — så du kjenner at trykket satt —
+// men selve siden lander 170 ms senere, omtrent når arket faller. Å vente ut hele
+// lyden ville vært ti ganger for lenge; det er forspranget som gjør susen.
+var BLA_MS=170, blaTimer=null;
+function bla(fane){ return function(){
+  Snd.blaSide();
+  var id = "tab" + fane.charAt(0).toUpperCase() + fane.slice(1);   // mine → tabMine
+  ["tabMine","tabRek","tabFam","tabTrofe","tabAar"].forEach(function(t){
+    $("#"+t).classList.toggle("on", t===id);                       // umiddelbar kvittering på trykket
+  });
+  clearTimeout(blaTimer);            // rask dobbelttrykk: siste fane vinner
+  blaTimer=setTimeout(function(){ openBook(fane); }, BLA_MS);
+}; }
 $("#tabMine").onclick=bla("mine"); $("#tabFam").onclick=bla("fam"); $("#tabRek").onclick=bla("rek"); $("#tabTrofe").onclick=bla("trofe"); $("#tabAar").onclick=bla("aar");
 $("#hudLure").onclick=function(){ if(!$("#sea").classList.contains("on"))return; Snd.slukLokk(); renderRig(); modal("rigModal",true);
 };
