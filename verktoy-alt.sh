@@ -51,7 +51,6 @@ VENTA = {
     # lander. Fjern linjene her når filene kommer, så vokter sjekken dem videre.
     "arkivet-logo.png":     "under arbeid — h2-overskriften vises til den finnes",
     "arkivet-ikon.png":     "under arbeid — faller tilbake til fangstbok.png",
-    "maalfrid-staaende.png": "under arbeid — skjules til den finnes",
 }
 
 har = set(p.split('/')[-1] for p in subprocess.run(

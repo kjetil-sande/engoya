@@ -691,7 +691,7 @@
     <canvas id="skyCv"></canvas>
     <button class="iconbtn" id="muteBtnMenu" title="Lyd av/på" style="position:absolute;top:12px;right:12px;z-index:5">🔊</button>
     <div id="lydvalg"><p>Vil du ha lyd?</p>
-      <div class="lydrad"><button class="btn gold" id="lydJa">🔊 Selvsagt!</button>
+      <div class="lydrad"><button class="btn gold" id="lydJa">Selvsagt!</button>
         <button class="btn ghost" id="lydNei">Nei, takk</button></div></div>
     <img class="logo" id="logoImg" alt="Jakten på storkveita" style="display:none">
     <div class="logo-fallback" id="logoFallback">JAKTEN PÅ<small>STORKVEITA</small></div>
@@ -784,7 +784,7 @@
     <img id="rustenPortrett" src="spill/assets/rusten-mot-venstre.gif" onerror="this.style.display='none'" alt="Rusten">
     <img src="spill/assets/rusten-logo.png" alt="Rustens agn og redskap" style="display:none;margin:-38px auto 4px;position:relative;z-index:2;max-width:86%;max-height:80px;image-rendering:pixelated"
       onload="this.style.display='block';this.nextElementSibling.style.display='none'">
-    <h2 style="text-align:center">🛒 Rustens agn &amp; redskap</h2>
+    <h2 style="text-align:center">Rustens agn &amp; redskap</h2>
     <p class="muted" id="shopKr"></p>
     <div id="shopList"></div>
   </div></div></div>
@@ -814,10 +814,10 @@
   <div class="modal" id="bookModal"><div class="cardwrap">
     <img src="spill/assets/knapp-lukk.png" id="bookClose" class="lukkx" alt="Lukk Arkivet">
     <div class="card">
-    <img id="maalfridPortrett" src="spill/assets/maalfrid-staaende.png" onerror="this.style.display='none'" alt="Arkiv-Målfrid">
+    <img id="maalfridPortrett" src="spill/assets/portrett-maalfrid-staaende.png" onerror="this.style.display='none'" alt="Arkiv-Målfrid">
     <img src="spill/assets/arkivet-logo.png" alt="Arkivet" style="display:none;margin:-26px auto 6px;position:relative;z-index:2;max-width:96%;max-height:130px;image-rendering:pixelated"
       onload="this.style.display='block';this.nextElementSibling.style.display='none'">
-    <h2>📖 Arkivet</h2>
+    <h2>Arkivet</h2>
     <div class="tabs"><button class="on" id="tabMine">Min bok</button><button id="tabRek">Rekorder</button><button id="tabFam">Familien</button><button id="tabTrofe">Troféer</button><button id="tabAar">Året</button></div>
     <div id="bookMine"></div>
     <div id="bookTrofe" style="display:none"></div>
@@ -834,7 +834,7 @@
 
   <!-- TEINETREKK -->
   <div class="modal" id="potModal"><div class="card center">
-    <h2 id="potTitle">🦀 Teinetrekk</h2>
+    <h2 id="potTitle">Teinetrekk</h2>
     <div id="potList"></div>
     <div class="statline" id="potTotal"></div>
     <div class="row"><span></span><button class="btn gold" id="potTake">Ta med</button></div>
@@ -843,7 +843,7 @@
   <!-- INNBOKS -->
   <div class="modal" id="innModal"><div class="cardwrap" style="max-width:400px">
     <img src="spill/assets/knapp-lukk.png" id="innLukk" class="lukkx" alt="Lukk innboksen">
-    <div class="card"><h2 style="margin:.1em 0 .6em">📨 Innboks</h2>
+    <div class="card"><h2 style="margin:.1em 0 .6em">Innboks</h2>
       <div id="innListe"></div></div>
   </div></div>
 
@@ -949,6 +949,9 @@ var Snd=(function(){
     dorbjelle:{url:"spill/lyd/dorbjelle.aac", vol:0.42},          // du opnar døra inn til Rusten
     verkstedlyd:{url:"spill/lyd/verksted-skralle.aac", vol:0.40}, // Kjell strammar ei stroppe
     blaibok:{url:"spill/lyd/bla-i-bok.aac", vol:0.9},
+    // Egen lyd for å bla VIDERE. Å åpne boka og å snu et blad skal ikke låte likt —
+    // den første er tyngre, denne er ett enkelt ark.
+    blaside:{url:"spill/lyd/bla-side.aac", vol:0.75},
     sluklokk:{url:"spill/lyd/sluksett-lokk.aac", vol:0.5},        // låsen vippast og lokket går opp             // papir ber lite — må ligge klart høgare enn bjelle og metall
     hval1:{url:"spill/lyd/hval-01.aac", vol:0.55}, // to ulike rop — same hval skal ikkje seie
     hval2:{url:"spill/lyd/hval-02.aac", vol:0.55}, // det same to gonger på rad
@@ -1133,6 +1136,7 @@ var Snd=(function(){
     dorbjelle:function(){ oneShot("dorbjelle"); },
     verkstedlyd:function(){ oneShot("verkstedlyd"); },
     blaIBok:function(){ oneShot("blaibok"); },
+    blaSide:function(){ oneShot("blaside"); },
     slukLokk:function(){ oneShot("sluklokk"); },
     hvalrop:function(){ var c=["hval1","hval2"].filter(function(k){return buffers[k]});
       if(c.length)oneShot(c[(Math.random()*c.length)|0]); }, // ekte lyd, ingen fallback — knurren tier heller enn å pipe
@@ -1629,12 +1633,12 @@ function renderPlayers(){
     if(!Object.prototype.hasOwnProperty.call(DB.players,nm))DB.players[nm]=newPlayer(nm); DB.last=nm; chosen(nm); saveAll(); renderPlayers()};
   box.appendChild(add);
   if(!famCode()){ var lg=document.createElement("button"); lg.className="btn sm ghost"; // ny nettleser: hent familien med koden deres
-    lg.textContent="🔑 Logg inn med kode"; lg.onclick=famLogin; box.appendChild(lg); }
+    lg.textContent="Logg inn med kode"; lg.onclick=famLogin; box.appendChild(lg); }
 }
 function famLogin(){
   var c=(prompt("Skriv koden — familiens felles kode, eller din egen personlige (4–40 tegn).")||"").trim();
   if(!c)return; if(c.length<4||c.length>40){ alert("Koden er 4–40 tegn 🙂"); return; }
-  $("#plist").insertAdjacentHTML("beforeend",'<span class="muted">🌊 Leter etter familien …</span>');
+  $("#plist").insertAdjacentHTML("beforeend",'<span class="muted">Leter etter familien …</span>');
   fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:c})}) // ren henting — skriver ingenting på serveren
   .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
   .then(function(j){
@@ -1839,7 +1843,7 @@ function setDepth(d){
 }
 
 function toSea(){Snd.ambienceOn(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
-  var dk=dailyFish(); setTimeout(function(){ if(phase==="idle")setHint("📋 Rusten betaler +50 % for "+dk.n.toLowerCase()+" i dag. "+ZONE[dk.z]+" ("+DEPM[dk.z]+")."); },1200);
+  var dk=dailyFish(); setTimeout(function(){ if(phase==="idle")setHint("Rusten betaler +50 % for "+dk.n.toLowerCase()+" i dag. "+ZONE[dk.z]+" ("+DEPM[dk.z]+")."); },1200);
   setTimeout(visRekordKort, 2800); // familiens siste rekorder — én gang per økt, når båten har glidd inn
   setTimeout(streakVis, 4200);   // uhentet streak-gave (lukket med X) ligger klar til neste tur — aldri tapt
   oppdaterVaerLyd();
@@ -1903,7 +1907,7 @@ function cast(){
     if(!P.motorOk && !kanTjene){ P.motorOk=true; saveAll(); hud(); Snd.fiskerLettet();
       notice("Kjell så nøden og fikset motoren på krita — du skylder ham en tjeneste ⚙️🤝"); return; }
     var mangler=P.fuelMax-P.fuel, kan=Math.min(mangler,Math.floor(P.kr/17)), bpris=kan*17;
-    noticeMedKnapp("Tom for bensin!","⛽ Fyll opp tanken ("+bpris+" kr)",function(){
+    noticeMedKnapp("Tom for bensin!","Fyll opp tanken ("+bpris+" kr)",function(){
       if(!P.motorOk&&P.kr-bpris<8000){ notice("Spar pengene til motorreparasjonen hos Propell-Kjell — 8000 kr ⚙️"); return; } // aldri bensin-deg-til-softlock
       P.kr-=bpris; P.fuel+=kan; hud(); saveAll(); Snd.buy(); });
     return;
@@ -2127,7 +2131,7 @@ function pilkSlutt(){
     total+=kr;
     L2.insertAdjacentHTML("beforeend",'<div class="statline"><img src="spill/assets/'+(FIMG[f.k]||f.k)+'.png" onerror="this.style.display=\'none\'" style="height:24px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">'+f.n+' '+pf.len+' cm ('+wt+' kg) — '
       +((vern||umaal)?'<b class="utsatt">🤍 '+esc(umaal?("under målet på "+umaal+" cm"):vern)+' — satt ut</b>'
-        :(f.k==="sild"?'<b>🫐 i agnboksen</b>':'<b>'+kr+' kr</b>'))+'</div>');
+        :(f.k==="sild"?'<b>i agnboksen</b>':'<b>'+kr+' kr</b>'))+'</div>');
   });
   // Sild går rett i agnboksen i stedet for i kassa. Hun er verdt 8 kr hos Rusten og
   // 25 kr som agn (100 kr for fire), så å selge henne ville vært tåpelig — og å hekle
@@ -2136,7 +2140,7 @@ function pilkSlutt(){
     L2.insertAdjacentHTML("beforeend",'<div class="statline" style="margin-top:6px"><b>🫐 '+sildAgn+' sild lagt i agnboksen</b> — hun er verdt mer på kroken enn i kassa.</div>'); }
   if(total){ P.kr+=total; P.solgt=(P.solgt||0)+total; Snd.coin(); } // ingen mynt når alt vart sett ut — lyden skal fortelje same historia som lista
   if(pilkFangst.length>=3)setTimeout(Snd.fiskerLettet,300);
-  $("#potTitle").textContent="🎣 Pilkefangst";
+  $("#potTitle").textContent="Pilkefangst";
   $("#potTotal").innerHTML=total?('Solgt til Rusten: <b>'+total+' kr</b>'):'';
   // «Ta med» er feil når alt gikk ut igjen — da er det ingenting å ta med.
   $("#potTake").textContent = (total||sildAgn) ? "Ta med" : "Lukk"; // silda gikk i agnboksen — da er det noe å ta med
@@ -2383,8 +2387,8 @@ function land(){
         +'<div class="rustensier">«'+esc(FREDET_ORD[f.k]||"Han skal ut att. Slik er det.")+'» — Rusten</div>'
       : "Verdi: <b>"+kr+" kr</b>")
     +(isDaily&&!vern&&!umaal?' <span class="newtag" title="Rustens bestilling i dag">BESTILLING +50%</span>':'')
-    +(famBeat?'<div class="famrec">🏅 NY FAMILIEREKORD — du slo '+esc(famBeat.nm)+' ('+famBeat.len+' cm)!</div>':'')
-    +(baro?'<div class="baro">🎈 Magen står ut av kjeften — svømmeblæra tålte ikke turen opp fra '+ZONE[depth].toLowerCase()+'. Han kan ikke settes ut igjen.</div>':'');
+    +(famBeat?'<div class="famrec">NY FAMILIEREKORD — du slo '+esc(famBeat.nm)+' ('+famBeat.len+' cm)!</div>':'')
+    +(baro?'<div class="baro">Magen står ut av kjeften — svømmeblæra tålte ikke turen opp fra '+ZONE[depth].toLowerCase()+'. Han kan ikke settes ut igjen.</div>':'');
   if(f.k==="knurr"){ setTimeout(Snd.knurreFisk,650); rustenSier(rec.count>1?"knurr2":"knurr1",1500); }
   if(baro) rustenSier("blaere",1500);
   if(f.k==="havmus"&&depth===2) rustenSier("havmus",1500);
@@ -2673,7 +2677,7 @@ function visRekordKort(){
 }
 function tegnRekKort(){
   var r=rekKort[rekIdx], f=byKey[r.k], m=$("#rekKort"); m.innerHTML="";
-  m.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:0;font-size:12px">🏅 Siste nytt fra Lopphavet ('+(rekIdx+1)+'/'+rekKort.length+')</p>'
+  m.insertAdjacentHTML("beforeend",'<p class="muted" style="margin:0;font-size:12px">Siste nytt fra Lopphavet ('+(rekIdx+1)+'/'+rekKort.length+')</p>'
     +'<h2 style="margin:.2em 0">'+((P&&r.nm===P.name)?"Du":esc(r.nm))+' tok familierekord!</h2>');
   var cv=document.createElement("canvas"); cv.style.cssText="position:static;display:block;margin:4px auto;width:150px;height:86px"; m.appendChild(cv);
   drawFish(cv,f,150,86,false);
@@ -2682,7 +2686,7 @@ function tegnRekKort(){
     +(r.redskap?'<div class="statline muted">Tatt på: '+esc(r.redskap)+'</div>':'')
     +'<div class="statline muted" style="font-size:12px">'+tidSiden(r.rts)+'</div>'
     +'<div class="row" style="margin-top:10px">'
-    +(rekIdx>0?'<button class="btn sm ghost" id="rekForrige">← Forrige</button>':'<span></span>')
+    +(rekIdx>0?'<button class="btn sm ghost" id="rekForrige">Forrige</button>':'<span></span>')
     +'<button class="btn gold sm" id="rekNeste">'+(rekIdx<rekKort.length-1?"Neste →":"Ut og fisk! 🎣")+'</button></div>');
   var fb=$("#rekForrige"); if(fb)fb.onclick=function(){ rekIdx--; Snd.click(); tegnRekKort(); };
   $("#rekNeste").onclick=function(){ if(rekIdx<rekKort.length-1){ rekIdx++; Snd.click(); tegnRekKort(); } else modal("rekModal",false); };
@@ -3043,7 +3047,7 @@ function pullPot(ty){ ty=ty||"k";
   if(fikkKveite){ Snd.trophy(); notice("STORKVEITA GIKK PÅ LINA! 🏆"); dogShow(0,7); Snd.gladDog(); }
   else if(res.lines.some(function(l){return l.fk==="haakjerring"})){ Snd.trophy(); notice("HÅKJERRINGA GIKK PÅ LINA! 🦈 Havets eldste!"); dogShow(0,7); Snd.gladDog(); setTimeout(Snd.fiskerImponert,500); }
   if(res.lines.length)setTimeout(streakTikk,0); // etter at trekk-boksen er åpnet
-  $("#potTitle").textContent = ty==="l"?"🪢 Linetrekk":ty==="h"?"🦞 Hummerteinetrekk":"🦀 Teinetrekk";
+  $("#potTitle").textContent = ty==="l"?"Linetrekk":ty==="h"?"Hummerteinetrekk":"Teinetrekk";
   var L=$("#potList"); L.innerHTML="";
   if(!res.lines.length){
     var tomMsg = ty==="l" ? (res.tapt==="raid"
@@ -3063,7 +3067,7 @@ function pullPot(ty){ ty=ty||"k";
   var kLinjer=res.lines.filter(function(l){return l.img==="taskekrabbe"}), kn=kLinjer.length, kkr=0;
   kLinjer.forEach(function(l){kkr+=l.kr});
   if(ty!=="l"&&kn>0){ // krabbene kan beholdes som agn i stedet for å selges
-    $("#potTotal").insertAdjacentHTML("beforeend",'<div style="margin-top:8px"><button class="btn sm" id="potAgn">🧰 Ta '+kn+' krabbe'+(kn>1?"r":"")+' som agn i stedet (−'+kkr+' kr)</button></div>');
+    $("#potTotal").insertAdjacentHTML("beforeend",'<div style="margin-top:8px"><button class="btn sm" id="potAgn">Ta '+kn+' krabbe'+(kn>1?"r":"")+' som agn i stedet (−'+kkr+' kr)</button></div>');
     $("#potAgn").onclick=function(){ if(P.kr<kkr){ notice("Pengene er alt brukt 😅"); return; }
       P.kr-=kkr; P.agn.krabbe=(P.agn.krabbe||0)+kn; this.disabled=true;
       hud(); saveAll(); updateRigChip(); Snd.click();
@@ -3073,15 +3077,15 @@ function pullPot(ty){ ty=ty||"k";
   if(vLinje){ var v=vLinje.valg, tatt=false;
     if(v.museum){ // gullmyntene MÅ til museet — men du får honorar
       P.kr+=v.museum; hud(); saveAll(); Snd.coin();
-      $("#potTotal").insertAdjacentHTML("beforeend",'<div class="muted" style="margin-top:8px">🏛️ Myntene er meldt inn og sendt til Vikingskipshuset i Oslo. Finnerhonorar: <b>'+v.museum+' kr</b>.</div>');
+      $("#potTotal").insertAdjacentHTML("beforeend",'<div class="muted" style="margin-top:8px">Myntene er meldt inn og sendt til Vikingskipshuset i Oslo. Finnerhonorar: <b>'+v.museum+' kr</b>.</div>');
     } else {
       var knapper='<div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
-        +'<button class="btn sm gold" id="vTrofe">🏺 Sett i troféskapet</button>';
+        +'<button class="btn sm gold" id="vTrofe">Sett i troféskapet</button>';
       if(v.trofeSelg) knapper+='<button class="btn sm" id="vSelg">Selg for '+v.trofeSelg+' kr</button>';
       var auk = v.auksjon ? (v.auksjon===true?{selg:5000,min:100,maks:30000}:v.auksjon) : null;
       if(auk) knapper+='<button class="btn sm" id="vSelg">Selg nå — '+auk.selg+' kr</button>'
-        +'<button class="btn sm" id="vAuksjon">🔨 På auksjon ('+auk.min+'–'+auk.maks.toLocaleString("nb")+')</button>';
-      if(v.laas) knapper+='<button class="btn sm" id="vLaas"'+(P.kr<v.laas.pris?' disabled title="Krever '+v.laas.pris+' kr"':'')+'>🔓 Bryt opp låsen — '+v.laas.pris+' kr</button>';
+        +'<button class="btn sm" id="vAuksjon">På auksjon ('+auk.min+'–'+auk.maks.toLocaleString("nb")+')</button>';
+      if(v.laas) knapper+='<button class="btn sm" id="vLaas"'+(P.kr<v.laas.pris?' disabled title="Krever '+v.laas.pris+' kr"':'')+'>Bryt opp låsen — '+v.laas.pris+' kr</button>';
       if(v.trofeKun) knapper+='<button class="btn sm ghost" id="vKast">Kast uti igjen</button>';
       $("#potTotal").insertAdjacentHTML("beforeend", knapper+'</div>');
       var laas=function(){ ["vTrofe","vSelg","vAuksjon","vKast","vLaas"].forEach(function(id){ var b=$("#"+id); if(b)b.disabled=true; }); };
@@ -3113,9 +3117,9 @@ function pullPot(ty){ ty=ty||"k";
   }
   if(rolexLinje){ // valget tas DER OG DA: selg rå — eller sats 35 000 hos urmakeren
     $("#potTotal").insertAdjacentHTML("beforeend",'<div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
-      +'<button class="btn sm" id="rolexSelg">⌚ Selg som den er (+3000)</button>'
+      +'<button class="btn sm" id="rolexSelg">Selg som den er (+3000)</button>'
       +'<button class="btn sm gold" id="rolexPuss"'+(P.kr<35000?' disabled title="Krever 35 000 kr"':'')+'>Puss opp — 35 000 kr</button>'
-      +'<button class="btn sm" id="rolexTrofe">🏺 Behold som den er</button></div>');
+      +'<button class="btn sm" id="rolexTrofe">Behold som den er</button></div>');
     var valgt=false;
     $("#rolexSelg").onclick=function(){ if(valgt)return; valgt=true; P.kr+=3000; hud(); saveAll();
       this.disabled=true; $("#rolexPuss").disabled=true; Snd.coin(); notice("Rolexen solgt som den er — 3000 kr ⌚"); };
@@ -3296,17 +3300,17 @@ function visProfil(){
       +(P.kort ? '<div class="pfkort" id="pfKortKode">'+esc(P.kort)+'</div>'
                : '<div class="pfkort muted" id="pfKortKode">'+(kortVenter?"lager kortet ditt …":"trykk «Lag kort» under")+'</div>')
       +'<div class="row" style="gap:8px;margin-top:8px">'
-      +(P.kort ? '<button class="btn sm" id="pfKortKopi">📋 Kopier</button>'
-               : '<button class="btn sm" id="pfKortLag"'+(kortVenter?' disabled':'')+'>🎣 Lag kort</button>')
-      +'<button class="btn sm ghost" id="pfKortHent">🎣 Hent med kort</button></div></div>';
+      +(P.kort ? '<button class="btn sm" id="pfKortKopi">Kopier</button>'
+               : '<button class="btn sm" id="pfKortLag"'+(kortVenter?' disabled':'')+'>Lag kort</button>')
+      +'<button class="btn sm ghost" id="pfKortHent">Hent med kort</button></div></div>';
   }
 
   h+='<div class="pfbolk" style="text-align:center;padding-top:4px"><a href="personvern.html" class="muted" style="font-size:12px">Personvern — hva spillet lagrer</a></div>';
 
   h+='<div class="pfbolk"><h4>Sikkerhetskopi</h4>'
     +'<p class="muted" style="font-size:12.5px;margin:2px 0 8px">Troféskapet og funnene dine ligger bare på denne enheten. Last ned en kopi og legg den et trygt sted — da kan alt hentes tilbake på en ny telefon.</p>'
-    +'<div class="row" style="gap:8px"><button class="btn sm" id="pfKopiUt">💾 Last ned kopi</button>'
-    +'<button class="btn sm ghost" id="pfKopiInn">📂 Les inn kopi</button></div></div>';
+    +'<div class="row" style="gap:8px"><button class="btn sm" id="pfKopiUt">Last ned kopi</button>'
+    +'<button class="btn sm ghost" id="pfKopiInn">Les inn kopi</button></div></div>';
 
   var nUlest=uleste();
   h+='<div class="row" style="justify-content:center;margin-top:16px;gap:8px">'
@@ -3404,7 +3408,7 @@ function fiskevaeret(){
   var st=stromNaa();
   var stromOrd = st.fart<0.18?"Stillevann":st.fart<0.45?"Laber straum":st.fart<0.75?"God straum":"Strie straumen";
   var stromIkon = st.fart<0.18?"🪷":st.fart<0.45?"〰️":st.fart<0.75?"🌊":"🌊🌊";
-  var stromRetn = st.fart<0.18?"skiftar snart" : (st.stigende?"flør inn →":"← fell ut");
+  var stromRetn = st.fart<0.18?"skiftar snart" : (st.stigende?"flør inn →":"fell ut");
   var springnipp = st.spring?"springflo":(st.nipp?"nippflo":"");
   // rådet skal peke på det som faktisk avgjør akkurat nå
   if(st.fart>0.75) raad="Straumen står — no ligg kveita og storfisken i strengen. "+raad;
@@ -3428,7 +3432,7 @@ function openShop(){
   $("#shopKr").textContent="Du har "+P.kr+" kr.";
   var L=$("#shopList"); L.innerHTML="";
   var dk=dailyFish();
-  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="background:#fdf3d6;border:2px solid var(--gold);border-radius:9px;padding:7px 10px;margin:0 0 4px">📋 Rustens bestilling i dag: <b>'+dk.n+'</b> — betaler <b>+50 %</b></p>');
+  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="background:#fdf3d6;border:2px solid var(--gold);border-radius:9px;padding:7px 10px;margin:0 0 4px">Rustens bestilling i dag: <b>'+dk.n+'</b> — betaler <b>+50 %</b></p>');
   L.insertAdjacentHTML("beforeend",'<div class="tabs" style="margin:4px 0 8px"><button id="st-utstyr">Utstyr</button><button id="st-agn">Agn</button><button id="st-sluker">Sluker</button></div>');
   ["utstyr","agn","sluker"].forEach(function(kf){ var b=$("#st-"+kf); b.classList.toggle("on",shopTab===kf);
     b.onclick=function(){ shopTab=kf; Snd.click(); openShop(); }; });
@@ -3444,13 +3448,13 @@ function openShop(){
   if(shopTab==="utstyr"){
   if(P.rolex&&P.rolex.ferdig){ var igjen=P.rolex.ferdig-Date.now();
     if(igjen<=0) P.rolex={bud:50000+Math.round(Math.random()*20)*500}; // budet kommer: 50–60 000
-    else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">⌚ Rolexen er hos urmakeren — ferdig om '+Math.ceil(igjen/864e5)+' dager. Rusten hører rykter om en interessert samler …</p>');
+    else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">Rolexen er hos urmakeren — ferdig om '+Math.ceil(igjen/864e5)+' dager. Rusten hører rykter om en interessert samler …</p>');
   }
   if(P.rolex&&P.rolex.bud){
     addShop(L,'<img src="spill/assets/funn-rolex-fikset-for-salg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⌚ \'" alt=""> BUD på Rolexen: '+P.rolex.bud.toLocaleString("nb")+' kr',
       "Samleren så den nyoppussede klokka hos urmakeren og MÅ ha den. Slå til — eller behold den selv?",-P.rolex.bud,false,
       function(){ var b=P.rolex.bud; P.rolex=null; notice("SOLGT! "+b.toLocaleString("nb")+" kr for Rolexen ⌚✨"); Snd.trophy(); });
-    L.lastElementChild.insertAdjacentHTML("beforeend",'<button class="btn sm" id="rolexBehold" style="margin-left:6px">🏺 Behold</button>');
+    L.lastElementChild.insertAdjacentHTML("beforeend",'<button class="btn sm" id="rolexBehold" style="margin-left:6px">Behold</button>');
     $("#rolexBehold").onclick=function(){ P.rolex=null; leggITrofe("rolexpusset"); saveAll(); Snd.trophy();
       notice("Du takket nei til budet — Rolexen blinker i troféskapet ⌚🏺"); openShop(); };
   }
@@ -3472,7 +3476,7 @@ function openShop(){
         : "Settes ut på valgfritt dyp og står natta over — fangsten følger dypet, og kveita kan gå på. Har "+linTal+"."),
       linPris, linTal>=2, function(){ P.pots.lineOwned=Math.min(2,(P.pots.lineOwned||0)+1);
         if(P.pots.lineOwned>=2) notice("To liner i sjøen! 🪢 Sett én på Dypt og én på Djuphavet — de fisker hver for seg."); });
-    addShop(L,"🪝 Ekstra linekrok","Bunnlina har "+(P.pots.lineKroker||3)+" kroker (maks 10) — flere kroker, mer fangst per sett.",400,(P.pots.lineKroker||3)>=10,function(){P.pots.lineKroker=(P.pots.lineKroker||3)+1;});
+    addShop(L,"Ekstra linekrok","Bunnlina har "+(P.pots.lineKroker||3)+" kroker (maks 10) — flere kroker, mer fangst per sett.",400,(P.pots.lineKroker||3)>=10,function(){P.pots.lineKroker=(P.pots.lineKroker||3)+1;});
     teineagnRad();
     addShop(L,'<img src="spill/assets/agn-sild.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🐟 \'" alt=""> Linagn (10 kroker)',"1 sett per utsett av bunnlina. Har "+(P.pots.lineAgn||0)+".",60,false,function(){P.pots.lineAgn=(P.pots.lineAgn||0)+1;}); }
   else teineagnRad(); // uten Stang III finnes ingen bunnline — da hører teineagnet hjemme rett under teinene
@@ -3504,9 +3508,9 @@ function openShop(){
   addShop(L,'<img src="spill/assets/ekkolodd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Ekkolodd',"Ser stimene før de ser deg — 50 % større sjanse for sjelden og legendarisk fisk.",4000,P.ekko?"Montert":false,function(){P.riggTs=Date.now(); P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");},
     (P.ekko||P.rod>=1)?null:"Krever "+RODS[1].n);
   if(P.rod>=2){ if(vinsjKlar()){ addShop(L,'<img src="spill/assets/sluk-agnrigg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪛 \'" alt=""> Vinsj og dyphavsrigg',"Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,P.vinsj?"Montert":false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
-    else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
-  if(P.rod<1) addShop(L,"🎣 Stang II","Låser opp mellomdypt vann (50–150 m): torsk, hyse, blåstål.",250,false,function(){P.rod=1;});
-  else if(P.rod<2) addShop(L,"🎣 Stang III","Grovt djuphavsutstyr — låser opp dypt vann (150–300 m) og storkveita.",7500,false,function(){P.rod=2;});
+    else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
+  if(P.rod<1) addShop(L,"Stang II","Låser opp mellomdypt vann (50–150 m): torsk, hyse, blåstål.",250,false,function(){P.rod=1;});
+  else if(P.rod<2) addShop(L,"Stang III","Grovt djuphavsutstyr — låser opp dypt vann (150–300 m) og storkveita.",7500,false,function(){P.rod=2;});
   else{ var kv=P.caught["kveite"];
     L.insertAdjacentHTML("beforeend",'<p class="muted center">'+(kv
       ?'Rusten myser mot havet: «'+kv.bestLen+' cm, ja … Det går rykter om ei kveite på over to meter der ute. Ingen har landa den ennå.»'
@@ -3651,7 +3655,7 @@ function streakVis(){
   $("#streakHent").onclick=function(){
     if(g){ g.gi(); Snd.coin(); if(dag%7===0)setTimeout(Snd.fiskerJubel,250); }
     P.streakGave=0; P.streakBrutt=false; saveAll(); hud(); updateRigChip(); updatePotBtn();
-    modal("streakModal",false); if(g)notice("🔥 Dag "+dag+": "+g.t);
+    modal("streakModal",false); if(g)notice("Dag "+dag+": "+g.t);
   };
   modal("streakModal",true);
 }
@@ -3701,7 +3705,7 @@ function renderMine(){
 function renderArtDetalj(f){ // MIN side om arten (familiens tall står i Rekorder og Familien)
   var m=$("#bookMine"); m.innerHTML="";
   var r=P.caught[f.k], vis=(r||!f.trophy)?f.n:"???";
-  m.insertAdjacentHTML("beforeend",'<button class="btn sm ghost" id="artTilbake">← Alle artene</button>');
+  m.insertAdjacentHTML("beforeend",'<button class="btn sm ghost" id="artTilbake">Alle artene</button>');
   var cv=document.createElement("canvas"); cv.style.cssText="position:static;display:block;margin:6px auto;width:140px;height:80px"; m.appendChild(cv);
   drawFish(cv,f,140,80,!r);
   m.insertAdjacentHTML("beforeend",'<h2 style="text-align:center;margin:0">'+vis+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span></h2>'
@@ -3895,12 +3899,12 @@ function renderFam(){
   });
   var beste=names.map(function(nm){return {nm:nm, b:DB.players[nm].streakBest||0}}).filter(function(x){return x.b>0})
     .sort(function(a,b){return b.b-a.b}).slice(0,3);
-  if(beste.length) box.insertAdjacentHTML("beforeend",'<p class="fbeste">🔥 Lengste streak: '
+  if(beste.length) box.insertAdjacentHTML("beforeend",'<p class="fbeste">Lengste streak: '
     +beste.map(function(x){return (P&&x.nm===P.name?"deg":esc(x.nm))+' '+x.b+' d'}).join(' · ')+'</p>');
   if(!rows.length)box.innerHTML='<p class="muted center">Ingen spillere ennå.</p>';
   box.insertAdjacentHTML("beforeend", code
-    ? '<p class="muted center" style="margin-top:10px;font-size:12px">👨‍👩‍👧 Familiekode: <b>'+esc(code)+'</b>'+(famInfo?' · '+esc(famInfo):'')+' <button class="btn sm" id="famBytt">Bytt</button></p>'
-    : '<p class="muted center" style="margin-top:10px"><button class="btn sm gold" id="famKoble">👨‍👩‍👧 Koble familien sammen på nett</button><br><span class="muted" style="font-size:11px">Samme kode på alle enheter → felles rekorder på hytta og hjemme</span></p>');
+    ? '<p class="muted center" style="margin-top:10px;font-size:12px">Familiekode: <b>'+esc(code)+'</b>'+(famInfo?' · '+esc(famInfo):'')+' <button class="btn sm" id="famBytt">Bytt</button></p>'
+    : '<p class="muted center" style="margin-top:10px"><button class="btn sm gold" id="famKoble">Koble familien sammen på nett</button><br><span class="muted" style="font-size:11px">Samme kode på alle enheter → felles rekorder på hytta og hjemme</span></p>');
   var kb=$("#famKoble")||$("#famBytt");
   if(kb)kb.onclick=function(){ var c=(prompt("Kode (4–40 tegn) — familiens felles, eller din egen personlige. Hold den hemmelig!", code||"")||"").trim();
     if(!c)return; if(c.length<4){ alert("Minst 4 tegn 🙂"); return; } if(c.length>40){ alert("Maks 40 tegn 🙂"); return; }
@@ -5328,7 +5332,7 @@ window.addEventListener("pointerdown",function(){ Snd.unlock(); },{passive:true}
 document.addEventListener("visibilitychange",function(){ if(!document.hidden)Snd.unlock(); });
 function lydIkon(){ var av=Snd.isMuted();
   var mm=$("#muteBtnMenu"); if(mm)mm.textContent=av?"🔇":"🔊";
-  var pl=$("#pfLyd"); if(pl)pl.textContent=av?"🔇 Lyd av":"🔊 Lyd på"; }
+  var pl=$("#pfLyd"); if(pl)pl.textContent=av?"Lyd av":"Lyd på"; }
 function toggleMute(){ Snd.setMuted(!Snd.isMuted());
   if(!Snd.isMuted()&&$("#menu").classList.contains("on"))Snd.lobbyLyd(true); lydIkon(); }
 $("#muteBtnMenu").onclick=toggleMute;
@@ -5336,7 +5340,11 @@ lydIkon();
 [].slice.call(document.querySelectorAll(".iconbtn, .dekk button, .depthsel button, #hudLure, #playBtn")).forEach(function(b){
   if(b.id==="openShop"||b.id==="openKjell"||b.id==="openBook"||b.id==="hudLure")return; // desse har si eiga stemme
   b.addEventListener("click",function(){ if(b.matches("#depthsel button") && phase!=="idle")return; Snd.click(); }); });
-$("#tabMine").onclick=function(){openBook("mine")}; $("#tabFam").onclick=function(){openBook("fam")}; $("#tabRek").onclick=function(){openBook("rek")}; $("#tabTrofe").onclick=function(){openBook("trofe")}; $("#tabAar").onclick=function(){openBook("aar")};
+// Fanene i Arkivet er sidene i boka — hvert bytte skal høres. Lyden ligger her og
+// ikke inne i openBook(), fordi den også kalles når boka ÅPNES, og da spiller
+// blaIBok allerede. To lyder oppå hverandre høres ut som en feil.
+function bla(fane){ return function(){ Snd.blaSide(); openBook(fane); }; }
+$("#tabMine").onclick=bla("mine"); $("#tabFam").onclick=bla("fam"); $("#tabRek").onclick=bla("rek"); $("#tabTrofe").onclick=bla("trofe"); $("#tabAar").onclick=bla("aar");
 $("#hudLure").onclick=function(){ if(!$("#sea").classList.contains("on"))return; Snd.slukLokk(); renderRig(); modal("rigModal",true);
 };
 $("#rigClose").onclick=function(){ modal("rigModal",false); };

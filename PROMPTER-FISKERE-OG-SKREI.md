@@ -373,30 +373,42 @@ letterpress look* — men da må teksten fortsatt være vannrett og lesbar ved 7
 
 ## 15. Arkivet — logoen
 
-Fil: **`arkivet-logo.png`** — ca. **700 × 520**, transparent
+Fil: **`arkivet-logo.png`** — ca. **880 × 460**, transparent
 
-Erstatter «Boka». Ligger øverst i modalen på samme plass som Propell-Kjells logo,
-og vises maks 130 px høy. Alt som er finere enn det forsvinner.
+Skiltet henger foran Målfrid, akkurat som Propell-Kjell-skiltet henger foran Kjell.
+Derfor må boka ligge **på tvers** — bred og lav. En bok som står på høykant blir en
+smal søyle, og da har hun ingen plass å stå bak.
 
-En **lukket** bok, sett litt fra siden og ovenfra, med **ARKIVET** preget inn i
-permen. Ikke en åpen bok — poenget er at det er et sted du går til, ikke et skjema
-du fyller ut.
+Tenk deg boka **liggende flatt på et bord, sett litt ovenfra og litt forfra**. Da er
+det permen du ser — et bredt rektangel — med papirblokka som en tydelig stripe langs
+forkanten. Det er den formen vi er ute etter. Ikke en bok på hylla, ikke en oppslått
+bok: en tung protokoll som ligger og venter.
 
-16-bit pixel art of a **closed hardbound ledger book** resting at a slight
-three-quarter angle, seen from just above. Thick weathered leather cover in deep
-sea-green with brass corner protectors and a heavy brass clasp on the fore-edge.
-The word **ARKIVET** stamped into the cover in worn gold serif capitals, slightly
-uneven as if pressed by hand decades ago. Visible thick paper block along the
-edges, faintly yellowed, a few pages not quite flush. A dark ribbon bookmark
-trailing from the bottom. The whole object should read as **old, heavy and
-looked-after** — a book someone dusts. Strict pixel grid, hard-edged pixels, no
-anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette.
-Fully transparent background, no shadow, no frame, no desk beneath it.
+**Målene som betyr noe:**
 
-**Liten utgave til knappen på dekket:** `arkivet-ikon.png`, ca. **256 × 256**,
-samme bok men tettere beskåret, slik at klaffen og ordet ARKIVET fortsatt leses
-ved 26 px. Lag den gjerne som et eget bilde heller enn å skalere ned den store —
-tekst på 26 px må tegnes for 26 px.
+- **Klart bredere enn høy** — sikt mot dobbelt så bred. Blir den kvadratisk, er den feil.
+- Vises maks 130 px høy, samme som Kjell-skiltet. Ingen tynne streker, ingen liten skrift.
+- **ARKIVET må kunne leses ved 130 px.** Store, tykke bokstaver, godt fordelt over
+  hele bredden av permen — ikke et lite stempel i hjørnet.
+- Ingenting rundt boka: intet bord, ingen skygge under, ingen ramme. Bare boka,
+  på gjennomsiktig bunn. Alt som ligger under blir liggende oppå Målfrid.
+
+16-bit pixel art of a **large closed ledger book lying flat**, seen slightly from
+above, in a **wide landscape composition twice as wide as it is tall**. The cover
+fills the frame as a broad rectangle of worn deep sea-green leather with **brass
+corner protectors** and a heavy brass clasp. **ARKIVET** is stamped across it in
+**large, thick, worn gold serif capitals** spread over the full width, slightly
+uneven as if pressed by hand decades ago. Along the front edge, a band of thick
+yellowed paper with the pages faintly separated. Old, heavy, well kept. Strict
+pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering
+only, limited 24-colour palette. Fully transparent background, no shadow, no table,
+no frame, nothing behind or beneath the book.
+
+**Liten utgave til knappen på dekket:** `arkivet-ikon.png`, ca. **256 × 256**.
+Her har du ikke plass til ordet — dette vises på **26 piksler**. Tegn bare boka:
+samme grønne perm, messingklaff, gullkant, sett rett forfra og litt ovenfra, tett
+beskåret så den fyller ramma. Ingen tekst. Lag den som eget bilde heller enn å
+skalere ned den store — 26 px må tegnes for 26 px.
 
 ---
 
