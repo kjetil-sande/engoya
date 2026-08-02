@@ -92,7 +92,8 @@ centimeter.
 
 ## 6. Småting
 
-- `skrei.png` mangler fortsatt — fisken faller tilbake på torskespriten.
+- ~~Android-buggen~~, ~~Vitusapotek~~, ~~Djuphavet~~, ~~skreidrakta~~ er gjort 2. august.
+
 - `sms-telefon-v2.png` og `sms-bunnstrek-v1.png` ligger ubrukt i assets.
 - `vannoverflate-rolig.png` og `-bolger.png` ligger ubrukt. Bølgebåndet ble
   bygd og forkastet 2. august — eieren så det live og likte det ikke.

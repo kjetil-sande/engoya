@@ -163,3 +163,51 @@ stå alene, som en fisker som nettopp har fått noe han ikke helt tror på.
 **`fisker-lofter-arm-03.png`** — Arm fully extended straight up, fist clenched above the beanie, elbow locked. Head back, mouth wide open in a roar, eyes squeezed shut in delight. This frame is held on screen, so it must read well standing still.
 
 **Viktig:** ingen fisk, ingen stang, ingen tau i hånden. Bare neven.
+
+---
+
+## 8. «Slingredemparen» — den finnes ikke. Men to andre gjør det.
+
+Du har rett, og feilen er min: jeg foreslo et navn uten å sjekke om tingen
+finnes. **Det finnes ikke noe fiskeutstyr som monteres rett over snella for å
+dempe rykk.** Det som sitter der på en ekte stang er håndtaket og
+snellefestet, og ingen av dem har den funksjonen. En kjetting under stanga gir
+ikke mening heller — den ville bare hengt og slengt.
+
+Men problemet er ekte, og virkeligheten har to løsninger på det. Begge er
+tydelige på 64 piksler, og begge kan forklares til en tiåring på én setning.
+
+### Anbefalt: **Kampbelte** (gimbal / fighting belt)
+
+Fil: **`kampbelte.png`** — **256 × 256**, transparent
+
+Dette er tingen. Et polstret belte med en metallkopp foran; enden av stanga
+står i koppen, og du tar imot med hoftene og lårene i stedet for med armene.
+Når båten ruller, går bevegelsen gjennom kroppen din i stedet for ut i snøret.
+Det er nøyaktig mekanikken vi bygger, og det er standardutstyr på dyphavsfiske
+over hele verden.
+
+Rusten kan si det på én setning: *«Det er ikkje fisken som ryk snøret, gut —
+det er båten som rullar. Med beltet tek du imot med kroppen.»*
+
+16-bit pixel art of a deep-sea fishing **fighting belt (gimbal belt)**, seen straight on from the front, laid flat. A wide padded waist pad in cracked dark brown leather with visible stitching along the edges, a heavy brass-coloured metal gimbal cup mounted at the centre where the rod butt sits, and two thick webbing straps in faded orange running out to each side with simple metal buckles. Worn and salt-stained, clearly used for years — not new. Chunky and readable: the cup in the middle must be the first thing you see. Strict pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette. Fully transparent background, no shadow, no frame.
+
+### Alternativ: **Stanghylse med fjær** (fjærbelastet stangholder)
+
+Fil: **`stanghylse.png`** — **256 × 256**, transparent
+
+Hvis du heller vil ha noe som monteres på båten enn på kroppen: en stangholder
+i ripa med en fjær i bunnen. Den tar opp rykkene når båten går i sjø. Ekte
+utstyr, og den passer godt til at fisken senere skal hvile på ripa.
+
+16-bit pixel art of a **spring-loaded rod holder** for a small boat gunwale, seen from the side at a slight angle. A tube of galvanised steel angled outward, clamped to a short section of weathered wooden gunwale, with a visible coiled steel spring at its base where the tube meets the mount. A knurled brass tightening knob on the clamp. Salt-weathered metal with a few rust spots, pale grey-blue steel and warm brown wood. Chunky and readable — the coiled spring must be clearly visible as the working part. Strict pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette. Fully transparent background, no shadow, no frame.
+
+### Min anbefaling
+
+**Kampbeltet.** Det er den ene av de to som faktisk handler om *å holde
+lenger* — som er nøyaktig det oppgraderingen gjør i koden (fisken trenger
+25 % lengre tid på å bygge opp nok spenn til å rive seg løs). Stanghylsa
+handler mer om å la stanga stå av seg selv, og det gjør vi ikke i spillet.
+
+Beltet er også det eneste av utstyret i butikken som sitter på *deg* og ikke
+på båten, og det er en fin liten forskjell.

@@ -355,13 +355,13 @@
   .ringtopp .rbilde{position:relative;display:inline-block;line-height:0}
   .ringtopp .rbilde::before,.ringtopp .rbilde::after{content:"";position:absolute;
     left:50%;top:50%;width:132px;height:132px;margin:-66px 0 0 -66px;border-radius:50%;
-    border:3px solid #7fd4a8;opacity:0;pointer-events:none}
+    border:2px solid #7fd4a8;opacity:0;pointer-events:none}
   #ringModal.on .rbilde::before{animation:ringPuls 1.9s ease-out infinite}
   #ringModal.on .rbilde::after{animation:ringPuls 1.9s ease-out infinite .95s}
   @keyframes ringPuls{
-    0%{transform:scale(1);opacity:.85}
-    70%{opacity:.12}
-    100%{transform:scale(1.85);opacity:0}}
+    0%{transform:scale(1);opacity:.42}
+    60%{opacity:.16}
+    100%{transform:scale(1.17);opacity:0}}
   @media (prefers-reduced-motion: reduce){ #ringModal.on .rbilde::before,
     #ringModal.on .rbilde::after{animation:none} }
   /* Andelsvalet: fem storleikar, og dei du ikkje har råd til er slått av. */
@@ -1147,6 +1147,13 @@ var byKey={}; FISH.forEach(function(f){byKey[f.k]=f});
 // Fisk-sprites (transparent PNG). Filnavn kan avvike litt fra nøkkel.
 var FIMG={sei:"sei",lyr:"lyr",makrell:"makrell",berggylte:"berggylte",torsk:"torsk",hyse:"hyse",blastal:"blaastaal",uer:"uer",rodspette:"rodspette",brungylt:"brungylt",brosme:"brosme",lange:"lange",piggha:"pigghaa",kveite:"kveite"};
 var fishImg={}, fishSil={};
+var skreiImg=new Image(); skreiImg.src="spill/assets/fisk-skrei.png";
+// Torsken bytter drakt i skreisesongen. Mangler fila, faller vi tilbake på
+// den vanlige torsken — ingenting brekker.
+function fiskBilde(f){
+  if(typeof erSkrei==="function" && erSkrei(f) && skreiImg.complete && skreiImg.naturalWidth) return skreiImg;
+  return fishImg[f.k];
+}
 var LIKNER={sandflyndre:"rodspette",skrubbe:"rodspette",lomre:"rodspette",skate:"rodspette",hvitting:"hyse",knurr:"uer",
   lysing:"lyr",blaalange:"lange",haagjel:"pigghaa",svarthaa:"pigghaa",haakjerring:"pigghaa",havmus:"brosme",blaakveite:"kveite",maanefisk:"breiflabb"}; // midlertidig lookalike til egen kunst er generert — egen PNG overtar automatisk
 FISH.forEach(function(f){ var base=FIMG[f.k]||f.k, fb=LIKNER[f.k];
@@ -3522,7 +3529,7 @@ function fisherFrame(){
 function drawFish(canvas,f,w,h,silhouette){
   canvas.width=w*2; canvas.height=h*2; var g=canvas.getContext("2d"); g.setTransform(2,0,0,2,0,0);
   g.clearRect(0,0,w,h);
-  var _im=silhouette?fishSil[f.k]:fishImg[f.k];
+  var _im=silhouette?fishSil[f.k]:fiskBilde(f);
   if(_im&&_im.complete&&_im.naturalWidth){ var iw=_im.naturalWidth,ih=_im.naturalHeight,sc=Math.min(w/iw,h/ih)*0.96; g.drawImage(_im,(w-iw*sc)/2,(h-ih*sc)/2,iw*sc,ih*sc); return; }
   g.save(); g.translate(w/2,h/2);
   var col=silhouette?"#4a4657":f.col, dark=silhouette?"#3a3646":"rgba(0,0,0,.25)";
@@ -3821,7 +3828,7 @@ function snelleSpinn(dt){
   im.style.transform="rotate("+snelleGrad.toFixed(1)+"deg)";
 }
 var starImg=new Image(); starImg.src="spill/assets/stjerne-full.png";
-function drawSwim(x,y,f,angle,flip,gold,len,munnPivot){ var im=fishImg[f.k], tw=fishScale(f,len);
+function drawSwim(x,y,f,angle,flip,gold,len,munnPivot){ var im=fiskBilde(f), tw=fishScale(f,len);
   var vagg=Math.sin(bob*3.1+x*0.055); // −1..1, ute av takt fra fisk til fisk
   cx.save(); cx.translate(x,y); cx.rotate((angle||0)+vagg*0.035); if(flip)cx.scale(-1,1);
   if(munnPivot)cx.translate(tw*0.44,0); // kroken sitter i MUNNEN: sprellet dreier om hodet, ikke om buken (sprites peker mot venstre)
@@ -3858,7 +3865,7 @@ function drawAmbient(dt,colTop){
   ambient.forEach(function(a){
     a.x += a.vx*dt;
     if(a.x<-0.28||a.x>1.28 || a.wy<camY-70 || a.wy>camY+H+70){ var na=newAmbient(); for(var k in na)a[k]=na[k]; } // resirkuler også vertikalt (fisk «står igjen» i vannet når kameraet farer forbi)
-    var im=fishImg[a.f.k]; if(!im||!im.complete||!im.naturalWidth)return;
+    var im=fiskBilde(a.f); if(!im||!im.complete||!im.naturalWidth)return;
     var ax=W*a.x, ay=a.wy-camY, tw=fishScale(a.f,a.len)*a.sc, th=tw*im.naturalHeight/im.naturalWidth;
     var vg=Math.sin(bob*3.1+a.wy*0.05); // samme undulasjon som drawSwim, fase fra dybden
     cx.save(); cx.globalAlpha=a.op; cx.translate(ax,ay); cx.rotate(vg*0.035); if(a.vx>0)cx.scale(-1,1);
