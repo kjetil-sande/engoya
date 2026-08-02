@@ -3500,7 +3500,7 @@ function drawBubbles(dt,top,surfY){ var mn=Math.min(W,H), band=H-top; if(band<=0
   }
 }
 function fisherFrame(){
-  if(document.querySelector("#catchModal").classList.contains("on")){ var lf=Math.min(2,Math.floor(liftT*5)); return fisherImg["lofter-fangst-0"+(1+lf)]; } // løfter fangsten ÉN gang (01→02→03), holder på 03
+  if(document.querySelector("#catchModal").classList.contains("on")) return fisherImg["lofter-fangst-03"]; // tommel opp — 01 og 02 held framleis ein sei, sjå kommentaren over
   if(castT>0) return fisherImg[castT>0.22?"kast-01":"kast-02"]; // ETT kast (01→02), så tilbake til å vente
   return fisherImg["venter"]; // venter/napp/sveiv → sittende m/ stang
 }
