@@ -39,6 +39,19 @@ s = io.open('fiske.html', encoding='utf-8').read()
 
 vil = set(re.findall(r'spill/assets/([\w.@-]+\.\w{2,4})', s))   # direkte stier
 navn = set(re.findall(r'\bimg\s*:\s*"([^"]+)"', s))             # tabellfelt
+
+# Ikke alle filnavn står skrevet ut. agnImg() bygger «agn-<nøkkel>» i kjøretid,
+# og KROKAGN peker på egne kroken-varianter. Uten disse to linjene kunne agn-
+# bildene forsvinne fra git uten at sjekken merket det — som er nøyaktig det
+# den finnes for å hindre.
+navn |= set(re.findall(r'\bKROKAGN\s*=\s*\{([^}]*)\}', s)[0].count and
+            re.findall(r':\s*"([^"]+)"', re.findall(r'\bKROKAGN\s*=\s*\{([^}]*)\}', s)[0]) or [])
+agnmap = dict(re.findall(r'(\w+)\s*:\s*"([\w-]+)"',
+              re.search(r'function agnImg\(a\)\{[^}]*\{([^}]*)\}', s).group(1)))
+for k in re.findall(r'\bAGN\s*=\s*\[(.*?)\n\];', s, re.S)[0].split('{k:"')[1:]:
+    nok = k.split('"')[0]
+    navn.add('agn-' + agnmap.get(nok, nok))
+
 for n in navn:
     vil.add(n if '.' in n else n + '.png')   # bildeFil(): .png når punktum mangler
 
