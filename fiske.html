@@ -504,6 +504,8 @@
   .trofekort .tx .hist{display:block;font-size:11.5px;color:var(--ink-soft);line-height:1.3;margin-top:3px}
   .trofekort .tx .naar{display:block;font-family:var(--mono);font-size:10px;opacity:.65;margin-top:4px}
   .trofekort .tx .trofeselg{margin-top:6px;padding:5px 10px;font-size:12px;box-shadow:0 2px 0 var(--wood-dark)}
+  .trofekort .tx .trofepuss{margin-top:6px;margin-left:5px;padding:5px 10px;font-size:12px;box-shadow:0 2px 0 #a8801d}
+  .trofekort .tx .trofepuss:disabled{opacity:.45;cursor:default}
   .trofetel{text-align:center;margin:2px 0 6px;font-size:14px;color:var(--ink)}
   .trofetel b{font-size:16px}
   .slot{background:#fff8ea;border:2px solid var(--paper-2);border-radius:10px;padding:6px 4px;text-align:center;min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
@@ -2466,7 +2468,7 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"glasskavl",e:"🔮",n:"Gammel glasskavl — en skatt!",kr:120,w:8,trofeSelg:120,t:"Ekte glasskavl fra gamle garn. Grønn som havet en augustkveld."},
  {k:"solvsmykke",e:"📿",n:"Sølvsmykke",kr:400,w:5,img:"funn-solvsmykke.gif",trofeSelg:400,t:"Et hjerte i sølv. Noen mistet det, noen andre fant det."},
  {k:"gullring",e:"💍",n:"Gullring",kr:1000,w:3.5,img:"funn-gullring.gif",trofeSelg:1000,t:"Gravert innside: «alltid». Havet var ikke enig."},
- {k:"rolex",e:"⌚",n:"EN ROLEX! Ta den med til Rusten",kr:0,w:2.5,img:"funn-rolex-rusten.png",rolexFunn:true,t:"Rusten, men ekte. Går fortsatt, hvis man rister litt."},
+ {k:"rolex",e:"⌚",n:"EN ROLEX! Ta den med til Rusten",kr:0,w:2.5,img:"funn-rolex-rusten.png",rolexFunn:true,t:"Rusten, men ekte. Ho går ikkje — saltvatnet har teke verket. Ein urmakar kan berge henne."},
  {k:"rolexpusset",e:"⌚",n:"Rolex — nypusset og blank",kr:0,w:0,img:"funn-rolex-fikset-for-salg.png",t:"Samleren bød 50 000. Du sa nei takk. Den blinker på hylla."},
  // ——— KUN PÅ DJUPHAVSLINA (djup:true): rariteter fra 500 meter ———
  {k:"galionsfigur",e:"🛶",n:"GALIONSFIGUR fra et vikingskip — Njord selv, i eik",kr:0,w:1.6,img:"funn-galionsfigur.png",djup:true,trofeKun:true,t:"Njord selv, skåret i eik. Han har sett hele Nordland fra vannlinja."},
@@ -3247,6 +3249,20 @@ function trofeMulige(){ var n=TROFE_EKSTRA.length;
 function trofeVerdi(k){ if(k==="rolex")return 3000; if(k==="rolexpusset")return 0;
   var d=trofeDef(k); if(!d)return 0;
   return d.trofeSelg || (d.auksjon ? (d.auksjon===true?5000:d.auksjon.selg) : 0); }
+// Rolexen er den ene tingen i skapet som kan bli noe ANNET enn seg selv.
+var ROLEX_PUSS=35000;
+function kanRestaurere(k){ return k==="rolex" && P && !P.rolex; }
+function restaurerTrofe(ts){
+  if(!P||!P.trofe||P.rolex||P.kr<ROLEX_PUSS)return;
+  var i=-1;
+  for(var j=0;j<P.trofe.length;j++) if(P.trofe[j].k==="rolex" && +P.trofe[j].ts===+ts){ i=j; break; }
+  if(i<0)return;
+  P.trofe.splice(i,1); P.kr-=ROLEX_PUSS;
+  P.rolex={ferdig:Date.now()+30*864e5};
+  hud(); saveAll(); Snd.trophy();
+  notice("Rolexen er levert urmakeren ⌚✨ Om 30 dager er ho ferdig — då kan du selje eller behalde henne.");
+  renderTrofe();
+}
 function selgTrofe(k, ts){ if(!P||!P.trofe)return;
   var i=-1;
   for(var j=0;j<P.trofe.length;j++) if(P.trofe[j].k===k && +P.trofe[j].ts===+ts){ i=j; break; }
@@ -3324,9 +3340,14 @@ function renderTrofe(){
       +((d&&d.t)?'<span class="hist">'+esc(d.t)+'</span>':'')
       +'<span class="naar">Funnet '+tidSiden(t.ts).toLowerCase()+'</span>'
       +(verdi?'<button class="btn sm trofeselg" data-k="'+esc(t.k)+'" data-ts="'+(+t.ts||0)+'">Selg · '+verdi.toLocaleString("nb")+' kr</button>':'')
+      +(kanRestaurere(t.k)?'<button class="btn sm gold trofepuss" data-ts="'+(+t.ts||0)+'"'
+        +(P.kr<ROLEX_PUSS?' disabled title="Krever '+ROLEX_PUSS.toLocaleString("nb")+' kr"':'')
+        +'>Restaurer · '+ROLEX_PUSS.toLocaleString("nb")+' kr</button>':'')
       +'</div>';
     g.appendChild(kort); });
-  g.addEventListener("click",function(e){ var b=e.target.closest(".trofeselg"); if(!b)return;
+  g.addEventListener("click",function(e){
+    var pu=e.target.closest(".trofepuss"); if(pu){ restaurerTrofe(+pu.dataset.ts); return; }
+    var b=e.target.closest(".trofeselg"); if(!b)return;
     selgTrofe(b.dataset.k, +b.dataset.ts); });
   box.appendChild(g);
 }
