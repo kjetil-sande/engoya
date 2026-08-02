@@ -139,7 +139,7 @@
 
 
   /* HUD */
-  #hud{position:absolute;top:0;left:0;right:0;display:flex;gap:8px;align-items:center;padding:10px 64px 10px 10px;padding-right:64px;padding-top:calc(10px + env(safe-area-inset-top));pointer-events:none;z-index:5}
+  #hud{position:absolute;top:0;left:0;right:0;display:flex;gap:8px;align-items:center;padding:10px 64px 10px 10px;padding-right:64px;padding-top:calc(14px + env(safe-area-inset-top));pointer-events:none;z-index:5}
   .chip{background:rgba(255,255,255,.92);color:var(--ink);border-radius:11px;padding:9px 13px;font-family:var(--mono);font-size:15px;
     display:flex;align-items:center;gap:6px;backdrop-filter:blur(3px);box-shadow:0 2px 6px rgba(13,33,41,.22)}
   .chip b{color:var(--ink)}
@@ -212,7 +212,7 @@
   /* Fiskerkortet */
   /* Avataren står for seg selv øverst til høyre — kvadratisk og i sin egen sjøgrønne
      bakgrunn, så den leses som DEG og ikke som enda en funksjonsknapp. */
-  .fiskerknapp{position:absolute;top:calc(10px + env(safe-area-inset-top));right:10px;z-index:6;
+  .fiskerknapp{position:absolute;top:calc(14px + env(safe-area-inset-top));right:10px;z-index:6;
     pointer-events:auto;background:#a7cac8;border:0;border-radius:11px;padding:0;cursor:pointer;
     width:46px;height:46px;display:block;box-shadow:0 2px 6px rgba(13,33,41,.22)}
   .fiskerknapp:active{transform:translateY(1px)}
@@ -595,7 +595,8 @@
     #hudLure .t{font-size:14px}
     .depthsel.four button small{font-size:12px}
     .depthsel button small{font-size:14px;margin-top:2px}
-    #hud{gap:6px;padding:8px 56px 8px 8px}
+    #hud{gap:6px;padding-right:56px;padding-bottom:8px;padding-left:8px;
+      padding-top:calc(14px + env(safe-area-inset-top))}  /* ALDRI kortforma her — ho et opp safe-area */
     #hud .chip{padding:8px 11px;font-size:14px}
     #hud .fuel{width:60px}
     .iconbtn{width:48px;height:48px;font-size:21px}
@@ -614,7 +615,7 @@
     .depthsel.four button small{font-size:11px}
     #hud .chip{padding:8px 8px}
     #hud .fuel{width:40px}
-    .fiskerknapp{width:40px;height:40px;right:8px;top:calc(8px + env(safe-area-inset-top))}
+    .fiskerknapp{width:40px;height:40px;right:8px;top:calc(14px + env(safe-area-inset-top))}
   }
 </style>
 </head>
