@@ -2030,9 +2030,12 @@ function artPris(f){ return erSkrei(f) ? 1.7 : 1; }                // skrei beta
 function storjeSeason(){ var m=new Date().getMonth(); return m>=6&&m<=9; } // størja følger makrellen nordover: juli–oktober
 var lokkT=0, lokkOpp=0; // «lokking»: dra sluken litt opp mens fisken snuser — øker nappesjansen
 var pilkT=0, pilkKrav=12, pilkFangst=[], pilkHoldT=0; // pilkHoldT: hvor lenge dette draget har vart
+var pilkKlem=0; // −1 = hekla står i toppen, 1 = den ligger på bunnen, 0 = den er i bevegelse.
+                // Snella skal STÅ STILLE når snøret ikke kan gå lenger — ellers sveiver
+                // ikonet videre mot en hekle som står bom fast, og det ser ut som en feil.
 function startPilk(){ // juksa-teknikken: pump forsatsen gjennom stimen — min 10–15 s før småfisken hogger
   Snd.themeOff();
-  phase="pilkfiske"; pilkT=0; pilkKrav=10+Math.random()*5; pilkFangst=[]; pilkHoldT=0;
+  phase="pilkfiske"; pilkT=0; pilkKrav=10+Math.random()*5; pilkFangst=[]; pilkHoldT=0; pilkKlem=0;
   setAction("PILK (hold)",true);
   $("#reelui").classList.add("on"); // MÅ med: utan denne står snella, spenn/dybde og strømpila skjult heile markpilkinga
   setHint(erfaren()?"":"Pump pilken: hold inne for å dra opp, slipp for å la den synke. Småfisken hogger på makkene!");
@@ -2040,8 +2043,11 @@ function startPilk(){ // juksa-teknikken: pump forsatsen gjennom stimen — min 
 function pilkStep(dt){
   pilkT+=dt;
   var g=colGeom(), topp=(g?g.wl:0)+H*0.14;
-  if(holding){ pilkHoldT+=dt; lureW=Math.max(lureW-H*0.24*dt, topp); Snd.reelSound(true); }
-  else { lureW=Math.min(lureW+H*0.17*dt, lureTargetW); Snd.reelSound(false); }
+  if(holding){ pilkHoldT+=dt;
+    var opp=Math.max(lureW-H*0.24*dt, topp); pilkKlem=(opp<=topp+0.5)?-1:0; lureW=opp;
+    Snd.reelSound(pilkKlem>=0); }          // ingen sveivelyd når hekla står i toppen
+  else { var ned=Math.min(lureW+H*0.17*dt, lureTargetW); pilkKlem=(ned>=lureTargetW-0.5)?1:0; lureW=ned;
+    Snd.reelSound(false); }
   camY=Math.max(camHome(),Math.min(camBottom,lureW-H*0.55)); // kameraet følger pumpinga
   if(pilkFangst.length>=5 || pilkT>32) pilkSlutt();
 }
@@ -2060,7 +2066,10 @@ function pilkPump(){ // fullført pump (hold → slipp) — hendelsesdrevet, tå
   }
 }
 function pilkSlutt(){
-  phase="idle"; Snd.reelSound(false); setAction("Kast ut");
+  // #reelui MÅ av, som i miss(), escape(), snap() og land(). Uten dette blir strømpila
+  // og dybdesøyla liggende OVER Rusten-, Verksted- og dybdeknappene når du er tilbake
+  // på dekk og skal kaste på nytt.
+  phase="idle"; Snd.reelSound(false); $("#reelui").classList.remove("on"); pilkKlem=0; setAction("Kast ut");
   var L2=$("#potList"); L2.innerHTML=""; var total=0, sildAgn=0;
   var suP=aktivSluk(), pilkNavn=(suP&&suP.n)||"Markpilk"; // rekorden skal si hva du faktisk fisket med
   if(!pilkFangst.length){ L2.innerHTML='<p class="muted center">Ikke et napp på makkene denne gangen — stimen sto nok dypere.</p>'; }
@@ -4443,7 +4452,7 @@ function snelleSpinn(dt){
   if(tb)tb.style.visibility=(phase==="reel")?"":"hidden"; // spenn er meningsløst før fisken sitter
   var fart=0; // sveiver du, går snella framover; tar fisken ut line, spinner den bakover
   if(phase==="reel"){ fart = runT>0 ? -520 : (holding?400:0); }
-  else if(phase==="pilkfiske"){ fart = holding?330:-190; }
+  else if(phase==="pilkfiske"){ fart = holding ? (pilkKlem<0?0:330) : (pilkKlem>0?0:-190); } // står hekla i toppen eller på bunnen, står snella òg
   else if(phase==="wait"){ fart = holding?260:0; } // lokking: snella går sakte rundt
   if(!fart)return;
   snelleGrad=(snelleGrad+fart*dt)%360;
