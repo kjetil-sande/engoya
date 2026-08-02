@@ -6,9 +6,26 @@ Eierens ønske, 2. august 2026:
 > butikken … utstyr kan gå tapt eller blir ødelagt på sikt. Lag gjerne et prosjekt
 > på det.»
 
-Første halvdel er bygd: alt står i butikken hele tiden, låst med krav i stedet for
-skjult. Andre halvdel — at utstyr faktisk kan ryke — er ikke bygd. Dette notatet
-er grunnlaget for å ta avgjørelsen, ikke en bestilling.
+Første halvdel er bygd, i to omganger. Først ble de låste radene synlige med
+«🔒 Krever Stang III» i stedet for å være skjult. Så — etter at eieren ikke fant
+kampbeltet sitt — ble også de **kjøpte** radene stående, merket «Montert». Det
+siste var det egentlige ønsket, og det var glemt i første omgang.
+
+Eieren bekreftet 2. august, etter at det var på plass:
+
+> «Ah, jeg ba deg vel egentlig om å IKKE fjerne det du allerede har kjøpt. Det er
+> kjekt at man kan se hva man eier. Og om ting går i stykker må man få mulighet
+> for å kjøpe det igjen.»
+
+Andre halvdel — at utstyr faktisk kan ryke — er ikke bygd. Dette notatet er
+grunnlaget for å ta avgjørelsen, ikke en bestilling.
+
+**To ting er nå avklart av eieren og skal ikke diskuteres på nytt:**
+
+1. Raden skal alltid være synlig, uansett tilstand. Det er verdifullt i seg selv
+   å kunne se hva man eier — ikke bare et middel for å vise «ødelagt».
+2. Går noe i stykker, **skal det kunne skaffes igjen**. Ingen tap er permanent.
+   Det utelukker enhver variant der utstyr ryker for godt.
 
 ---
 
@@ -63,9 +80,15 @@ Da blir slitasje en konsekvens av dårlig fiske, ikke av flaks. Spilleren som ho
 spennet nede får aldri se den. Og han får alltid en historie: «beltet røk da den
 store tok.»
 
-**Reparasjon, ikke gjenkjøp.** Rusten tar halv pris for å sette det i stand. Da er
-tapet 2 000 kr på et ekkolodd, ikke 4 000, og butikkraden får en tredje tilstand
-ved siden av «kjøpt» og «låst»: **ØDELAGT — 2 000 kr å fikse**.
+**Du skal alltid kunne få det igjen.** Eieren var tydelig: går noe i stykker, må
+man kunne skaffe det på nytt. Butikkraden får derfor en tredje tilstand ved siden
+av «Montert» og «🔒 Krever …»: **ØDELAGT — 2 000 kr å fikse**.
+
+Jeg vil ha reparasjon til halv pris framfor fullt gjenkjøp. Grunnen er ikke
+pengene, det er hva tallet forteller. 4 000 kr på nytt leser som «du mistet
+ekkoloddet ditt». 2 000 kr leser som «det må på verksted» — samme rad, samme
+Rusten, og spilleren mister aldri følelsen av at det er hans ekkolodd. Er eieren
+uenig, er full pris et enkelt bytte: samme rad, samme mekanikk, bare et annet tall.
 
 **Varsel før første gang.** Første gang noe ryker skal Rusten ringe. Ikke en
 notice — en telefon, med den rytmen som alt er bygd. Ellers leser spilleren det som
