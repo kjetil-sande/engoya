@@ -1482,13 +1482,13 @@ function tegnGlitr(dt,k,g2){
   lastVassmaske(k.b);
   var pkt=glitrMaske[k.b.fil]; if(!pkt)return;
   if(glitrFil!==k.b.fil){ glitr.length=0; royk.length=0; glitrFil=k.b.fil; } // skjermen snudde: gamle koordinatar høyrer til det andre biletet
-  while(glitr.length<88){ var i=(((Math.random()*pkt.length/2)|0)*2);
-    glitr.push({ix:pkt[i], iy:pkt[i+1], t:0, liv:0.8+Math.random()*1.5, br:1+Math.random()*2.4}); }
+  while(glitr.length<150){ var i=(((Math.random()*pkt.length/2)|0)*2);
+    glitr.push({ix:pkt[i], iy:pkt[i+1], t:0, liv:0.7+Math.random()*1.4, br:1+Math.random()*2.9}); }
   g2.fillStyle="#eaf6ff";
   for(var j=glitr.length-1;j>=0;j--){ var q=glitr[j]; q.t+=dt;
     if(q.t>=q.liv){ glitr.splice(j,1); continue; }
     var y=k.y0+q.iy*k.s; if(y<-6||y>k.h+6)continue;
-    g2.globalAlpha=Math.sin(q.t/q.liv*Math.PI)*0.75;                 // opp og ned igjen — blinkar, ikkje blafrar
+    g2.globalAlpha=Math.sin(q.t/q.liv*Math.PI)*0.92;                 // opp og ned igjen — blinkar, ikkje blafrar
     g2.fillRect(k.x0+q.ix*k.s, y, Math.max(1.5,q.br*k.s*1.7), Math.max(1,k.s*1.3)); }
   g2.globalAlpha=1;
 }
@@ -2969,7 +2969,13 @@ function openShop(){
     600,(P.pots.ownedH||0)>=2,function(){P.pots.ownedH++;});
   if(!hummerSeason()){ var hb=L.lastElementChild.querySelector("button"); if(hb)hb.disabled=true; }
   addShop(L,'<img src="spill/assets/agn-makrellhode.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪱 \'" alt=""> Teineagn (3 stk)',"1 agn per utsett. Har "+(P.pots.bait||0)+" stk.",25,false,function(){P.pots.bait=(P.pots.bait||0)+3;});
-  if(P.rod>=2){ addShop(L,'<img src="spill/assets/fiskesnore.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪢 \'" alt=""> Bunnline',"Settes ut på valgfritt dyp og står natta over — fangsten følger dypet, og kveita kan gå på. Har "+(P.pots.lineOwned||0)+".",800,(P.pots.lineOwned||0)>=1,function(){P.pots.lineOwned=1;});
+  if(P.rod>=2){ var linTal=(P.pots.lineOwned||0), linPris=linTal>=1?15000:800;
+    addShop(L,'<img src="spill/assets/fiskesnore.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪢 \'" alt=""> '+(linTal>=1?"Bunnline nummer to":"Bunnline"),
+      (linTal>=1
+        ? "Lengre tau og mer av det — da kan du ha én stående på Dypt og én på Djuphavet samtidig. Har "+linTal+"."
+        : "Settes ut på valgfritt dyp og står natta over — fangsten følger dypet, og kveita kan gå på. Har "+linTal+"."),
+      linPris, linTal>=2, function(){ P.pots.lineOwned=Math.min(2,(P.pots.lineOwned||0)+1);
+        if(P.pots.lineOwned>=2) notice("To liner i sjøen! 🪢 Sett én på Dypt og én på Djuphavet — de fisker hver for seg."); });
     if((P.pots.lineKroker||3)<10) addShop(L,"🪝 Ekstra linekrok","Bunnlina har "+(P.pots.lineKroker||3)+" kroker (maks 10) — flere kroker, mer fangst per sett.",400,false,function(){P.pots.lineKroker=(P.pots.lineKroker||3)+1;});
     addShop(L,'<img src="spill/assets/agn-sild.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🐟 \'" alt=""> Linagn (10 kroker)',"1 sett per utsett av bunnlina. Har "+(P.pots.lineAgn||0)+".",60,false,function(){P.pots.lineAgn=(P.pots.lineAgn||0)+1;}); }
   if(P.pots.cap<4&&(P.pots.owned||0)>0) addShop(L,'<img src="spill/assets/blaase-boye.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚓ \'" alt=""> Ekstra blåser og tau',"Plass til 4 teiner ute samtidig (i dag: "+P.pots.cap+").",350,false,function(){P.pots.cap=4;});
@@ -3387,6 +3393,27 @@ function colGeom(){ var img=waterImg[depth]; if(!img||!img.complete||!img.natura
 function camHome(){ var g=colGeom(); if(!g)return 0; // hjem-kamera: vannlinja på SAMME skjermhøyde (34 %) på alle nivåer
   return Math.max(0, Math.min(g.maxScroll, g.wl - H*0.34)); }
 var blaaseImg=new Image(); blaaseImg.src="spill/assets/blaase-boye.png";
+var havGlitr=[];
+// Same blink som på forsida, men her manglar vassmaska — bandet er i staden
+// forankra i båten: tre fjerdedelar av skroghøgda, midt på vasslinja, og det
+// tonar ut både opp og ned så feltet ikkje får kantar. Litt svakare enn i
+// lobbyen, for her ligg det bak ein båt og skal ikkje stele merksemd.
+function tegnHavGlitr(dt, wlY, bh){
+  var band=bh*0.75, topp=wlY-band*0.75;
+  if(topp>H||topp+band<0) { havGlitr.length=0; return; }
+  while(havGlitr.length<52)
+    havGlitr.push({x:Math.random(), u:Math.random(), t:0,
+                   liv:0.7+Math.random()*1.6, br:1+Math.random()*2.2});
+  cx.save(); cx.fillStyle="#eaf6ff";
+  for(var j=havGlitr.length-1;j>=0;j--){ var q=havGlitr[j]; q.t+=dt;
+    if(q.t>=q.liv){ havGlitr.splice(j,1); continue; }
+    var y=topp+q.u*band;
+    if(y<-4||y>H+4)continue;
+    var kant=Math.sin(q.u*Math.PI);            // ut over og under
+    cx.globalAlpha=Math.sin(q.t/q.liv*Math.PI)*kant*0.62;
+    cx.fillRect(W*q.x, y, Math.max(1.5,q.br*1.6), Math.max(1,1.4)); }
+  cx.restore();
+}
 var cloudImg=[]; ["sky-01","sky-02","sky-03","sky-04","sky-06","sky-07"].forEach(function(n){ var im=new Image(); im.src="spill/assets/"+n+".png"; cloudImg.push(im); });
 var clouds=[], cloudT=0;
 function drawClouds(dt,g){ // skyer glir rolig forbi over vannlinja på Dypt når det er finvær (dag-varianten)
@@ -3579,6 +3606,7 @@ function drawScene(dt){
   var lineX, top;
   var inE=1-Math.pow(1-boatIn,2); // båten glir på plass etter turen ut (ease-out)
   var bx=W*0.52-(1-inE)*W*0.95, bw=mn*0.5, bh=boatReady?bw*(boatImg.naturalHeight/boatImg.naturalWidth):bw*0.4;
+  tegnHavGlitr(dt, wlY, bh);   // glitter i flata — bak båten, framfor bakgrunnen
   var dupp=Math.sin(bob*1.3)*2.9 + Math.sin(bob*0.61+1.7)*1.2; // to takter — sjøen har aldri berre éin (ned 35 %)
   var by=wlY - bh*0.48 + dupp, bTilt=-(1-inE)*0.08 + Math.sin(bob*0.47)*0.006; // svak baug-opp + roleg slingring
   var ff=fisherFrame();

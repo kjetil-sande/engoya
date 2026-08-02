@@ -25,8 +25,9 @@
     b.style.cssText = "position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;max-width:520px;margin:0 auto;" +
       "background:#12313d;color:#f6ecd0;border:2px solid #2a5462;border-radius:14px;padding:14px 16px;" +
       "box-shadow:0 6px 24px rgba(0,0,0,.35);font-family:inherit;font-size:15px;line-height:1.45";
-    b.innerHTML = '🍪 Vi bruker informasjonskapsler til anonym besøksstatistikk (Google Analytics), ' +
-      'så vi ser hvor mange som er innom Engøya-sidene. Er det greit?' +
+    b.innerHTML = '🍪 Vi bruker fiskekaker, eller såkalte informasjonskapsler, til anonym ' +
+      'besøksstatistikk (Google Analytics), så vi ser hvor mange som er innom ' +
+      'Engøya-sidene. Er det greit?' +
       '<div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">' +
       '<button id="samtykkeNei" style="background:none;border:2px solid #4a7482;color:#f6ecd0;border-radius:10px;padding:8px 14px;font-size:14px;cursor:pointer">Nei takk</button>' +
       '<button id="samtykkeJa" style="background:#d9a94b;border:0;color:#3a2e05;font-weight:700;border-radius:10px;padding:8px 18px;font-size:14px;cursor:pointer;box-shadow:0 3px 0 #8a6a1e">Det er greit</button>' +
