@@ -45,7 +45,13 @@ for n in navn:
 # Filer som med vilje ikke finnes. Uten denne lista roper sjekken ulv hver
 # eneste kjøring, og da slutter man å lese den.
 VENTA = {
-    "funn-rolex.gif":  "død reservesti; funn-rolex-rusten.png finnes og brukes",
+    "funn-rolex.gif":       "død reservesti; funn-rolex-rusten.png finnes og brukes",
+    # Arkivet — eieren tegner disse. Spillet faller pent tilbake i mellomtiden:
+    # ikonet bruker den gamle boka, og overskriften «📖 Arkivet» står til logoen
+    # lander. Fjern linjene her når filene kommer, så vokter sjekken dem videre.
+    "arkivet-logo.png":     "under arbeid — h2-overskriften vises til den finnes",
+    "arkivet-ikon.png":     "under arbeid — faller tilbake til fangstbok.png",
+    "maalfrid-staaende.png": "under arbeid — skjules til den finnes",
 }
 
 har = set(p.split('/')[-1] for p in subprocess.run(
@@ -123,6 +129,20 @@ for n in ('SLUK', 'AGN'):
 print("  OK  rapporttabellen er lik spillets" if not avvik
       else "  FEIL  rapportdata har drevet fra spillet: " + ", ".join(avvik))
 sys.exit(1 if avvik else 0)
+PY
+
+python3 - <<'PY'
+# Bensinprisen står to steder: i knappene (håndskrevet HTML) og i needF (JS).
+# Driver de fra hverandre, lyver dybdevelgeren om hva turen koster.
+import io, re, sys
+s = io.open('fiske.html', encoding='utf-8').read()
+knapp = re.findall(r'class="bens">.*?x (\d)</small>', s)
+m = re.search(r'var needF = \[([\d,]+)\]', s)
+kode = m.group(1).split(',') if m else []
+if knapp == kode and len(knapp) == 4:
+    print("  OK  dybdevelgeren viser samme bensinpris som koden tar (%s)" % "/".join(knapp))
+else:
+    print("  FEIL  knappene sier %s, koden tar %s" % (knapp, kode)); sys.exit(1)
 PY
 
 echo ""
