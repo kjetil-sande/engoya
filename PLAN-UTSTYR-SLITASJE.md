@@ -1,5 +1,33 @@
 # Utstyr som slites — prosjektnotat
 
+> ## AVGJORT 2. august 2026: havari blir IKKE bygd
+>
+> Riggservicen hos Propell-Kjell ble bygd mens dette notatet lå åpent, og den
+> gjør allerede jobben notatet var skrevet for. Utstyret slites, Kjell setter det
+> i stand, prisen er pro-rata fra 0 til 1 500 kr, og han ringer når det begynner
+> å bli tregt. Det er en vedlikeholdssløyfe med en fortelling rundt.
+>
+> Bygger vi havari i tillegg, får de samme fire tingene **to overlappende
+> pengesluk som ligner hverandre**. En åtteåring vil spørre hvorfor det er to, og
+> svaret blir tynt.
+>
+> Havari legger dessuten mest til risiko: en ny måte å ta noe fra spilleren på, i
+> et spill der eieren har vært helt tydelig på at ingenting skal gå tapt.
+>
+> **Beslutningen er å la det ligge**, se hvordan familien opplever riggservicen
+> først, og ta det opp igjen hvis vedlikeholdet viser seg for tannløst.
+>
+> Blir det aktuelt igjen: velg **fullt gjenkjøp**, ikke reparasjon til halv pris.
+> Ikke fordi det er snillere — det er det ikke — men fordi riggservicen allerede
+> har «halv pris, pro-rata, rutine». Skal to systemer leve side om side, må de
+> føles ulike: service er rutine, billig og forutsigbar; havari er sjeldent, dyrt
+> og en historie. Gjør du begge halve, blir ingen av dem noe.
+>
+> Resten av notatet står som det er — analysen under er fortsatt gyldig, og det
+> er den man skal lese hvis avgjørelsen tas opp igjen.
+
+---
+
 Eierens ønske, 2. august 2026:
 
 > «Når jeg har kjøpt ekkolodd, turbosnelle og annet utstyr bør det fortsatt stå i
@@ -84,11 +112,17 @@ store tok.»
 man kunne skaffe det på nytt. Butikkraden får derfor en tredje tilstand ved siden
 av «Montert» og «🔒 Krever …»: **ØDELAGT — 2 000 kr å fikse**.
 
-Jeg vil ha reparasjon til halv pris framfor fullt gjenkjøp. Grunnen er ikke
-pengene, det er hva tallet forteller. 4 000 kr på nytt leser som «du mistet
-ekkoloddet ditt». 2 000 kr leser som «det må på verksted» — samme rad, samme
-Rusten, og spilleren mister aldri følelsen av at det er hans ekkolodd. Er eieren
-uenig, er full pris et enkelt bytte: samme rad, samme mekanikk, bare et annet tall.
+**Dette avsnittet er overstyrt — se avgjørelsen øverst.** Da det ble skrevet
+fantes ikke riggservicen, og argumentet under var at halv pris forteller «det må
+på verksted» i stedet for «du mistet ekkoloddet ditt». Det argumentet holder
+fortsatt isolert sett — men riggservicen okkuperer nå nøyaktig den rollen, og to
+systemer som begge sier «halv pris, rutine» blir umulige å skille. Blir havari
+aktuelt igjen, skal det være **fullt gjenkjøp**, så de to har hver sin tydelige
+plass.
+
+*Opprinnelig argument, bevart:* 4 000 kr på nytt leser som «du mistet ekkoloddet
+ditt». 2 000 kr leser som «det må på verksted» — samme rad, samme Rusten, og
+spilleren mister aldri følelsen av at det er hans ekkolodd.
 
 **Varsel før første gang.** Første gang noe ryker skal Rusten ringe. Ikke en
 notice — en telefon, med den rytmen som alt er bygd. Ellers leser spilleren det som
@@ -109,11 +143,22 @@ slitasje.
 
 ---
 
-## Åpent spørsmål til eieren
+## Det åpne spørsmålet — og hva det ble
 
-Skal det i det hele tatt gjøre vondt? Det finnes en variant der utstyr aldri ryker,
-men **trenger service** — ekkoloddet blir upresist etter 50 turer og koster 400 kr
-å kalibrere. Samme butikkrad, samme grunn til å komme innom Rusten, men ingen som
-mister noe de har betalt for.
+Spørsmålet var: skal det i det hele tatt gjøre vondt? Det fantes en variant der
+utstyr aldri ryker, men **trenger service** — samme butikkrad, samme grunn til å
+komme innom, men ingen som mister noe de har betalt for.
 
-Det er den trygge varianten. Den andre er den som gir historier.
+**Eieren svarte med å foreslå nettopp det**, uavhengig av dette notatet:
+
+> «Hva med at man må ha service på alt utstyr hos Propell-Kjell? At man har de
+> samme barene som indikerer gjenværende levetid (0-100%) som på Bunnsmørning,
+> Båtservice og Båtforsikring.»
+
+Det var et bedre svar enn begge alternativene her, av en grunn som ligger i koden:
+**de tre eksisterende barene tar aldri noe fra spilleren.** Bunnsmørning på 0 %
+koster +1 bensin. Service over 250 turer gir havarifare. Utløpt forsikring betyr
+full pris. Ingen av dem fjerner en evne — de gjør ting *dårligere*, aldri borte.
+
+Riggservicen følger samme regel, og den ble bygd 2. august. Dermed falt valget
+mellom «trygg» og «gir historier» bort: barene gir begge deler.
