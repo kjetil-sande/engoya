@@ -244,6 +244,11 @@
   #pfLyd{margin-top:9px;font-size:12px;padding:6px 11px}
   .pfbolk{margin-top:12px}
   .pfbolk h4{margin:0 0 5px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  /* Fiskerkortet skal kunne leses høyt fra skjermen og tastes inn på en annen telefon.
+     Monospace og god luft mellom tegnene, så «rn» ikke leses som «m». */
+  .pfkort{font-family:var(--mono);font-size:15px;font-weight:700;letter-spacing:.04em;
+    background:rgba(0,0,0,.06);border:2px dashed var(--wood-dark);border-radius:10px;
+    padding:9px 10px;text-align:center;word-break:break-all;line-height:1.4}
   .pfrad{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:3px 0;border-bottom:1px dashed rgba(90,70,45,.16)}
   .pfrad:last-child{border-bottom:0}
   .pfrad b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -1312,6 +1317,61 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
 var FAM_URL="/.netlify/functions/familierekorder", famLast=0, famBusy=false, famInfo="";
 function famCode(){ try{return (localStorage.getItem("storkveita-familiekode")||"").trim()}catch(e){return ""} }
 
+/* ---------- Fiskerkortet: din egen nøkkel, ved siden av familiekoden ----------
+   Familiekoden er felles. Alle som har den kan se — og serveren godtar koder helt
+   ned til fire tegn. Derfor må kortet ALDRI utledes av den: da ville hver spillers
+   «hemmelighet» vært noe alle i familien kunne regne ut.
+
+   Kortet er en tilfeldig nøkkel laget på enheten, lagret PÅ SPILLEREN (P.kort), så
+   den følger profilen og ikke telefonen. Den synkes til sin egen blob ved siden av
+   familiens — familiekoden røres ikke. Mister du telefonen, skriver du inn kortet
+   på en ny og henter profilen tilbake.
+
+   Ordene er hentet fra spillets egen verden med vilje: et kort du skal skrive ned
+   på en lapp må kunne leses høyt og tastes inn på en telefon uten å bomme. */
+var KORTORD=["kveite","torsk","brosme","uer","sei","lyr","hyse","lange","makrell","steinbit",
+ "breiflabb","akkar","havmus","skrei","sild","krabbe","hummer","reke","blaase","teine",
+ "snelle","sluk","pilk","agn","krok","line","garn","ripa","kjol","baug",
+ "styrhus","motor","propell","anker","vinsj","ekkolodd","kompass","kart","fyr","molo",
+ "naust","brygge","kai","skjaer","grunne","egg","fjord","sund","holme","odde",
+ "storm","kuling","bris","stille","taake","regn","sludd","snoe","sol","maane",
+ "flo","fjaere","straum","doenning","bakevje","nordlys","midnattsol","mörketid",
+ "rusten","kjell","odd","ingrid","solveig","harald","jorunn","birger","marit","trygve"];
+function lagKort(){
+  var b=new Uint32Array(4);
+  if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(b);
+  else for(var i=0;i<4;i++)b[i]=(Math.random()*4294967296)>>>0;
+  var o=[]; for(var j=0;j<3;j++)o.push(KORTORD[b[j]%KORTORD.length]);
+  return o.join("-")+"-"+(1000+(b[3]%9000));
+}
+function kortKode(){ if(!P)return ""; if(!P.kort)P.kort=lagKort(); return P.kort; }
+// Vis kortet FØRST når det finnes noe å miste. En nøkkel du får før du bryr deg,
+// er en nøkkel du lukker vekk uten å lese.
+function kortModent(){ if(!P)return false;
+  var dager=Object.keys(P.dager||{}).length, arter=arterFanget(P);
+  return dager>=3 || arter>=10 || (P.trofe||[]).some(function(t){return !t.borte;}); }
+var kortBusy=false;
+function kortSync(){ // egen blob, ved siden av familiens — familiekoden røres ikke
+  if(!P||!P.kort||kortBusy)return; kortBusy=true;
+  fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({code:P.kort, player:{name:P.name, kr:P.kr, caught:P.caught,
+      ts:Date.now(), gear:gearFersk(P)?undefined:gearUt()}})})
+  .then(function(){ kortBusy=false; }).catch(function(){ kortBusy=false; });
+}
+function kortHent(){
+  var c=(prompt("Skriv fiskerkortet ditt — tre ord og fire tall, slik: kveite-storm-anker-4271")||"").trim().toLowerCase();
+  if(!c)return;
+  if(c===famCode().toLowerCase()){ notice("Det er familiekoden, ikke fiskerkortet ditt 🙂"); return; }
+  fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:c})})
+  .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
+  .then(function(j){
+    var navn=(j&&j.players)?Object.keys(j.players).filter(function(x){return !famFarlig(x)}):[];
+    if(!navn.length){ notice("Fant ingen med det kortet. Sjekk stavemåten — tre ord og fire tall."); return; }
+    famTaImot(j); renderPlayers(); hud();
+    notice("Hentet inn 🎣 "+navn.join(", ")+" er tilbake. Ingenting ble overskrevet.");
+  }).catch(function(){ notice("Fikk ikke kontakt akkurat nå — prøv igjen om litt."); });
+}
+
 /* ---------- Sikkerhetskopi: hele fangstboka som fil ----------
    Troféskapet, funnene og spilletiden finnes BARE i localStorage på denne enheten.
    Tømmer noen nettleserdata, eller går telefonen i sjøen, er alt borte — familiekoden
@@ -1505,6 +1565,7 @@ function syncFam(force){ var code=famCode(); if(!code||!P||famBusy)return;
   .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
   .then(function(j){ clearTimeout(famFail); famBusy=false;
     famTaImot(j); famInfo="synket "+new Date().toTimeString().slice(0,5);
+    if(P&&P.kort)kortSync();   // egen blob i tillegg — familiekoden er felles, kortet er ditt
     var bm=document.querySelector("#bookModal");
     if(bm&&bm.classList.contains("on")){ if($("#bookMine").style.display!=="none") renderMine(); if($("#bookFam").style.display!=="none") renderFam(); if($("#bookRek").style.display!=="none") renderRek(); }
   }).catch(function(){ clearTimeout(famFail); famBusy=false; famInfo="fikk ikke kontakt"; });
@@ -2021,7 +2082,7 @@ function pilkSlutt(){
   // sild NETTOPP for å bruke den som agn er hele grunnen til at folk hekler.
   if(sildAgn){ P.agn.sild=(P.agn.sild||0)+sildAgn; updateRigChip();
     L2.insertAdjacentHTML("beforeend",'<div class="statline" style="margin-top:6px"><b>🫐 '+sildAgn+' sild lagt i agnboksen</b> — hun er verdt mer på kroken enn i kassa.</div>'); }
-  if(total){ P.kr+=total; Snd.coin(); } // ingen mynt når alt vart sett ut — lyden skal fortelje same historia som lista
+  if(total){ P.kr+=total; P.solgt=(P.solgt||0)+total; Snd.coin(); } // ingen mynt når alt vart sett ut — lyden skal fortelje same historia som lista
   if(pilkFangst.length>=3)setTimeout(Snd.fiskerLettet,300);
   $("#potTitle").textContent="🎣 Pilkefangst";
   $("#potTotal").innerHTML=total?('Solgt til Rusten: <b>'+total+' kr</b>'):'';
@@ -2296,7 +2357,7 @@ function visNyArt(vis){ var w=$("#nyArtWrap"); w.style.display=vis?"block":"none
 function resolveCatch(sell){
   var pc=pending; if(!pc)return;
   if(sell==="agn"&&pc.agnAv){ P.agn[pc.agnAv]=(P.agn[pc.agnAv]||0)+3; Snd.click(); } // én fisk = 3 agn (hode + biter)
-  else if(sell===true){ P.kr+=pc.kr; Snd.coin(); }
+  else if(sell===true){ P.kr+=pc.kr; P.solgt=(P.solgt||0)+pc.kr; Snd.coin(); }
   else { /* slipp ut: arten er registrert i boka, men ingen penger */ }
   pending=null; modal("catchModal",false); hud(); saveAll(); updateRigChip();
   setHint(sell==="agn"?("Skjært opp til agn — +3 "+agnDef[pc.agnAv].n.toLowerCase()+" i sluksettet 🧰"):sell===true?("Solgt for "+pc.kr+" kr."):(pc.vern||pc.umaal)?"Satt varsomt ut igjen 🤍":"Sluppet ut."); setAction("Kast ut");
@@ -2924,7 +2985,7 @@ function pullPot(ty){ ty=ty||"k";
   var rolexLinje=res.lines.some(function(l){return l.rolexFunn}) && !P.rolex;
   if(res.lines.some(function(l){return l.rolexFunn}) && P.rolex){ // én om gangen — ny selges rett til Rusten
     res.total+=3000; res.lines.forEach(function(l){ if(l.rolexFunn){l.n="Rolex (urmakeren har alt én) — solgt";l.kr=3000;} }); }
-  P.pots.out.splice(idx,1); P.kr+=res.total; hud(); saveAll(); updatePotBtn(); if(ty==="l")syncFam();
+  P.pots.out.splice(idx,1); P.kr+=res.total; P.solgt=(P.solgt||0)+res.total; hud(); saveAll(); updatePotBtn(); if(ty==="l")syncFam();
   if(bestiltIBruket) setTimeout(function(){ notice("Rusten hadde bestilt "+dkP.n.toLowerCase()+" i dag — +50 % 📋"); },900);
   if(fikkKveite){ Snd.trophy(); notice("STORKVEITA GIKK PÅ LINA! 🏆"); dogShow(0,7); Snd.gladDog(); }
   else if(res.lines.some(function(l){return l.fk==="haakjerring"})){ Snd.trophy(); notice("HÅKJERRINGA GIKK PÅ LINA! 🦈 Havets eldste!"); dogShow(0,7); Snd.gladDog(); setTimeout(Snd.fiskerImponert,500); }
@@ -3107,9 +3168,22 @@ function tidTekstKort(ms){ var m=Math.round((+ms||0)/60000);
   if(!m)return "–"; if(m<60)return m+" min";
   var t=Math.floor(m/60), r=m%60; return r?t+" t "+r+" min":t+" t"; }
 
+// Alt her regnes ut av data som ALLEREDE ligger i fangstboka — ingen nye tellere
+// trengs, bortsett fra P.solgt, som ikke lot seg utlede i ettertid.
+function profilTall(pl){
+  var fisk=0, sluppet=0, tyngst=null, tyngstKg=0;
+  FISH.forEach(function(f){ var r=pl.caught&&pl.caught[f.k]; if(!r)return;
+    fisk+=r.count||0; sluppet+=r.sluppet||0;
+    if((r.bestWt||0)>tyngstKg){ tyngstKg=r.bestWt; tyngst=f.n; } });
+  var trofe=(pl.trofe||[]).filter(function(t){return !t.borte;}).length;
+  var solgteTrofe=(pl.trofe||[]).filter(function(t){return t.borte==="solgt";}).length;
+  return { fisk:fisk, sluppet:sluppet, tyngst:tyngst, tyngstKg:tyngstKg,
+           trofe:trofe, solgteTrofe:solgteTrofe,
+           dager:Object.keys(pl.dager||{}).length, solgt:pl.solgt||0 };
+}
 function visProfil(){
   if(!P)return;
-  var arter=arterFanget(P), tot=FISH.length;
+  var arter=arterFanget(P), tot=FISH.length, T=profilTall(P);
   var loggEldre=tidSum(P,0)-tidSum(P,Date.now()); // spilletid loggen kjenner fra FØR i dag
   var kv=P.caught&&P.caught["kveite"], code=famCode();
   var famAnt=Object.keys(DB.players).length;
@@ -3128,9 +3202,22 @@ function visProfil(){
     +'<div class="pfrad"><span>Arter fanget</span><b>'+arter+' av '+tot+'</b></div>'
     +'<div class="pfstolpe"><i style="width:'+Math.round(arter/tot*100)+'%"></i></div>'
     +'<div class="pfrad" style="margin-top:6px"><span>Stjerner</span><b>★ '+starSumFor(P)+'</b></div>'
+    +'<div class="pfrad"><span>Fisk i alt</span><b>'+T.fisk.toLocaleString("nb")+'</b></div>'
+    +(T.tyngst?'<div class="pfrad"><span>Tyngste fangst</span><b>'+T.tyngstKg.toLocaleString("nb")+' kg <span class="muted" style="font-weight:400">'+esc(T.tyngst.toLowerCase())+'</span></b></div>':'')
     +(kv&&kv.bestLen?'<div class="pfrad"><span>Største kveite</span><b>🏆 '+kv.bestLen+' cm</b></div>'
                     :'<div class="pfrad"><span>Største kveite</span><b class="muted">ikke ennå</b></div>')
-    +'<div class="pfrad"><span>På bok</span><b>'+(P.kr||0).toLocaleString("nb")+' kr</b></div>'
+    // Sluppet ut står med vilje ved siden av fangsttallene, ikke gjemt bort. Fredet fisk
+    // og fisk under målet er noe man skal kunne være stolt av å ha satt tilbake.
+    +(T.sluppet?'<div class="pfrad"><span>Satt ut igjen</span><b>🤍 '+T.sluppet.toLocaleString("nb")+'</b></div>':'')
+    +'<div class="pfrad"><span>Troféer i skapet</span><b>'+T.trofe+' av '+trofeMulige()
+      +(T.solgteTrofe?' <span class="muted" style="font-weight:400">· '+T.solgteTrofe+' solgt</span>':'')+'</b></div>'
+    +'</div>';
+
+  h+='<div class="pfbolk"><h4>Regnskapet</h4>'
+    +'<div class="pfrad"><span>Solgt fisk for</span><b>'+T.solgt.toLocaleString("nb")+' kr</b></div>'
+    +'<div class="pfrad"><span>På bok nå</span><b>'+(P.kr||0).toLocaleString("nb")+' kr</b></div>'
+    +(T.dager?'<div class="pfrad"><span>Dager på havet</span><b>'+T.dager+'</b></div>':'')
+    +(T.solgt&&T.dager?'<div class="pfrad"><span>Snitt per dag</span><b>'+Math.round(T.solgt/T.dager).toLocaleString("nb")+' kr</b></div>':'')
     +'</div>';
 
   h+='<div class="pfbolk"><h4>Tid på havet</h4>'
@@ -3149,6 +3236,15 @@ function visProfil(){
 
   // Familiekoden henter bare tilbake det serveren har sett. Troféskapet, funnene og
   // spilletiden ligger BARE på denne enheten — derfor er fila den ekte sikkerhetskopien.
+  // Kortet vises først når det finnes noe å miste — se kortModent().
+  if(kortModent()){
+    h+='<div class="pfbolk"><h4>Fiskerkortet ditt</h4>'
+      +'<p class="muted" style="font-size:12.5px;margin:2px 0 6px">Din egen nøkkel. Skriv den ned — med den henter du profilen din tilbake på en ny telefon, uten å røre familiekoden.</p>'
+      +'<div class="pfkort" id="pfKortKode">'+esc(kortKode())+'</div>'
+      +'<div class="row" style="gap:8px;margin-top:8px"><button class="btn sm" id="pfKortKopi">📋 Kopier</button>'
+      +'<button class="btn sm ghost" id="pfKortHent">🎣 Hent med kort</button></div></div>';
+  }
+
   h+='<div class="pfbolk"><h4>Sikkerhetskopi</h4>'
     +'<p class="muted" style="font-size:12.5px;margin:2px 0 8px">Troféskapet og funnene dine ligger bare på denne enheten. Last ned en kopi og legg den et trygt sted — da kan alt hentes tilbake på en ny telefon.</p>'
     +'<div class="row" style="gap:8px"><button class="btn sm" id="pfKopiUt">💾 Last ned kopi</button>'
@@ -3167,6 +3263,17 @@ function visProfil(){
   $("#pfNavnBytt").onclick=byttNavn;
   $("#pfKopiUt").onclick=lastNedKopi;
   $("#pfKopiInn").onclick=velgKopi;
+  if($("#pfKortKopi")){
+    $("#pfKortKopi").onclick=function(){
+      var k=kortKode();
+      if(navigator.clipboard&&navigator.clipboard.writeText)
+        navigator.clipboard.writeText(k).then(function(){ notice("Fiskerkortet er kopiert 📋"); },
+                                             function(){ notice("Kortet ditt: "+k); });
+      else notice("Kortet ditt: "+k);
+    };
+    $("#pfKortHent").onclick=kortHent;
+    kortSync();   // kortet er nettopp vist — sørg for at bloben finnes med ein gong
+  }
   lydIkon(); $("#pfLyd").onclick=function(){ toggleMute(); };
   $("#pfTilNaust").onclick=function(){ modal("profilModal",false); tilNaustet(); };
   $("#pfInnboks").onclick=function(){ modal("profilModal",false); visInnboks(); };
