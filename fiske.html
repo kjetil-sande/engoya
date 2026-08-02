@@ -615,6 +615,8 @@
     width:max-content;max-width:min(86%,30em);text-align:center;color:var(--ink);font-weight:700;font-size:17px;line-height:1.35;
     box-shadow:0 8px 0 rgba(0,0,0,.15);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
   #notice.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  #notice .lukkhint{margin-top:8px;font-size:11px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;opacity:.45}
   /* Éin beskjed om gongen. #hintMid er den som faktisk kolliderer — botn-hintet er alt
      skjult av «#sea.fishing .bottom #hint{display:none}» medan snøret står ute. */
   #notice.on ~ #hintMid,
@@ -869,7 +871,9 @@ var Snd=(function(){
   // Lobbyen: svakt → mellomsvakt. Ute på havet er sjøen 0,187 og måkane 0,22.
   var LOBBY_HAV0=0.060, LOBBY_HAV1=0.155, LOBBY_FUGL0=0.050, LOBBY_FUGL1=0.170;
   var LOBBY_FADE=4200, TEMA_V=0.45, TEMA_FADE=2200;   // opninga er 1000 stille + 2800 pan
-  var lobbyT=null, temaT=null, lobbyFerdig=false, TEMA_UT=1400;
+  // TEMA_UT: eigaren opplevde 1400 ms som ei hard bråstopp ved fyrste kast.
+  // 2600 ms er midt i dei 2–3 sekunda han bad om.
+  var lobbyT=null, temaT=null, lobbyFerdig=false, TEMA_UT=2600;
   try{ muted = localStorage.getItem("storkveita-muted")==="1"; }catch(e){}
   function AC(){ if(!ctx){ try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return ctx; }
   function beep(freq,dur,type,g,slideTo){ var c=AC(); if(!c||muted)return; var o=c.createOscillator(),ga=c.createGain(),t=c.currentTime;
@@ -1588,15 +1592,18 @@ function visNapp(){ var i=$("#nappSplash"); if(!i)return;
 var nysCool=20; // første nys tidligst etter 20 s i båten
 var skrikCool=12+Math.random()*20; // første måkeskrik tidligst etter 12 s
 function erfaren(){ if(!P||!P.caught)return false; var n=0; for(var k in P.caught){ n+=(P.caught[k]&&P.caught[k].count)||0; if(n>=20)return true; } return false; }
-var noticeT=null;
+var noticeT=null, noticeFra=0, noticeLaas=false; // noticeLaas: beskjeder MED knapp skal ikkje kunne forsvinne i eit uhell
 function lesetid(m){ // 2,25 s til å oppdage beskjeden + 56 ms per teikn til å lese han (20 % kortare enn før)
   return Math.max(2800, Math.min(9600, 2240 + String(m||"").length*56)); }
 function notice(m){ var n=$("#notice"); if(!n)return; n.textContent=m; n.style.pointerEvents="none"; n.classList.add("on");
+  // Lange beskjedar — i praksis Rustens folklore — fortener eit hint om at du slepp å vente dei ut.
+  if(String(m||"").length>90) n.insertAdjacentHTML("beforeend",'<div class="lukkhint">trykk for å lukke</div>');
+  noticeFra=Date.now(); noticeLaas=false;
   if(noticeT)clearTimeout(noticeT); noticeT=setTimeout(function(){n.classList.remove("on")}, lesetid(m)); }
 function noticeMedKnapp(m,knapp,fn){ var n=$("#notice"); if(!n)return;
   n.innerHTML=esc(m)+'<div style="margin-top:9px"><button class="btn sm gold" id="noticeKnapp">'+esc(knapp)+'</button></div>';
-  n.style.pointerEvents="auto"; n.classList.add("on");
-  $("#noticeKnapp").onclick=function(){ fn(); n.classList.remove("on"); n.style.pointerEvents="none"; };
+  n.style.pointerEvents="auto"; n.classList.add("on"); noticeFra=Date.now(); noticeLaas=true;
+  $("#noticeKnapp").onclick=function(){ fn(); n.classList.remove("on"); n.style.pointerEvents="none"; noticeLaas=false; };
   if(noticeT)clearTimeout(noticeT); noticeT=setTimeout(function(){n.classList.remove("on"); n.style.pointerEvents="none";}, Math.max(7000,lesetid(m))); }
 function setAction(t,on){var b=$("#actionBtn"); b.textContent=t; b.style.display=on===false?"none":"block";
   var hold=/hold/i.test(t); // sveiv/pilk = stor rund snelle midt på skjermen
@@ -1759,13 +1766,45 @@ var RUSTEN_ORD={
   blaere:"Kjem han opp med magen ut av kjeften, har han ikkje hatt godt av djupet. Då tek du han med deg heim.",
   havmus:"På mørke vinternetter kjem havmusa opp i lyset. Ho har auge som ei katt.",
   fullmaane:"Fullmåne dreg sjøen hardare. Straumen står, og kveita står i han.",
-  plystre:"Bestefar sa: aldri plystre i båten. Eg plystrar likevel, men eg passar på kva eg tenkjer på."
+  plystre:"Bestefar sa: aldri plystre i båten. Eg plystrar likevel, men eg passar på kva eg tenkjer på.",
+  // ——— Artspraten. Rusten seier noko berre om dei artane han faktisk har eit forhold til. ———
+  art_kveite:["Kveita snur seg når ho først får sjå båten. Hald snøret stramt der — det er DÅ du mistar ho.",
+              "Ei stor kveite er ei gammal dame. Ho har lege på same flekken i tjue år og sett båtar kome og gå."],
+  art_steinbit:["Steinbiten knuser kråkebollar med dei tennene. Hald fingrane for deg sjølv.",
+                "Stygg i fjeset og god i gryta. Slik er det med fleire enn steinbiten."],
+  art_uer:"Ueren har gift i piggane. Ikkje mykje, men nok til at du hugsar det til neste gong.",
+  art_breiflabb:"Breiflabben ligg still i sanden med ei lykt over munnen og ventar. Han jaktar ikkje. Han lèt maten kome til seg.",
+  art_makrell:"Makrellen kjem når sjøen blir varm. Han står ikkje stille eit sekund i heile sitt liv.",
+  art_sei:"Seien går i stim. Får du ein, står det tusen til der nede — men dei flyttar seg fort.",
+  art_hyse:"Hysa har ein svart flekk på sida. Sankt Peters tommelavtrykk, sa mor mi. Eg har aldri sagt henne imot.",
+  art_akkar:"Akkaren sprutar blekk når han blir sinna. Ta han på armlengds avstand, elles går det ut over trøya.",
+  art_brosme:"Brosma står djupt og rører seg lite. Ho har tid. Det har ikkje du.",
+  art_rognkall:"Rognkallen passar egga åleine til dei klekkjer. Hoa drog for lenge sidan. Han står der likevel.",
+  art_rognkjeks:"Rognkjeksa gyt og går. Det er kallen som blir att og passar. Slik har dei ordna seg.",
+  art_skolest:"Skolesten har ein hale som ein pisk og eit hovud som eit panser. Djupet formar dei rart.",
+  art_haakjerring:"Håkjerringa kan vere fire hundre år gammal. Ho svømte her lenge før oldefaren din vart fødd.",
+  art_lange:"Langa står på hardbotn og bratte kantar. Finn du ei, er du på rett fjell.",
+  art_maanefisk:"Månefisken høyrer ikkje heime her. Han har teke feil av havstraum, og no står han og ser på deg.",
+  // ——— Når det går gale. Dette er dei viktigaste — folk hugsar dei. ———
+  bomm:["Du var for snar. Fisken skal ha kroken i seg før du dreg.",
+        "Ro deg ned. Snøret veit ingenting om kor travelt du har det."],
+  slapp:["Den som slapp, blir alltid større enn den du fekk. Slik er det, og slik skal det vere.",
+         "Slakk line er fiskens beste venn. Hald han stram, så slepp du å fortelje historia."],
+  rauk:["Snøret ryk der det er tynnast. Sjå over knutane før du går ut, ikkje etterpå.",
+        "Ein knute du ikkje har sjekka, er ein knute som svikter. Det finst ingen tredje utveg."]
 };
-var sagtIOkta={}; // same replikk skal ikkje mase to gonger på rad
+var sagtIOkta={}; // same replikk skal ikkje mase to gonger paa rad
+// Med 25 replikkar i staden for 8 kan folklore fort bli bakgrunnsstøy. Difor to bremser:
+// minst 3,5 minutt mellom kvar gong Rusten seier noko, og høgst 6 gonger i ei økt.
+// Sjekken kjem FØR sagtIOkta blir sett, så ein replikk som blir bremsa er ikkje brukt opp —
+// han kan framleis kome seinare i økta når han passar.
+var rustenSist=0, rustenTalt=0, RUSTEN_PAUSE=210000, RUSTEN_TAK=6;
 function rustenSier(nokkel,forsink){
-  if(!RUSTEN_ORD[nokkel]||sagtIOkta[nokkel])return;
-  sagtIOkta[nokkel]=1;
-  setTimeout(function(){ notice("🎣 «"+RUSTEN_ORD[nokkel]+"» — Rusten"); }, forsink||0);
+  var t=RUSTEN_ORD[nokkel]; if(!t||sagtIOkta[nokkel])return;
+  if(rustenTalt>=RUSTEN_TAK || Date.now()-rustenSist<RUSTEN_PAUSE)return;
+  sagtIOkta[nokkel]=1; rustenSist=Date.now(); rustenTalt++;
+  if(t.length&&t.push)t=t[(Math.random()*t.length)|0]; // fleire variantar: trekk éin
+  setTimeout(function(){ notice("🎣 «"+t+"» — Rusten"); }, forsink||0);
 }
 
 var FREDET_ORD={
@@ -1947,6 +1986,7 @@ function miss(){
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool(); // hunden er lei seg
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
   setHint("Fisken slapp… prøv igjen."); setAction("Kast ut"); saveAll();
+  rustenSier("bomm",1400);
 }
 function reelStep(dt){
   var f=hooked; fightT+=dt;
@@ -1998,6 +2038,7 @@ function escape(){ ringFred(60);
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool();
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); $("#reelui").classList.remove("on"); hooked=null; sceneFish=null;
   setHint("Du ga for mye slakk og fisken glapp! Sluken er i god behold."); setAction("Kast ut"); saveAll();
+  rustenSier("slapp",1400);
   if(navigator.vibrate)navigator.vibrate(30);
 }
 function snap(){ ringFred(60); oddMerk();
@@ -2011,6 +2052,7 @@ function snap(){ ringFred(60); oddMerk();
   hooked=null; sceneFish=null;
   setHint(mistet);
   setAction("Kast ut"); hud(); saveAll();
+  rustenSier("rauk",1400);
   if(navigator.vibrate)navigator.vibrate([90,50,90]);
 }
 function land(){
@@ -2063,6 +2105,8 @@ function land(){
   if(f.k==="knurr"){ setTimeout(Snd.knurreFisk,650); rustenSier(rec.count>1?"knurr2":"knurr1",1500); }
   if(baro) rustenSier("blaere",1500);
   if(f.k==="havmus"&&depth===2) rustenSier("havmus",1500);
+  if(erSkrei(f)) rustenSier("skrei",1500);
+  rustenSier("art_"+f.k,1600); // artspraten — berre om Rusten har noko å seie om nett denne
   dogShow(0,7); Snd.gladDog(); // fisken er i båten — hunden bjeffer av glede
   if(goldCatch||f.rar===2) setTimeout(Snd.fiskerJubel,400);      // fiskeren jubler over storfangst
   else if(fightT>45) setTimeout(Snd.fiskerLettet,400);              // puster ut etter lang kamp
@@ -3035,15 +3079,17 @@ function openShop(){
     $("#rolexBehold").onclick=function(){ P.rolex=null; leggITrofe("rolexpusset"); saveAll(); Snd.trophy();
       notice("Du takket nei til budet — Rolexen blinker i troféskapet ⌚🏺"); openShop(); };
   }
-  if(!P.turbo) addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — halverer kamptida mot alt som biter.",30000,false,function(){P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");},
-    P.rod>=2?null:"Krever "+RODS[2].n);
   addShop(L,'<img src="spill/assets/krabbeteine.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🦀 \'" alt=""> Krabbeteine',"Settes på grunt vann (0–50 m) og fisker mens du er borte. Har "+(P.pots.owned||0)+" (plass til "+P.pots.cap+").",150,(P.pots.owned||0)>=P.pots.cap,function(){P.pots.owned++;});
   addShop(L,'<img src="spill/assets/hummerteine.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🦞 \'" alt=""> Hummerteine',
     hummerSeason()?"Grunt vann (0–50 m). Hummeren går i teina om natta — la den stå over natta! Har "+(P.pots.ownedH||0)+"."
                   :"Selges kun i hummersesongen (1. okt–31. des) — hummeren er freda nå. Har "+(P.pots.ownedH||0)+".",
     600,(P.pots.ownedH||0)>=2,function(){P.pots.ownedH++;});
   if(!hummerSeason()){ var hb=L.lastElementChild.querySelector("button"); if(hb)hb.disabled=true; }
-  addShop(L,'<img src="spill/assets/agn-makrellhode.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪱 \'" alt=""> Teineagn (3 stk)',"1 agn per utsett. Har "+(P.pots.bait||0)+" stk.",25,false,function(){P.pots.bait=(P.pots.bait||0)+3;});
+  // Teineagnet skal ligge UNDER linekroken (eierens rekkefølge), men bunnline-radene
+  // står inne i en «Stang III»-sperre. Legges teineagnet der inne, mister en spiller
+  // med Stang I/II agnet til krabbeteina si helt — derfor en liten funksjon som kalles
+  // fra begge grenene. Bare én av dem kjører.
+  var teineagnRad=function(){ addShop(L,'<img src="spill/assets/agn-makrellhode.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪱 \'" alt=""> Teineagn (3 stk)',"1 agn per utsett. Har "+(P.pots.bait||0)+" stk.",25,false,function(){P.pots.bait=(P.pots.bait||0)+3;}); };
   if(P.rod>=2){ var linTal=(P.pots.lineOwned||0), linPris=linTal>=1?15000:800;
     addShop(L,'<img src="spill/assets/fiskesnore.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪢 \'" alt=""> '+(linTal>=1?"Bunnline nummer to":"Bunnline"),
       (linTal>=1
@@ -3052,7 +3098,9 @@ function openShop(){
       linPris, linTal>=2, function(){ P.pots.lineOwned=Math.min(2,(P.pots.lineOwned||0)+1);
         if(P.pots.lineOwned>=2) notice("To liner i sjøen! 🪢 Sett én på Dypt og én på Djuphavet — de fisker hver for seg."); });
     if((P.pots.lineKroker||3)<10) addShop(L,"🪝 Ekstra linekrok","Bunnlina har "+(P.pots.lineKroker||3)+" kroker (maks 10) — flere kroker, mer fangst per sett.",400,false,function(){P.pots.lineKroker=(P.pots.lineKroker||3)+1;});
+    teineagnRad();
     addShop(L,'<img src="spill/assets/agn-sild.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🐟 \'" alt=""> Linagn (10 kroker)',"1 sett per utsett av bunnlina. Har "+(P.pots.lineAgn||0)+".",60,false,function(){P.pots.lineAgn=(P.pots.lineAgn||0)+1;}); }
+  else teineagnRad(); // uten Stang III finnes ingen bunnline — da hører teineagnet hjemme rett under teinene
   if(P.pots.cap<4&&(P.pots.owned||0)>0) addShop(L,'<img src="spill/assets/blaase-boye.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚓ \'" alt=""> Ekstra blåser og tau',"Plass til 4 teiner ute samtidig (i dag: "+P.pots.cap+").",350,false,function(){P.pots.cap=4;});
   } // slutt Utstyr del 1
   if(shopTab==="agn"){ var ds=agnDagsStatus();
@@ -3072,6 +3120,8 @@ function openShop(){
   // Det store utstyret ligg nedst med vilje: bensin og agn er det ein kjøper
   // heile tida, beltet og vinsjen éin gong. Eigarens val.
   if(shopTab==="utstyr"){
+  if(!P.turbo) addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — halverer kamptida mot alt som biter.",30000,false,function(){P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");},
+    P.rod>=2?null:"Krever "+RODS[2].n);
   if(!P.belte) addShop(L,'<img src="spill/assets/kampbelte.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎽 \'" alt=""> Kampbelte',
     "Stangenden står i koppen på beltet, så du tar imot med hoftene i stedet for med armene. Spennet stiger 25 % saktere — storfisken fra Dypt og Djuphavet får deg ikke like lett.",12000,false,
     function(){P.belte=true; notice("Kampbeltet sitter! 🎽 «Det er ikkje fisken som ryk snøret, gut — det er båten som rullar.»");},
@@ -3852,11 +3902,21 @@ function drawScene(dt){
       // så fadepunktet blir verande på same djupn når kameraet følgjer sluken nedover.
       // 0.42*H: vasslinja ligg på 34 % av skjermen, så tauet er praktisk talt borte
       // midtvegs ned i den synlege vassøyla — akkurat den ansen eigaren ville ha.
-      var slutt=pbY+Math.min(potY-pbY, H*0.42), tg=null;
+      // Målt i bakgrunnsbileta: sjøen rett under vasslinja ligg på luminans ~137 på
+      // Dypt og Djuphavet om dagen. Det gamle tauet (63,125,78) låg på 108 — berre
+      // 29 av 255 i skilnad, og DER er grunnen til at eigaren ikkje såg det. Det nye
+      // grøne ligg på 189, og under det ligg ei mørk fôring: da held tauet seg synleg
+      // både mot lys dagsjø og mot den nesten svarte nattsjøen (luminans ~35).
+      var slutt=pbY+Math.min(potY-pbY, H*0.42), tg=null, tm=null;
       if(slutt>pbY+1){ tg=cx.createLinearGradient(0,pbY,0,slutt);
-        tg.addColorStop(0,"rgba(63,125,78,.85)"); tg.addColorStop(0.45,"rgba(63,125,78,.58)");
-        tg.addColorStop(0.80,"rgba(63,125,78,.10)"); tg.addColorStop(1,"rgba(63,125,78,0)"); }
-      cx.strokeStyle=tg||"rgba(63,125,78,.8)"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(pbX,Math.max(pbY,-10)); cx.lineTo(pbX,Math.min(slutt,H+20)); cx.stroke();
+        tg.addColorStop(0,"rgba(126,209,101,1)"); tg.addColorStop(0.45,"rgba(126,209,101,.72)");
+        tg.addColorStop(0.80,"rgba(126,209,101,.14)"); tg.addColorStop(1,"rgba(126,209,101,0)");
+        tm=cx.createLinearGradient(0,pbY,0,slutt);
+        tm.addColorStop(0,"rgba(16,44,26,.45)"); tm.addColorStop(0.45,"rgba(16,44,26,.30)");
+        tm.addColorStop(0.80,"rgba(16,44,26,.06)"); tm.addColorStop(1,"rgba(16,44,26,0)"); }
+      cx.beginPath(); cx.moveTo(pbX,Math.max(pbY,-10)); cx.lineTo(pbX,Math.min(slutt,H+20));
+      cx.strokeStyle=tm||"rgba(16,44,26,.42)"; cx.lineWidth=4.5; cx.stroke();
+      cx.strokeStyle=tg||"rgba(126,209,101,.92)"; cx.lineWidth=2; cx.stroke();
       if(blaaseImg.complete&&blaaseImg.naturalWidth&&pbY>-20&&pbY<H+20){ var bh2=mn*0.055, bw2=bh2*blaaseImg.naturalWidth/blaaseImg.naturalHeight;
         cx.drawImage(blaaseImg,pbX-bw2/2,pbY-bh2*0.5,bw2,bh2); } // halvveis nede i sjøen
     });
@@ -4011,10 +4071,37 @@ function drawFangstPaaRipa(bx,by,bw,bh,bTilt){
   cx.drawImage(im, -bw*0.19-w*0.5, -bh*0.17-h*0.5, w, h);
   cx.restore();
 }
+// Munnen ligg IKKJE midt i spriten. Målt over alle 37 fiskebileta ligg snuten i snitt
+// 5 % — og på rognkall, brosme og hyse heile 10 % — UNDER biletmidten. drawImage set
+// MIDTEN på kroken, så sluken hamna i panna på fisken i staden for i kjeften.
+// Vi les alfakanalen langs den leiande kanten éin gong per bilete og løftar fisken
+// tilsvarande. Målt frå sjølve kunsten, så nye fiskebilete rettar seg sjølve.
+var munnYCache={};
+function munnY(im){
+  if(!im||!im.complete||!im.naturalWidth)return 0.5;
+  var nk=im.src; if(munnYCache[nk]!=null)return munnYCache[nk];
+  var v=0.5;
+  try{
+    var mw=64, mh=Math.max(1,Math.round(mw*im.naturalHeight/im.naturalWidth));
+    var c=document.createElement("canvas"); c.width=mw; c.height=mh;
+    var q=c.getContext("2d"); q.drawImage(im,0,0,mw,mh);
+    var d=q.getImageData(0,0,mw,mh).data, x0=-1;
+    for(var x=0;x<mw&&x0<0;x++)for(var y=0;y<mh;y++)if(d[(y*mw+x)*4+3]>40){x0=x;break;}
+    if(x0>=0){ var kant=Math.max(x0+1,Math.round(x0+mw*0.08)), sum=0, tal=0;
+      for(var x2=x0;x2<kant;x2++)for(var y2=0;y2<mh;y2++)if(d[(y2*mw+x2)*4+3]>40){sum+=y2;tal++;}
+      if(tal)v=(sum/tal+0.5)/mh; }
+  }catch(e){}
+  // Aldri meir enn 18 % frå midten, same kva målinga skulle finne på å seie.
+  v=Math.max(0.32,Math.min(0.68,v)); munnYCache[nk]=v; return v;
+}
 function drawSwim(x,y,f,angle,flip,gold,len,munnPivot){ var im=fiskBilde(f), tw=fishScale(f,len);
   var vagg=Math.sin(bob*3.1+x*0.055); // −1..1, ute av takt fra fisk til fisk
   cx.save(); cx.translate(x,y); cx.rotate((angle||0)+vagg*0.035); if(flip)cx.scale(-1,1);
-  if(munnPivot)cx.translate(tw*0.44,0); // kroken sitter i MUNNEN: sprellet dreier om hodet, ikke om buken (sprites peker mot venstre)
+  // kroken sitter i MUNNEN: sprellet dreier om hodet, ikke om buken (sprites peker mot venstre).
+  // x-leddet er uendret (0,44 = munnviken, ikke snutespissen — eierens godkjente uttrykk);
+  // y-leddet er nytt og løfter fisken så kjeften møter kroken. Begge ligger i fiskens
+  // eget, roterte koordinatsystem, så munnen blir stående i ro når den spreller.
+  if(munnPivot)cx.translate(tw*0.44, -(munnY(im)-0.5)*tw*((im&&im.naturalWidth)?im.naturalHeight/im.naturalWidth:0.4));
   if(gold)cx.filter="sepia(1) saturate(2.4) hue-rotate(-12deg) brightness(1.12)"; // gyllen fisk-tint
   if(im&&im.complete&&im.naturalWidth){ var th=tw*im.naturalHeight/im.naturalWidth;
     var sw=tw*(1-vagg*0.022), sh2=th*(1+vagg*0.05); // klem og strekk på tvers — volumet holdes
@@ -4781,6 +4868,14 @@ $("#streakLukk").onclick=function(){ modal("streakModal",false); }; // lukker ma
 $("#catchKeep").onclick=function(){resolveCatch(true)}; $("#catchRelease").onclick=function(){resolveCatch(false)};
 $("#catchAgn").onclick=function(){resolveCatch("agn")};
 document.querySelectorAll("#depthsel button").forEach(function(b){ b.onclick=function(){ if(phase!=="idle")return; setDepth(+b.dataset.d); }; });
+// Trykk hvor som helst fjerner en beskjed. Boksen har fortsatt pointer-events:none,
+// så trykket blir IKKE stjålet fra snella eller kroken — du kan kroke fisken og bli
+// kvitt beskjeden i samme bevegelse. Beskjeder MED knapp (noticeLaas) står i fred.
+document.addEventListener("pointerdown", function(){
+  if(noticeLaas || !noticeFra || Date.now()-noticeFra<700) return; // 0,7 s til å oppdage at den kom
+  var nn=$("#notice"); if(!nn||!nn.classList.contains("on"))return;
+  nn.classList.remove("on"); noticeFra=0; if(noticeT)clearTimeout(noticeT);
+}, true);
 $("#actionBtn").onclick=function(){ if(phase==="idle") cast(); else if(phase==="bite"){ tryHook(); } }; // krok settes i det du griper snella
 $("#potBtn").onclick=function(){ if(phase!=="idle")return; Snd.click(); setPot("k"); };
 $("#potPull").onclick=function(){ if(phase!=="idle")return; Snd.click(); pullPot("k"); };
