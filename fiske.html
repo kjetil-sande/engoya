@@ -171,6 +171,7 @@
   #hud{transition:opacity .45s ease}
   #sea.fishing #hud{opacity:0;pointer-events:none} /* menyen fader bort mens snøret står ute — full ro på havet */
   #sea.fishing #notice{opacity:0;transition:opacity .3s}
+  #actionBtn{touch-action:none}   /* ELLES tek Chrome på Android gesten som rulling og slepper sveiven */
   .actionbtn{width:min(90%,340px);box-sizing:border-box;text-align:center;padding-top:19px;padding-bottom:19px;font-size:18px}
   /* Botnraden: sluksettet til venstre, kastet til høgre. Begge i tommelbuen. */
   .kastrad{display:flex;gap:8px;align-items:stretch;width:min(90%,340px);box-sizing:border-box}
@@ -349,8 +350,20 @@
   .ringknapp .avvis{background:#b3402c}
   .ringknapp .svar{background:#2f8f4e}
   .ringknapp button:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.3)}
-  @keyframes ringSkjelv{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
-  #ringModal.on .ringtopp img{animation:ringSkjelv 1.1s ease-in-out infinite}
+  /* Pulserende ringer utover, som et anrop. Bildet står stille — ansiktet
+     skal kunne leses, og et vuggende portrett så ut som fiskeren frøys. */
+  .ringtopp .rbilde{position:relative;display:inline-block;line-height:0}
+  .ringtopp .rbilde::before,.ringtopp .rbilde::after{content:"";position:absolute;
+    left:50%;top:50%;width:132px;height:132px;margin:-66px 0 0 -66px;border-radius:50%;
+    border:3px solid #7fd4a8;opacity:0;pointer-events:none}
+  #ringModal.on .rbilde::before{animation:ringPuls 1.9s ease-out infinite}
+  #ringModal.on .rbilde::after{animation:ringPuls 1.9s ease-out infinite .95s}
+  @keyframes ringPuls{
+    0%{transform:scale(1);opacity:.85}
+    70%{opacity:.12}
+    100%{transform:scale(1.85);opacity:0}}
+  @media (prefers-reduced-motion: reduce){ #ringModal.on .rbilde::before,
+    #ringModal.on .rbilde::after{animation:none} }
   /* Andelsvalet: fem storleikar, og dei du ikkje har råd til er slått av. */
   .lottrad{display:flex;flex-wrap:wrap;gap:6px;padding:0 13px 4px}
   .lottrad button{flex:1 1 calc(33.33% - 4px);border:2px solid var(--paper-2);background:#fff8ea;
@@ -673,10 +686,10 @@
         <button id="openBook" title="Fangstboka"><img src="spill/assets/fangstbok.png" class="di" onerror="this.outerHTML='<span class=&quot;di e&quot;>📖</span>'" alt=""><span class="t">Boka</span></button>
       </div>
       <div class="depthsel" id="depthsel">
-        <button data-d="0" class="on">Grunt<small>0–50 m</small></button>
-        <button data-d="1">Mellomdyp<small>50–150 m</small></button>
-        <button data-d="2">Dypt<small>150–300 m</small></button>
-        <button data-d="3" style="display:none">Djuphavet<small>300–500 m</small></button>
+        <button data-d="0" class="on">Grunt<small>0–50 m · ⛽1</small></button>
+        <button data-d="1">Mellomdyp<small>50–150 m · ⛽2</small></button>
+        <button data-d="2">Dypt<small>150–300 m · ⛽2</small></button>
+        <button data-d="3" style="display:none">Djuphavet<small>300–500 m · ⛽4</small></button>
       </div>
       <div class="kastrad" id="kastrad">
         <button id="hudLure" title="Sluksettet — velg agn og sluk"><img id="lureBilde" src="spill/assets/fiskeskrin.png" class="di" onerror="this.src='spill/assets/fiskeskrin.png'" alt=""><span class="t" id="lureNavn">Sluksett</span></button>
@@ -781,7 +794,7 @@
 
   <!-- INNKOMANDE ANROP -->
   <div class="modal" id="ringModal"><div class="card center">
-    <div class="ringtopp"><img id="ringAvatar" alt="" onerror="this.style.visibility='hidden'">
+    <div class="ringtopp"><span class="rbilde"><img id="ringAvatar" alt="" onerror="this.style.visibility='hidden'"></span>
       <div class="rn" id="ringNavn"></div><div class="rb" id="ringBaat"></div>
       <div class="rs" id="ringStatus">RINGER …</div></div>
     <div class="ringknapp"><button class="avvis" id="ringAvvis">Ikke svar</button>
@@ -1603,7 +1616,7 @@ function startGame(){
 function cast(){
   if(phase!=="idle")return;
   if(document.querySelector(".modal.on"))return; // ikke kast bak en åpen popup
-  var needF = [1,2,2,3][depth] + (P.svc>250?1:0) + (smorPct()<=0?1:0); // bensin etter AVSTAND: Grunt ligger rett utenfor øya, Djuphavet langt ute
+  var needF = [1,2,2,4][depth] + (P.svc>250?1:0) + (smorPct()<=0?1:0); // bensin etter AVSTAND: Grunt ligger rett utenfor øya, Djuphavet langt ute
   // (+1 for hostende motor, +1 for begrodd skrog)
   if(P.fuel<needF){
     if(P.kr<17){ P.fuel=Math.min(P.fuelMax,P.fuel+8); hud(); saveAll(); notice("Blakk og tom — naboen spanderte litt bensin ⛽"); return; } // aldri softlock
@@ -4459,8 +4472,11 @@ $("#potPullL").onclick=function(){ if(phase!=="idle")return; Snd.click(); pullPo
 $("#potTake").onclick=function(){ modal("potModal",false); updatePotBtn(); };
 // hold-to-reel
 var ab=$("#actionBtn");
-function down(e){ if(phase==="bite"){ tryHook(); holding=true; e.preventDefault(); return; } // krok i det fingeren treffer — hele 1,6 s-vinduet
-  if(phase==="reel"||phase==="pilkfiske"||phase==="wait"){holding=true; e.preventDefault();} }
+function fang(e){ // pekaren følgjer knappen sjølv om fingeren glir — utan dette
+  try{ if(e && e.pointerId!=null && ab.setPointerCapture) ab.setPointerCapture(e.pointerId); }catch(_){}
+}
+function down(e){ if(phase==="bite"){ tryHook(); holding=true; fang(e); e.preventDefault(); return; } // krok i det fingeren treffer — hele 1,6 s-vinduet
+  if(phase==="reel"||phase==="pilkfiske"||phase==="wait"){holding=true; fang(e); e.preventDefault();} }
 function up(){ if(holding&&phase==="pilkfiske")pilkPump(); holding=false; }
 ab.addEventListener("pointerdown",down); window.addEventListener("pointerup",up);
 window.addEventListener("pointercancel",up); window.addEventListener("blur",up); // slipp SVEIV om nettleseren avbryter pekeren

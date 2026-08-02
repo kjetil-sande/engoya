@@ -13,6 +13,7 @@ const BUTIKKER = [
   { bransje: "Møbler", sok: "Møbelringen Dybvik Ørnes" },
   { bransje: "Kiosk", sok: "Mix Ørnes" },
   { bransje: "Bil og verksted", sok: "Jensen Service AS Ørnes" },
+  { bransje: "Apotek", sok: "Vitusapotek Meløy" },
 ];
 
 // Ørnes sentrum — brukes som geografisk bias for tekstsøket
