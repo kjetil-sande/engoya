@@ -21,18 +21,70 @@ const dagNr = (n) => {        // YYYYMMDD → dager siden 1970, for enkel avstan
   return Math.floor(Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8)) / DAG);
 };
 
+// ── Døra ─────────────────────────────────────────────────────────────────────
+// ÉN dør om gangen, valgt av hva som er satt opp i Netlify:
+//
+//   PANEL_EPOST satt   →  Google-innlogging. Nøkkelen ignoreres helt.
+//   bare STATS_NOKKEL  →  delt nøkkel (som før — så panelet ikke dør under omleggingen)
+//   ingen av delene    →  stengt, 503. Faller ALDRI åpent.
+//
+// Selve tokenet valideres av Google på oauth2.googleapis.com/tokeninfo. Det er et
+// bevisst valg framfor å verifisere JWT-signaturen her: den koden er kort å skrive
+// og lett å skrive subtilt feil (glemt aud-sjekk, godtatt alg, utløp som ikke
+// leses), og dette er et panel som åpnes noen ganger i uka. Google gjør
+// kryptografien; vi sjekker at svaret gjelder VÅR app og RIKTIG person.
+const GOOGLE_TOKENINFO = "https://oauth2.googleapis.com/tokeninfo?id_token=";
+
+async function googleDoer(req) {
+  const lovlege = (process.env.PANEL_EPOST || "").split(",")
+    .map((e) => e.trim().toLowerCase()).filter(Boolean);
+  const klientId = (process.env.GOOGLE_CLIENT_ID || "").trim();
+  if (!klientId) return { feil: "GOOGLE_CLIENT_ID mangler i Netlify.", status: 503 };
+
+  const auth = req.headers.get("authorization") || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  // Klient-ID-en sendes med tilbake så panelet slipper å ha den hardkodet. Den er
+  // offentlig av design — den står i klartekst på hver eneste Google-innloggingsside.
+  if (!token) return { feil: "Logg inn med Google.", status: 401, klientId };
+
+  let k;
+  try {
+    const r = await fetch(GOOGLE_TOKENINFO + encodeURIComponent(token));
+    if (!r.ok) return { feil: "Innloggingen ble ikke godtatt.", status: 401 };
+    k = await r.json();
+  } catch { return { feil: "Fikk ikke kontakt med Google.", status: 503 }; }
+
+  // Google har alt sjekket signatur og utløp. Vi sjekker at tokenet er utstedt til
+  // OSS — uten aud-sjekken ville et gyldig token fra en hvilken som helst annen
+  // Google-app sluppet inn — og at det er en av de tillatte adressene.
+  if (k.aud !== klientId) return { feil: "Nei.", status: 401 };
+  if (k.iss !== "accounts.google.com" && k.iss !== "https://accounts.google.com")
+    return { feil: "Nei.", status: 401 };
+  if (String(k.email_verified) !== "true") return { feil: "Nei.", status: 401 };
+  if (!lovlege.includes(String(k.email || "").toLowerCase()))
+    return { feil: "Denne kontoen har ikke tilgang.", status: 403 };
+  return null;    // slipp inn
+}
+
 export default async (req) => {
-  const fasit = process.env.STATS_NOKKEL;
-  if (!fasit) {
-    return Response.json({ feil: "Panelet er ikke satt opp: STATS_NOKKEL mangler i Netlify." },
-      { status: 503 });
+  const medGoogle = !!(process.env.PANEL_EPOST || "").trim();
+  if (medGoogle) {
+    const nei = await googleDoer(req);
+    if (nei) return Response.json({ feil: nei.feil, google: true, klientId: nei.klientId },
+      { status: nei.status });
+  } else {
+    const fasit = process.env.STATS_NOKKEL;
+    if (!fasit) {
+      return Response.json({ feil: "Panelet er ikke satt opp: hverken PANEL_EPOST eller STATS_NOKKEL er satt i Netlify." },
+        { status: 503 });
+    }
+    const gitt = req.headers.get("x-nokkel") || "";
+    // Sammenligning i konstant tid er overkill her, men koster ingenting.
+    let lik = gitt.length === fasit.length;
+    for (let i = 0; i < Math.max(gitt.length, fasit.length); i++)
+      if (gitt.charCodeAt(i) !== fasit.charCodeAt(i)) lik = false;
+    if (!lik) return Response.json({ feil: "Nei." }, { status: 401 });
   }
-  const gitt = req.headers.get("x-nokkel") || "";
-  // Sammenligning i konstant tid er overkill her, men koster ingenting.
-  let lik = gitt.length === fasit.length;
-  for (let i = 0; i < Math.max(gitt.length, fasit.length); i++)
-    if (gitt.charCodeAt(i) !== fasit.charCodeAt(i)) lik = false;
-  if (!lik) return Response.json({ feil: "Nei." }, { status: 401 });
 
   const lager = getStore({ name: "familierekorder", consistency: "strong" });
   const naa = Date.now();
