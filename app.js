@@ -1647,7 +1647,12 @@ async function loadButikker() {
               b.apenNa === true ? `<span class="butikk-badge er-apen">Åpent nå</span>`
               : b.apenNa === false ? `<span class="butikk-badge er-stengt">Stengt</span>`
               : `<span class="butikk-badge">–</span>`;
-            const dagens = (b.ukedager[idag] || "").replace(/^[^:]+:\s*/, "");
+            let dagens = (b.ukedager[idag] || "").replace(/^[^:]+:\s*/, "");
+            // «Åpent nå» og «Stengt» på samme rad er alltid feil for leseren, uansett
+            // hvem som har rett. Det kan skje når Google har spesialåpent (helligdag)
+            // som ikke står i ukedagsteksten. openNow er det LEVENDE signalet, så det
+            // vinner — og da sier vi heller ingenting om dagens tider enn noe motstridende.
+            if (b.apenNa === true && /stengt/i.test(dagens)) dagens = "";
             // Er den stengt, er det NÅR den åpner igjen som er nyttig — ikke at den er stengt.
             const neste = b.apenNa === false ? nesteApning(b.ukedager, naa) : null;
             const inner = `
