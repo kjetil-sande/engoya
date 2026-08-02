@@ -494,6 +494,17 @@
   .stars img{width:12px;height:12px;image-rendering:pixelated} /* gjelder også utenfor kortene (artsdetaljen) */
   .slot .stars img{width:12px;height:12px;image-rendering:pixelated}
   .famrec{margin-top:8px;padding:6px 10px;background:#fdf3d6;border:2px solid var(--gold);border-radius:9px;font-weight:700;font-size:13px}
+  /* Nettlesarane slepp ikkje lyd gjennom før nokon har teke på skjermen. Difor
+     spør vi FØRST — då er trykket sjølve løyvet, og opninga kan starte med lyd. */
+  #lydvalg{position:absolute;left:50%;transform:translateX(-50%);bottom:14vh;z-index:8;
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+    width:min(92%,var(--lobbyspalte));transition:opacity .35s ease}
+  #lydvalg p{margin:0;font-weight:800;font-size:17px;color:#f6ecd0;
+    text-shadow:0 2px 0 rgba(6,20,26,.75),0 0 14px rgba(6,20,26,.9)}
+  #lydvalg .lydrad{display:flex;gap:10px;width:100%}
+  #lydvalg .lydrad .btn{flex:1;font-size:16px;padding:13px 10px}
+  #lydvalg.borte{opacity:0;pointer-events:none}
+  #menu.valt #lydvalg{display:none}
   .curtain{position:absolute;top:0;height:100%;width:53%;object-fit:cover;z-index:60;pointer-events:none;image-rendering:pixelated;display:none}
   #curtainL{left:0;transform:translateX(-104%);object-position:right center} /* takkete kant (med ring) vender mot midten */
   #curtainR{right:0;transform:translateX(104%);object-position:left center}
@@ -613,6 +624,9 @@
   <section class="screen on panstart svart" id="menu">
     <canvas id="skyCv"></canvas>
     <button class="iconbtn" id="muteBtnMenu" title="Lyd av/på" style="position:absolute;top:12px;right:12px;z-index:5">🔊</button>
+    <div id="lydvalg"><p>Vil du ha lyd?</p>
+      <div class="lydrad"><button class="btn gold" id="lydJa">🔊 Selvsagt!</button>
+        <button class="btn ghost" id="lydNei">Nei, takk</button></div></div>
     <img class="logo" id="logoImg" alt="Jakten på storkveita" style="display:none">
     <div class="logo-fallback" id="logoFallback">JAKTEN PÅ<small>STORKVEITA</small></div>
     <div class="who">
@@ -818,7 +832,7 @@ var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&
 var Snd=(function(){
   var ctx=null, muted=false, theme=null, ringtone=null, reelT=0;
   // Lobbyen: svakt → mellomsvakt. Ute på havet er sjøen 0,187 og måkane 0,22.
-  var LOBBY_HAV0=0.045, LOBBY_HAV1=0.115, LOBBY_FUGL0=0.030, LOBBY_FUGL1=0.085;
+  var LOBBY_HAV0=0.060, LOBBY_HAV1=0.155, LOBBY_FUGL0=0.050, LOBBY_FUGL1=0.170;
   var LOBBY_FADE=4200, TEMA_V=0.45, TEMA_FADE=2200;   // opninga er 1000 stille + 2800 pan
   var lobbyT=null, temaT=null, lobbyFerdig=false, TEMA_UT=1400;
   try{ muted = localStorage.getItem("storkveita-muted")==="1"; }catch(e){}
@@ -916,7 +930,13 @@ var Snd=(function(){
   function stopAllLoops(){ for(var k in loops)stopLoop(k); }
   function restartWanted(){ for(var k in loops)if(loops[k].want)startLoop(k); }
   return {
-    unlock:function(){ var c=AC(); if(c&&c.state!=="running"){try{c.resume()}catch(e){}} loadAll(); },
+    unlock:function(){ var c=AC();
+      if(c&&c.state!=="running"){
+        try{ var pr=c.resume();
+          if(pr&&pr.then)pr.then(function(){ for(var k in loops) if(loops[k].want){ stopLoop(k); startLoop(k); } });
+        }catch(e){}
+      }
+      loadAll(); },
     isMuted:function(){return muted;},
     setMuted:function(m){ muted=m; try{localStorage.setItem("storkveita-muted",m?"1":"0")}catch(e){}; if(theme)theme.muted=m; if(ringtone)ringtone.muted=m; if(m){stopAllLoops(); motorStop(0);} else restartWanted(); },
     ambienceOn:function(){ loadAll(); dykket=false; dypNa=0; this.settLoopVol("sea",regnNa?HAV_REGN:HAV); this.settLoopVol("bird",0.22); wantLoop("sea",true); wantLoop("bird",true); },
@@ -970,7 +990,8 @@ var Snd=(function(){
       this.fadeLoopVol("vindL", VIND_V*(vilVind?1:0)*d, 0.6);
       if(ned)this.fadeLoopVol("undervann", 0.05+0.29*dyp, 0.6); },
     overflateStille:function(){ return djupSone() && dykket && dypNa>0.8; }, // til enkeltlydar
-    _maal:function(){ var ut={sone:soneNa, dykket:dykket, dyp:dypNa, stille:this.overflateStille()};
+    _maal:function(){ var ut={sone:soneNa, dykket:dykket, dyp:dypNa, stille:this.overflateStille(),
+        tema:theme?{spelar:!theme.paused, vol:+theme.volume.toFixed(3)}:null};
       for(var k in loops){ var L=loops[k];
         ut[k]={vil:!!L.want, vol:+(L.vol||0).toFixed(4), gain:(L.node&&L.node.g)? +L.node.g.gain.value.toFixed(4) : null}; }
       return ut; },
@@ -1536,7 +1557,7 @@ function setDepth(d){
   if(typeof updatePotBtn==="function")updatePotBtn();
 }
 
-function toSea(){Snd.themeOff(); Snd.ambienceOn(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
+function toSea(){Snd.ambienceOn(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Kast ut"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase==="idle")setHint("📋 Rusten betaler +50 % for "+dk.n.toLowerCase()+" i dag. "+ZONE[dk.z]+" ("+DEPM[dk.z]+")."); },1200);
   setTimeout(visRekordKort, 2800); // familiens siste rekorder — én gang per økt, når båten har glidd inn
   setTimeout(streakVis, 4200);   // uhentet streak-gave (lukket med X) ligger klar til neste tur — aldri tapt
@@ -1622,6 +1643,7 @@ function cast(){
   else if(smorPct()<=0 && P.svc%45===11) notice("Skroget er begrodd og drar ekstra bensin — bunnsmørning hos Propell-Kjell 🐚");
   else if(Date.now()>P.havnNeste && P.svc%45===22) notice("Ørnes Båtforening purrer på havneavgiften ⚓ (betal hos Propell-Kjell)");
   P.fuel-=needF; hud(); saveAll(); Snd.cast(); castT=0.45; // ETT kast-animasjon
+  Snd.themeOff();               // fyrste kast: musikken sig ut, sjøen tek over
   phase="sink"; descend=0; rullSilhuett();
   var g=colGeom(), mn=Math.min(W,H);
   if(g){ lureW=g.wl+mn*0.05; lureTargetW=g.imgH*LTF[depth]-mn*0.04; // fra rett under overflata → like over bunn-dekoren
@@ -1700,6 +1722,7 @@ function storjeSeason(){ var m=new Date().getMonth(); return m>=6&&m<=9; } // st
 var lokkT=0, lokkOpp=0; // «lokking»: dra sluken litt opp mens fisken snuser — øker nappesjansen
 var pilkT=0, pilkKrav=12, pilkFangst=[], pilkHoldT=0; // pilkHoldT: hvor lenge dette draget har vart
 function startPilk(){ // juksa-teknikken: pump forsatsen gjennom stimen — min 10–15 s før småfisken hogger
+  Snd.themeOff();
   phase="pilkfiske"; pilkT=0; pilkKrav=10+Math.random()*5; pilkFangst=[]; pilkHoldT=0;
   setAction("PILK (hold)",true);
   $("#reelui").classList.add("on"); // MÅ med: utan denne står snella, spenn/dybde og strømpila skjult heile markpilkinga
@@ -2558,6 +2581,9 @@ function lineOutcome(t,soak){ // bunnline: kveitesjansen er BETRAKTELIG større 
     if(rng()<0.05*q) lines.push(lineFisk(rng,"kveite"));
     POOL=["torsk","sei","hyse","sandflyndre","skrubbe","lomre","steinbit","breiflabb"];
   }
+  var risiko=0.045+Math.min(0.11, Math.max(0,(soak-20*3600000)/(28*3600000))*0.11);
+  var u=rng();
+  if(u<risiko) return {lines:[], total:0, early:false, tapt:(u<risiko*0.34?"drift":"raid")};
   var krk=(P&&P.pots&&P.pots.lineKroker)||3;
   var n=Math.min(krk, Math.floor(q*(1+rng()*4)*(krk/3))); // 0–5 bunnfisk ved 3 kroker — flere kroker, mer fangst
   for(var i=0;i<n;i++) lines.push(lineFisk(rng,POOL[(rng()*POOL.length)|0]));
@@ -2601,7 +2627,11 @@ function pullPot(ty){ ty=ty||"k";
   $("#potTitle").textContent = ty==="l"?"🪢 Linetrekk":ty==="h"?"🦞 Hummerteinetrekk":"🦀 Teinetrekk";
   var L=$("#potList"); L.innerHTML="";
   if(!res.lines.length){
-    var tomMsg = ty==="l" ? "Tom line denne gangen — men kveita svømmer der ute et sted."
+    var tomMsg = ty==="l" ? (res.tapt==="raid"
+        ? "Krokene henger tomme og agnet er borte. Blåsa hadde flyttet seg noen meter, og tauet lå feil vei i sjøen — noen har vært her før deg og tatt fangsten."
+        : res.tapt==="drift"
+        ? "Lina lå ikke der du satte den. Du fant blåsa drivende et godt stykke unna, og krokene var reine — strømmen har tatt henne, og fangsten med."
+        : "Tom line denne gangen — men kveita svømmer der ute et sted.")
                  : ty==="h" ? (res.night===false?"Tom hummerteine — uten natt i sjøen er sjansen liten. La den stå over natta! 🌙"
                                               :"Tom hummerteine i natt. Hummeren er lunefull — prøv igjen!")
                           : "Tom teine denne gangen. Slik er teinefiske!";
@@ -4332,7 +4362,6 @@ document.querySelectorAll(".mappin").forEach(function(p){ p.onclick=function(){ 
 // lyd: lås opp Web Audio + start tema ved første trykk; mute-knapper; klikk-lyd på knapper
 document.addEventListener("gesturestart",function(e){e.preventDefault()}); document.addEventListener("gesturechange",function(e){e.preventDefault()}); // pinch-zoom reelt av (iOS)
 window.addEventListener("pointerdown",function(){ Snd.unlock(); },{passive:true}); // permanent: vekker lyden etter iOS-avbrudd
-window.addEventListener("pointerdown",function(){ if($("#menu").classList.contains("on"))Snd.lobbyLyd(true); });
 document.addEventListener("visibilitychange",function(){ if(!document.hidden)Snd.unlock(); });
 function lydIkon(){ var av=Snd.isMuted();
   var mm=$("#muteBtnMenu"); if(mm)mm.textContent=av?"🔇":"🔊";
@@ -4391,6 +4420,9 @@ window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("o
   // knapt vertikalt slingringsmonn. Utan dette ville opninga blitt 3,2 sekund stillbilete.
   var k0=lobbyKart(), tomPan = k0 && Math.abs(k0.romY)<40;
   var rolig = (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) || tomPan;
+  // Panoreringa startar ikkje før du har svart. Trykket ditt er det som gjer at
+  // lyden i det heile kan spelast — då slepp vi ei stum opning på iPhone.
+  function start(){
   if(rolig){ tilToppen(); panFerdig(); }
   else{
     setTimeout(tilToppen, VENT);
@@ -4402,6 +4434,18 @@ window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("o
       requestAnimationFrame(function(){ m.style.removeProperty("transition"); });
       panFerdig(); });
   }
+  }
+  var valt=false;
+  function svar(medLyd){ if(valt)return; valt=true;
+    Snd.setMuted(!medLyd);
+    if(medLyd)Snd.lobbyLyd(true);       // MÅ skje i sjølve trykket — elles blokkerer iOS
+    if(typeof lydIkon==="function")lydIkon();
+    var v=$("#lydvalg"); if(v){ v.classList.add("borte");
+      setTimeout(function(){ m.classList.add("valt"); }, 380); }
+    start();
+  }
+  $("#lydJa").addEventListener("click", function(){ svar(true); });
+  $("#lydNei").addEventListener("click", function(){ svar(false); });
   var vist=false, vis=function(tekst){ if(vist)return; vist=true;
     if(tekst)$("#logoFallback").style.display="block"; logoOk=true; land(); };
   setTimeout(function(){ vis(true); },4000); // treg linje? da slipper vi folk inn med tekstlogoen
@@ -4412,10 +4456,6 @@ window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("o
 /* ---------- Start ---------- */
 window.GAME={DB:DB,FISH:FISH,cast:cast,bite:commitBite,streak:streakTikk,famTaImot:famTaImot,bycatch:potBycatch,FUNN:FUNN,geom:function(){var g=colGeom();return g?{imgH:g.imgH,wl:g.wl,maxScroll:g.maxScroll,camY:camY,H:H,WLF:WLF[depth],HIMMEL:HIMMEL[depth],natH:g.img.naturalHeight,wlY:g.wl-camY}:null},lyd:function(){return Snd._maal()},dykkTest:function(n,d,z){Snd.dykk(n,d,z)},vaerTest:function(r2,v){Snd.vaerLyd(r2,v)},strom:stromNaa,stromF:stromFaktor,setDyp:function(d){depth=d},baro:baroTraume,havmusOppe:havmusOppe,iSona:iSona,ord:RUSTEN_ORD,state:function(){return{phase:phase,depth:depth,kr:P&&P.kr,fuel:P&&P.fuel,fish:sceneFish?sceneFish.f.k:null,fishLen:sceneFish?sceneFish.sizeLen:null,hooked:hooked?hooked.k:null,hookedLen:hookedLen||null,pilk:phase==="pilkfiske"?{t:+pilkT.toFixed(1),krav:+pilkKrav.toFixed(1),n:pilkFangst.length,hold:holding}:null}}};
 renderPlayers(); resize(); requestAnimationFrame(loop);
-// Musikken og sjøen skal ligge der når sida kjem opp, ikkje vente på at nokon
-// vel fiskar. Nettlesarane blokkerer autoplay til fyrste trykk — då tek
-// pointerdown-handteringa under over, og fadet startar fyrst når lyden faktisk går.
-Snd.lobbyLyd(true);
 })();
 </script>
 </body>
