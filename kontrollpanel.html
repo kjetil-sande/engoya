@@ -62,6 +62,8 @@
     button{background:var(--gull);color:#231a06;border:0;border-radius:9px;
       padding:10px 16px;font-weight:700;cursor:pointer;margin-top:9px}
     .melding{background:var(--kort);border:1px solid var(--kant);border-radius:12px;padding:16px}
+    #gbtn{margin-top:12px;min-height:44px}
+    .melding .liten{color:var(--daempa);font-size:.82rem;margin-top:10px}
     .fot{margin-top:26px;color:var(--daempa);font-size:.78rem;line-height:1.5}
     a{color:var(--gull)}
   </style>
@@ -81,6 +83,9 @@ var NOKKEL = "storkveita-panelnokkel";
 var $ = function(s){ return document.querySelector(s); };
 var esc = function(t){ var d=document.createElement("div"); d.textContent=t==null?"":t; return d.innerHTML; };
 
+// Panelet vet ikke selv hvilken dør serveren er satt opp med — det spør. Svaret
+// på et kall uten legitimasjon forteller det: er PANEL_EPOST satt i Netlify, ber
+// serveren om Google og sender med klient-ID-en.
 function spor(feil){
   $("#ut").innerHTML =
     '<div class="melding"><p>' + (feil || "Skriv panelnøkkelen for å se tallene.") + '</p>' +
@@ -92,6 +97,46 @@ function spor(feil){
     hent();
   };
   $("#n").onkeydown = function(e){ if(e.key === "Enter") $("#g").click(); };
+}
+
+// ── Google-innlogging ────────────────────────────────────────────────────────
+// Tokenet lagres ALDRI. Det lever i en variabel til fanen lukkes, og det varer
+// uansett bare en time. Et panel man må logge inn på igjen etter en time er
+// riktig for noe som viser hvordan det går med andres barn.
+var gToken = null;
+function googleSpor(klientId, feil){
+  $("#ut").innerHTML =
+    '<div class="melding"><p>' + (feil || "Logg inn for å se tallene.") + '</p>' +
+    '<div id="gbtn"></div>' +
+    '<p class="liten">Bare kontoen som står oppført i Netlify slipper inn. ' +
+    'Innloggingen varer én time og lagres ikke.</p></div>';
+  if(!klientId){
+    $("#ut").innerHTML = '<div class="melding">Google-innlogging er halvveis satt opp: '
+      + 'GOOGLE_CLIENT_ID mangler i Netlify.</div>';
+    return;
+  }
+  var start = function(){
+    if(!(window.google && google.accounts && google.accounts.id)){
+      $("#gbtn").innerHTML = '<span class="liten">Fikk ikke lastet Google-innloggingen. '
+        + 'Sjekk nettet og last siden på nytt.</span>';
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: klientId,
+      callback: function(svar){ gToken = svar.credential; hent(); }
+    });
+    google.accounts.id.renderButton($("#gbtn"),
+      { theme: "filled_blue", size: "large", text: "signin_with", locale: "no", width: 260 });
+  };
+  if(window.google && window.google.accounts){ start(); return; }
+  var sc = document.createElement("script");
+  sc.src = "https://accounts.google.com/gsi/client";
+  sc.async = true; sc.defer = true;
+  sc.onload = start;
+  sc.onerror = function(){
+    $("#gbtn").innerHTML = '<span class="liten">Fikk ikke lastet Google-innloggingen.</span>';
+  };
+  document.head.appendChild(sc);
 }
 
 function tid(min){
@@ -312,15 +357,29 @@ function tegn(d){
 function hent(){
   var n = "";
   try{ n = localStorage.getItem(NOKKEL) || ""; }catch(e){}
-  if(!n) return spor();
+  var h = {};
+  if(gToken) h["Authorization"] = "Bearer " + gToken;
+  else if(n) h["x-nokkel"] = n;
+
   $("#ut").innerHTML = '<div class="melding">Henter …</div>';
-  fetch("/.netlify/functions/statistikk", { headers: { "x-nokkel": n } })
-    .then(function(r){
-      if(r.status === 401){ try{ localStorage.removeItem(NOKKEL); }catch(e){}
-        spor("Feil nøkkel. Prøv igjen."); return null; }
-      return r.json();
+  fetch("/.netlify/functions/statistikk", { headers: h })
+    .then(function(r){ return r.json().then(function(d){ return { status: r.status, d: d }; }); })
+    .then(function(sv){
+      var d = sv.d || {};
+      // Serveren ber om Google → vis knappen, uansett hva som lå lagret fra før.
+      if(d.google){
+        gToken = null;
+        try{ localStorage.removeItem(NOKKEL); }catch(e){}
+        googleSpor(d.klientId, sv.status === 403
+          ? "Den kontoen har ikke tilgang. Prøv en annen."
+          : (n || gToken ? "Logg inn på nytt." : null));
+        return;
+      }
+      if(sv.status === 401){ try{ localStorage.removeItem(NOKKEL); }catch(e){}
+        spor(n ? "Feil nøkkel. Prøv igjen." : null); return; }
+      if(d.feil){ $("#ut").innerHTML = '<div class="melding">' + esc(d.feil) + '</div>'; return; }
+      tegn(d);
     })
-    .then(function(d){ if(!d) return; if(d.feil){ spor(esc(d.feil)); return; } tegn(d); })
     .catch(function(){ $("#ut").innerHTML =
       '<div class="melding">Fikk ikke kontakt med serveren. Panelet virker bare på engoya.no, ikke lokalt.</div>'; });
 }

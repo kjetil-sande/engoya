@@ -127,9 +127,10 @@ PY
 
 echo ""
 echo "── Server og panel ──────────────────────────────────"
-node verktoy-servertest.mjs | tail -1
-node verktoy-paneltest.mjs  | tail -1
-node verktoy-uketest.mjs    | tail -1
+node verktoy-servertest.mjs      | tail -1
+node verktoy-paneltest.mjs       | tail -1
+node verktoy-uketest.mjs         | tail -1
+node verktoy-innloggingstest.mjs | tail -1
 
 echo ""
 echo "═══ ALT GRØNT ═══"

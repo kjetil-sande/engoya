@@ -99,9 +99,31 @@ Symptom: spillet virker, men rekorder synker ikke og fiskerkortet svarer ikke.
 
 ## 7. Kontrollpanelet
 
-`engoya.no/kontrollpanel.html` — krever `STATS_NOKKEL`, som settes i
-Netlify → Site configuration → Environment variables. Uten den svarer panelet
-503 og viser ingenting. Det faller aldri åpent.
+`engoya.no/kontrollpanel.html`. Døra settes i Netlify → Site configuration →
+Environment variables, og serveren velger selv hvilken som gjelder:
+
+| Satt | Dør |
+|---|---|
+| `PANEL_EPOST` + `GOOGLE_CLIENT_ID` | Google-innlogging. Nøkkelen ignoreres. |
+| bare `STATS_NOKKEL` | Delt nøkkel (som før) |
+| ingenting | Stengt, 503 |
+
+Panelet faller aldri åpent. `PANEL_EPOST` tåler flere adresser skilt med komma.
+
+**Slik setter du opp Google-innloggingen** (engangsjobb, ti minutter):
+
+1. `console.cloud.google.com` → nytt prosjekt, kall det «Storkveita»
+2. **APIs & Services → OAuth consent screen** → External → fyll inn navn og din
+   e-post. Du trenger ikke sende den til godkjenning — så lenge appen står som
+   «Testing» og du legger deg selv inn under **Test users**, virker den.
+3. **Credentials → Create credentials → OAuth client ID → Web application**
+4. Under **Authorized JavaScript origins**, legg inn `https://engoya.no`
+   (og `https://fiskespillet.no` når den tid kommer). Ingen redirect-URI trengs.
+5. Kopier klient-ID-en (den lange som slutter på `.apps.googleusercontent.com`)
+6. I Netlify: `GOOGLE_CLIENT_ID` = den, `PANEL_EPOST` = e-posten din
+7. Slett `STATS_NOKKEL` når du har fått logget inn én gang
+
+Innloggingen varer én time og lagres ikke i nettleseren.
 
 Panelet er også en diagnose: faller «aktive i dag» til null en dag det pleier å
 være folk der, er noe galt selv om spillet ser fint ut hos deg.
