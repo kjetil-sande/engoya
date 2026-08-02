@@ -277,3 +277,55 @@ Chunky and readable: it must be recognisable at 44 pixels high, so no fine text,
 no tiny screws, no logos. Strict pixel grid, hard-edged pixels, no anti-aliasing,
 no gradients, ordered dithering only, limited 24-colour palette. Fully transparent
 background, no shadow, no frame.
+
+---
+
+## 12. Sildehekle
+
+Fil: **`sluk-sildehekle.png`** — ca. **400 × 400**, transparent
+
+Ny sluk hos Rusten, 70 kr. Vises i sluksettet og i butikklista, samme størrelse
+som de andre slukene. Teknikken er beskrevet av eierens svigerfar: man «hekler»
+sild med et oppheng med små kroker og røde perler som ligner tyttebær. Båten står
+i ro og man pumper hekla opp og ned gjennom stimen.
+
+**Merk:** dette er ikke én sluk, det er en *forsats* — flere kroker på samme
+tafs. Den må lese som en rekke, ikke som et enkelt blikk, ellers ser den ut som
+alle de andre slukene i lista. Sammenlign med `sluk-markpilk` som er samme type
+redskap; de to skal kunne skilles fra hverandre på et lite ikon, og det er de
+røde perlene som gjør jobben.
+
+16-bit pixel art of a **Norwegian herring rig (sildehekle)** hanging vertically:
+a single vertical line with **five short side-branches**, evenly spaced, each
+ending in a small silver hook dressed with a **bright red bead** and a wisp of
+white or silver tinsel. A small lead weight at the very bottom. The red beads are
+the whole point — they must read clearly as a row of red dots against the line,
+because that is what tells the rig apart from the plain lure icons. Muted silver
+and gunmetal for line and hooks, **strong red** for the beads, a hint of pale
+tinsel. Chunky and readable: it must work at 44 pixels tall, so no fine knots, no
+text, no more than five branches. Strict pixel grid, hard-edged pixels, no
+anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette.
+Fully transparent background, no shadow, no frame.
+
+---
+
+## 13. Sild
+
+Fil: **`sild.png`** — ca. **512 × 256**, transparent
+
+Ny art. Fram til fila finnes brukes makrellen som stand-in (`LIKNER`), så
+ingenting brekker — men da ser silda ut som en makrell, og de to er lette å
+skille i virkeligheten.
+
+**Merk:** silda skal peke mot VENSTRE, som alle de andre fiskene i spillet.
+Koden måler selv hvor munnen sitter i bildet, så du trenger ikke tenke på
+plassering i ramma — men fisken må fylle bredden.
+
+16-bit pixel art of an **Atlantic herring** in side profile, facing **left**.
+Slender, laterally compressed body with a deeply forked tail and a single small
+dorsal fin set midway along the back. **Bright silver flanks with a distinct
+blue-green sheen along the back**, white belly, large dark eye, no spots and no
+stripes — the clean silver is what separates her from the mackerel, which has
+dark wavy bars. Large, visible, slightly loose scales catching the light. Strict
+pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering
+only, limited 24-colour palette. Fully transparent background, no shadow, no frame.

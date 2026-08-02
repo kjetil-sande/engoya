@@ -1148,6 +1148,10 @@ var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
  {k:"lomre",n:"Lomre",z:0,pull:0.6,w:8,len:[24,45],kg:9,pris:80,col:"#8f7346",shape:"flat",bunn:true,rar:1,fight:0.25,dg:[0.5,1.0,1.2,1.0],syn:true},
  {k:"torsk",n:"Torsk",z:1,zb:2,zbw:40,pull:1.0,w:90,len:[40,95],kg:10,pris:200,col:"#8a7d55",shape:"cod",rar:0,fight:0.25,min:55,dg:[0.8,1.6,1.0,1.6],syn:true,ss:[1.2,1.6,1.6,1.4,1.0,0.9,0.8,0.8,0.9,1.0,1.1,1.1],str:0.3}, // kg kalibrert: 90 cm ≈ 8 kg; zbw = dempet vekt i sekundærsonen (skreien står dypt, men brosma eier dypet)
  {k:"hyse",n:"Hyse",z:1,pull:0.8,w:70,len:[32,62],kg:6,pris:170,col:"#9aa0a6",shape:"cod",rar:0,fight:0.15,min:40,dg:[0.8,1.2,1.0,1.2],syn:true,str:0.3},
+ // Sild: liten, pelagisk, går i tette stimer. Lav w — du får henne av og til på vanlig
+ // sluk, men hekla er det som virkelig henter henne opp. min:20 er ekte minstemål nord
+ // for 62°N, og Meløy ligger godt nord for det.
+ {k:"sild",n:"Sild",z:0,zb:1,zbw:14,pull:0.25,w:30,len:[20,36],kg:9,pris:8,col:"#9fb4c4",shape:"streak",rar:0,fight:0.1,min:20,dg:[0.9,1.2,0.7,1.3],syn:true,ss:[1.5,1.4,1.2,0.8,0.5,0.4,0.4,0.5,0.7,1.0,1.3,1.5]},
  {k:"blastal",n:"Blåstål",z:0,zb:1,zbw:10,pull:0.8,w:26,len:[24,40],kg:6,pris:180,col:"#2f6ea0",shape:"deep",rar:1,fight:0.35,dg:[0.05,0.4,1.3,0.4],syn:true,ss:[0.05,0.05,0.1,0.3,0.7,1.2,1.5,1.5,1.2,0.5,0.1,0.05],str:0.15},
  {k:"lysing",n:"Lysing",z:1,pull:1.2,w:8,len:[45,100],kg:7,pris:220,col:"#8b8f96",shape:"torpedo",rar:1,fight:0.45,min:30,dg:[2.0,1.2,0.7,1.4],str:0.85},
  {k:"uer",n:"Uer",z:2,zb:3,pull:1.1,w:38,len:[32,46],kg:16,pris:260,col:"#c0392b",shape:"deep",rar:0,fight:0.1,min:32,fredet:"uer",str:0.3}, // kg kalibrert: 46 cm ≈ 1,5 kg
@@ -1187,7 +1191,7 @@ function fiskBilde(f){
   if(typeof erSkrei==="function" && erSkrei(f) && skreiImg.complete && skreiImg.naturalWidth) return skreiImg;
   return fishImg[f.k];
 }
-var LIKNER={sandflyndre:"rodspette",skrubbe:"rodspette",lomre:"rodspette",skate:"rodspette",hvitting:"hyse",knurr:"uer",
+var LIKNER={sild:"makrell",sandflyndre:"rodspette",skrubbe:"rodspette",lomre:"rodspette",skate:"rodspette",hvitting:"hyse",knurr:"uer",
   lysing:"lyr",blaalange:"lange",haagjel:"pigghaa",svarthaa:"pigghaa",haakjerring:"pigghaa",havmus:"brosme",blaakveite:"kveite",maanefisk:"breiflabb"}; // midlertidig lookalike til egen kunst er generert — egen PNG overtar automatisk
 FISH.forEach(function(f){ var base=FIMG[f.k]||f.k, fb=LIKNER[f.k];
   var im=new Image(); if(fb)im.onerror=function(){ im.onerror=null; im.src="spill/assets/"+fb+".png"; };
@@ -1220,7 +1224,11 @@ var SLUK=[
  {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{haagjel:1.6,skolest:1.6,brosme:1.2}},
  {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpilk.gif",b:{blaakveite:1.7,svarthaa:1.3}},
  {k:"kjeks",e:"🍪",n:"Kjekssluk",pris:10,rec:[0],img:"sluk-oreo.gif",dud:true,b:{}}, // spøkesluk: fisk har IKKE søtsug — «Den er til kaffen.» — Rusten
- {k:"markpilk",e:"🪱",n:"Markpilk",pris:90,rec:[0,1],img:"sluk-markpilk",pilk:true,b:{}} // forsats med mange makker — pump og hent småfisk (juksa-teknikk)
+ {k:"markpilk",e:"🪱",n:"Markpilk",pris:90,rec:[0,1],img:"sluk-markpilk",pilk:true,b:{}}, // forsats med mange makker — pump og hent småfisk (juksa-teknikk)
+ // Sildehekle: forsats med små kroker og røde perler som ligner tyttebær. Båten står i
+ // ro og man pumper hekla opp og ned gjennom stimen — samme minispill som markpilken,
+ // men den henter sild. Teknikken er beskrevet av eierens svigerfar.
+ {k:"sildehekle",e:"🫐",n:"Sildehekle",pris:70,rec:[0,1],img:"sluk-sildehekle",pilk:true,sild:true,b:{}}
 ];
 var slukDef={}; SLUK.forEach(function(u){slukDef[u.k]=u});
 function recTekst(u){ return u.rec.map(function(z){return ZONE[z].toUpperCase()}).join(" / "); }
@@ -1898,7 +1906,11 @@ function pilkPump(){ // fullført pump (hold → slipp) — hendelsesdrevet, tå
   var dratt=pilkHoldT; pilkHoldT=0;
   if(dratt<0.3) return; // et kjapt tapp er ikke et pump — pilken må faktisk dras opp gjennom stimen
   if(pilkT>=pilkKrav && pilkFangst.length<5 && Math.random()<0.55){
-    var fk=["sei","lyr","makrell"][(Math.random()*3)|0], f=byKey[fk];
+    // Hekla henter sild — det er hele poenget med henne. Markpilken tar seg av resten.
+    // En og annen makrell går i hekla òg; de står i samme sjø og tar de samme perlene.
+    var su=aktivSluk(), heklar=!!(su&&su.sild);
+    var fk=heklar ? (Math.random()<0.85?"sild":"makrell") : ["sei","lyr","makrell"][(Math.random()*3)|0];
+    var f=byKey[fk];
     var ln=Math.round(f.len[0]+Math.random()*(f.len[1]-f.len[0])*0.45); // småfisk — nedre del av spennet
     pilkFangst.push({f:f,len:ln}); Snd.bite(); if(navigator.vibrate)navigator.vibrate(45);
     setHint("🐟 "+pilkFangst.length+" på krokene!"+(pilkFangst.length>=5?" FULLT HUS!":""));
@@ -1906,19 +1918,27 @@ function pilkPump(){ // fullført pump (hold → slipp) — hendelsesdrevet, tå
 }
 function pilkSlutt(){
   phase="idle"; Snd.reelSound(false); setAction("Kast ut");
-  var L2=$("#potList"); L2.innerHTML=""; var total=0;
+  var L2=$("#potList"); L2.innerHTML=""; var total=0, sildAgn=0;
+  var suP=aktivSluk(), pilkNavn=(suP&&suP.n)||"Markpilk"; // rekorden skal si hva du faktisk fisket med
   if(!pilkFangst.length){ L2.innerHTML='<p class="muted center">Ikke et napp på makkene denne gangen — stimen sto nok dypere.</p>'; }
   pilkFangst.forEach(function(pf){ var f=pf.f, t=(pf.len-f.len[0])/(f.len[1]-f.len[0]);
     var wt=+((Math.pow(pf.len/100,3)*f.kg*1.02)).toFixed(1); if(wt<0.1)wt=0.1;
     var vern=fredetNaa(f), umaal=underMaal(f,pf.len);   // samme lov på markpilken som på stanga
     var kr=(vern||umaal)?0:Math.max(1,Math.round(f.pris*(0.6+0.9*t)*artPris(f)));
+    if(f.k==="sild"&&!vern&&!umaal){ sildAgn++; kr=0; }   // silda selges ikke — hun blir agn
     var rec=P.caught[f.k]; if(!rec)rec=P.caught[f.k]={count:0,bestLen:0,bestWt:0};
-    rec.count++; if(pf.len>rec.bestLen){rec.bestLen=pf.len; rec.redskap="Markpilk"; rec.rts=Date.now();} if(wt>(rec.bestWt||0))rec.bestWt=wt;
+    rec.count++; if(pf.len>rec.bestLen){rec.bestLen=pf.len; rec.redskap=pilkNavn; rec.rts=Date.now();} if(wt>(rec.bestWt||0))rec.bestWt=wt;
     if(vern||umaal)rec.sluppet=(rec.sluppet||0)+1;      // godt fiskarskap telles også her
     total+=kr;
     L2.insertAdjacentHTML("beforeend",'<div class="statline"><img src="spill/assets/'+(FIMG[f.k]||f.k)+'.png" onerror="this.style.display=\'none\'" style="height:24px;vertical-align:middle;image-rendering:pixelated;margin-right:5px">'+f.n+' '+pf.len+' cm ('+wt+' kg) — '
-      +((vern||umaal)?'<b class="utsatt">🤍 '+esc(umaal?("under målet på "+umaal+" cm"):vern)+' — satt ut</b>':'<b>'+kr+' kr</b>')+'</div>');
+      +((vern||umaal)?'<b class="utsatt">🤍 '+esc(umaal?("under målet på "+umaal+" cm"):vern)+' — satt ut</b>'
+        :(f.k==="sild"?'<b>🫐 i agnboksen</b>':'<b>'+kr+' kr</b>'))+'</div>');
   });
+  // Sild går rett i agnboksen i stedet for i kassa. Hun er verdt 8 kr hos Rusten og
+  // 25 kr som agn (100 kr for fire), så å selge henne ville vært tåpelig — og å hekle
+  // sild NETTOPP for å bruke den som agn er hele grunnen til at folk hekler.
+  if(sildAgn){ P.agn.sild=(P.agn.sild||0)+sildAgn; updateRigChip();
+    L2.insertAdjacentHTML("beforeend",'<div class="statline" style="margin-top:6px"><b>🫐 '+sildAgn+' sild lagt i agnboksen</b> — hun er verdt mer på kroken enn i kassa.</div>'); }
   if(total){ P.kr+=total; Snd.coin(); } // ingen mynt når alt vart sett ut — lyden skal fortelje same historia som lista
   if(pilkFangst.length>=3)setTimeout(Snd.fiskerLettet,300);
   $("#potTitle").textContent="🎣 Pilkefangst";
@@ -2133,7 +2153,7 @@ function land(){
   hooked=null; sceneFish=null;
   pending={f:f,len:len,wt:wt,kr:kr,isNew:isNew,isRecord:isRecord,gold:gold,vern:vern,umaal:umaal};
   if(vern||umaal)rec.sluppet=(rec.sluppet||0)+1; // godt fiskarskap telles i boka
-  var agnAv={makrell:"makrellhode",sei:"sei",akkar:"akkar"}[f.k]; // akkar er gull som djuphavsagn
+  var agnAv={makrell:"makrellhode",sei:"sei",akkar:"akkar",sild:"sild"}[f.k]; // akkar er gull som djuphavsagn; sild er det beste torskeagnet som finnes
   var uteHelt=!!(vern||umaal);
   $("#catchAgn").style.display=(agnAv&&!uteHelt)?"inline-block":"none"; pending.agnAv=uteHelt?null:agnAv;
   $("#catchKeep").style.display=uteHelt?"none":"";
@@ -2506,7 +2526,7 @@ function renderRig(){
       n+" stk",P.rig===a.k,n>0,agnImg(a),
       (a.kunFangst||erUtsolgt)?null:{pris:agnPris(a),fn:function(){P.agn[a.k]=(P.agn[a.k]||0)+a.pakke;}});
   });
-  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="font-size:12px;margin:8px 0 0">Kjøp mer agn hos Rusten 🛒 — makrell, sei og krabbe kan du beholde som agn i stedet for å selge.</p>');
+  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="font-size:12px;margin:8px 0 0">Kjøp mer agn hos Rusten 🛒 — makrell, sild, sei og krabbe kan du beholde som agn i stedet for å selge. Sild hekler du selv med sildehekla 🫐</p>');
 }
 /* ---------- Teiner (fase 1: krabbeteine) ---------- */
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
