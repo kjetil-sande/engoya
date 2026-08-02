@@ -1563,6 +1563,58 @@ function reiseTid(iso) {
 async function loadButikker() {
   const wrap = $("#butikkListe");
   if (!wrap) return;
+
+  // Google gir åpningstidene som ferdig formulert tekst per ukedag, f.eks.
+  // «mandag: 09:00–21:00» eller «søndag: Stengt». Vi må tolke dem for å kunne si
+  // NÅR det åpner igjen. Formatet varierer: bindestrek eller tankestrek, punktum
+  // eller kolon i klokkeslettet, flere intervaller på samme dag («09:00–13:00,
+  // 15:00–18:00»), «Åpent 24 timer», og «Stengt».
+  const UKEDAG = ["mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag"];
+
+  function tolkDag(tekst) {
+    const t = String(tekst || "").replace(/^[^:]+:\s*/, "");
+    if (/24\s*timer|d(ø|o)gn(å|a)pent/i.test(t)) return [[0, 1440]];
+    if (/stengt/i.test(t)) return [];
+    const ut = [];
+    const re = /(\d{1,2})[.:](\d{2})\s*[–—-]\s*(\d{1,2})[.:](\d{2})/g;
+    let m;
+    while ((m = re.exec(t))) {
+      const fra = +m[1] * 60 + +m[2];
+      let til = +m[3] * 60 + +m[4];
+      if (til <= fra) til += 1440;            // stengetid etter midnatt
+      ut.push([fra, til]);
+    }
+    return ut;
+  }
+
+  // Klokka NÅ i norsk tid — vi kan ikke stole på nettleserens egen sone.
+  function naaNorsk() {
+    const d = new Date();
+    const p = new Intl.DateTimeFormat("en-GB", {
+      timeZone: TZ, weekday: "long", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(d);
+    const f = (k) => p.find((x) => x.type === k)?.value || "";
+    const dag = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].indexOf(f("weekday"));
+    return { dag, min: +f("hour") * 60 + +f("minute") };
+  }
+
+  // Leter framover fra nå. Returnerer null hvis vi ikke finner noe på en uke —
+  // da er butikken enten alltid stengt eller så er dataene ubrukelige, og da er
+  // det bedre å si ingenting enn å gjette.
+  function nesteApning(ukedager, naa) {
+    if (!Array.isArray(ukedager) || !ukedager.length) return null;
+    for (let i = 0; i < 8; i++) {
+      const d = (naa.dag + i) % 7;
+      for (const [fra] of tolkDag(ukedager[d])) {
+        if (i === 0 && fra <= naa.min) continue;   // dette intervallet er alt passert i dag
+        const kl = String((fra / 60) | 0).padStart(2, "0") + ":" + String(fra % 60).padStart(2, "0");
+        if (i === 0) return "Åpner " + kl;
+        if (i === 1) return "Åpner i morgen " + kl;
+        return "Åpner " + UKEDAG[d] + " " + kl;
+      }
+    }
+    return null;
+  }
   try {
     const res = await fetch("/api/apningstider");
     const data = await res.json();
@@ -1579,6 +1631,7 @@ async function loadButikker() {
     // Dagens ukedag i Google-rekkefølge (mandag = 0), etter norsk tid
     const dagNavn = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, weekday: "long" }).format(new Date());
     const idag = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].indexOf(dagNavn);
+    const naa = naaNorsk();
 
     const grupper = new Map();
     data.butikker.forEach((b) => {
@@ -1595,9 +1648,13 @@ async function loadButikker() {
               : b.apenNa === false ? `<span class="butikk-badge er-stengt">Stengt</span>`
               : `<span class="butikk-badge">–</span>`;
             const dagens = (b.ukedager[idag] || "").replace(/^[^:]+:\s*/, "");
+            // Er den stengt, er det NÅR den åpner igjen som er nyttig — ikke at den er stengt.
+            const neste = b.apenNa === false ? nesteApning(b.ukedager, naa) : null;
             const inner = `
               <span class="butikk-navn">${escapeHtml(b.navn)}</span>
-              <span class="butikk-tid">${escapeHtml(dagens)}</span>
+              <span class="butikk-tid">${escapeHtml(dagens)}${
+                neste ? `<span class="butikk-neste">${escapeHtml(neste)}</span>` : ""
+              }</span>
               ${badge}
               ${b.lenke ? `<span class="news-arrow">↗</span>` : ""}`;
             return b.lenke
