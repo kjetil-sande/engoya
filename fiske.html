@@ -3839,6 +3839,12 @@ function drawGullField(g2,cw,ch,arr,dt,yMinPx,yMaxPx,maxN,spawn,shift){ var mn=M
   }
 }
 function tickDog(dt){ var tgt=dog.vis?1:0; dog.rise+=(tgt-dog.rise)*Math.min(1,dt*6);
+  // Hundens klokke skal IKKE gå bak et åpent kort. dogShow(0,7) fyrer i landFish rett
+  // før modal("catchModal") åpnes — og tickDog kalles inne i drawScene, som kjører FØR
+  // modal-sjekken i løkka. De sju sekundene ble derfor spist opp mens fangstkortet lå
+  // over skjermen, og hunden var borte i samme øyeblikk du lukket det. Det er nettopp
+  // da du skal se den glade hunden. Samme sak for teinetrekk og storkveite på lina.
+  if(document.querySelector(".modal.on"))return;
   if(dog.vis&&dog.hideT!=null){ dog.hideT-=dt; if(dog.hideT<=0){ dog.vis=false; dog.hideT=null; } } }
 function dogShow(pose,hideT){ dog.pose=pose; dog.vis=true; dog.hideT=hideT==null?null:hideT; } // 0=glad 1=kikker 2=tenker
 function drawDog(bx,by,bw,bh,mn){ if(!dog.vis && dog.rise<=0.01)return;
