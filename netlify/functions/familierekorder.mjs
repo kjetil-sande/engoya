@@ -21,6 +21,36 @@ const MAKS_ARTER = 80;         // 37 arter i dag. Taket er en STILLE grense: er 
 const MAKS_KROPP = 60_000;     // byte; mot tilfeldig søppel
 const FARLIGE = new Set(["__proto__", "constructor", "prototype"]);
 
+// ── Hastighetsgrense ──────────────────────────────────────────────────────────
+// Koden er hashet før den blir blob-nøkkel, så lagret røper ingen koder. Men uten
+// en grense kan hvem som helst prøve tusenvis av koder i sekundet, og da hjelper
+// ingen kodelengde. Grensen er sjenerøs: en familie på fem enheter som synker
+// hvert 45. sekund bruker ~7 kall i minuttet. 60 er nesten ti ganger det.
+const TAK_MIN = 60;            // kall per minutt per IP
+const TAK_TIME = 900;          // og per time — mot den tålmodige
+// IP-en HASHES før den lagres. En IP-adresse er personopplysning, og vi trenger
+// bare å vite at det er samme avsender — ikke hvem.
+const ipNokkel = (req) => {
+  const rå = req.headers.get("x-nf-client-connection-ip")
+    || (req.headers.get("x-forwarded-for") || "").split(",")[0].trim()
+    || "ukjent";
+  return createHash("sha256").update("storkveita-ip:" + rå).digest("hex").slice(0, 32);
+};
+
+// ── Fiskerkort ────────────────────────────────────────────────────────────────
+// Kortet deles ut av SERVEREN, ikke av enheten. Bare da kan vi love at ingen får
+// samme kort: enheten kan umulig vite hva andre har fått. Kortet lagres aldri —
+// det er hashen som blir nøkkel, akkurat som for familiekoden. Serveren ser det
+// én gang, i svaret, og glemmer det.
+const KORTORD = ["kveite","torsk","brosme","uer","sei","lyr","hyse","lange","makrell","steinbit",
+ "breiflabb","akkar","havmus","skrei","sild","krabbe","hummer","reke","blaase","teine",
+ "snelle","sluk","pilk","agn","krok","line","garn","ripa","kjol","baug",
+ "styrhus","motor","propell","anker","vinsj","ekkolodd","kompass","kart","fyr","molo",
+ "naust","brygge","kai","skjaer","grunne","egg","fjord","sund","holme","odde",
+ "storm","kuling","bris","stille","taake","regn","sludd","snoe","sol","maane",
+ "flo","fjaere","straum","doenning","bakevje","nordlys","midnattsol","morketid",
+ "rusten","kjell","odd","ingrid","solveig","harald","jorunn","birger","marit","trygve"];
+
 const tall = (v, maks) => Math.max(0, Math.min(maks, Number(v) || 0));
 
 const egen = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // aldri arvede egenskaper (toString & co.)
@@ -291,6 +321,46 @@ export default async (req) => {
     body = JSON.parse(tekst);
   } catch {
     return Response.json({ feil: "Ugyldig JSON" }, { status: 400 });
+  }
+
+  // Hastighetsgrensen ligger FØR alt annet — også før kortutdelingen — så en som
+  // prøver seg må gjennom den uansett hvilken dør han banker på.
+  const teljar = getStore({ name: "storkveita-takst", consistency: "strong" });
+  const ipN = ipNokkel(req);
+  const naa = Date.now();
+  let t = (await teljar.get(ipN, { type: "json" })) || { m: naa, nm: 0, h: naa, nh: 0 };
+  if (naa - t.m > 60_000) { t.m = naa; t.nm = 0; }
+  if (naa - t.h > 3_600_000) { t.h = naa; t.nh = 0; }
+  t.nm++; t.nh++;
+  await teljar.setJSON(ipN, t);
+  if (t.nm > TAK_MIN || t.nh > TAK_TIME) {
+    return Response.json({ feil: "For mange forsøk. Vent litt og prøv igjen." },
+      { status: 429, headers: { "Retry-After": "60" } });
+  }
+
+  // Nytt fiskerkort. Serveren trekker, sjekker at hashen er ledig, og merker den
+  // som tatt i samme åndedrag. Enheten kunne aldri gjort dette selv — den vet
+  // ingenting om hva andre har fått. Kortet returneres ÉN gang og lagres aldri.
+  if (body.nyttKort) {
+    const lagerK = getStore({ name: "familierekorder", consistency: "strong" });
+    for (let forsok = 0; forsok < 6; forsok++) {
+      // Fire FORSKJELLIGE ord. Entropien er praktisk talt uendret (2^38,3 mot 2^38,4),
+      // men «brosme-brosme» i et kort man leser høyt ser ut som en feil.
+      const b = new Uint32Array(9);
+      globalThis.crypto.getRandomValues(b);
+      const ord = [], brukt = new Set();
+      for (let i = 0; ord.length < 4 && i < 9; i++) {
+        const o = KORTORD[b[i] % KORTORD.length];
+        if (!brukt.has(o)) { brukt.add(o); ord.push(o); }
+      }
+      if (ord.length < 4) continue;                      // ekstremt sjelden — trekk på nytt
+      const kort = ord.join("-") + "-" + (1000 + (b[8] % 9000));
+      const nk = createHash("sha256").update("storkveita:" + kort).digest("hex");
+      if (await lagerK.get(nk, { type: "json" })) continue;   // alt tatt — trekk på nytt
+      await lagerK.setJSON(nk, { players: {}, updatedAt: naa });
+      return Response.json({ kort }, { headers: { "Cache-Control": "no-store" } });
+    }
+    return Response.json({ feil: "Fikk ikke laget kort akkurat nå. Prøv igjen." }, { status: 503 });
   }
 
   const kode = String(body.code || "").trim().toLowerCase();

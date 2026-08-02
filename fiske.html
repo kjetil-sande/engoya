@@ -1329,22 +1329,23 @@ function famCode(){ try{return (localStorage.getItem("storkveita-familiekode")||
 
    Ordene er hentet fra spillets egen verden med vilje: et kort du skal skrive ned
    på en lapp må kunne leses høyt og tastes inn på en telefon uten å bomme. */
-var KORTORD=["kveite","torsk","brosme","uer","sei","lyr","hyse","lange","makrell","steinbit",
- "breiflabb","akkar","havmus","skrei","sild","krabbe","hummer","reke","blaase","teine",
- "snelle","sluk","pilk","agn","krok","line","garn","ripa","kjol","baug",
- "styrhus","motor","propell","anker","vinsj","ekkolodd","kompass","kart","fyr","molo",
- "naust","brygge","kai","skjaer","grunne","egg","fjord","sund","holme","odde",
- "storm","kuling","bris","stille","taake","regn","sludd","snoe","sol","maane",
- "flo","fjaere","straum","doenning","bakevje","nordlys","midnattsol","mörketid",
- "rusten","kjell","odd","ingrid","solveig","harald","jorunn","birger","marit","trygve"];
-function lagKort(){
-  var b=new Uint32Array(4);
-  if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(b);
-  else for(var i=0;i<4;i++)b[i]=(Math.random()*4294967296)>>>0;
-  var o=[]; for(var j=0;j<3;j++)o.push(KORTORD[b[j]%KORTORD.length]);
-  return o.join("-")+"-"+(1000+(b[3]%9000));
+// Kortet TREKKES AV SERVEREN, ikke her. Det er den eneste måten å love at ingen
+// får samme kort på: telefonen vet ingenting om hva andre har fått. Serveren
+// sjekker at hashen er ledig og merker den som tatt i samme åndedrag, og selve
+// kortet lagres aldri — verken her eller der. Får vi ikke kontakt, får du heller
+// ikke noe kort: bedre uten enn med et som kanskje er opptatt.
+function kortKode(){ return (P&&P.kort)||""; }
+var kortVenter=false;
+function bestillKort(etterpaa){
+  if(!P||P.kort||kortVenter)return; kortVenter=true;
+  fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({nyttKort:true})})
+  .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
+  .then(function(j){ kortVenter=false;
+    if(!j||!j.kort)return;
+    P.kort=j.kort; saveAll(); kortSync();
+    if(etterpaa)etterpaa();
+  }).catch(function(){ kortVenter=false; if(etterpaa)etterpaa(); });
 }
-function kortKode(){ if(!P)return ""; if(!P.kort)P.kort=lagKort(); return P.kort; }
 // Vis kortet FØRST når det finnes noe å miste. En nøkkel du får før du bryr deg,
 // er en nøkkel du lukker vekk uten å lese.
 function kortModent(){ if(!P)return false;
@@ -3249,8 +3250,11 @@ function visProfil(){
   if(kortModent()){
     h+='<div class="pfbolk"><h4>Fiskerkortet ditt</h4>'
       +'<p class="muted" style="font-size:12.5px;margin:2px 0 6px">Din egen nøkkel. Skriv den ned — med den henter du profilen din tilbake på en ny telefon, uten å røre familiekoden.</p>'
-      +'<div class="pfkort" id="pfKortKode">'+esc(kortKode())+'</div>'
-      +'<div class="row" style="gap:8px;margin-top:8px"><button class="btn sm" id="pfKortKopi">📋 Kopier</button>'
+      +(P.kort ? '<div class="pfkort" id="pfKortKode">'+esc(P.kort)+'</div>'
+               : '<div class="pfkort muted" id="pfKortKode">'+(kortVenter?"lager kortet ditt …":"trykk «Lag kort» under")+'</div>')
+      +'<div class="row" style="gap:8px;margin-top:8px">'
+      +(P.kort ? '<button class="btn sm" id="pfKortKopi">📋 Kopier</button>'
+               : '<button class="btn sm" id="pfKortLag"'+(kortVenter?' disabled':'')+'>🎣 Lag kort</button>')
       +'<button class="btn sm ghost" id="pfKortHent">🎣 Hent med kort</button></div></div>';
   }
 
@@ -3272,6 +3276,8 @@ function visProfil(){
   $("#pfNavnBytt").onclick=byttNavn;
   $("#pfKopiUt").onclick=lastNedKopi;
   $("#pfKopiInn").onclick=velgKopi;
+  if($("#pfKortLag")) $("#pfKortLag").onclick=function(){ bestillKort(visProfil); visProfil(); };
+  if($("#pfKortHent")) $("#pfKortHent").onclick=kortHent;
   if($("#pfKortKopi")){
     $("#pfKortKopi").onclick=function(){
       var k=kortKode();
@@ -3280,8 +3286,7 @@ function visProfil(){
                                              function(){ notice("Kortet ditt: "+k); });
       else notice("Kortet ditt: "+k);
     };
-    $("#pfKortHent").onclick=kortHent;
-    kortSync();   // kortet er nettopp vist — sørg for at bloben finnes med ein gong
+    kortSync();   // kortet er nettopp vist — sørg for at bloben finnes med en gang
   }
   lydIkon(); $("#pfLyd").onclick=function(){ toggleMute(); };
   $("#pfTilNaust").onclick=function(){ modal("profilModal",false); tilNaustet(); };
