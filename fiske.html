@@ -1295,7 +1295,7 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
 function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvasker)
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
     propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
-    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, trofe:P.trofe, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd}; }
+    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, trofe:P.trofe, funnSett:P.funnSett, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd}; }
 function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
   return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.ekko && !lp.belte
     && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
@@ -1306,6 +1306,8 @@ function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE felte
   if(g.tidligereNavn)lp.tidligereNavn=g.tidligereNavn;
   if(g.sattDekk)lp.sattDekk=1;
   flettTrofe(lp, g.trofe);   // troféskapet er monotont — det er derfor det ligger her og ikke i gearInn
+  if(g.funnSett&&typeof g.funnSett==="object"){ lp.funnSett=lp.funnSett||{};
+    Object.keys(g.funnSett).forEach(function(k){ lp.funnSett[k]=1; }); }   // union: hatt er hatt
   if(g.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,+g.streakBest||0); // rekordstreaken er monoton
   ["vinsj","ekko","turbo","belte"].forEach(function(k){ if(g[k])lp[k]=true; }); }
 function gearInn(lp,g){ if(!g||typeof g!=="object")return; // på fjernspeil: siste innsending vinner (ts-porten står utenfor)
@@ -1415,6 +1417,7 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.pots==null)P.pots={owned:0,bait:0,cap:2,out:[],rescue:false}; // teiner (fase 1: krabbeteine)
   if(P.pots.ownedH==null)P.pots.ownedH=0; // hummerteiner (sesong: 1. okt–31. des)
   if(!Array.isArray(P.trofe))P.trofe=[]; // troféskapet: raritetene du valgte å beholde
+  if(!P.funnSett||typeof P.funnSett!=="object")P.funnSett={}; // verdifulle funn du HAR hatt — de kommer ikke igjen
   if(P.tidMs==null)P.tidMs=0; // spilletid på havet, i millisekunder
   if(P.streak==null){P.streak=0; P.streakDag=0; P.streakBest=0;} // dager på rad med fangst
   if(P.dager==null)P.dager={}; // minutter per dag — grunnlaget for uke- og månedstallene
@@ -2535,12 +2538,18 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"gulltann",e:"🦷",n:"GULLTANN — noen smiler fattigere nå",kr:500,w:4.5,img:"funn-gulltann.png"}
 ];
 function verdiSkala(){ var k=(P&&P.kr)||0; return k>50000?0.7:k>20000?0.85:k<500?1.3:k<2000?1.15:1; } // rike prutes, blakke får godvilje
+// Et funn er en SKATT hvis det er verdt penger eller hører hjemme på et museum.
+// Skrapet — støvler, tuber, tapte votter — er ikke det, og kan komme igjen.
+function erSkatt(f){ return !!(f.trofeSelg||f.auksjon||f.laas||f.museum); }
 function potBycatch(rng,sone){ // djuphavsrariteter dukker BARE opp på 300-500 m
-  var pulje=FUNN.filter(function(f){ return f.djup?(sone===3):true; });
+  var hatt=(P&&P.funnSett)||{};
+  var pulje=FUNN.filter(function(f){ return (f.djup?(sone===3):true) && !(erSkatt(f)&&hatt[f.k]); });
+  if(!pulje.length) pulje=FUNN.filter(function(f){ return (f.djup?(sone===3):true) && !erSkatt(f); });
   var tot=0; pulje.forEach(function(f){tot+=f.w});
   var r=rng()*tot, v=pulje[0];
   for(var i=0;i<pulje.length;i++){ r-=pulje[i].w; if(r<=0){ v=pulje[i]; break; } }
   var l={e:v.e,n:v.n,kr:v.kr,img:v.fimg||v.img, funnK:v.k}; // MERK: ikke «fk» — det betyr fiskenøkkel i linekoden
+  if(P&&erSkatt(v)){ P.funnSett=P.funnSett||{}; P.funnSett[v.k]=1; }   // hatt én gang er nok
   if(v.hummer&&!hummerSeason()){ // strikk på klørne betyr at nokon alt har fanga henne — men lova gjeld
     l.n="Hummer med strikk på klørne — freda no, sett ut att 🤍"; l.kr=0; l.valg=null; l.ut=true; }
   if(v.trofeKun||v.trofeSelg||v.auksjon||v.museum||v.laas){ l.valg=v; l.kr=0; } // valget avgjør pengene — ikke utbetal på forhånd
@@ -3178,9 +3187,13 @@ function openBook(which){
   else if(which==="fam"){ renderFam(); syncFam(true); }
   else if(which==="rek"){ renderRek(); syncFam(true); }
   else renderMine();
-  var have=Object.keys(P.caught).length;
-  var starSum=0; FISH.forEach(function(f){ var rec=P.caught[f.k]; if(!rec)return; var t=(rec.bestLen-f.len[0])/(f.len[1]-f.len[0]); starSum+=Math.round(Math.max(0,Math.min(1,t))*10)/2; });
-  $("#bookCount").textContent=have+" / "+FISH.length+" arter · ★ "+starSum+" / "+(FISH.length*5)+(starSum>=FISH.length*5?" — MESTERFISKER!":"");
+  // Troféfanen har sin egen teller øverst — artstallet hører ikke hjemme der.
+  if(which==="trofe"){ $("#bookCount").textContent=""; }
+  else {
+    var have=Object.keys(P.caught).length;
+    var starSum=0; FISH.forEach(function(f){ var rec=P.caught[f.k]; if(!rec)return; var t=(rec.bestLen-f.len[0])/(f.len[1]-f.len[0]); starSum+=Math.round(Math.max(0,Math.min(1,t))*10)/2; });
+    $("#bookCount").textContent=have+" / "+FISH.length+" arter · ★ "+starSum+" / "+(FISH.length*5)+(starSum>=FISH.length*5?" — MESTERFISKER!":"");
+  }
   modal("bookModal",true);
 }
 function starsHTML(bestLen,f){ // stjerner = hvor stor rekordfangsten er ift. artens størrelsesspenn (len[min..max])
