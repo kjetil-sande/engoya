@@ -1198,6 +1198,7 @@ FISH.forEach(function(f){ var base=FIMG[f.k]||f.k, fb=LIKNER[f.k];
 });
 var ZONE=["Grunt","Mellomdyp","Dypt","Djuphavet"];
 var DEPM=["0–50 m","50–150 m","150–300 m","300–500 m"];
+var SONEDJUP=[50,150,300,500]; // maksdybde per sone i meter — vannsøyla på skjermen svarer til denne
 var RODS=[{n:"Stang I",max:1.2},{n:"Stang II",max:2.3},{n:"Stang III",max:3.6}];
 /* 16 sluker — alle kan brukes overalt, men har ANBEFALTE soner (rec). Utenfor anbefalingen napper
    fisken tregere (budsjett ×1.4) og sluk-bonusene gjelder ikke. img = eksisterende/ventende kunstfil. */
@@ -3923,9 +3924,22 @@ function loop(now){
     if(descend>=1){ lureW=lureTargetW; camY=camBottom; var su0=aktivSluk(); if(su0&&su0.pilk)startPilk(); else startWait(); }
   }
   else if(phase==="wait"){
-    var tak=Math.min(H*0.30, (lureTargetW-camBottom)*0.55); // du kan lokke sluken et stykke opp, men ikke hele veien inn
-    if(holding){ lokkOpp=Math.min(tak, lokkOpp+H*0.16*dt); lokkT=1.1; Snd.reelSound(true); }
-    else { lokkOpp=Math.max(0, lokkOpp-H*0.10*dt); Snd.reelSound(false); }
+    // Lokkinga er et RYKK, ikke en innhaling. Før var taket 30 % av skjermhøyden —
+    // målt på Grunt er det 234 px, og med 8,1 piksler per meter blir det 29 METER.
+    // Da kan du sveive sluken nesten helt opp til båten, som er nøyaktig det eieren
+    // reagerte på. Han ba om 0,5–1 meter, og det er nå det den får.
+    // Vannsøyla fra vannlinja ned til sanden svarer til sonens maksdybde, så
+    // omregningen til meter er ekte. Gulvet på 2 % av skjermhøyden MÅ være der:
+    // én meter er 8 px på Grunt, men bare ~1 px på Djuphavet, og uten gulvet ville
+    // lokkinga sett helt død ut der nede — du holder inne og ingenting skjer.
+    var gw=colGeom();
+    var mPx=gw?(gw.imgH*(BUNNFRAC[depth]||0.9)-gw.wl)/SONEDJUP[depth]:H*0.02;
+    var tak=Math.min(H*0.30, (lureTargetW-camBottom)*0.55, Math.max(H*0.012, mPx));
+    // Farten følger taket. Med den gamle faste farten (0,16·H per sekund) ville et
+    // tak på 16 px vært nådd på 0,13 s — et smell, ikke et rykk. Nå tar det ~0,55 s
+    // opp og ~0,9 s tilbake, uansett hvor stort taket er.
+    if(holding){ lokkOpp=Math.min(tak, lokkOpp+tak/0.55*dt); lokkT=1.1; Snd.reelSound(true); }
+    else { lokkOpp=Math.max(0, lokkOpp-tak/0.9*dt); Snd.reelSound(false); }
     lureW=lureTargetW-lokkOpp; if(lokkT>0)lokkT-=dt;
     approachStep(dt); }
   else if(phase==="bite"){ hookWindow-=dt; if(sceneFish){var _t=(lureSX/W)||0.5; if(Math.abs(_t-sceneFish.x)>0.01)sceneFish.vx=Math.abs(sceneFish.vx||0.1)*(_t>sceneFish.x?1:-1); sceneFish.x+=(_t-sceneFish.x)*Math.min(1,dt*3);} if(hookWindow<=0) miss(); }
@@ -4106,7 +4120,13 @@ function drawScene(dt){
   if(active){
     if(phase!=="reel" && sceneFish){
       var biter=(phase==="bite"); // har tatt sluken: munnen skal sitte PÅ kroken
-      var fx=biter?lineX:W*sceneFish.x, fy=(phase==="wait")?(colTop+(H-colTop)*sceneFish.y):(ey+rigDy);
+      // sceneFish.y er en brøk av HELE skjermhøyden — slik er den definert i approachStep,
+      // som sikter mot lureSY/H. Her ble den tidligere lest som en brøk av båndet fra
+      // colTop og ned, altså et HELT annet koordinatrom, og fisken havnet under sluken.
+      // Feilen vokser med colTop: målt +202 px på Grunt, +109 på Mellomdyp, +72 på Dypt
+      // og +54 på Djuphavet — derfor så eieren det tydeligst på Grunt, der vannlinja
+      // ligger lavest på skjermen. Gulvet på colTop+6 holder fisken under overflata.
+      var fx=biter?lineX:W*sceneFish.x, fy=(phase==="wait")?Math.max(colTop+6, H*sceneFish.y):(ey+rigDy);
       drawSwim(fx,fy,sceneFish.f,0, sceneFish.vx>0, goldCatch, sceneFish.sizeLen, biter);
     }
     if(phase==="reel"&&hooked){ // fisken snur seg etter kroking: biter med munnen, halen ned, munnen opp mot kroken
