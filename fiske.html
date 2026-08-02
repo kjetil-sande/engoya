@@ -161,6 +161,9 @@
   .depthsel button{border:0;background:transparent;color:#cfe6e2;font-weight:700;padding:9px 6px;border-radius:9px;cursor:pointer;font-size:17px;font-family:var(--font);line-height:1.1;
     flex:1 1 auto;min-width:0;white-space:nowrap} /* auto-basis: bredden følger teksten, resten deles likt */
   .depthsel button small{display:block;font-size:12px;font-weight:600;opacity:.85;margin-top:2px}
+  /* Egen linje: emojien er breiare på iOS enn i nettlesaren, og fire soner på
+     402 px har ikkje plass til henne på same linja som djupet. */
+  .depthsel button small.bens{font-size:11px;opacity:.7;margin-top:1px;letter-spacing:-.02em}
   .depthsel button.on{background:var(--paper);color:var(--ink)}
   .depthsel button.locked{opacity:.4}
   .depthsel.four button{padding:8px 8px;font-size:15px}
@@ -691,10 +694,10 @@
         <button id="openBook" title="Fangstboka"><img src="spill/assets/fangstbok.png" class="di" onerror="this.outerHTML='<span class=&quot;di e&quot;>📖</span>'" alt=""><span class="t">Boka</span></button>
       </div>
       <div class="depthsel" id="depthsel">
-        <button data-d="0" class="on">Grunt<small>0–50 m · ⛽1</small></button>
-        <button data-d="1">Mellomdyp<small>50–150 m · ⛽2</small></button>
-        <button data-d="2">Dypt<small>150–300 m · ⛽2</small></button>
-        <button data-d="3" style="display:none">Djuphavet<small>300–500 m · ⛽4</small></button>
+        <button data-d="0" class="on">Grunt<small>0–50 m</small><small class="bens">1 ⛽</small></button>
+        <button data-d="1">Mellomdyp<small>50–150 m</small><small class="bens">2 ⛽</small></button>
+        <button data-d="2">Dypt<small>150–300 m</small><small class="bens">2 ⛽</small></button>
+        <button data-d="3" style="display:none">Djuphavet<small>300–500 m</small><small class="bens">4 ⛽</small></button>
       </div>
       <div class="kastrad" id="kastrad">
         <button id="hudLure" title="Sluksettet — velg agn og sluk"><img id="lureBilde" src="spill/assets/fiskeskrin.png" class="di" onerror="this.src='spill/assets/fiskeskrin.png'" alt=""><span class="t" id="lureNavn">Sluksett</span></button>
