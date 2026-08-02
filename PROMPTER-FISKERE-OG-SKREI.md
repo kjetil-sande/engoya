@@ -134,3 +134,32 @@ Fram til fila finnes brukes ⚓ med en lysningsfilter, så knappen er lesbar nå
 **Min anbefaling:** A. Knappen tar deg tilbake til naustet, så ankeret er både
 riktig og det som overlever nedskaleringen til 17 px. B er mer presist på ordet
 «bytt», men to figurer pluss en pil blir grøt på så få piksler.
+
+---
+
+## 7. Fiskeren som løfter armen — uten fisk
+
+Filer: **`fisker-lofter-arm-01.png`**, **`-02.png`**, **`-03.png`** — **623 × 422**,
+transparent. Nøyaktig samme mål, samme plassering av føttene og samme skala som
+`fisker-lofter-fangst-01/02/03.png`, ellers hopper han i bildet.
+
+**Problemet:** i dag holder han opp den samme sølvblanke seien uansett hva du
+har fått. Har du dratt opp en håbrann på to meter, ser det rart ut.
+
+**Løsningen:** samme tre bildene, men hånden er tom og løftes i triumf. Da kan
+koden tegne den fisken du faktisk fikk ved siden av — eller la den tomme neven
+stå alene, som en fisker som nettopp har fått noe han ikke helt tror på.
+
+### Felles teknisk hale (lim på alle tre)
+
+16-bit pixel art of the SAME bearded fisherman already used in this game — dark red knitted beanie, full auburn beard, cream cable-knit sweater with the sleeves showing, mustard-yellow oilskin bib overalls with a chest pocket and shoulder straps, brown rubber boots. Standing on a wooden deck, seen from the front, slightly right of centre. His **right hand is EMPTY** and raised. Identical body proportions, identical palette, identical canvas size and foot position to the existing frames — this is a new pose of the same character, not a new character. Strict pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette. Fully transparent background, no shadow, no ground, no frame.
+
+### De tre bildene
+
+**`fisker-lofter-arm-01.png`** — Arm just starting to rise: hand roughly at shoulder height, elbow bent, fingers curled into a loose fist. Mouth beginning to open, eyes widening. The moment before he realises what he has.
+
+**`fisker-lofter-arm-02.png`** — Arm halfway up, hand level with the top of his head, fist closed. Mouth open in a shout, beard lifted by the movement, head tilted slightly back.
+
+**`fisker-lofter-arm-03.png`** — Arm fully extended straight up, fist clenched above the beanie, elbow locked. Head back, mouth wide open in a roar, eyes squeezed shut in delight. This frame is held on screen, so it must read well standing still.
+
+**Viktig:** ingen fisk, ingen stang, ingen tau i hånden. Bare neven.

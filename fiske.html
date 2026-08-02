@@ -452,6 +452,8 @@
   .statline b{color:var(--wood-dark)}
   .newtag{display:inline-block;background:var(--good);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;margin-left:6px}
   .row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:10px}
+  #catchModal .row.berreut{display:block}
+  #catchModal .row.berreut #catchRelease{width:100%;font-size:16px;padding:12px 18px}
 
   /* Shop */
   .shopitem{display:flex;gap:10px;align-items:center;background:#fff8ea;border:2px solid var(--paper-2);border-radius:11px;padding:10px;margin:8px 0}
@@ -707,7 +709,7 @@
     <div class="statline" id="catchSize"></div>
     <div class="statline muted" id="catchRig" style="font-size:14px"></div>
     <div class="statline" id="catchKr"></div>
-    <div class="row"><button class="btn ghost sm" id="catchRelease">Slipp ut</button><button class="btn sm" id="catchAgn" style="display:none">🧰 Bruk som agn</button><button class="btn gold" id="catchKeep">Selg fangst</button></div>
+    <div class="row"><button class="btn ghost sm" id="catchRelease">Slipp ut</button><button class="btn sm" id="catchAgn" style="display:none">Bruk som agn</button><button class="btn gold" id="catchKeep">Selg fangst</button></div>
   </div></div>
 
   <!-- SHOP -->
@@ -1028,7 +1030,8 @@ var Snd=(function(){
     },
     // Telefonen ringjer heilt til du svarar, avviser, eller dei fjorten sekunda er ute.
     ringtone:function(on){
-      if(!ringtone){ ringtone=new Audio("spill/lyd/telefon-ring.aac"); ringtone.loop=true; ringtone.volume=0.5; }
+      if(!ringtone){ ringtone=new Audio("spill/lyd/telefon-ring.aac"); ringtone.loop=true; }
+      var t=new Date().getHours(); ringtone.volume=(t>=21||t<7)?0.2:0.5;
       ringtone.muted=muted;
       if(on){ try{ringtone.currentTime=0}catch(e){} ringtone.play().catch(function(){}); }
       else { ringtone.pause(); try{ringtone.currentTime=0}catch(e){} }
@@ -1925,14 +1928,14 @@ function reelStep(dt){
   if(tension>=100){ snap(); return; } // sprengt spenn → snøret ryker
   if(prog>=100){ land(); }
 }
-function escape(){
+function escape(){ ringFred(60);
   if(hooked) flee={f:hooked, len:hookedLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool();
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); $("#reelui").classList.remove("on"); hooked=null; sceneFish=null;
   setHint("Du ga for mye slakk og fisken glapp! Sluken er i god behold."); setAction("Kast ut"); saveAll();
   if(navigator.vibrate)navigator.vibrate(30);
 }
-function snap(){
+function snap(){ ringFred(60);
   if(hooked) flee={f:hooked, len:hookedLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool();
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); $("#reelui").classList.remove("on"); Snd.snap();
@@ -1973,7 +1976,10 @@ function land(){
   var uteHelt=!!(vern||umaal);
   $("#catchAgn").style.display=(agnAv&&!uteHelt)?"inline-block":"none"; pending.agnAv=uteHelt?null:agnAv;
   $("#catchKeep").style.display=uteHelt?"none":"";
-  $("#catchRelease").textContent=uteHelt?"Sett den ut 🤍":"Slipp ut";
+  var utKn=$("#catchRelease");
+  utKn.textContent=uteHelt?"Sett den ut 🤍":"Slipp ut";
+  utKn.className=uteHelt?"btn":"btn ghost sm";
+  utKn.parentNode.classList.toggle("berreut", uteHelt);
   drawFishInto($("#catchFish"),f,110);
   var cT=$("#catchTitle");
   cT.textContent = (vern||umaal) ? (f.trophy?"STORKVEITA! 🏆":"Godt fiskarskap 🤍") : (f.trophy ? "STORKVEITA! 🏆" : (gold?"GYLLEN FISK! ✨" : isNew?"Ny art!":"Fisk!"));
@@ -2751,10 +2757,15 @@ setInterval(function(){ if(!P)return;
   try{ investTilbod(); }catch(e){}
   try{ innRydd(); innPrikk(); }catch(e){}
 },20000);
+// Kor lenge du har site i strekk denne økta. Ikkje lagra — den som lastar sida
+// på nytt skal få innseglingsfreden på nytt. Det er rett veg å bomme.
+var oektMs=0, borteTikk=0;
 setInterval(function(){ if(P&&!document.hidden&&document.querySelector("#sea").classList.contains("on")){ // spilletid teller bare når man faktisk er på havet
-  P.tidMs=(P.tidMs||0)+15000;
+  P.tidMs=(P.tidMs||0)+15000; oektMs+=15000; borteTikk=0;
   if(!P.dager)P.dager={}; var dk=dagKey(); P.dager[dk]=(P.dager[dk]||0)+15000; beskjaerDager(P);
-  if(P.tidMs%60000===0)saveAll(); } },15000);
+  if(P.tidMs%60000===0)saveAll(); }
+  else { if(++borteTikk>=4) oektMs=0; }   // eit minutt borte frå havet, og økta startar på nytt
+},15000);
 function tidTekst(ms){ var m=Math.round((+ms||0)/60000); if(m<60)return m+" min"; return Math.floor(m/60)+" t "+(m%60)+" min"; }
 
 // Familien har brukt Rusten og Kjell i toppen siden lansering. Muskelminne skal
@@ -3993,7 +4004,8 @@ function traalPris(f, trinn){ var u=TRAALUTSTYR[trinn]; if(!u)return 0;
   return Math.round(f.kost*u.del/1000)*1000; }
 
 function investInit(){ if(!P.invest)P.invest={tur:null,hist:{},neste:0,utstyr:{},nei:{}};
-  var iv=P.invest; if(!iv.hist)iv.hist={}; if(!iv.utstyr)iv.utstyr={}; if(!iv.nei)iv.nei={}; if(!iv.neste)iv.neste=0;
+  var iv=P.invest; if(!iv.hist)iv.hist={}; if(!iv.utstyr)iv.utstyr={}; if(!iv.nei)iv.nei={}; if(!iv.neste)iv.neste=0; if(iv.nesteTid==null)iv.nesteTid=0;
+  if(!iv.anrop)iv.anrop={};   // {dagKey: tal} — telefonen har eit døgntak
   if(!Array.isArray(P.innboks))P.innboks=[]; }
 function uleste(){ return (P.innboks||[]).filter(function(m){return !m.lest}).length; }
 function innPrikk(){ var e=$("#profilPrikk"); if(!e||!P)return;
@@ -4043,10 +4055,28 @@ function investStat(f, niv){
     snitt+=pr*UTFALL[i].mult; if(UTFALL[i].mult===0)tom+=pr; }
   return {tom:tom, snitt:snitt};
 }
+// Telefonen har eit døgntak, og dei fem sekunda mellom to anrop er ikkje nok.
+// Resultatanropet er unnateke: det har forkøyrsrett og blir alltid levert.
+function anropLedig(){
+  var a=P&&P.invest&&P.invest.anrop; if(!a)return true;
+  var dk=dagKey();
+  if((a[dk]||0)>=ANROP_TAK) return false;
+  return (P.tidMs||0) >= (a.sistTid||0)+ANROP_PAUSE;
+}
+function anropTelt(){
+  var iv=P&&P.invest; if(!iv)return; if(!iv.anrop)iv.anrop={};
+  var dk=dagKey(); iv.anrop[dk]=(iv.anrop[dk]||0)+1; iv.anrop.sistTid=(P.tidMs||0);
+  Object.keys(iv.anrop).forEach(function(k){ if(k!=="sistTid"&&k!==dk)delete iv.anrop[k]; });
+}
 // Ingen ringjer før du har 10 000 kr — då har du fått taket på sjølve fisket først.
 // Etter det opnar fiskarane seg gradvis: 35 %-taket gjer at Trygve, som går lengst
 // ut og har dyrast tur, fyrst tek kontakt når du har rundt 16 000 på konto.
 var TERSKEL=10000, LOTTAR=[0.05,0.10,0.20,0.30,0.40,0.50], LOTT_TAK=0.35;
+// Rytma på telefonen, målt i HAVTID — ikkje kalendertid.
+var INNSEGLINGSFRED=6*60000;    // seks minutt på havet før nokon får ringje
+var TILBOD_PAUSE  =150*60000;   // to og ein halv time HAVTID mellom kvart tilbod
+var ANROP_PAUSE   =12*60000;    // minst tolv minutt havtid mellom to anrop av noko slag
+var ANROP_TAK     =2;           // maks to anrop per døgn
 // Under eit døgn: timar. Over: døgn — det er slik ein fiskar snakkar, og
 // «tar ~86 timer» seier ingenting til ein tiåring.
 function turTid(t){ if(t<24) return "tar ~"+Math.round(t)+" timer";
@@ -4056,8 +4086,10 @@ function harRaad(f,del){ var pr=lottPris(f,del); return P.kr>=pr && pr<=P.kr*LOT
 var smsAktiv=null;   // {f, del, timar}
 function investTilbod(){
   investInit(); var iv=P.invest;
-  if(iv.tur || !P || P.kr<TERSKEL || Date.now()<iv.neste) return;
-  if(document.querySelector(".modal.on") || phase!=="idle") return;
+  if(iv.tur || !P || P.kr<TERSKEL) return;
+  if((P.tidMs||0) < (iv.nesteTid||0)) return;              // havtid, ikkje veggklokke
+  if(!ringKlar()) return;                                  // fred, innsegling, ingen dialog, ikkje midt i fisket
+  if(!anropLedig()) return;                                // døgntak og pause mellom anrop
   // vel ein fiskar — dei du ikkje har prøvd kjem oftast, dei du har sagt nei til fleire gonger kjem sjeldnare
   var kand=FISKERE.map(function(f){
     var h=iv.hist[f.k], nei=iv.nei[f.k]||0;
@@ -4071,7 +4103,8 @@ function investTilbod(){
   var timar=f.timar[0]+Math.random()*(f.timar[1]-f.timar[0]);
   var m={type:"tilbod", fk:f.k, timar:timar};
   innLegg(m);
-  P.invest.neste=Date.now()+9*3600000;   // ikkje mas: minst ni timar til neste spørsmål
+  P.invest.nesteTid=(P.tidMs||0)+TILBOD_PAUSE;   // to og ein halv time HAVTID, ikkje ni timar i lomma
+  anropTelt();
   ringOpp(f, m);
 }
 
@@ -4131,11 +4164,14 @@ function visSms(f, timar, ordForOrd){
 /* ---------- Telefonen ringjer ----------
    Eit anrop du kan ta eller la vere. Tek du det ikkje, ligg meldinga i innboksen
    og kan opnast seinare — ingenting går tapt fordi du var midt i eit kast.      */
-var ringT=null, ringMeld=null;
+var ringT=null, ringMeld=null, ringFredTil=0;
+// Ingen skal ringje i sekunda etter at du mista fisken eller landa ein rekord.
+function ringFred(sek){ ringFredTil=Math.max(ringFredTil, Date.now()+sek*1000); }
 // Telefonen får ikkje ringje medan du står med fisken på kroken. phase er "idle"
 // berre når snøret ikkje er ute — då er det eit naturleg pust å ta telefonen i.
 // Meldinga er alt lagt i innboksen når vi kjem hit, så ingenting går tapt.
-function ringKlar(){ return !document.querySelector(".modal.on") && phase==="idle"; }
+function ringKlar(){ return !document.querySelector(".modal.on") && phase==="idle"
+  && Date.now()>=ringFredTil && oektMs>=INNSEGLINGSFRED; }
 function ringOpp(f, m){
   if(!ringKlar()) return false;
   ringMeld=m;
@@ -4146,7 +4182,8 @@ function ringOpp(f, m){
     ? (f.mal==="nn"?"TILBAKE I HAMN":"TILBAKE I HAVNA") : "RINGER …";
   modal("ringModal",true);
   if(Snd.ringtone)Snd.ringtone(true);
-  if(navigator.vibrate)navigator.vibrate([180,120,180,120,180]);
+  if(navigator.vibrate){ var kl=new Date().getHours();
+    navigator.vibrate((kl>=21||kl<7)?[120]:[180,120,180,120,180]); }
   if(ringT)clearTimeout(ringT);
   ringT=setTimeout(function(){ ringLegg(true); }, 14000);   // ubesvart → innboksen
   return true;
@@ -4265,7 +4302,7 @@ function investJa(){
   P.kr-=pris;
   P.invest.tur={fk:a.f.k, sum:pris, del:a.del, start:Date.now(), ferdig:Date.now()+a.timar*3600000,
                 seed:(Math.random()*1e9)|0, niv:investNivaa(a.f.k)};
-  P.invest.neste=Date.now()+18*3600000;
+  P.invest.nesteTid=(P.tidMs||0)+2*TILBOD_PAUSE;
   if(a.meld) P.innboks=P.innboks.filter(function(x){return x.id!==a.meld.id;});
   innPrikk(); hud(); saveAll(); modal("smsModal",false);
   var f2=a.f, nn=(f2.mal==="nn");
@@ -4290,6 +4327,7 @@ function investSjekk(){
   h.sist={mult:u.mult, utfall:u.k, tid:Date.now()};   // fiskaren hugsar til neste gong
   var m=innLegg({type:"resultat", fk:t.fk, utfall:u.k, mult:u.mult, inn:t.sum, ut:ut});
   hud(); saveAll();
+  anropTelt();
   if(!ringOpp(f, m))
     notice(f.n.split(" ")[0]+(f.mal==="nn"?" er tilbake i hamn 📨":" er tilbake i havna 📨"));
 }
