@@ -27,7 +27,7 @@ const egen = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // aldri arve
 
 // Utstyr følger spilleren over nett (samme «siste innsending vinner»-regel som kroner),
 // slik at familien kan logge inn på en ny enhet og få igjen stang, vinsj, turbosnelle osv.
-const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs", "streak", "streakDag", "streakBest"];
+const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs", "streak", "streakDag", "streakBest", "riggTs"];
 const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "belte", "motorOk", "sattDekk"];
 const GEAR_TEKST = { motor: 10, rig: 24, naadeMnd: 7 };
 // Objektfeltene vaskes TYPET (aldri rå gjennomstrømming): nøkler må være pene id-er og
@@ -265,6 +265,10 @@ function flettSpiller(fam, p) {
       if (g.tidligereNavn == null && gml.tidligereNavn != null) g.tidligereNavn = gml.tidligereNavn;
       g.rod = Math.max(tall(gml.rod, 99), tall(g.rod, 99));         // kjøpt/opptjent kan aldri
       g.tidMs = Math.max(tall(gml.tidMs, 9e15), tall(g.tidMs, 9e15)); // krympe, uansett klokkerot
+      // Bærer riggTs fram når en gammel klient utelater feltet, OG håndhever max-flettingen
+      // på serveren, så en ny klient med eldre riggTs ikke kan tråkke over familiens
+      // nyeste service. Én linje, to jobber.
+      g.riggTs = Math.max(tall(gml.riggTs, 9e15), tall(g.riggTs, 9e15));
       g.streakBest = Math.max(tall(gml.streakBest, 9e15), tall(g.streakBest, 9e15)); // beste streak er en rekord — aldri ned
       for (const k of ["vinsj", "ekko", "turbo", "belte", "sattDekk"]) if (gml[k]) g[k] = true; // sette flagg kan aldri tas tilbake
       if (g.pots && gml.pots) for (const k of ["lineOwned", "lineKroker"]) // kjøpt line og krokar krymper aldri

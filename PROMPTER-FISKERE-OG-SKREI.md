@@ -249,3 +249,31 @@ Grønn slange og messingfarget håndtak skiller dem tydelig, og grønt er dessut
 det man forbinder med bensinpumper på norske stasjoner.
 
 16-bit pixel art of a **fuel pump nozzle** (the handheld part only, not the whole pump), seen from the side at a slight three-quarter angle, hanging with the spout pointing down-left. Chunky brass-and-steel body with a visible trigger guard and squeeze handle, a short curved metal spout, and a thick dark-green rubber hose curling away from the back of the grip and out of frame. A few drops of fuel at the spout tip. Weathered and well used — scuffed metal, a little grime in the seams, one small dent. Warm brass, pale steel and deep green; **no red anywhere**. Chunky and readable: it must be recognisable at 44 pixels high, so no fine text, no gauge dials, no small logos. Strict pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette. Fully transparent background, no shadow, no frame.
+
+---
+
+## 11. Riggservice hos Propell-Kjell
+
+Fil: **`verksted-riggservice.png`** — ca. **400 × 400**, transparent
+
+Fjerde rad i verkstedet, ved siden av Bunnsmørning, Båtservice og Båtforsikring.
+Vises som **44 px høy**. Fram til fila finnes brukes 🎛️ som reserve, så
+ingenting brekker — men den emojien er en grå knotteboks som ikke sier noe om
+hva raden er.
+
+**Merk:** de tre andre radene har hvert sitt tydelige motiv — en malingsbøtte med
+pensel, en verktøykasse, et forsikringssegl. Riggservicen må skille seg fra
+verktøykassa, som er nærmest i tema. Løsningen er å vise *det som serviceres*
+i stedet for verktøyet: snella på benken, halvveis åpnet.
+
+16-bit pixel art of a **large fishing reel lying open on a workbench**, seen from
+a slight three-quarter angle above. The side plate is off and resting against the
+reel, showing the brass gears inside. A small oil can with a long thin spout
+stands beside it, and a folded oily rag lies under the reel. Salt crust and dried
+white residue on the outer casing, bright polished brass on the exposed gears —
+the contrast between worn outside and cared-for inside is the whole point of the
+image. Warm brass, gunmetal grey, pale wood bench, one small red oil-can detail.
+Chunky and readable: it must be recognisable at 44 pixels high, so no fine text,
+no tiny screws, no logos. Strict pixel grid, hard-edged pixels, no anti-aliasing,
+no gradients, ordered dithering only, limited 24-colour palette. Fully transparent
+background, no shadow, no frame.

@@ -1284,7 +1284,7 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
       if(!egen(DB.players,nm)){ DB.players[nm]=np; return; }
       var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
       flettTrofe(lp, np.trofe);   // to faner/vindauge på same lagring skal aldri kunne tømme skapet
-      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.belte)lp.belte=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.dager)lp.dager=flettDager(lp.dager,np.dager); if(np.tidligereNavn)lp.tidligereNavn=np.tidligereNavn; if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; }
+      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.belte)lp.belte=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.dager)lp.dager=flettDager(lp.dager,np.dager); if(np.tidligereNavn)lp.tidligereNavn=np.tidligereNavn; if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; if(np.riggTs!=null)lp.riggTs=Math.max(lp.riggTs||0,+np.riggTs||0); }
     });
   }catch(e){} });
 /* ---------- Familierekorder på nett (Netlify Blobs via familiekode) ---------- */
@@ -1321,7 +1321,7 @@ function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvas
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
     propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
     lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, trofe:P.trofe, funnSett:P.funnSett,
-    invest:P.invest, innboks:P.innboks, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd}; }
+    invest:P.invest, innboks:P.innboks, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd, riggTs:P.riggTs}; }
 function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
   return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.ekko && !lp.belte
     && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
@@ -1337,7 +1337,12 @@ function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE felte
   flettInvest(lp, g.invest);
   flettInnboks(lp, g.innboks);
   if(g.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,+g.streakBest||0); // rekordstreaken er monoton
-  ["vinsj","ekko","turbo","belte"].forEach(function(k){ if(g[k])lp[k]=true; }); }
+  ["vinsj","ekko","turbo","belte"].forEach(function(k){ if(g[k])lp[k]=true; });
+  // riggTs er «sist overhalt». STØRST vinner, overalt, uten unntak — størst = nyest
+  // service = mest gjenværende levetid. Regelen faller derfor alltid ut i spillerens
+  // favør. Den ligger i gearLoft (som kjører ved HVER synk), ikke i gearInn (som bare
+  // kjører på ferske profiler) — det er nettopp derfor P.svc spriker mellom enheter i dag.
+  if(g.riggTs!=null)lp.riggTs=Math.max(lp.riggTs||0,+g.riggTs||0); }
 function gearInn(lp,g){ if(!g||typeof g!=="object")return; // på fjernspeil: siste innsending vinner (ts-porten står utenfor)
   ["fuel","fuelMax","svc","forsTil","havnNeste","smorTs","propOk","motorOk","rolex","lures","agn","streak","streakDag","naadeMnd"].forEach(function(k){ if(g[k]!=null)lp[k]=g[k]; });
   if(g.pots)lp.pots=Object.assign({},lp.pots||{},g.pots); // ALDRI rått bytte: felt serveren ikkje kjenner (bunnline o.l.) skal overleve
@@ -1471,7 +1476,12 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.agn==null)P.agn={}; // agnbeholdning
   if(P.rolex===undefined||P.rolex==="raa"||P.rolex==="klar")P.rolex=(P.rolex==="klar")?{bud:50000}:null; // null | {ferdig:ts} | {bud:kr}
   if(P.turbo==null)P.turbo=false; // turbosnelle (halv kamptid)
-  if(P.belte==null)P.belte=false; // kampbelte (25 % saktere spenn)
+  if(P.belte==null)P.belte=false;
+  // Rigg som allerede er kjøpt starter NYOVERHALT, ikke halvslitt. Bunnsmørninga setter
+  // gamle båter til 50 døgn tilbake, men den som betalte 30 000 kr for turbosnella under
+  // gamle regler skal ikke våkne til halv snelle.
+  if(P.riggTs==null)P.riggTs=Date.now();
+  if(P.riggTs>Date.now())P.riggTs=Date.now(); // samme klokkevern som smorTs // kampbelte (25 % saktere spenn)
   if(typeof investInit==="function"){ investInit(); innRydd(); setTimeout(innPrikk,0); }
   P.motor="stor"; if(P.motorOk==null)P.motorOk=true; // éin motor på båten — sett ubetinga, så gamle saves med "liten" ikkje står fast
   if(P.pots.lineKroker==null)P.pots.lineKroker=3; // bunnlinekroker (3 standard, 10 maks)
@@ -1746,6 +1756,7 @@ function cast(){
   else if(P.svc>250 && P.svc%15===0) notice("Motoren hakker og bruker mer bensin — bestill service hos Propell-Kjell ⚙️");
   else if(smorPct()<=0 && P.svc%45===11) notice("Skroget er begrodd og drar ekstra bensin — bunnsmørning hos Propell-Kjell 🐚");
   else if(Date.now()>P.havnNeste && P.svc%45===22) notice("Ørnes Båtforening purrer på havneavgiften ⚓ (betal hos Propell-Kjell)");
+  else if(riggPct()<=0 && P.svc%45===33) notice("Snella går tregt og beltet er stivt — riggservice hos Propell-Kjell 🎛️"); // rest 33 kolliderer ikke med 11 eller 22
   P.fuel-=needF; hud(); saveAll(); Snd.cast(); castT=0.45; // ETT kast-animasjon
   Snd.themeOff();               // fyrste kast: musikken sig ut, sjøen tek over
   phase="sink"; descend=0; rullSilhuett();
@@ -1930,7 +1941,7 @@ function startWait(){
     if(sumB>0.9){ var k=0.9/sumB; ny=ny.map(function(v){return v==null?null:v*k}); sumB=0.9; } // hverdagsfisken kveles aldri helt
     var rest=Math.max(0,1-sumB);
     return ny.map(function(v,i){ return v!=null?v:(sumR>0?p[i]/sumR*rest:0); }); }
-  var roll=Math.random(), pool, bc, ek=P.ekko?1.5:1; // ekkoloddet ser stimene: +50 % sjanse for sjelden/legendarisk
+  var roll=Math.random(), pool, bc, ek=P.ekko?1+0.5*riggK():1; // ekkoloddet ser stimene: +50 % sjanse for sjelden/legendarisk
   if(agEff&&agEff.rar)ek*=agEff.rar; // Rustens Spesialagn: +50 %
   var pL=ek/150*beste(t2), pR=ek/75*beste(t1); // riggen lokker også de sjeldne fram
   if(agEff&&agEff.superLegend){ // Superagnet: en LEGENDE kommer — fra hele havet, ikke bare denne sonen (storkveita tar ingen snarveier)
@@ -2026,10 +2037,10 @@ function reelStep(dt){
   var reelSec = f.reelSec || (f.trophy ? 430 : (8 + 10*f.pull*f.pull)); // netto holde-sek (kveita ~13 min, størja ~50 min)
   var stjSt=(f.len[1]>f.len[0])?Math.max(0,Math.min(1,(hookedLen-f.len[0])/(f.len[1]-f.len[0]))):0.5;
   reelSec*=(0.7+0.9*stjSt); // stor fisk (mange stjerner) kjemper MYE hardere enn småfisk
-  if(P.turbo) reelSec*=0.5;  // turbosnella: halverer kamptida
+  if(P.turbo) reelSec*=1-0.5*riggK();  // 0,50 med fersk rigg, 0,75 med utslitt  // turbosnella: halverer kamptida
   if(hookedSuper) reelSec*=0.5; // superagnet bedøver — halv kamptid
   var tRise = 3.4*f.pull;   // spenn opp/sek når man holder
-  if(P&&P.belte) tRise *= 0.75;   // kampbeltet: du tar imot med kroppen, ikke med snøret
+  if(P&&P.belte) tRise *= 1-0.25*riggK();  // 0,75 med fersk rigg, 0,875 med utslitt   // kampbeltet: du tar imot med kroppen, ikke med snøret
   var tFall = 16;           // spenn ned/sek når man slipper
   var pRise = 100/reelSec;  // innhaling %/sek når man holder
   var utras=runT>0; // fisken tar ut line: snella hviner, og den vanlige snellelyden tar over straks den slapper av
@@ -2936,7 +2947,9 @@ function dekkFlyttetVarsel(){
   setTimeout(function(){ notice("Menyen har flyttet ned 👇 Lyden ligger i fiskerkortet."); },900);
 }
 function verkstedVarsel(){ var v=$("#kjellVarsel"); if(!v||!P)return;
-  v.classList.toggle("on", !P.motorOk || !P.propOk || svcPct()<15 || smorPct()<=0 || Date.now()>(P.havnNeste||Infinity)); }
+  // <=0 for riggen, ikke <15: forvarsel er for det som kan HAVARERE. Riggen havarerer
+  // ikke — den blir bare treg. Telefonen fra Kjell er forvarselet her.
+  v.classList.toggle("on", !P.motorOk || !P.propOk || svcPct()<15 || smorPct()<=0 || Date.now()>(P.havnNeste||Infinity) || riggPct()<=0); }
 
 /* ---------- Fiskerkortet ----------
    Alt som gjør spilleren til en person og ikke bare en pengesum. Tallene her er de
@@ -3042,6 +3055,20 @@ function tilNaustet(){ Snd.ambienceOff(); Snd.utrasLyd(false); phase="idle"; hoo
 /* ---------- Butikk ---------- */
 var shopLock=false;
 function smorPct(){ return Math.max(0,Math.round(100*(1-(Date.now()-(P.smorTs||0))/(100*864e5)))); } // bunnsmørning holder 100 døgn
+// RIGGEN. Salt og sjø tærer på turbosnelle, kampbelte og ekkolodd. Mønsteret er hentet
+// fra de tre barene som alt finnes: ingenting FORSVINNER, det blir bare dårligere.
+// riggK() er matematisk innelåst i [0.5, 1.0], så ingen bonus kan krysse 1.0 og bli en
+// straff. Turbosnella kan aldri forlenge kamptida, beltet aldri øke spennet, ekkoloddet
+// aldri senke sjansen for sjelden fisk. Det er formen på formelen som garanterer det,
+// ikke en if-test noen kan glemme.
+var RIGG_DOGN=120; // full riggservice holder 120 døgn — 20 lengre enn bunnsmørninga, så
+                   // de to barene ikke bunner samtidig (minste felles multiplum 600 døgn)
+function riggPct(){ if(!P||!P.riggTs)return 100;   // manglende felt = FULL levetid. Ingen
+  // defaultvei, ingen gammel fane og ingen serverfeil skal kunne produsere slitt rigg —
+  // bare gratis levetid. !P.riggTs fanger undefined, null og 0 før regnestykket, så NaN
+  // kan aldri nå pctBar(). Math.min klamper et framtidig tidsstempel til 100, ikke 130.
+  return Math.max(0,Math.min(100,Math.round(100*(1-(Date.now()-P.riggTs)/(RIGG_DOGN*864e5))))); }
+function riggK(){ return 0.5+0.005*riggPct(); }    // 1,00 ved 100 % — 0,50 ved 0 %
 function svcPct(){ return Math.max(0,Math.round(100*(1-(P.svc||0)/250))); } // full service holder 250 turer
 function pctBar(p){ var f=p<=20?"#c0392b":p<=50?"#d8642e":"#3f8f5f";
   return '<span class="fuel" style="display:inline-block;vertical-align:-2px;width:70px"><i style="width:'+p+'%;background:'+f+'"></i></span> <b>'+p+' %</b>'; }
@@ -3156,13 +3183,13 @@ function openShop(){
   // Det store utstyret ligg nedst med vilje: bensin og agn er det ein kjøper
   // heile tida, beltet og vinsjen éin gong. Eigarens val.
   if(shopTab==="utstyr"){
-  addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — halverer kamptida mot alt som biter.",30000,P.turbo?"Montert":false,function(){P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");},
+  addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — halverer kamptida mot alt som biter.",30000,P.turbo?"Montert":false,function(){P.riggTs=Date.now(); P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");},
     (P.turbo||P.rod>=2)?null:"Krever "+RODS[2].n);
   addShop(L,'<img src="spill/assets/kampbelte.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎽 \'" alt=""> Kampbelte',
     "Stangenden står i koppen på beltet, så du tar imot med hoftene i stedet for med armene. Spennet stiger 25 % saktere — storfisken fra Dypt og Djuphavet får deg ikke like lett.",12000,P.belte?"Montert":false,
-    function(){P.belte=true; notice("Kampbeltet sitter! 🎽 «Det er ikkje fisken som ryk snøret, gut — det er båten som rullar.»");},
+    function(){P.riggTs=Date.now(); P.belte=true; notice("Kampbeltet sitter! 🎽 «Det er ikkje fisken som ryk snøret, gut — det er båten som rullar.»");},
     (P.belte||P.rod>=2)?null:"Krever "+RODS[2].n);
-  addShop(L,'<img src="spill/assets/ekkolodd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Ekkolodd',"Ser stimene før de ser deg — 50 % større sjanse for sjelden og legendarisk fisk.",4000,P.ekko?"Montert":false,function(){P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");},
+  addShop(L,'<img src="spill/assets/ekkolodd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Ekkolodd',"Ser stimene før de ser deg — 50 % større sjanse for sjelden og legendarisk fisk.",4000,P.ekko?"Montert":false,function(){P.riggTs=Date.now(); P.ekko=true; notice("Ekkoloddet er montert — nå ser du hva som rører seg der nede 📡");},
     (P.ekko||P.rod>=1)?null:"Krever "+RODS[1].n);
   if(P.rod>=2){ if(vinsjKlar()){ addShop(L,'<img src="spill/assets/sluk-agnrigg.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪛 \'" alt=""> Vinsj og dyphavsrigg',"Elektrisk vinsj og 500 m line: låser opp djuphavet (300–500 m) — hågjel, havmus, blåkveite … og ryktene om noe større.",15000,P.vinsj?"Montert":false,function(){P.vinsj=true; P.lures.agnrigg=(P.lures.agnrigg||0)+3; updateDepthLocks(); notice("Vinsjen er montert! Djuphavet venter 🪛 (3 agnrigger på kjøpet)");}); }
     else L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0">🪛 Rusten ser mot horisonten: «Djuphavsriggen er i bestilling — vinsj og fem hundre meter line. Kom innom snart!»</p>'); }
@@ -3189,7 +3216,23 @@ function openKjell(){
   var vp=svcPct(), vKost=Math.max(0,Math.round((fors?2500:3500)*(100-vp)/100));
   addShop(L,'<img src="spill/assets/verksted-service.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Båtservice',
     (P.svc>250?"<b>Motoren hoster — STOR fare for havari!</b> ":"")+"Full service holder i 250 turer. "+pctBar(vp)+(fors?" Forsikringspris! 🛡️":" (billigere med forsikring)"),
-    vKost, vp>=100, function(){ P.svc=0; notice("Motoren spinner som en katt igjen — takk, Propell-Kjell! ⚙️"); });
+    vKost, vp>=100, function(){ P.svc=0;
+      if(P.invest&&P.invest.prat)P.invest.prat.kjellSvc=false; // …så Kjell kan varsle om NESTE syklus også
+      notice("Motoren spinner som en katt igjen — takk, Propell-Kjell! ⚙️"); });
+  // Riggservice — Rusten selger utstyret, Kjell holder det i stand. Prisen skalerer med
+  // hva som faktisk er montert, så en som bare har ekkolodd betaler 200, ikke 1500.
+  // Vinsjen står bevisst utenfor: den er ikke en bonus, den er døra til Djuphavet, og
+  // ingen tilstand skal kunne stenge en sone noen har betalt 15 000 kr for.
+  var rp=riggPct(), rFull=(P.turbo?900:0)+(P.belte?400:0)+(P.ekko?200:0);
+  if(rFull>0){
+    var rListe=[P.turbo?"snella":0,P.belte?"beltet":0,P.ekko?"loddet":0].filter(Boolean).join(", ");
+    addShop(L,'<img src="spill/assets/verksted-riggservice.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Riggservice',
+      "Salt og sjø tærer på "+rListe+" — full overhaling holder i "+RIGG_DOGN+" døgn. "+pctBar(rp)
+        +(rp<=0?" <b>Slitt rigg — utstyret virker på halv styrke.</b>":"")
+        +(P.vinsj?" Vinsjen tar Kjell gratis.":""),
+      Math.max(0,Math.round(rFull*(100-rp)/100)), rp>=100,
+      function(){ P.riggTs=Date.now(); notice("Kjell gikk over hele riggen — snella synger igjen 🎛️✨"); });
+  }
   if(!P.motorOk){
     addShop(L,'<img src="spill/assets/verksted-motor-reparasjon.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🔧 \'" alt=""> Reparer motoren',"Kjell åpner den, banner litt, og får liv i den igjen.",8000,false,function(){P.motorOk=true; notice("Motoren durer igjen! ⚙️");});
   }
@@ -3249,7 +3292,8 @@ function gaveTrekk(dag,n){ // stabil «tilfeldighet» per spiller og dag — ing
   return s%n; }
 function streakGave(dag){
   var uke=Math.floor((dag-1)/7);
-  if(dag>=30 && dag%30===0) return {e:"🏆",img:"streak-gavekasse.png",t:"5000 kr og gratis service hos Kjell!",gi:function(){P.kr+=5000; P.svc=0;}};
+  if(dag>=30 && dag%30===0) return {e:"🏆",img:"streak-gavekasse.png",t:"5000 kr og gratis service hos Kjell!",gi:function(){P.kr+=5000; P.svc=0;
+    if(P.invest&&P.invest.prat)P.invest.prat.kjellSvc=false;}};
   if(dag>=14 && dag%14===0) return {e:"✨",img:"agn-rusten-spesial.png",t:"1500 kr og en boks Rustens Spesialagn!",gi:function(){P.kr+=1500; P.agn.rustenspesial=(P.agn.rustenspesial||0)+1;}};
   switch(((dag-1)%7)+1){
     case 1: if(dag===1)return null; var k1=Math.min(300,100+50*uke); // bare aller første dag er uten gave
@@ -4499,6 +4543,24 @@ function pratSjekk(){
       +"meldingene igjen. Vi går ut torsdag hvis været står. Du bestemmer helt "
       +"selv — jeg maser ikke på deg.");
   }
+
+  // 6. KJELL, RIGGEN: den minst tidskritiske grunnen som finnes, derfor sist. Alt over er
+  //    enten hastende (motorservice: femten kast igjen), følelsesmessig tidsatt (Odd,
+  //    Solveig) eller dagsaktuelt. Grenen setter q.kjellDag og stenger døgnet for alle.
+  //    Vinduet har ingen NEDRE grense: spiller familien ikke de siste ukene før riggen
+  //    går tom, ville et vindu som stengte på 0 % latt dem komme tilbake til en treg
+  //    snelle uten forklaring. Slik blir telefonen en forklaring når den kommer for sent.
+  //    q.kjellRigg lagrer riggTs, ikke true — da nullstiller flagget seg selv i samme
+  //    øyeblikk spilleren betaler, uten en eneste opprydningslinje på betalingsstedet.
+  if(q.kjellRigg!==P.riggTs && (P.turbo||P.belte||P.ekko) && riggPct()<=15
+     && t>=9 && t<17 && q.kjellDag!==dk && q.rustenDag!==dk){
+    q.kjellRigg=P.riggTs; q.kjellDag=dk; anropTelt(); saveAll();
+    return pratRing("kjell", "Det er Kjell. Jeg så over riggen din sist du var innom. "
+      +"Salt og sjø tar alt til slutt — det begynner å bli tregt. Ingenting ryker, altså. "
+      +"Det gjør det ikke. Det blir bare seigere, litt for hver uke, og du merker det først "
+      +"den dagen du får noe stort på. Stikk innom, så går jeg over hele greia på en formiddag."
+      +(P.vinsj?" Vinsjen tar jeg gratis. Den skal aldri stoppe deg ute på djupet.":""));
+  }
   return false;
 }
 // Fiskerne legger meldingen i innboksen FØRST, så et ubesvart anrop aldri
@@ -4523,6 +4585,7 @@ function pratInit(){ investInit(); var iv=P.invest;
   if(!iv.prat)iv.prat={};
   var q=iv.prat;
   if(q.kjellSvc==null)q.kjellSvc=false;   // varslet for denne servicesyklusen
+  if(q.kjellRigg==null)q.kjellRigg=0;     // riggTs det sist ble varslet om — nullstiller seg selv ved service
   if(q.oddNaar==null)q.oddNaar=0;         // havtid da Odd skal ringe
   if(q.oddSist==null)q.oddSist=0;
   if(q.neiRad==null)q.neiRad=0;           // nei på rad — tre slår av ringinga
