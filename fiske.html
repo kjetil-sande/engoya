@@ -1956,7 +1956,7 @@ function escape(){ ringFred(60);
   setHint("Du ga for mye slakk og fisken glapp! Sluken er i god behold."); setAction("Kast ut"); saveAll();
   if(navigator.vibrate)navigator.vibrate(30);
 }
-function snap(){ ringFred(60);
+function snap(){ ringFred(60); oddMerk();
   if(hooked) flee={f:hooked, len:hookedLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool();
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); $("#reelui").classList.remove("on"); Snd.snap();
@@ -2775,6 +2775,7 @@ setInterval(updatePotBtn,15000);
 // Turen går i ekte tid. Vi sjekkar om han er tilbake, og om nokon vil spørje deg om noko.
 setInterval(function(){ if(!P)return;
   try{ investSjekk(); }catch(e){}
+  try{ if(pratSjekk())return; }catch(e){}   // ein samtale tek slotten framfor eit sal
   try{ investTilbod(); }catch(e){}
   try{ innRydd(); innPrikk(); }catch(e){}
 },20000);
@@ -4117,6 +4118,107 @@ function anropTelt(){
   var dk=dagKey(); iv.anrop[dk]=(iv.anrop[dk]||0)+1; iv.anrop.sistTid=(P.tidMs||0);
   Object.keys(iv.anrop).forEach(function(k){ if(k!=="sistTid"&&k!==dk)delete iv.anrop[k]; });
 }
+// Fem grunner til å ringe som ikke er penger. Rekkefølgen er prioritet:
+// Kjell varsler før en straff, Odd trøster etter et tap, Rusten redder en
+// glemt teine, Ingrid sier at hun selv går hjem, Solveig slår telefonen på
+// igjen etter at du har slått den av med tre nei.
+// Odd ringer bare når du mistet noe STORT — og ikke oftere enn hver fjortende
+// dag. Ellers blir trøsten en rutine, og da er den ikke trøst lenger.
+function oddMerk(){
+  if(!P||!P.invest||!hooked)return;
+  var q=pratInit();
+  if(q.oddNaar || Date.now()-(q.oddSist||0) < 14*86400000) return;
+  var f=hooked, L=hookedLen||0;
+  var stor = f.trophy || (f.len && L >= f.len[0]+(f.len[1]-f.len[0])*0.5);
+  if(!stor)return;
+  q.oddNaar=(P.tidMs||0) + (3+Math.random()*2)*60000;   // tre-fem minutt havtid
+}
+function pratSjekk(){
+  if(!P||!P.invest)return false;
+  var q=pratInit(), iv=P.invest, dk=dagKey(), t=new Date().getHours();
+  if(!ringKlar()||!anropLedig())return false;
+
+  // 1. KJELL: femten kast før motoren havarerer. Havariet er det eneste
+  //    stedet spillet straffer hardt og brått; en telefon FØR gjør det til
+  //    noe du valgte å overse i stedet for uflaks.
+  if(!q.kjellSvc && (P.svc||0)>=235 && (P.svc||0)<250 && t>=9 && t<17
+     && q.kjellDag!==dk && q.rustenDag!==dk){
+    q.kjellSvc=true; q.kjellDag=dk; anropTelt(); saveAll();
+    return pratRing("kjell", "Det er Kjell. Jeg hørte motoren din da du gikk ut i dag. "
+      +"Den hakker på turtallet. Farlig er det ikke ennå. Men kjører du to uker til "
+      +"på den, står du der ute og ringer meg i stedet for å stikke innom. "
+      +"Bare så du vet det.");
+  }
+
+  // 2. ODD: du mistet en stor fisk for noen minutter siden. Han vil ingenting.
+  if(q.oddNaar && (P.tidMs||0)>=q.oddNaar){
+    q.oddNaar=0; q.oddSist=Date.now(); anropTelt(); saveAll();
+    return pratRing("odd", "Det er Odd. Eg skal ikkje spørje om noko i dag. "
+      +"Eg berre sat her og tenkte på ei kveite eg rauk snøret på i fjor haust. "
+      +"Ho står der framleis, veit du. Dei går ingen stad.");
+  }
+
+  // 3. RUSTEN: han ser blåsa di fra kaia. Teina er den ene tingen i spillet
+  //    som stille sløser bort tiden din mens du gjør noe annet.
+  if(q.rustenDag!==dk && q.kjellDag!==dk && t>=8 && t<20 && P.pots && P.pots.out){
+    var gammal=P.pots.out.some(function(o){ return Date.now()-(+o.setAt||0) > 40*3600000; });
+    if(gammal){ q.rustenDag=dk; anropTelt(); saveAll();
+      return pratRing("rusten", "Det er Rusten. Eg såg blåsa di frå kaia i dag tidleg. "
+        +"Ho har lege der i tre døgn no. Det som står i ei teine så lenge, et opp "
+        +"kvarandre, gut. Dra ho før straumen tek henne.");
+    }
+  }
+
+  // 4. INGRID: du har vært på havet over hundre minutter i dag. Hun sier ikke
+  //    ett ord om tid — hun sier at HUN går hjem. Ingen teller, ingen formaning.
+  if(q.ingridDag!==dk && tidSum(P, Date.now()) > 100*60000){
+    q.ingridDag=dk; anropTelt(); saveAll();
+    var to=Math.random()<0.5;
+    return pratRing("ingrid", to
+      ? "Ingrid her. Jeg er på vei inn. Jeg går aldri lenger enn til Måkeskjæret, "
+        +"jeg — fem timer, så har jeg fått det jeg skulle ha. Vi ses ute i morgen."
+      : "Ingrid. Jeg snur nordover nå. Det står fisk igjen der ute, det gjør det "
+        +"alltid. Den blir stående til i morgen, den også.");
+  }
+
+  // 5. SOLVEIG: du slo av telefonen med tre nei, og har selv åpnet en melding
+  //    igjen. Da er telefonen noe du STYRER, ikke noe som skjer med deg.
+  if(q.solveigNaar && (P.tidMs||0)>=q.solveigNaar){
+    q.solveigNaar=0; anropTelt(); saveAll();
+    return pratRing("solveig", "Det er Solveig på Fjordperle. Jeg så du hadde lest "
+      +"meldingene igjen. Vi går ut torsdag hvis været står. Du bestemmer helt "
+      +"selv — jeg maser ikke på deg.");
+  }
+  return false;
+}
+// Fiskerne legger meldingen i innboksen FØRST, så et ubesvart anrop aldri
+// mister noe. Kjell og Rusten kan ikke — innboksen slår opp i fiskerVed og
+// gir opp på fremmede. Ringer det ikke for dem, er samtalen bare borte.
+function pratRing(k, tekst){
+  var pe=pratPerson(k); if(!pe)return false;
+  var m={type:"prat", fk:k, tekst:tekst};
+  if(fiskerVed[k]) m=innLegg(m);
+  m.pe=pe;
+  if(!ringOpp(pe, m) && !fiskerVed[k]) notice(pe.n+" prøvde å ringe deg 📞");
+  return true;
+}
+var PRAT_FOLK={
+  kjell:{k:"kjell", n:"Propell-Kjell", b:"Verkstedet på Ørnes", img:"portrett-kjell.png",
+         res:"logoikon-propell-kjell.gif", mal:"bm", ho:false},
+  rusten:{k:"rusten", n:"Rusten", b:"Agn & redskap", img:"rusten-mot-hoyre.gif",
+          mal:"nn", ho:false}
+};
+function pratPerson(k){ return PRAT_FOLK[k] || fiskerVed[k] || null; }
+function pratInit(){ investInit(); var iv=P.invest;
+  if(!iv.prat)iv.prat={};
+  var q=iv.prat;
+  if(q.kjellSvc==null)q.kjellSvc=false;   // varslet for denne servicesyklusen
+  if(q.oddNaar==null)q.oddNaar=0;         // havtid da Odd skal ringe
+  if(q.oddSist==null)q.oddSist=0;
+  if(q.neiRad==null)q.neiRad=0;           // nei på rad — tre slår av ringinga
+  if(q.solveigNaar==null)q.solveigNaar=0;
+  return q;
+}
 // Ingen ringjer før du har 10 000 kr — då har du fått taket på sjølve fisket først.
 // Etter det opnar fiskarane seg gradvis: 35 %-taket gjer at Trygve, som går lengst
 // ut og har dyrast tur, fyrst tek kontakt når du har rundt 16 000 på konto.
@@ -4137,6 +4239,7 @@ function investTilbod(){
   investInit(); var iv=P.invest;
   if(iv.tur || !P || P.kr<TERSKEL) return;
   if((P.tidMs||0) < (iv.nesteTid||0)) return;              // havtid, ikkje veggklokke
+  if((iv.prat&&iv.prat.neiRad||0)>=3) return;              // tre nei = du har sagt frå. Solveig slår på igjen.
   if(!ringKlar()) return;                                  // fred, innsegling, ingen dialog, ikkje midt i fisket
   if(!anropLedig()) return;                                // døgntak og pause mellom anrop
   // vel ein fiskar — dei du ikkje har prøvd kjem oftast, dei du har sagt nei til fleire gonger kjem sjeldnare
@@ -4190,7 +4293,26 @@ function visHist(f){
 // og dei får speil:true i tabellen — filene er urørte.
 function settAvatar(el,f){ if(!el)return; el.src="spill/assets/"+f.img;
   el.classList.toggle("speil", !!f.speil); }
+// Samtale uten salg. Samme kort, men andelsvalget og fasitlinja er borte —
+// dette handler ikke om penger, og da skal det ikke stå tall i det.
+function visPrat(p, tekst, ordForOrd){
+  settAvatar($("#smsAvatar"), p);
+  $("#smsNavn").textContent=p.n;
+  $("#smsKjenne").textContent=p.kjenne||"";
+  $("#smsBaat").textContent=p.b;
+  var t=(tekst||"").replace(/\{NAVN\}/g,(P&&P.name)||"du");
+  if(ordForOrd) skrivUt($("#smsTekst"), t); else $("#smsTekst").textContent=t;
+  $("#smsSum").textContent="";
+  $("#smsFakta").textContent="";
+  $("#smsLott").style.display="none";
+  var h=$("#smsHist"); if(h){ h.style.display="none"; h.textContent=""; }
+  $("#smsNei").textContent="Takk";
+  $("#smsJa").style.display="none";
+  smsAktiv=null;
+  settKlokke(); modal("smsModal",true);
+}
 function visSms(f, timar, ordForOrd){
+  $("#smsJa").style.display="";   // kan ha vore skjult av ein samtale
   settAvatar($("#smsAvatar"), f);
   $("#smsNavn").textContent=f.n;
   $("#smsKjenne").textContent=f.kjenne||"";
@@ -4249,8 +4371,9 @@ function ringTaImot(){
   if(ringT){ clearTimeout(ringT); ringT=null; }
   var m=ringMeld; ringMeld=null; modal("ringModal",false);
   if(!m)return;
-  var f=fiskerVed[m.fk]; if(!f)return;
+  var f=m.pe||fiskerVed[m.fk]; if(!f)return;
   if(!m.lest){ m.lest=true; innPrikk(); saveAll(); }
+  if(m.type==="prat"){ visPrat(m.pe||f, m.tekst, true); return; }
   if(m.type==="resultat"){
     var u=null; for(var i=0;i<UTFALL.length;i++) if(UTFALL[i].k===m.utfall)u=UTFALL[i];
     visResultat(f, u||UTFALL[2], m.inn, m.ut, true);
@@ -4308,7 +4431,9 @@ function visInnboks(){
   } else P.innboks.forEach(function(m){
     var f=fiskerVed[m.fk]; if(!f)return;
     var d=document.createElement("button"); d.className="innrad"+(m.lest?"":" ulest");
-    var forh = m.type==="tilbod"
+    var forh = m.type==="prat"
+      ? (m.tekst||"").replace(/^[^.]*\.\s*/,"").slice(0,44)
+      : m.type==="tilbod"
       ? (Date.now()-m.tid<MELD_LIV ? "Vil ha deg med på en tur" : "Tilbudet er gått ut")
       : (m.ut>m.inn ? "+"+(m.ut-m.inn).toLocaleString("nb")+" kr" : (m.ut? (m.ut-m.inn).toLocaleString("nb")+" kr" : "Tomhendt"));
     d.innerHTML='<img class="'+(f.speil?"speil":"")+'" src="spill/assets/'+f.img+'" alt="" onerror="this.style.visibility=\'hidden\'">'
@@ -4329,6 +4454,9 @@ function apneMelding(m){
   var f=fiskerVed[m.fk]; if(!f)return;
   if(!m.lest){ m.lest=true; innPrikk(); saveAll(); }
   modal("innModal",false);
+  var qS=pratInit();
+  if((qS.neiRad||0)>=3 && !qS.solveigNaar){ qS.neiRad=0; qS.solveigNaar=(P.tidMs||0)+10*60000; }
+  if(m.type==="prat"){ visPrat(f, m.tekst, false); return; }
   if(m.type==="resultat"){
     var u=null; for(var i=0;i<UTFALL.length;i++) if(UTFALL[i].k===m.utfall)u=UTFALL[i];
     visResultat(f, u||UTFALL[2], m.inn, m.ut, true);
@@ -4352,6 +4480,7 @@ function investJa(){
   P.invest.tur={fk:a.f.k, sum:pris, del:a.del, start:Date.now(), ferdig:Date.now()+a.timar*3600000,
                 seed:(Math.random()*1e9)|0, niv:investNivaa(a.f.k)};
   P.invest.nesteTid=(P.tidMs||0)+2*TILBOD_PAUSE;
+  var qJa=pratInit(); qJa.neiRad=0;
   if(a.meld) P.innboks=P.innboks.filter(function(x){return x.id!==a.meld.id;});
   innPrikk(); hud(); saveAll(); modal("smsModal",false);
   var f2=a.f, nn=(f2.mal==="nn");
@@ -4360,6 +4489,7 @@ function investJa(){
 }
 function investNei(){
   if(smsAktiv){ P.invest.nei[smsAktiv.f.k]=(P.invest.nei[smsAktiv.f.k]||0)+1;
+    var q0=pratInit(); q0.neiRad=(q0.neiRad||0)+1;   // tre på rad = ekte stille
     if(smsAktiv.meld) P.innboks=P.innboks.filter(function(x){return x.id!==smsAktiv.meld.id;});
     smsAktiv=null; }
   innPrikk(); saveAll(); modal("smsModal",false);

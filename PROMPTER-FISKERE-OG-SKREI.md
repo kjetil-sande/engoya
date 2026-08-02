@@ -211,3 +211,21 @@ handler mer om å la stanga stå av seg selv, og det gjør vi ikke i spillet.
 
 Beltet er også det eneste av utstyret i butikken som sitter på *deg* og ikke
 på båten, og det er en fin liten forskjell.
+
+---
+
+## 9. Propell-Kjell — portrett
+
+Fil: **`portrett-kjell.png`** — **256 × 256**, transparent
+
+Kjell ringer nå når motoren nærmer seg service, femten kast før havariet. Han
+har bare en verkstedlogo i dag, og den ser rar ut som rundt profilbilde i
+anropsvinduet. Fram til fila finnes brukes logoen, så ingenting brekker.
+
+Vises som rund avatar på 132 px når han ringer, og 72 px i meldingen — så
+ansiktet må fylle rammen. Bryst og opp, ikke helfigur.
+
+16-bit pixel art character portrait, head and shoulders, centred, facing slightly to the **right**. A Norwegian boat mechanic in his sixties: broad weather-beaten face, grey stubble, deep smile lines, reading glasses pushed up onto his forehead. Faded blue work overalls over a grey t-shirt, both marked with old oil stains that will never wash out. A rag hanging from the chest pocket. One ear slightly cauliflowered. Calm, unhurried expression — a man who has heard every engine noise there is and is not impressed by any of them. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette. Fully transparent background, no text, no frame, no logo.
+
+**Merk:** han skal se mot HØYRE, som de seks fiskerne vi speilvendte — alle ser
+inn mot navnet sitt.
