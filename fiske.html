@@ -1263,6 +1263,7 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
     Object.keys(ny.players).forEach(function(nm){ if(famFarlig(nm))return; var np=ny.players[nm]; if(!np)return;
       if(!egen(DB.players,nm)){ DB.players[nm]=np; return; }
       var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
+      flettTrofe(lp, np.trofe);   // to faner/vindauge på same lagring skal aldri kunne tømme skapet
       if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.belte)lp.belte=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.dager)lp.dager=flettDager(lp.dager,np.dager); if(np.tidligereNavn)lp.tidligereNavn=np.tidligereNavn; if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; }
     });
   }catch(e){} });
@@ -1289,7 +1290,7 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
 function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvasker)
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
     propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
-    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd}; }
+    lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, trofe:P.trofe, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd}; }
 function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
   return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.ekko && !lp.belte
     && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
@@ -1299,6 +1300,7 @@ function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE felte
   if(g.dager)lp.dager=flettDager(lp.dager,g.dager);
   if(g.tidligereNavn)lp.tidligereNavn=g.tidligereNavn;
   if(g.sattDekk)lp.sattDekk=1;
+  flettTrofe(lp, g.trofe);   // troféskapet er monotont — det er derfor det ligger her og ikke i gearInn
   if(g.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,+g.streakBest||0); // rekordstreaken er monoton
   ["vinsj","ekko","turbo","belte"].forEach(function(k){ if(g[k])lp[k]=true; }); }
 function gearInn(lp,g){ if(!g||typeof g!=="object")return; // på fjernspeil: siste innsending vinner (ts-porten står utenfor)
@@ -3225,12 +3227,26 @@ function trofeMulige(){ var n=TROFE_EKSTRA.length;
 function trofeVerdi(k){ if(k==="rolex")return 3000; if(k==="rolexpusset")return 0;
   var d=trofeDef(k); if(!d)return 0;
   return d.trofeSelg || (d.auksjon ? (d.auksjon===true?5000:d.auksjon.selg) : 0); }
-function selgTrofe(i){ if(!P||!P.trofe||!P.trofe[i])return;
-  var t=P.trofe[i], kr=trofeVerdi(t.k); if(!kr)return;
-  var d=trofeDef(t.k), navn=d?d.n.split(/\s+[—–]\s+/)[0]:t.k;
+function selgTrofe(k, ts){ if(!P||!P.trofe)return;
+  var i=-1;
+  for(var j=0;j<P.trofe.length;j++) if(P.trofe[j].k===k && +P.trofe[j].ts===+ts){ i=j; break; }
+  if(i<0)return;
+  var kr=trofeVerdi(k); if(!kr)return;
+  var d=trofeDef(k), navn=d?d.n.split(/\s+[—–]\s+/)[0]:k;
   P.trofe.splice(i,1); P.kr+=kr; hud(); saveAll(); Snd.coin();
   notice("Solgt til Rusten — "+kr.toLocaleString("nb")+" kr 💰");
   renderTrofe(); }
+// Union på (nøkkel, tidspunkt), nyeste først. Et skap kan bare vokse — en
+// gammel kopi fra en annen enhet skal aldri kunne tømme det som står her.
+function flettTrofe(lp, inn){
+  if(!Array.isArray(inn)||!inn.length)return;
+  var sett={}, ut=[];
+  (Array.isArray(lp.trofe)?lp.trofe:[]).concat(inn).forEach(function(t){
+    if(!t||typeof t.k!=="string")return;
+    var n=t.k+"@"+(+t.ts||0); if(sett[n])return; sett[n]=1; ut.push({k:t.k, ts:+t.ts||0}); });
+  ut.sort(function(a,b){return b.ts-a.ts;});
+  lp.trofe=ut.slice(0,160);
+}
 function leggITrofe(k){ if(!P)return; P.trofe=P.trofe||[];
   P.trofe.unshift({k:k, ts:Date.now()}); if(P.trofe.length>120)P.trofe.length=120; saveAll(); }
 // SESONGKALENDER — gjør sesongen til samling i stedet for hindring. Uten den vet ikke
@@ -3276,20 +3292,22 @@ function renderTrofe(){
     +(liste.length>uT?' <span class="muted">('+liste.length+' i skapet)</span>':'')+'</p>'
     +'<div class="pfstolpe"><i style="width:'+Math.round(uT/mT*100)+'%"></i></div>');
   var g=document.createElement("div"); g.className="trofegrid";
+  // Dyreste øverst — det er de man jakter på. Like verdier: nyeste først.
+  liste=liste.slice().sort(function(a,b){ return (trofeVerdi(b.k)-trofeVerdi(a.k)) || (b.ts-a.ts); });
   liste.forEach(function(t){ var d=trofeDef(t.k);
     var kort=document.createElement("div"); kort.className="trofekort";
     var navn=d?d.n.split(/\s+[—–]\s+/)[0].split(". ")[0].replace(/\s*\([^)]*\)\s*$/,"").replace(/[!.]$/,""):t.k; // tittel = første setning
     var bilde=(d&&d.img)?'<img src="spill/assets/'+bildeFil(d.img)+'" alt="" onerror="this.outerHTML=\'<span style=&quot;font-size:30px&quot;>'+(d.e||"🏺")+'</span>\'">':'<span style="font-size:30px">'+((d&&d.e)||"🏺")+'</span>';
-    var verdi=trofeVerdi(t.k), idx=liste.indexOf(t);
+    var verdi=trofeVerdi(t.k);
     kort.innerHTML='<div class="ramme">'+bilde+'</div>'
       +'<div class="tx"><b>'+esc(navn)+'</b>'
       +((d&&d.t)?'<span class="hist">'+esc(d.t)+'</span>':'')
       +'<span class="naar">Funnet '+tidSiden(t.ts).toLowerCase()+'</span>'
-      +(verdi?'<button class="btn sm trofeselg" data-i="'+idx+'">Selg · '+verdi.toLocaleString("nb")+' kr</button>':'')
+      +(verdi?'<button class="btn sm trofeselg" data-k="'+esc(t.k)+'" data-ts="'+(+t.ts||0)+'">Selg · '+verdi.toLocaleString("nb")+' kr</button>':'')
       +'</div>';
     g.appendChild(kort); });
   g.addEventListener("click",function(e){ var b=e.target.closest(".trofeselg"); if(!b)return;
-    selgTrofe(+b.dataset.i); });
+    selgTrofe(b.dataset.k, +b.dataset.ts); });
   box.appendChild(g);
 }
 function renderFam(){
@@ -4253,7 +4271,7 @@ function pratRing(k, tekst){
 }
 var PRAT_FOLK={
   kjell:{k:"kjell", n:"Propell-Kjell", b:"Verkstedet på Ørnes", img:"portrett-kjell.png",
-         res:"logoikon-propell-kjell.gif", mal:"bm", ho:false},
+         res:"logoikon-propell-kjell.gif", mal:"bm", ho:false, speil:true}   // ser mot venstre — speiles inn mot navnet,
   rusten:{k:"rusten", n:"Rusten", b:"Agn & redskap", img:"rusten-mot-hoyre.gif",
           mal:"nn", ho:false}
 };

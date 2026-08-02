@@ -80,6 +80,24 @@ function vaskRolex(r) {
   if (r.bud != null) return { bud: tall(r.bud, 1e6) };
   return undefined;
 }
+const MAKS_TROFE = 160;        // dobbelt av de 86 som finnes. Aldri en grense noen når.
+function vaskTrofe(t) {
+  if (!Array.isArray(t)) return undefined;
+  const ut = [];
+  for (const x of t.slice(0, MAKS_TROFE)) {
+    if (!x || typeof x !== "object") continue;
+    if (typeof x.k !== "string" || !PEN_NOKKEL.test(x.k)) continue;
+    ut.push({ k: x.k.slice(0, 24), ts: tall(x.ts, 9e15) });
+  }
+  return ut.length ? ut : undefined;
+}
+// Union på (nøkkel, tidspunkt). Et skap kan bare vokse.
+function flettTrofe(gml, ny) {
+  const alle = [...(Array.isArray(gml) ? gml : []), ...(Array.isArray(ny) ? ny : [])];
+  const sett = new Map();
+  for (const t of alle) if (t && typeof t.k === "string") sett.set(t.k + "@" + t.ts, t);
+  return [...sett.values()].sort((a, b) => b.ts - a.ts).slice(0, MAKS_TROFE);
+}
 function vaskGear(g) {
   if (!g || typeof g !== "object") return undefined;
   const ut = {};
@@ -92,6 +110,7 @@ function vaskGear(g) {
   const agn = vaskTelleObjekt(g.agn, 40); if (agn) ut.agn = agn;
   const pots = vaskPots(g.pots); if (pots) ut.pots = pots;
   const rolex = vaskRolex(g.rolex); if (rolex) ut.rolex = rolex;
+  const trofe = vaskTrofe(g.trofe); if (trofe) ut.trofe = trofe;
   const dager = vaskDager(g.dager, undefined); if (dager) ut.dager = dager; // manglet i hvitelista — døgnloggen ble kastet
   if (typeof g.tidligereNavn === "string") {
     const tn = g.tidligereNavn.replace(/\p{Cc}/gu, "").trim().slice(0, 14);
@@ -144,6 +163,8 @@ function flettSpiller(fam, p) {
       for (const k of ["streak", "streakDag", "naadeMnd"]) // samme vern for streaken
         if (g[k] == null && gml[k] != null) g[k] = gml[k];
       g.dager = vaskDager(vaskDager(g.dager, undefined), gml.dager); // døgnene flettes, aldri overskrives
+      const tf = flettTrofe(gml.trofe, g.trofe);                     // troféskapet vokser, krymper aldri
+      if (tf.length) g.trofe = tf; else delete g.trofe;
       if (g.tidligereNavn == null && gml.tidligereNavn != null) g.tidligereNavn = gml.tidligereNavn;
       g.rod = Math.max(tall(gml.rod, 99), tall(g.rod, 99));         // kjøpt/opptjent kan aldri
       g.tidMs = Math.max(tall(gml.tidMs, 9e15), tall(g.tidMs, 9e15)); // krympe, uansett klokkerot
