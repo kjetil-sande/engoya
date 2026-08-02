@@ -506,6 +506,10 @@
   .trofekort .tx .hist{display:block;font-size:11.5px;color:var(--ink-soft);line-height:1.3;margin-top:3px}
   .trofekort .tx .naar{display:block;font-family:var(--mono);font-size:10px;opacity:.65;margin-top:4px}
   .trofekort .tx .trofeselg{margin-top:6px;padding:5px 10px;font-size:12px;box-shadow:0 2px 0 var(--wood-dark)}
+  .trofemerke{display:inline-block;margin-left:7px;padding:1px 7px;border-radius:6px;
+    font-size:10px;font-weight:800;letter-spacing:.05em;vertical-align:2px;
+    background:#e6ded0;color:#8a7a62;border:1px solid #cfc3ac}
+  .trofemerke.puss{background:#fdf3d6;color:#9a7418;border-color:var(--gold)}
   .trofekort .tx .trofepuss{margin-top:6px;margin-left:5px;padding:5px 10px;font-size:12px;box-shadow:0 2px 0 #a8801d}
   .trofekort .tx .trofepuss:disabled{opacity:.45;cursor:default}
   .trofetel{text-align:center;margin:2px 0 6px;font-size:14px;color:var(--ink)}
@@ -3253,13 +3257,13 @@ function trofeVerdi(k){ if(k==="rolex")return 3000; if(k==="rolexpusset")return 
   return d.trofeSelg || (d.auksjon ? (d.auksjon===true?5000:d.auksjon.selg) : 0); }
 // Rolexen er den ene tingen i skapet som kan bli noe ANNET enn seg selv.
 var ROLEX_PUSS=35000;
-function kanRestaurere(k){ return k==="rolex" && P && !P.rolex; }
+function kanRestaurere(t){ return t.k==="rolex" && !t.borte && P && !P.rolex; }
 function restaurerTrofe(ts){
   if(!P||!P.trofe||P.rolex||P.kr<ROLEX_PUSS)return;
   var i=-1;
   for(var j=0;j<P.trofe.length;j++) if(P.trofe[j].k==="rolex" && +P.trofe[j].ts===+ts){ i=j; break; }
-  if(i<0)return;
-  P.trofe.splice(i,1); P.kr-=ROLEX_PUSS;
+  if(i<0 || P.trofe[i].borte)return;
+  P.trofe[i].borte="restaurert"; P.kr-=ROLEX_PUSS;
   P.rolex={ferdig:Date.now()+30*864e5};
   hud(); saveAll(); Snd.trophy();
   notice("Rolexen er levert urmakeren ⌚✨ Om 30 dager er ho ferdig — då kan du selje eller behalde henne.");
@@ -3268,10 +3272,10 @@ function restaurerTrofe(ts){
 function selgTrofe(k, ts){ if(!P||!P.trofe)return;
   var i=-1;
   for(var j=0;j<P.trofe.length;j++) if(P.trofe[j].k===k && +P.trofe[j].ts===+ts){ i=j; break; }
-  if(i<0)return;
+  if(i<0 || P.trofe[i].borte)return;          // solgt én gang er solgt for alltid
   var kr=trofeVerdi(k); if(!kr)return;
   var d=trofeDef(k), navn=d?d.n.split(/\s+[—–]\s+/)[0]:k;
-  P.trofe.splice(i,1); P.kr+=kr; hud(); saveAll(); Snd.coin();
+  P.trofe[i].borte="solgt"; P.kr+=kr; hud(); saveAll(); Snd.coin();
   notice("Solgt til Rusten — "+kr.toLocaleString("nb")+" kr 💰");
   renderTrofe(); }
 // Union på (nøkkel, tidspunkt), nyeste først. Et skap kan bare vokse — en
@@ -3279,9 +3283,13 @@ function selgTrofe(k, ts){ if(!P||!P.trofe)return;
 function flettTrofe(lp, inn){
   if(!Array.isArray(inn)||!inn.length)return;
   var sett={}, ut=[];
+  var indeks={};
   (Array.isArray(lp.trofe)?lp.trofe:[]).concat(inn).forEach(function(t){
     if(!t||typeof t.k!=="string")return;
-    var n=t.k+"@"+(+t.ts||0); if(sett[n])return; sett[n]=1; ut.push({k:t.k, ts:+t.ts||0}); });
+    var n=t.k+"@"+(+t.ts||0);
+    if(sett[n]){ if(t.borte)indeks[n].borte=t.borte; return; }   // solgt på ÉN enhet er solgt overalt
+    sett[n]=1; var e={k:t.k, ts:+t.ts||0}; if(t.borte)e.borte=t.borte;
+    indeks[n]=e; ut.push(e); });
   ut.sort(function(a,b){return b.ts-a.ts;});
   lp.trofe=ut.slice(0,160);
 }
@@ -3336,13 +3344,15 @@ function renderTrofe(){
     var kort=document.createElement("div"); kort.className="trofekort";
     var navn=d?d.n.split(/\s+[—–]\s+/)[0].split(". ")[0].replace(/\s*\([^)]*\)\s*$/,"").replace(/[!.]$/,""):t.k; // tittel = første setning
     var bilde=(d&&d.img)?'<img src="spill/assets/'+bildeFil(d.img)+'" alt="" onerror="this.outerHTML=\'<span style=&quot;font-size:30px&quot;>'+(d.e||"🏺")+'</span>\'">':'<span style="font-size:30px">'+((d&&d.e)||"🏺")+'</span>';
-    var verdi=trofeVerdi(t.k);
+    var verdi=t.borte?0:trofeVerdi(t.k);
+    var merke=t.borte==='solgt'?'<span class="trofemerke">SOLGT</span>'
+             :t.borte==='restaurert'?'<span class="trofemerke puss">RESTAURERT</span>':'';
     kort.innerHTML='<div class="ramme">'+bilde+'</div>'
-      +'<div class="tx"><b>'+esc(navn)+'</b>'
+      +'<div class="tx"><b>'+esc(navn)+merke+'</b>'
       +((d&&d.t)?'<span class="hist">'+esc(d.t)+'</span>':'')
       +'<span class="naar">Funnet '+tidSiden(t.ts).toLowerCase()+'</span>'
       +(verdi?'<button class="btn sm trofeselg" data-k="'+esc(t.k)+'" data-ts="'+(+t.ts||0)+'">Selg · '+verdi.toLocaleString("nb")+' kr</button>':'')
-      +(kanRestaurere(t.k)?'<button class="btn sm gold trofepuss" data-ts="'+(+t.ts||0)+'"'
+      +(kanRestaurere(t)?'<button class="btn sm gold trofepuss" data-ts="'+(+t.ts||0)+'"'
         +(P.kr<ROLEX_PUSS?' disabled title="Krever '+ROLEX_PUSS.toLocaleString("nb")+' kr"':'')
         +'>Restaurer · '+ROLEX_PUSS.toLocaleString("nb")+' kr</button>':'')
       +'</div>';

@@ -87,7 +87,9 @@ function vaskTrofe(t) {
   for (const x of t.slice(0, MAKS_TROFE)) {
     if (!x || typeof x !== "object") continue;
     if (typeof x.k !== "string" || !PEN_NOKKEL.test(x.k)) continue;
-    ut.push({ k: x.k.slice(0, 24), ts: tall(x.ts, 9e15) });
+    const e = { k: x.k.slice(0, 24), ts: tall(x.ts, 9e15) };
+    if (x.borte === "solgt" || x.borte === "restaurert") e.borte = x.borte;
+    ut.push(e);
   }
   return ut.length ? ut : undefined;
 }
@@ -95,7 +97,12 @@ function vaskTrofe(t) {
 function flettTrofe(gml, ny) {
   const alle = [...(Array.isArray(gml) ? gml : []), ...(Array.isArray(ny) ? ny : [])];
   const sett = new Map();
-  for (const t of alle) if (t && typeof t.k === "string") sett.set(t.k + "@" + t.ts, t);
+  for (const t of alle) {
+    if (!t || typeof t.k !== "string") continue;
+    const n = t.k + "@" + t.ts, har = sett.get(n);
+    if (har) { if (t.borte) har.borte = t.borte; continue; }  // solgt er en ENVEIS dør
+    sett.set(n, { ...t });
+  }
   return [...sett.values()].sort((a, b) => b.ts - a.ts).slice(0, MAKS_TROFE);
 }
 function vaskGear(g) {
