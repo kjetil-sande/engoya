@@ -65,7 +65,7 @@ VENTA = {
     "arkivet-ikon.png":     "under arbeid — faller tilbake til fangstbok.png",
     # Tettere beskårne portretter til de tre dekksknappene. Faller tilbake på
     # portrett-*.png til de kommer, så knappene ser riktige ut i mellomtiden.
-    "knapp-rusten.png":     "under arbeid — faller tilbake til rusten-mot-hoyre.gif",
+    "knapp-rusten.png":     "under arbeid — faller tilbake til portrett-rusten.png",
     "knapp-kjell.png":      "under arbeid — faller tilbake til portrett-kjell.png",
     "knapp-maalfrid.png":   "under arbeid — faller tilbake til portrett-maalfrid.png",
 }
@@ -159,6 +159,28 @@ if knapp == kode and len(knapp) == 4:
     print("  OK  dybdevelgeren viser samme bensinpris som koden tar (%s)" % "/".join(knapp))
 else:
     print("  FEIL  knappene sier %s, koden tar %s" % (knapp, kode)); sys.exit(1)
+PY
+
+python3 - <<'PY'
+# NAPPET MENS DU HOLDT. Krokinga skjer i pointerdown, så står fingeren alt nede
+# fordi du lokka, kommer det ingen ny pointerdown og fisken slipper unna uten at
+# du gjorde noe galt. Tre ting må stå, og de henger sammen:
+import io, sys
+s = io.open('fiske.html', encoding='utf-8').read()
+krav = [
+  ("rå fingertilstand finnes",        'var fingerNede=false;'),
+  ("pointerdown setter den",          'function down(e){ fingerNede=true;'),
+  ("pointerup nullstiller den",       'function up(){ fingerNede=false;'),
+  ("bit mens fingeren er nede kroker","if(fingerNede){ tryHook(); return; }"),
+  ("krokinga beholder grepet",        'holding=fingerNede;'),
+]
+mangler = [n for n, t in krav if t not in s]
+# Og det gamle som MÅ være borte: tryHook satte holding=false uansett.
+if 'phase="reel"; tension=0; prog=0; holding=false;' in s:
+    mangler.append("tryHook slipper grepet igjen (holding=false)")
+print("  OK  nappet-mens-du-holdt: alle %d leddene står" % len(krav) if not mangler
+      else "  FEIL  " + "; ".join(mangler))
+sys.exit(1 if mangler else 0)
 PY
 
 echo ""

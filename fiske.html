@@ -2302,15 +2302,25 @@ function commitBite(){
   hooked=cf; hookedLen=(sceneFish&&sceneFish.sizeLen)||Math.round(rnd(cf.len[0],cf.len[1])); phase="bite"; hookWindow=1.6;
   if(!sceneFish)sceneFish={f:cf,x:(lureSX/W)||0.5,y:lureTargetY}; else sceneFish.committing=true;
   if(nappKlar()){ visNapp(); setHint(""); }
+  // NAPPET MENS DU HOLDT: krokinga skjer i pointerdown, men står fingeren alt nede
+  // fordi du lokka, kjem det ingen ny pointerdown — og du mista fisken utan å ha
+  // gjort noko feil. Du måtte sleppe og trykke på nytt. Ligg fingeren nede når det
+  // napper, ER du alt stram: krok med ein gong.
+  if(fingerNede){ tryHook(); return; }
   else setHint(erfaren()?"":"NAPP! Hold inne snella og dra inn! 🐟");
   setAction("SVEIV (hold)",true); Snd.bite();
   if(navigator.vibrate)navigator.vibrate(30);
 }
 var hookFace=false, storjeTried=false, runT=0, runPow=0, hookedLen=0, hookedSuper=false; // + utras + kroket lengde + superagn-bedøvelse
+// «holding» er spillets tilstand og nullstilles ved fasebytte. Denne er RÅ: ligger
+// fingeren nede akkurat nå, ja eller nei. Uten den mister vi grepet i det øyeblikket
+// fisken biter mens du står og lokker — se nappet-mens-du-holder under.
+var fingerNede=false;
 function tryHook(){
   if(phase!=="bite")return;
   hookFace=!!(sceneFish&&sceneFish.vx>0);
-  phase="reel"; tension=0; prog=0; holding=false; slackT=0; fightT=0; storjeTried=false; runT=0; runPow=0;
+  phase="reel"; tension=0; prog=0; slackT=0; fightT=0; storjeTried=false; runT=0; runPow=0;
+  holding=fingerNede;   // held du framleis, held du — ikkje slepp taket for spelaren
   dogShow(1,null); Snd.bjeff(); if(Math.random()<0.4)setTimeout(Snd.fiskerAha,180); // hunden gira — og gubben: «aha!»
   $("#reelui").classList.add("on");
   setHint(erfaren()?"":"Hold inne SVEIV for å dra inn — men ikke spreng snøret!");
@@ -5526,15 +5536,17 @@ var ab=$("#actionBtn");
 function fang(e){ // pekaren følgjer knappen sjølv om fingeren glir — utan dette
   try{ if(e && e.pointerId!=null && ab.setPointerCapture) ab.setPointerCapture(e.pointerId); }catch(_){}
 }
-function down(e){ if(phase==="bite"){ tryHook(); holding=true; fang(e); e.preventDefault(); return; } // krok i det fingeren treffer — hele 1,6 s-vinduet
+function down(e){ fingerNede=true;
+  if(phase==="bite"){ tryHook(); holding=true; fang(e); e.preventDefault(); return; } // krok i det fingeren treffer — hele 1,6 s-vinduet
   if(phase==="reel"||phase==="pilkfiske"||phase==="wait"){holding=true; fang(e); e.preventDefault();} }
-function up(){ if(holding&&phase==="pilkfiske")pilkPump(); holding=false; }
+function up(){ fingerNede=false; if(holding&&phase==="pilkfiske")pilkPump(); holding=false; }
 ab.addEventListener("pointerdown",down); window.addEventListener("pointerup",up);
 window.addEventListener("pointercancel",up); window.addEventListener("blur",up); // slipp SVEIV om nettleseren avbryter pekeren
 document.addEventListener("visibilitychange",function(){ if(document.hidden)up(); });
 window.addEventListener("keydown",function(e){ if(!$("#sea").classList.contains("on")||document.querySelector(".modal.on"))return; if(e.code==="Space"){ e.preventDefault();
+  fingerNede=true;
   if(phase==="idle")cast(); else if(phase==="bite"){ tryHook(); holding=true; } else if(phase==="reel"||phase==="pilkfiske"||phase==="wait")holding=true; } });
-window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("on"))return; if(e.code==="Space"){ if(holding&&phase==="pilkfiske")pilkPump(); holding=false; } });
+window.addEventListener("keyup",function(e){ if(!$("#sea").classList.contains("on"))return; if(e.code==="Space"){ fingerNede=false; if(holding&&phase==="pilkfiske")pilkPump(); holding=false; } });
 
 // logo hvis fila finnes
 (function(){ // Opningsbiletet: eitt sekund i ro nede ved skjæret, mjuk panorering opp til

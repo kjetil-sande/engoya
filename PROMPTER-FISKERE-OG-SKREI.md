@@ -580,3 +580,45 @@ shadow, no frame.
 **Merk:** 19b leser tydeligere i butikken, siden man ser at det er en snelle det
 handler om. 19a er penere som gjenstand. Legg inn den du liker — filnavnet er
 det samme.
+
+---
+
+## 20. Rusten i full figur — til butikken
+
+Fil: **`rusten-staaende.png`** — ca. **420 × 560**, transparent
+
+Siste sted gammelstilen står igjen. Portrettet hans (§18) sitter allerede på
+dekksknappen og på telefonen, men **butikkmodalen** viser fortsatt den gamle
+finkornede helfiguren. Når denne lander bytter jeg den inn, og de tre stedene
+viser samme mann.
+
+**Slik brukes den:** hun står bak butikkskiltet, 150 px høy, akkurat som
+Målfrid står bak Arkivet-skiltet og Kjell bak sitt. Skiltet legger seg over
+nederste tredel, så alt under brystet blir dekket — ikke bruk tid der.
+
+**Det som må matche** (samme krav som §18 — dette er hele poenget):
+
+- **Store, synlige piksler.** Tegn som om ramma var ca. 110 × 150 og så
+  forstørret — ikke 420 × 560 med fine detaljer.
+- **Hard mørk kontur** hele veien rundt figuren.
+- **Få farger, flater i stedet for overganger.** Ingen myk blending.
+- Han ser mot **venstre**, som Kjell og Målfrid gjør i sine helfigurer.
+- Ingen skygge, ingen bakgrunn, ingen gulv — alt under blir liggende oppå
+  skiltet.
+
+**Samme mann som §18:** mørk marineblå skipperlue med ankermerke, fullt hvitt
+skjegg og bart, pipe i munnviken med tynn røyk, mørk grønn-grå kabelstrikket
+høyhalsgenser, brun slitt selebukse med spenner. **Armene i kors over brystet**
+— det er posituren folk kjenner ham på.
+
+16-bit pixel art of an **elderly Northern Norwegian fisherman**, shown from the
+**hips up**, standing and facing **left**, **arms folded across his chest**.
+**Dark navy skipper's cap with a small anchor badge**, **full white beard and
+moustache**, a **wooden pipe** in the corner of his mouth with a thin curl of
+smoke. Dark grey-green **cable-knit turtleneck** under **worn brown oilskin bib
+overalls** with buckled straps. Calm, dry, quietly amused — a man who has seen
+everything and is not impressed. **Chunky visible pixels as if drawn on a
+110×150 grid then enlarged**, **hard dark outline around the whole figure**,
+flat blocks of colour with no soft shading and no blending, strict pixel grid,
+no anti-aliasing, ordered dithering only, limited 24-colour palette. Fully
+transparent background, no shadow, no floor, nothing behind him.
