@@ -260,22 +260,32 @@
   .pfbolk h4{margin:0 0 5px;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
   /* Anmeldelsen: fem stjerner og noen ord. Stjernene skal treffes med en tommel
      helt ned til 320 px bredde — derfor clamp, ikke faste piksler. */
-  .stjrad{display:flex;justify-content:center;gap:clamp(3px,2.2vw,9px);margin:9px 0 3px}
-  .stj{background:none;border:0;padding:2px 1px;cursor:pointer;line-height:1;color:#c3b18c;
-    font-size:clamp(31px,9vw,40px);transition:color .12s,transform .1s}
-  .stj.pa{color:var(--gold);text-shadow:0 1px 0 var(--wood-dark)}
+  .stjrad{display:flex;justify-content:center;gap:clamp(4px,2.6vw,11px);margin:10px 0 4px}
+  /* Fisken er bred og lav — den fyller full bredde, men bare 72 % av høyden.
+     Derfor styrer BREDDEN størrelsen (1em), og høyden følger av seg selv.
+     Stjerna, som ligger bak som reserve, arver samme font-size. */
+  .stj{position:relative;background:none;border:0;padding:0;margin:0;cursor:pointer;
+    line-height:0;color:#c3b18c;font-size:clamp(40px,12vw,54px);transition:transform .1s}
   .stj:active{transform:scale(.86)}
-  /* Fisken arver størrelsen fra stjerna den erstatter (1em), så clampen over
-     gjelder begge. Én fil holder: «av» er den samme fisken avmettet og dempet,
-     ikke et eget bilde. Derfor MÅ fisken være varm i fargen — en grå fisk ville
-     sett like slukket ut tent som slukket. */
-  .stj img{display:block;width:1em;height:1em;image-rendering:pixelated;
-    filter:grayscale(1) brightness(.72);opacity:.58;transition:filter .12s,opacity .12s}
-  .stj.pa img{filter:none;opacity:1}
-  .stj b{font-weight:400}
-  /* Stjerna står bak som reserve. Så lenge bildet er i DOM-en er den skjult;
-     mangler fila, fjerner onerror bildet, og stjerna trer fram av seg selv. */
+  .stj b{font-weight:400;line-height:1}
+  /* De to fiskene er rammet helt likt (full bredde, 71,8 % høyde, midtstilt), så
+     de dekker hverandre eksakt. Den grå ligger i flyten og bestemmer størrelsen;
+     den gylne ligger oppå og tones inn. Ingen bytting av src — ingen blink. */
+  /* Speilet, så fisken svømmer MOT femmeren. Skalaen vokser til høyre, og da
+     skal nesa peke dit også — ikke tilbake mot éneren. Rein CSS: skal de en dag
+     tegnes om høyrevendte, er det denne ene linja som ryker.
+     Trykk-animasjonen ligger på knappen, ikke bildet, så de to ikke slåss. */
+  .stj img{display:block;width:1em;height:auto;image-rendering:pixelated;
+    transform:scaleX(-1)}
+  .stj .ftent{position:absolute;left:0;top:0;opacity:0;transition:opacity .14s}
+  .stj.pa .ftent{opacity:1}
+  /* Skulle den grå mangle, er den gylne blitt førstebarn — da må DEN ta plassen
+     i flyten, ellers faller knappen sammen til ingenting. */
+  .stj .ftent:first-child{position:static;opacity:1}
+  /* Stjerna står bakerst som siste reserve. Så lenge det er et bilde igjen i
+     knappen er den skjult; ryker begge, trer den fram av seg selv. */
   .stj img ~ b{display:none}
+  .stj.pa b{color:var(--gold);text-shadow:0 1px 0 var(--wood-dark)}
   /* html og body har user-select:none for at spillet ikke skal markere seg selv
      under fiskingen. Skrivefeltet må derfor be om lov til å bli skrevet i. */
   #anmTekst{width:100%;min-height:92px;resize:vertical;font-family:var(--font);font-size:15px;
@@ -1520,9 +1530,10 @@ function kortHent(){
    familien på én telefon — at far har anmeldt skal ikke skjule knappen for
    datteren. Derfor er den et vanlig monotont profilfelt, ikke localStorage. */
 var ANM_URL="/.netlify/functions/anmeldelser", anmStjerner=0, anmSender=false;
-// Terningen skal etter hvert være fem små fisker i stedet for fem stjerner.
-// Legg fila i spill/assets, så bytter det seg selv — mangler den, står stjerna.
-var ANM_IKON="spill/assets/anm-fisk.png";
+// Terningen er fem små fisker. Den blekede er utgangspunktet — fem uvalgte
+// fisker — og den gylne tones inn oppå den du trykker på og alle til venstre for
+// den. Mangler begge filene, står stjerna igjen (se CSS-en).
+var ANM_FISK="spill/assets/anm-fisk.png", ANM_FISK_AV="spill/assets/anm-fisk-ikke-valgt.png";
 
 function anmTeller(){
   var t=$("#anmTekst"), c=$("#anmTeller"); if(!t||!c)return;
@@ -1540,7 +1551,9 @@ function anmSkjema(){
   var s="";
   for(var i=1;i<=5;i++)
     s+='<button class="stj" data-s="'+i+'" aria-label="'+i+' av 5">'
-      +'<img src="'+ANM_IKON+'" alt="" onerror="this.remove()"><b>\u2605</b></button>';
+      +'<img class="fav" src="'+ANM_FISK_AV+'" alt="" onerror="this.remove()">'
+      +'<img class="ftent" src="'+ANM_FISK+'" alt="" onerror="this.remove()">'
+      +'<b>\u2605</b></button>';
   return '<h2 style="text-align:center">Si hva du synes</h2>'
     +'<p class="muted" style="font-size:14px;margin:0;text-align:center">Stjerner, og noen ord om du har lyst. Vi samler dem opp n\u00e5. Blir det nok av dem, kan de bli vist fram \u2014 med kallenavnet ditt ved siden av.</p>'
     +'<div class="stjrad">'+s+'</div>'
