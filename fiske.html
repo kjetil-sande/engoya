@@ -1358,10 +1358,46 @@ function rigNavn(){ var a=aktivAgn(); if(a)return a.n; var u=aktivSluk(); return
 
 /* ---------- Lagring (per spiller) ---------- */
 var SAVE="storkveita-save-v1";
+// Hvor mye står det i denne lagringen? Brukes til å avgjøre om en sikkerhetskopi
+// er verdt å beholde. Vi teller det som ikke kan gjenskapes: troféer og arter.
+function lagringsVekt(d){
+  var t=0, a=0;
+  Object.keys((d&&d.players)||{}).forEach(function(nm){ var pl=d.players[nm]||{};
+    t += ((pl.trofe||[]).length); a += Object.keys(pl.caught||{}).length; });
+  return {trofe:t, arter:a};
+}
+// TRYGG-KOPIEN. «-bak» skrives på nytt ved HVER lasting, så mister du noe, blir
+// kopien overskrevet med tapet i samme åndedrag — sikkerhetsnettet forsvinner
+// akkurat når du trenger det. «-trygg» er derfor monoton: den byttes bare ut
+// når den nye lagringen har MINST like mange troféer og arter. Krymper noe,
+// blir den gamle stående, og loadAll fletter den inn igjen.
+function trygglagre(raw, d){
+  try{
+    var ny=lagringsVekt(d), gml=null;
+    try{ var b=localStorage.getItem(SAVE+"-trygg"); if(b)gml=lagringsVekt(JSON.parse(b)); }catch(e){}
+    if(!gml || (ny.trofe>=gml.trofe && ny.arter>=gml.arter)) localStorage.setItem(SAVE+"-trygg", raw);
+  }catch(e){}
+}
 function loadAll(){ // brukerdata skal ALDRI gå tapt: god lagring sikkerhetskopieres, korrupt lagring faller tilbake til kopien
   try{ var raw=localStorage.getItem(SAVE);
     if(raw){ var d=JSON.parse(raw);
-      if(d&&d.players&&typeof d.players==="object"){ try{localStorage.setItem(SAVE+"-bak",raw)}catch(e){} return d; } }
+      if(d&&d.players&&typeof d.players==="object"){
+        // Har trygg-kopien noe vi mangler, hentes det inn igjen — samme monotone
+        // regel som gjelder mot serveren: skapet vokser, det krymper aldri.
+        try{ var tb=localStorage.getItem(SAVE+"-trygg");
+          if(tb){ var td=JSON.parse(tb);
+            if(td&&td.players) Object.keys(td.players).forEach(function(nm){
+              var gml=td.players[nm], lp=d.players[nm];
+              if(!gml||!lp||lp.remote)return;              // speil rører vi ikke
+              if((gml.trofe||[]).length) flettTrofe(lp, gml.trofe);
+            }); }
+        }catch(e){}
+        try{localStorage.setItem(SAVE+"-bak",raw)}catch(e){}
+        // MERK: vi lagrer den HELBREDEDE tilstanden, ikke råteksten vi leste.
+        // Første forsøk sammenlignet på d (helbredet) men skrev raw (tomt), så
+        // trygg-kopien ble overskrevet med tapet den nettopp hadde reddet oss fra.
+        try{ trygglagre(JSON.stringify(d), d); }catch(e){}
+        return d; } }
   }catch(e){}
   try{ var r2=localStorage.getItem(SAVE); if(r2)localStorage.setItem(SAVE+"-korrupt",r2); }catch(e){} // bevar den korrupte for manuell berging
   try{ var b=localStorage.getItem(SAVE+"-bak");
@@ -3876,8 +3912,12 @@ function renderArtDetalj(f){ // MIN side om arten (familiens tall står i Rekord
 function trofeDef(k){ for(var i=0;i<FUNN.length;i++)if(FUNN[i].k===k)return FUNN[i]; return null; }
 // Rolexen finst i to utgåver som ikkje står i FUNN-tabellen.
 var TROFE_EKSTRA=["rolex","rolexpusset"];
+// Nevneren i «N av M ulike rariteter». Den MÅ følge samme regel som avgjør om
+// et funn kan settes i skapet — ellers teller vi mot et tall som ikke stemmer.
+// Verdi avgjør ingenting her: en halvrusten kniv til ti kroner er like mye en
+// raritet som en sølvbarre, og det er hele poenget med et skap.
 function trofeMulige(){ var n=TROFE_EKSTRA.length;
-  FUNN.forEach(function(f){ if((f.trofeKun||f.trofeSelg||f.auksjon||f.laas)&&!f.museum)n++; });
+  FUNN.forEach(function(f){ if(!f.levande && !f.rolexFunn && !f.museum)n++; });
   return n; }
 // Prisen ligger i funntabellen, så vi trenger ingen ny tilstand — et trofé
 // vet alltid hva Rusten ville gitt for det.
