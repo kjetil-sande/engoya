@@ -208,6 +208,22 @@ sys.exit(1 if feil else 0)
 PY
 
 node verktoy-trofetest.mjs | tail -1
+node verktoy-trofevern.mjs | tail -1
+python3 - <<'PY'
+# Telleren «N av M» og regelen for hva som KAN bli trofé må bruke samme unntak.
+# Driver de fra hverandre, teller skapet mot et tall som ikke finnes.
+import io, re, sys
+s = io.open('fiske.html', encoding='utf-8').read()
+regel = re.search(r'if\(!l\.valg && ([^)]*)\)\{ l\.valg=v;', s)
+teller = re.search(r'FUNN\.forEach\(function\(f\)\{ if\(([^)]*)\)n\+\+;', s)
+if not regel or not teller:
+    print("  FEIL  fant ikke begge reglene"); sys.exit(1)
+def felt(t): return sorted(re.findall(r'!\w+\.(\w+)', t))
+a, b = felt(regel.group(1)), felt(teller.group(1))
+print("  OK  telleren og skapet bruker samme unntak (%s)" % ", ".join(a) if a == b
+      else "  FEIL  skapet unntar %s, telleren unntar %s" % (a, b))
+sys.exit(0 if a == b else 1)
+PY
 
 echo ""
 echo "── Server og panel ──────────────────────────────────"
