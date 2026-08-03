@@ -207,6 +207,8 @@ print("  OK  silkesnøret kan faktisk ryke — utenfor begge de monotone listene
 sys.exit(1 if feil else 0)
 PY
 
+node verktoy-trofetest.mjs | tail -1
+
 echo ""
 echo "── Server og panel ──────────────────────────────────"
 node verktoy-servertest.mjs      | tail -1
