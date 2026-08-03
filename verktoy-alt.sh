@@ -64,9 +64,6 @@ VENTA = {
     # ikonet bruker den gamle boka, og overskriften «📖 Arkivet» står til logoen
     # lander. Fjern linjene her når filene kommer, så vokter sjekken dem videre.
     "arkivet-ikon.png":     "under arbeid — faller tilbake til fangstbok.png",
-    # Fem små fisker i stedet for fem stjerner i anmeldelsen. Til fila kommer,
-    # står stjerna igjen av seg selv (img ~ b i CSS-en).
-    "anm-fisk.png":         "under arbeid — faller tilbake til stjerne",
     # Tettere beskårne portretter til de tre dekksknappene. Faller tilbake på
     # portrett-*.png til de kommer, så knappene ser riktige ut i mellomtiden.
     "knapp-rusten.png":     "under arbeid — faller tilbake til portrett-rusten.png",

@@ -659,21 +659,23 @@ må de være tykke nok til å synes ved 60 px.
 
 ## 22. Terningen i anmeldelsen — fem små fisker
 
-Fil: **`anm-fisk.png`** — **256 × 256**, transparent
+Filer: **`anm-fisk.png`** (valgt) og **`anm-fisk-ikke-valgt.png`** (uvalgt) —
+begge **256 × 256**, transparent. *Begge er på plass; dette står igjen som
+oppskrift om du vil tegne nye.*
 
-Når noen legger igjen en anmeldelse, gir de 1–5 av noe. Akkurat nå står det fem
-stjerner der. Vi vil ha fem **små, runde fisker** i stedet. Legg fila i
-`spill/assets/`, så bytter spillet dem inn av seg selv — kommer den aldri, står
-stjerna igjen, og ingenting ryker.
+Når noen legger igjen en anmeldelse, gir de 1–5 fisker. De fem starter bleke, og
+den gylne tones inn oppå de du velger.
 
-**Tre ting fisken må tåle, uansett hvilken variant du velger:**
+**Fire ting fisken må tåle:**
 
-1. **Den vises på 31–40 px.** Alt finere enn ca. fem piksler forsvinner. Ingen
-   skjell, ingen finneribber, ingen pupill inni pupillen.
-2. **Den må være varm i fargen** — gyllen, kobber, rustrød. Den slukkede
-   tilstanden lages ved å avmette den samme fila, så en fisk som allerede er grå
-   eller blå ser like død ut tent som slukket. Dette er det viktigste kravet.
-3. **Den må fylle ruta si.** Fem på rad skal stå jevnt. En lang, smal fisk gir
+1. **Den vises på 40–54 px bred.** Alt finere enn ca. fem piksler forsvinner.
+   Ingen skjell, ingen finneribber, ingen pupill inni pupillen.
+2. **De to filene må være rammet HELT likt** — samme motiv, samme plassering i
+   ruta, bare avmettet. De ligger oppå hverandre, så flytter fisken seg en piksel
+   mellom filene, hopper den når du trykker.
+3. **Tegn fisken VENSTREVENDT.** Spillet speiler den i CSS, så den svømmer mot
+   femmeren. Tegner du den høyrevendt, ender den opp med å peke feil vei.
+4. **Den må fylle ruta si.** Fem på rad skal stå jevnt. En lang, smal fisk gir
    luft i midten og ser rotete ut — derfor rund.
 
 Felles hale på alle tre: `Chunky visible pixels, hard dark outline, flat blocks
