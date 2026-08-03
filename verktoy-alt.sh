@@ -19,6 +19,7 @@ io.open('/tmp/spill.js', 'w', encoding='utf-8').write('\n'.join(b))
 node --check /tmp/spill.js                  && echo "  OK  fiske.html"
 node --check netlify/functions/familierekorder.mjs && echo "  OK  familierekorder"
 node --check netlify/functions/statistikk.mjs      && echo "  OK  statistikk"
+node --check netlify/functions/anmeldelser.mjs     && echo "  OK  anmeldelser"
 python3 -c "
 import io, re
 s = io.open('kontrollpanel.html', encoding='utf-8').read()
@@ -63,6 +64,9 @@ VENTA = {
     # ikonet bruker den gamle boka, og overskriften «📖 Arkivet» står til logoen
     # lander. Fjern linjene her når filene kommer, så vokter sjekken dem videre.
     "arkivet-ikon.png":     "under arbeid — faller tilbake til fangstbok.png",
+    # Fem små fisker i stedet for fem stjerner i anmeldelsen. Til fila kommer,
+    # står stjerna igjen av seg selv (img ~ b i CSS-en).
+    "anm-fisk.png":         "under arbeid — faller tilbake til stjerne",
     # Tettere beskårne portretter til de tre dekksknappene. Faller tilbake på
     # portrett-*.png til de kommer, så knappene ser riktige ut i mellomtiden.
     "knapp-rusten.png":     "under arbeid — faller tilbake til portrett-rusten.png",
@@ -231,6 +235,8 @@ node verktoy-servertest.mjs      | tail -1
 node verktoy-paneltest.mjs       | tail -1
 node verktoy-uketest.mjs         | tail -1
 node verktoy-innloggingstest.mjs | tail -1
+python3 verktoy-doervakt.py      | tail -1
+node verktoy-anmeldtest.mjs      | tail -1
 
 echo ""
 echo "═══ ALT GRØNT ═══"
