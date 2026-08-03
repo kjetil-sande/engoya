@@ -35,6 +35,21 @@
     .prog .kort{border-left:3px solid var(--gull)}
     .utst .kort{border-left:3px solid #c98a5a}
     .kode .kort{border-left:3px solid #7d93a0}
+    .anm .kort{border-left:3px solid #d97ea0}
+    /* Anmeldelsene er tekst, ikke tall — de får hele bredden, ikke rutenettet. */
+    .anmrad{background:var(--kort);border:1px solid var(--kant);border-left:3px solid #d97ea0;
+      border-radius:12px;padding:12px 15px;margin-bottom:9px}
+    .anmrad.ja{border-color:var(--gronn);border-left-color:var(--gronn)}
+    .anmtopp{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+    .anmstj{color:var(--gull);letter-spacing:.09em;font-size:1.05rem}
+    .anmstj i{color:#3d5f70;font-style:normal}
+    .anmnavn{font-weight:700;font-size:.9rem}
+    .anmnaar{color:var(--daempa);font-size:.78rem;margin-left:auto}
+    .anmtekst{margin:7px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+    .anmknapp{margin-top:9px;display:flex;gap:8px}
+    .anmknapp button{margin-top:0;padding:6px 13px;font-size:.84rem}
+    .anmknapp .av{background:transparent;color:var(--daempa);border:1px solid var(--kant)}
+    .anmknapp .slett{background:transparent;color:var(--rod);border:1px solid var(--rod)}
     h2 .ikon{margin-right:7px;font-size:1.05rem;vertical-align:-1px}
     /* Ukerapporten er ikke et kort blant kortene — den er svaret, og skal se sånn ut. */
     .uke{background:linear-gradient(160deg,#1b4459,#14364a);border:1px solid var(--gull);
@@ -75,6 +90,7 @@
   <h1>Kontrollpanel</h1>
   <p class="sub" id="sub">Jakten på storkveita</p>
   <div id="ut"><div class="melding">Henter …</div></div>
+  <div id="anmUt"></div>
   <p class="fot" id="fot"></p>
 </main>
 
@@ -354,12 +370,87 @@ function tegn(d){
   $("#fot").textContent = d.merknad + " Tallene er samlet — ingen navn forlater serveren.";
 }
 
-function hent(){
-  var n = "";
-  try{ n = localStorage.getItem(NOKKEL) || ""; }catch(e){}
+// Begge hentingene MÅ bruke samme innlogging. Ett sted å endre den.
+function hodet(){
+  var n = ""; try{ n = localStorage.getItem(NOKKEL) || ""; }catch(e){}
   var h = {};
   if(gToken) h["Authorization"] = "Bearer " + gToken;
   else if(n) h["x-nokkel"] = n;
+  return h;
+}
+
+/* ---------- Anmeldelser: lese, godkjenne, slette ----------
+   Alt kommer inn ugodkjent. Ingenting vises noe sted før du har trykket
+   «Godkjenn» — akkurat nå vises de ingen steder uansett, vi bare samler. */
+function stjerner(n){
+  var s = ""; for(var i=1;i<=5;i++) s += (i<=n ? "★" : "<i>★</i>");
+  return s;
+}
+function tegnAnm(d){
+  var a = d.anmeldelser || [];
+  if(!a.length){ $("#anmUt").innerHTML =
+    '<h2><span class="ikon">⭐</span>Anmeldelser</h2>' +
+    '<div class="melding">Ingen har sagt noe ennå.</div>'; return; }
+
+  var h = '<h2><span class="ikon">⭐</span>Anmeldelser</h2><div class="rutenett anm">' +
+    kort(no(d.snitt), "snitt av " + a.length, "gull") +
+    kort(d.godkjente, "godkjent") +
+    kort(a.length - d.godkjente, "venter på deg",
+         (a.length - d.godkjente) ? "rod" : "") +
+    '</div><div style="margin-top:12px">';
+
+  a.forEach(function(r){
+    h += '<div class="anmrad' + (r.godkjent ? " ja" : "") + '">' +
+      '<div class="anmtopp"><span class="anmstj">' + stjerner(r.stjerner) + '</span>' +
+      (r.kallenavn ? '<span class="anmnavn">' + esc(r.kallenavn) + '</span>' : "") +
+      '<span class="anmnaar">' + new Date(r.naar).toLocaleDateString("nb",
+        {day:"numeric",month:"short"}) + (r.godkjent ? " · godkjent" : "") + '</span></div>' +
+      (r.melding ? '<p class="anmtekst">' + esc(r.melding) + '</p>' : "") +
+      '<div class="anmknapp">' +
+        '<button data-godkjenn="' + esc(r.id) + '"' + (r.godkjent ? ' class="av"' : "") + '>' +
+          (r.godkjent ? "Trekk tilbake" : "Godkjenn") + '</button>' +
+        '<button class="slett" data-slett="' + esc(r.id) + '">Slett</button>' +
+      '</div></div>';
+  });
+  $("#anmUt").innerHTML = h + '</div>';
+
+  $("#anmUt").querySelectorAll("[data-godkjenn]").forEach(function(b){
+    b.onclick = function(){ anmGjer({ godkjenn: b.dataset.godkjenn }, b); };
+  });
+  $("#anmUt").querySelectorAll("[data-slett]").forEach(function(b){
+    b.onclick = function(){
+      // Sletting kan ikke angres. Spør først.
+      if(!confirm("Slette denne anmeldelsen for godt?")) return;
+      anmGjer({ slett: b.dataset.slett }, b);
+    };
+  });
+}
+function anmGjer(kropp, knapp){
+  knapp.disabled = true;
+  var h = hodet(); h["Content-Type"] = "application/json";
+  fetch("/.netlify/functions/anmeldelser", { method:"POST", headers:h,
+    body: JSON.stringify(kropp) })
+    .then(function(r){ if(!r.ok) throw 0; return hentAnm(); })
+    .catch(function(){ knapp.disabled = false; alert("Gikk ikke. Prøv igjen."); });
+}
+function hentAnm(){
+  return fetch("/.netlify/functions/anmeldelser", { headers: hodet() })
+    .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+    .then(function(sv){
+      if(sv.ok){ tegnAnm(sv.d); return; }
+      // Tallene kom gjennom, men anmeldelsene ikke. Da er det de to funksjonene
+      // som har fått ulik innlogging i Netlify — det skal du få vite, ikke gjette.
+      $("#anmUt").innerHTML = '<h2><span class="ikon">⭐</span>Anmeldelser</h2>' +
+        '<div class="melding">' + esc(sv.d && sv.d.feil ? sv.d.feil : "Fikk ikke hentet dem.") +
+        '<div class="liten">Tallene over kom gjennom, så nøkkelen virker. Sjekk at ' +
+        'anmeldelser-funksjonen er publisert.</div></div>';
+    })
+    .catch(function(){});
+}
+
+function hent(){
+  var n = ""; try{ n = localStorage.getItem(NOKKEL) || ""; }catch(e){}
+  var h = hodet();
 
   $("#ut").innerHTML = '<div class="melding">Henter …</div>';
   fetch("/.netlify/functions/statistikk", { headers: h })
@@ -378,7 +469,7 @@ function hent(){
       if(sv.status === 401){ try{ localStorage.removeItem(NOKKEL); }catch(e){}
         spor(n ? "Feil nøkkel. Prøv igjen." : null); return; }
       if(d.feil){ $("#ut").innerHTML = '<div class="melding">' + esc(d.feil) + '</div>'; return; }
-      tegn(d);
+      tegn(d); hentAnm();
     })
     .catch(function(){ $("#ut").innerHTML =
       '<div class="melding">Fikk ikke kontakt med serveren. Panelet virker bare på engoya.no, ikke lokalt.</div>'; });

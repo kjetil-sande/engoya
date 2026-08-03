@@ -258,6 +258,31 @@
   #pfLyd{margin-top:9px;font-size:13.5px;padding:6px 11px}
   .pfbolk{margin-top:12px}
   .pfbolk h4{margin:0 0 5px;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  /* Anmeldelsen: fem stjerner og noen ord. Stjernene skal treffes med en tommel
+     helt ned til 320 px bredde — derfor clamp, ikke faste piksler. */
+  .stjrad{display:flex;justify-content:center;gap:clamp(3px,2.2vw,9px);margin:9px 0 3px}
+  .stj{background:none;border:0;padding:2px 1px;cursor:pointer;line-height:1;color:#c3b18c;
+    font-size:clamp(31px,9vw,40px);transition:color .12s,transform .1s}
+  .stj.pa{color:var(--gold);text-shadow:0 1px 0 var(--wood-dark)}
+  .stj:active{transform:scale(.86)}
+  /* Fisken arver størrelsen fra stjerna den erstatter (1em), så clampen over
+     gjelder begge. Én fil holder: «av» er den samme fisken avmettet og dempet,
+     ikke et eget bilde. Derfor MÅ fisken være varm i fargen — en grå fisk ville
+     sett like slukket ut tent som slukket. */
+  .stj img{display:block;width:1em;height:1em;image-rendering:pixelated;
+    filter:grayscale(1) brightness(.72);opacity:.58;transition:filter .12s,opacity .12s}
+  .stj.pa img{filter:none;opacity:1}
+  .stj b{font-weight:400}
+  /* Stjerna står bak som reserve. Så lenge bildet er i DOM-en er den skjult;
+     mangler fila, fjerner onerror bildet, og stjerna trer fram av seg selv. */
+  .stj img ~ b{display:none}
+  /* html og body har user-select:none for at spillet ikke skal markere seg selv
+     under fiskingen. Skrivefeltet må derfor be om lov til å bli skrevet i. */
+  #anmTekst{width:100%;min-height:92px;resize:vertical;font-family:var(--font);font-size:15px;
+    line-height:1.45;padding:9px 10px;border-radius:10px;border:2px solid var(--wood-dark);
+    background:#fbf3df;color:var(--ink);user-select:text;-webkit-user-select:text}
+  #anmTeller{text-align:right;font-size:12.5px;margin:4px 2px 0}
+  #anmTeller.naer{color:var(--red);font-weight:700}
   /* Fiskerkortet skal kunne leses høyt fra skjermen og tastes inn på en annen telefon.
      Monospace og god luft mellom tegnene, så «rn» ikke leses som «m». */
   .pfkort{font-family:var(--mono);font-size:15px;font-weight:700;letter-spacing:.04em;
@@ -827,6 +852,11 @@
   <div class="modal" id="profilModal"><div class="cardwrap" style="max-width:360px">
     <img src="spill/assets/knapp-lukk.png" id="profilLukk" class="lukkx" alt="Lukk">
     <div class="card" id="profilKort"></div>
+  </div></div>
+
+  <div class="modal" id="anmModal"><div class="cardwrap" style="max-width:360px">
+    <img src="spill/assets/knapp-lukk.png" id="anmLukk" class="lukkx" alt="Lukk">
+    <div class="card" id="anmKort"></div>
   </div></div>
 
   <div class="modal" id="streakModal"><div class="cardwrap" style="max-width:340px">
@@ -1479,6 +1509,86 @@ function kortHent(){
   }).catch(function(){ notice("Fikk ikke kontakt akkurat nå — prøv igjen om litt."); });
 }
 
+/* ---------- Anmeldelser: fem stjerner og noen ord ----------
+   Samme oppsett som padelloop.app: alt kommer inn umoderert og vises ingen
+   steder før noen har sett på det. To ting er gjort annerledes med vilje.
+
+   Vi spør ikke om navn. personvern.html lover at spillet aldri gjør det, og
+   kallenavnet spilleren alt har valgt er nok til å skille to anmeldelser.
+
+   «anmeldt» følger SPILLEREN over nett, ikke enheten. Naustet deles av hele
+   familien på én telefon — at far har anmeldt skal ikke skjule knappen for
+   datteren. Derfor er den et vanlig monotont profilfelt, ikke localStorage. */
+var ANM_URL="/.netlify/functions/anmeldelser", anmStjerner=0, anmSender=false;
+// Terningen skal etter hvert være fem små fisker i stedet for fem stjerner.
+// Legg fila i spill/assets, så bytter det seg selv — mangler den, står stjerna.
+var ANM_IKON="spill/assets/anm-fisk.png";
+
+function anmTeller(){
+  var t=$("#anmTekst"), c=$("#anmTeller"); if(!t||!c)return;
+  var n=t.value.length;
+  c.textContent=n+" / 500";
+  c.classList.toggle("naer", n>=460);
+}
+function anmTegn(){
+  $("#anmKort").querySelectorAll(".stj").forEach(function(b){
+    b.classList.toggle("pa", +b.dataset.s<=anmStjerner);
+  });
+  var send=$("#anmSend"); if(send)send.disabled=!anmStjerner||anmSender;
+}
+function anmSkjema(){
+  var s="";
+  for(var i=1;i<=5;i++)
+    s+='<button class="stj" data-s="'+i+'" aria-label="'+i+' av 5">'
+      +'<img src="'+ANM_IKON+'" alt="" onerror="this.remove()"><b>\u2605</b></button>';
+  return '<h2 style="text-align:center">Si hva du synes</h2>'
+    +'<p class="muted" style="font-size:14px;margin:0;text-align:center">Stjerner, og noen ord om du har lyst. Vi samler dem opp n\u00e5. Blir det nok av dem, kan de bli vist fram \u2014 med kallenavnet ditt ved siden av.</p>'
+    +'<div class="stjrad">'+s+'</div>'
+    +'<textarea id="anmTekst" maxlength="500" rows="4" placeholder="Valgfritt. Hva er det beste? Hva skurrer?"></textarea>'
+    +'<p id="anmTeller" class="muted">0 / 500</p>'
+    +'<div class="row" style="gap:8px;margin-top:4px">'
+      +'<button class="btn sm gold" id="anmSend" disabled style="flex:1">Send</button>'
+      +'<button class="btn sm ghost" id="anmIkke">Ikke n\u00e5</button></div>';
+}
+function anmSend(){
+  if(anmSender||!anmStjerner)return;
+  var t=$("#anmTekst"), melding=t?t.value.slice(0,500).trim():"";
+  anmSender=true; anmTegn();
+  var send=$("#anmSend"); if(send)send.textContent="Sender \u2026";
+  fetch(ANM_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({stjerner:anmStjerner, melding:melding,
+      kallenavn:(P&&P.name)?String(P.name):""})})
+  .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
+  .then(function(){
+    // Flagget settes FØRST når serveren har sagt ja. Ryker nettet underveis,
+    // skal knappen fortsatt st\u00e5 der neste gang \u2014 ellers forsvant anmeldelsen
+    // uten at noen fikk vite det.
+    if(P){ P.anmeldt=true; saveAll(); syncFam(true); kortSync(); }
+    $("#anmKort").innerHTML='<h2 style="text-align:center">Takk</h2>'
+      +'<p class="muted" style="font-size:15px;text-align:center;margin:0 0 12px">Det ble notert i loggboka.</p>'
+      +'<div class="row" style="justify-content:center"><button class="btn sm" id="anmFerdig">Tilbake til havet</button></div>';
+    $("#anmFerdig").onclick=function(){ modal("anmModal",false); };
+    Snd.fiskerLettet();
+  })
+  .catch(function(){
+    anmSender=false;
+    var b=$("#anmSend"); if(b){ b.textContent="Send"; b.disabled=false; }
+    notice("Fikk ikke kontakt med havet \uD83C\uDF0A Pr\u00f8v igjen om litt.");
+  });
+}
+function visAnmeldelse(){
+  anmStjerner=0; anmSender=false;
+  var k=$("#anmKort"); k.innerHTML=anmSkjema();
+  k.querySelectorAll(".stj").forEach(function(b){
+    b.onclick=function(){ anmStjerner=+b.dataset.s; anmTegn(); Snd.click(); };
+  });
+  $("#anmTekst").addEventListener("input", anmTeller);
+  $("#anmSend").onclick=anmSend;
+  $("#anmIkke").onclick=function(){ modal("anmModal",false); };
+  anmTegn(); anmTeller();
+  modal("anmModal",true);
+}
+
 /* ---------- Sikkerhetskopi: hele fangstboka som fil ----------
    Troféskapet, funnene og spilletiden finnes BARE i localStorage på denne enheten.
    Tømmer noen nettleserdata, eller går telefonen i sjøen, er alt borte — familiekoden
@@ -1585,7 +1695,7 @@ function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvas
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
     propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, cooler:P.cooler, silke:P.silke, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
     lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, trofe:P.trofe, funnSett:P.funnSett,
-    invest:P.invest, innboks:P.innboks, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd, riggTs:P.riggTs}; }
+    invest:P.invest, innboks:P.innboks, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd, riggTs:P.riggTs, anmeldt:P.anmeldt}; }
 function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
   return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.cooler && !lp.silke && !lp.ekko && !lp.belte
     && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
@@ -3470,6 +3580,17 @@ function visProfil(){
       +'<button class="btn sm ghost" id="pfKortHent">Hent med kort</button></div></div>';
   }
 
+  // Vi ber om dommen f\u00f8rst n\u00e5r kortet er modent \u2014 samme terskel som fiskerkortet.
+  // Sp\u00f8r du f\u00f8r noen har spilt, f\u00e5r du en dom om ingenting.
+  if(kortModent()){
+    h+='<div class="pfbolk"><h4>Anmeldelse</h4>'
+      +(P.anmeldt
+        ? '<p class="muted" style="font-size:14px;margin:2px 0">Du har lagt igjen en anmeldelse. Takk \u2014 den ble lest.</p>'
+        : '<p class="muted" style="font-size:14px;margin:2px 0 8px">Har du sansen for spillet? Gi det noen stjerner og et par ord.</p>'
+          +'<button class="btn sm" id="pfAnmeld">Legg igjen en anmeldelse</button>')
+      +'</div>';
+  }
+
   h+='<div class="pfbolk" style="text-align:center;padding-top:4px"><a href="personvern.html" class="muted" style="font-size:13.5px">Personvern — hva spillet lagrer</a></div>';
 
   h+='<div class="pfbolk"><h4>Sikkerhetskopi</h4>'
@@ -3503,6 +3624,7 @@ function visProfil(){
     kortSync();   // kortet er nettopp vist — sørg for at bloben finnes med en gang
   }
   lydIkon(); $("#pfLyd").onclick=function(){ toggleMute(); };
+  if($("#pfAnmeld"))$("#pfAnmeld").onclick=function(){ modal("profilModal",false); visAnmeldelse(); };
   $("#pfTilNaust").onclick=function(){ modal("profilModal",false); tilNaustet(); };
   $("#pfInnboks").onclick=function(){ modal("profilModal",false); visInnboks(); };
   modal("profilModal",true);
@@ -5525,6 +5647,7 @@ $("#smsJa").onclick=function(){ if(smsAktiv&&smsAktiv.resultat)investUtstyr(); e
 $("#smsNei").onclick=function(){ if(smsAktiv&&smsAktiv.resultat){ smsAktiv=null; modal("smsModal",false); } else investNei(); };
 $("#openProfil").onclick=visProfil;
 $("#profilLukk").onclick=function(){ modal("profilModal",false); };
+$("#anmLukk").onclick=function(){ modal("anmModal",false); };
 $("#openShop").onclick=function(){ if(document.querySelector(".modal.on"))return; Snd.dorbjelle(); openShop(); }; // butikker kan aldri stables (Tab+Enter-fella)
 $("#shopClose").onclick=function(){modal("shopModal",false); shopRefresh=null; updatePotBtn();};
 $("#openKjell").onclick=function(){ if(document.querySelector(".modal.on"))return; Snd.verkstedlyd(); openKjell(); };

@@ -61,7 +61,7 @@ const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tid
 // «silke» står med vilje IKKE i carry-forward-lista lenger nede: silkesnøret er
 // det eneste utstyret som kan forsvinne, og et snøre som nettopp røk skal ikke
 // komme tilbake fordi noen andre i familien synket.
-const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "cooler", "silke", "belte", "motorOk", "sattDekk"];
+const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "cooler", "silke", "belte", "motorOk", "sattDekk", "anmeldt"];
 const GEAR_TEKST = { motor: 10, rig: 24, naadeMnd: 7 };
 // Objektfeltene vaskes TYPET (aldri rå gjennomstrømming): nøkler må være pene id-er og
 // verdier tall/boolske — da finnes det ingen vei for skript eller rare typer inn i andres lagring.
@@ -303,7 +303,7 @@ function flettSpiller(fam, p) {
       // nyeste service. Én linje, to jobber.
       g.riggTs = Math.max(tall(gml.riggTs, 9e15), tall(g.riggTs, 9e15));
       g.streakBest = Math.max(tall(gml.streakBest, 9e15), tall(g.streakBest, 9e15)); // beste streak er en rekord — aldri ned
-      for (const k of ["vinsj", "ekko", "turbo", "cooler", "belte", "sattDekk"]) if (gml[k]) g[k] = true; // sette flagg kan aldri tas tilbake
+      for (const k of ["vinsj", "ekko", "turbo", "cooler", "belte", "sattDekk", "anmeldt"]) if (gml[k]) g[k] = true; // sette flagg kan aldri tas tilbake
       if (g.pots && gml.pots) for (const k of ["lineOwned", "lineKroker"]) // kjøpt line og krokar krymper aldri
         if (gml.pots[k] != null) g.pots[k] = Math.max(tall(gml.pots[k], 99), tall(g.pots[k], 99));
       cur.gear = g;
