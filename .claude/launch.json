@@ -1,11 +1,8 @@
 {
   "version": "0.0.1",
   "configurations": [
-    {
-      "name": "engoya",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8901", "--bind", "127.0.0.1"],
-      "port": 8901
-    }
+    { "name": "engoya", "runtimeExecutable": "node",
+      "runtimeArgs": ["/Users/kjetilsande/Documents/Claude/Engøya/.claude/server.mjs"],
+      "port": 8901 }
   ]
 }
