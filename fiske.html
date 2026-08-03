@@ -2056,6 +2056,17 @@ var RUSTEN_ORD={
   havmus:"På mørke vinternetter kjem havmusa opp i lyset. Ho har auge som ei katt.",
   fullmaane:"Fullmåne dreg sjøen hardare. Straumen står, og kveita står i han.",
   plystre:"Bestefar sa: aldri plystre i båten. Eg plystrar likevel, men eg passar på kva eg tenkjer på.",
+  // Fredag ettermiddag. Rusten har venta heile veka på å få seie denne.
+  fredag:["Endeleg fredag og skalldyraften! Reke gatelangs og krabbe heim igjen … Hø hø!",
+          "Fredag. Då er det reker på avisa og krabbe i gryta. Alt anna får vente til måndag."],
+  // Ordspela. Nordnorsk fiskarspråk er fullt av dei, og dei sit best når arten
+  // faktisk ligg på dekket.
+  art_sild:["Sild i tynne er eit uttrykk for at det er trongt. Har du sett ei sildestim, veit du kvifor.",
+            "Sild er ikkje fisk du sel. Sild er fisk du fiskar MED."],
+  art_krabbe:["Ein krabbe går sidelengs heile livet og kjem likevel dit han skal. Det er meir enn eg kan seie om somme.",
+              "Fekk du kloa i han? Pass fingrane — han er ikkje ferdig med deg."],
+  art_hummer:["Hummar går i teine fordi han er nysgjerrig. Det er ikkje svolten som tek han, det er nyfikna.",
+              "Der fekk du kloa i han. Og han i deg, ser eg."],
   // ——— Artspraten. Rusten seier noko berre om dei artane han faktisk har eit forhold til. ———
   art_kveite:["Kveita snur seg når ho først får sjå båten. Hald snøret stramt der — det er DÅ du mistar ho.",
               "Ei stor kveite er ei gammal dame. Ho har lege på same flekken i tjue år og sett båtar kome og gå."],
@@ -2322,12 +2333,22 @@ function reelStep(dt){
   if(hookedSuper) reelSec*=0.5; // superagnet bedøver — halv kamptid
   var tRise = 3.4*f.pull;   // spenn opp/sek når man holder
   if(P&&P.belte) tRise *= 1-0.25*riggK();  // 0,75 med fersk rigg, 0,875 med utslitt   // kampbeltet: du tar imot med kroppen, ikke med snøret
-  // Spennet faller når du slipper — det er DENNE ventinga kjøleribba korter ned.
-  // 35 % raskare med fersk rigg, 17,5 % med utsliten, same kurve som resten av
-  // utstyret. Ho gjer ikkje kampen kortare, berre pausane mellom draga.
+  // KJØLERIBBA. Tala er målte, ikkje gjetta — heile kampen er simulert 60 gonger
+  // per art med og utan ribbe, med ein spelar som held til 82 % spenn og slepp
+  // til 12 %.
+  //
+  // Ventinga er 39–43 % av ein lang kamp (resten er hald; berre 3–5 % er utras).
+  // Difor gjev kjøling åleine mindre enn ein trur: +35 % kjøling → 11 % kortare
+  // kamp, +75 % → 18 %. Ribba tek difor OGSÅ litt på opptrekket, og då landar
+  // det på 22 % på dei store og 7 % på vanleg fisk.
+  //
+  // Kjølinga hjelper berre der du faktisk må sleppe — småfisk byggjer aldri nok
+  // spenn. Opptrekket hjelper overalt. Saman kjennest ribba som ei oppgradering
+  // heile vegen, ikkje berre på kjempene.
   var tFall = 16;           // spenn ned/sek når man slipper
-  if(P&&P.cooler) tFall *= 1+0.35*riggK();
+  if(P&&P.cooler) tFall *= 1+0.75*riggK();   // 0,375 med utsliten rigg
   var pRise = 100/reelSec;  // innhaling %/sek når man holder
+  if(P&&P.cooler) pRise *= 1+0.05*riggK();   // kald snelle går jamnare — sjå notatet over
   var utras=runT>0; // fisken tar ut line: snella hviner, og den vanlige snellelyden tar over straks den slapper av
   if(holding){ tension += tRise*dt; prog += pRise*dt; slackT=0; }
   else { tension -= tFall*dt; if(tension<=1) slackT+=dt; else slackT=0; }
@@ -3492,6 +3513,9 @@ function tavleHTML(){
     +'<div class="tavleraad">«'+esc(v.raad)+'»</div></div>';
 }
 function openShop(){
+  // Fredag ettermiddag og utover: Rusten er i skalldyrhumør.
+  (function(){ var d=new Date();
+    if(d.getDay()===5 && d.getHours()>=14) rustenSier("fredag", 900); })();
   shopRefresh=openShop;
   $("#shopKr").textContent="Du har "+P.kr+" kr.";
   var L=$("#shopList"); L.innerHTML="";
@@ -3567,7 +3591,7 @@ function openShop(){
     (P.turbo||P.rod>=2)?null:"Krever "+RODS[2].n);
   // Kjøleribba henger på turbosnella og er meiningslaus utan henne.
   addShop(L,'<img src="spill/assets/kjoleribbe.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'❄️ \'" alt=""> Kjøleribbe',
-    "Kobberribber langs snellehuset. Snella kjøler seg ned 35 % raskere, så du kan ta nytt tak før fisken rekker å samle seg.",
+    "Kobberribber langs snellehuset. Kald snelle kjøler seg ned raskere OG går jevnere, så du både venter mindre og drar inn litt fortere. Rundt en femtedel kortere kamp mot de store.",
     50000,P.cooler?"Montert":false,function(){P.riggTs=Date.now(); P.cooler=true; notice("Kjøleribba sitter — no ryk ikkje fingrane dine på snellehuset ❄️");},
     P.turbo?null:"Krever turbosnelle");
   addShop(L,'<img src="spill/assets/kampbelte.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎽 \'" alt=""> Kampbelte',
