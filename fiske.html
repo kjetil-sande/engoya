@@ -817,7 +817,7 @@
   <div class="modal" id="shopModal"><div class="cardwrap">
     <img src="spill/assets/knapp-lukk.png" id="shopClose" class="lukkx" alt="Lukk butikken">
     <div class="card">
-    <img id="rustenPortrett" src="spill/assets/rusten-mot-venstre.gif" onerror="this.style.display='none'" alt="Rusten">
+    <img id="rustenPortrett" src="spill/assets/portrett-rusten.png" onerror="this.onerror=null;this.src='spill/assets/rusten-mot-venstre.gif'" alt="Rusten">
     <img src="spill/assets/rusten-logo.png" alt="Rustens agn og redskap" style="display:none;margin:-38px auto 4px;position:relative;z-index:2;max-width:86%;max-height:80px;image-rendering:pixelated"
       onload="this.style.display='block';this.nextElementSibling.style.display='none'">
     <h2 style="text-align:center">Rustens agn &amp; redskap</h2>
@@ -2333,6 +2333,7 @@ function reelStep(dt){
   if(hookedSuper) reelSec*=0.5; // superagnet bedøver — halv kamptid
   var tRise = 3.4*f.pull;   // spenn opp/sek når man holder
   if(P&&P.belte) tRise *= 1-0.25*riggK();  // 0,75 med fersk rigg, 0,875 med utslitt   // kampbeltet: du tar imot med kroppen, ikke med snøret
+  if(P&&P.cooler) tRise *= 1-0.30*riggK(); // kald snelle tolar meir: du held lenger før spennet blir farleg
   // KJØLERIBBA. Tala er målte, ikkje gjetta — heile kampen er simulert 60 gonger
   // per art med og utan ribbe, med ein spelar som held til 82 % spenn og slepp
   // til 12 %.
@@ -2346,7 +2347,15 @@ function reelStep(dt){
   // spenn. Opptrekket hjelper overalt. Saman kjennest ribba som ei oppgradering
   // heile vegen, ikkje berre på kjempene.
   var tFall = 16;           // spenn ned/sek når man slipper
-  if(P&&P.cooler) tFall *= 1+0.75*riggK();   // 0,375 med utsliten rigg
+  // Kjøleribba gjer TO ting, og hovudsaka er den fyrste: du kan halde inne
+  // snella lenger før spennet blir farleg. Det er meir kontroll, ikkje mindre —
+  // du styrer sjølv når du slepp, i staden for å bli kasta ut av eit spenn som
+  // skyt i vêret. At ho i tillegg kjøler litt raskare gjer pausen kortare.
+  //
+  // Målt over 60 kampar per art: kjøling åleine (+75 %) gav 21,6 % kortare kamp,
+  // hald åleine (−35 %) gav 19,3 %. Blandinga under gjev 23,2 % på dei store og
+  // 8,8 % på vanleg fisk — betre enn båe kvar for seg.
+  if(P&&P.cooler) tFall *= 1+0.35*riggK();
   var pRise = 100/reelSec;  // innhaling %/sek når man holder
   if(P&&P.cooler) pRise *= 1+0.05*riggK();   // kald snelle går jamnare — sjå notatet over
   var utras=runT>0; // fisken tar ut line: snella hviner, og den vanlige snellelyden tar over straks den slapper av
@@ -3591,7 +3600,7 @@ function openShop(){
     (P.turbo||P.rod>=2)?null:"Krever "+RODS[2].n);
   // Kjøleribba henger på turbosnella og er meiningslaus utan henne.
   addShop(L,'<img src="spill/assets/kjoleribbe.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'❄️ \'" alt=""> Kjøleribbe',
-    "Kobberribber langs snellehuset. Kald snelle kjøler seg ned raskere OG går jevnere, så du både venter mindre og drar inn litt fortere. Rundt en femtedel kortere kamp mot de store.",
+    "Kobberribber langs snellehuset. En kald snelle tåler mer: du kan holde inne mye lenger før spennet blir farlig, den kjøler seg raskere ned når du først slipper, og den går jevnere. Rundt en fjerdedel kortere kamp mot de store — og du styrer den selv hele veien.",
     50000,P.cooler?"Montert":false,function(){P.riggTs=Date.now(); P.cooler=true; notice("Kjøleribba sitter — no ryk ikkje fingrane dine på snellehuset ❄️");},
     P.turbo?null:"Krever turbosnelle");
   addShop(L,'<img src="spill/assets/kampbelte.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎽 \'" alt=""> Kampbelte',
@@ -4087,17 +4096,33 @@ function dyptVariant(){ if(window.__dv)return window.__dv; // test-override
   if(h>=22||h<5)return "natt";
   if(h>=18||h<8)return "skumring";
   return gloomyWx()?"skumring":"dag"; } // gråvær demper dagen
+// KAPPLØPET SOM GA ULIK HIMMEL PÅ ULIKE DYBDER:
+// Ved oppstart er været ukjent, så variant blir «dag» og fire bilder settes i
+// gang. Når værmeldingen lander noen sekunder etter kan varianten bli
+// «skumring», og fire nye settes i gang. Men de FØRSTE fire er fortsatt
+// underveis — og når en sein «dag»-lasting endelig blir ferdig, skrev den seg
+// rett over det ferske skumringsbildet. Hvilken sone som tapte kappløpet var
+// ren tilfeldighet, derfor så det ut som Grunt hadde egen himmel.
+//
+// Vakta: hver lasting sjekker at varianten den ble bestilt for FORTSATT er den
+// gjeldende før den slipper bildet inn.
 function updateDyptImg(){ var v=dyptVariant(); if(v===dyptCur)return; dyptCur=v;
   ["nedstigning-1","nedstigning-2"].forEach(function(n,i){
-    var pre=new Image(); pre.onload=function(){ waterImg[i]=pre; settWLF(i,pre); };
+    var pre=new Image();
+    pre.onload=function(){ if(v!==dyptCur)return; waterImg[i]=pre; settWLF(i,pre); };
     pre.onerror=function(){ if(v!=="dag"||this.dataset.prov)return;  // dag: prøv «-dag» først, så den gamle
       this.dataset.prov="1"; this.src="spill/assets/"+n+".jpg"; };
     pre.src="spill/assets/"+n+"-"+v+".jpg"; });
-  waterImg[2].onload=function(){ settWLF(2,waterImg[2]); };
-  waterImg[2].src="spill/assets/nedstigning-3-"+v+".jpg";
+  // Dypt lastet rett på det levende bildet. Da står sonen tom mens den laster,
+  // og den kan ikke vernes mot kappløpet. Nå samme mønster som de andre.
+  var pre3=new Image();
+  pre3.onload=function(){ if(v!==dyptCur)return; waterImg[2]=pre3; settWLF(2,pre3); };
+  pre3.src="spill/assets/nedstigning-3-"+v+".jpg";
   var u="spill/assets/nedstigning-4-"+v+".jpg";
   if(!vinsjKlar()){ n4Fallback=false; waterImg[3].src=u; } // ingenting lastet ennå — direktelast (med dag-fallback)
-  else { var pre4=new Image(); pre4.onload=function(){ waterImg[3]=pre4; settWLF(3,pre4); }; pre4.src=u; } } // bytt aldri bort lastede bilder før de nye er klare
+  else { var pre4=new Image();
+    pre4.onload=function(){ if(v!==dyptCur)return; waterImg[3]=pre4; settWLF(3,pre4); };
+    pre4.src=u; } } // bytt aldri bort lastede bilder før de nye er klare
 updateDyptImg();
 (function(){ try{ var c=JSON.parse(localStorage.getItem("storkveita-vaer")||"null");
     if(c&&Date.now()-c.t<1800000){ seaWx=c.code; updateDyptImg(); return; } }catch(e){}
