@@ -3520,7 +3520,7 @@ function openShop(){
   $("#shopKr").textContent="Du har "+P.kr+" kr.";
   var L=$("#shopList"); L.innerHTML="";
   var dk=dailyFish();
-  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="background:#fdf3d6;border:2px solid var(--gold);border-radius:9px;padding:7px 10px;margin:0 0 4px">Rustens bestilling i dag: <b>'+dk.n+'</b> — betaler <b>+50 %</b></p>');
+  L.insertAdjacentHTML("beforeend",'<p class="muted center" style="background:#fdf3d6;border:2px solid var(--gold);border-radius:9px;padding:7px 10px;margin:0 0 4px">Rustens bestilling i dag:<br><b>'+dk.n+'</b> — betaler <b>+50 %</b></p>');
   L.insertAdjacentHTML("beforeend",'<div class="tabs" style="margin:4px 0 8px"><button id="st-utstyr">Utstyr</button><button id="st-agn">Agn</button><button id="st-sluker">Sluker</button></div>');
   ["utstyr","agn","sluker"].forEach(function(kf){ var b=$("#st-"+kf); b.classList.toggle("on",shopTab===kf);
     b.onclick=function(){ shopTab=kf; Snd.click(); openShop(); }; });
