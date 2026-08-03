@@ -183,6 +183,30 @@ print("  OK  nappet-mens-du-holdt: alle %d leddene står" % len(krav) if not man
 sys.exit(1 if mangler else 0)
 PY
 
+python3 - <<'PY'
+# SILKESNØRET ER DET EINASTE UTSTYRET SOM KAN FORSVINNE.
+# Alt annet utstyr er monotont: satt én gang, sant for alltid — både i gearLoft
+# på klienten og i carry-forward på serveren. Havner «silke» i de listene,
+# kommer et snøre som nettopp røk tilbake neste gang noen i familien synker,
+# og forbruksvaren er gratis. Det ville ingen test fanget uten denne.
+import io, re, sys
+sp = io.open('fiske.html', encoding='utf-8').read()
+sv = io.open('netlify/functions/familierekorder.mjs', encoding='utf-8').read()
+feil = []
+if '"silke"' not in sv.split('GEAR_JANEI')[1].split(']')[0]:
+    feil.append("silke mangler i serverens GEAR_JANEI — feltet blir vasket bort")
+carry = re.search(r'for \(const k of \[([^\]]*)\]\) if \(gml\[k\]\)', sv)
+if carry and 'silke' in carry.group(1):
+    feil.append("silke ligger i carry-forward — et røket snøre ville gjenoppstå")
+if re.search(r'if\(np\.silke\)lp\.silke=true', sp):
+    feil.append("gearLoft gjør silke monotont — samme feil på klienten")
+if 'if(np.silke!=null)lp.silke=np.silke;' not in sp:
+    feil.append("gearLoft flytter ikke silke i det hele tatt")
+print("  OK  silkesnøret kan faktisk ryke — utenfor begge de monotone listene" if not feil
+      else "  FEIL  " + "; ".join(feil))
+sys.exit(1 if feil else 0)
+PY
+
 echo ""
 echo "── Server og panel ──────────────────────────────────"
 node verktoy-servertest.mjs      | tail -1

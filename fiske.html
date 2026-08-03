@@ -1378,7 +1378,11 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
       if(!egen(DB.players,nm)){ DB.players[nm]=np; return; }
       var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
       flettTrofe(lp, np.trofe);   // to faner/vindauge på same lagring skal aldri kunne tømme skapet
-      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.cooler)lp.cooler=true; if(np.belte)lp.belte=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.dager)lp.dager=flettDager(lp.dager,np.dager); if(np.tidligereNavn)lp.tidligereNavn=np.tidligereNavn; if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; if(np.riggTs!=null)lp.riggTs=Math.max(lp.riggTs||0,+np.riggTs||0); }
+      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.cooler)lp.cooler=true; if(np.belte)lp.belte=true;
+        // Silkesnøret er det EINASTE utstyret som kan forsvinne. Difor siste-skriv-vinn
+        // her, ikkje «ein gong sant, alltid sant» som dei andre — elles ville eit snøre
+        // som nettopp rauk kome attende neste gong ein annan i familien synka.
+        if(np.silke!=null)lp.silke=np.silke; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.dager)lp.dager=flettDager(lp.dager,np.dager); if(np.tidligereNavn)lp.tidligereNavn=np.tidligereNavn; if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; if(np.riggTs!=null)lp.riggTs=Math.max(lp.riggTs||0,+np.riggTs||0); }
     });
   }catch(e){} });
 /* ---------- Familierekorder på nett (Netlify Blobs via familiekode) ---------- */
@@ -1545,11 +1549,11 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
 // serverens carry-forward-blokk — ikke i gearInn.
 function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvasker)
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
-    propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, cooler:P.cooler, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
+    propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, cooler:P.cooler, silke:P.silke, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
     lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, trofe:P.trofe, funnSett:P.funnSett,
     invest:P.invest, innboks:P.innboks, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd, riggTs:P.riggTs}; }
 function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
-  return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.cooler && !lp.ekko && !lp.belte
+  return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.cooler && !lp.silke && !lp.ekko && !lp.belte
     && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
 function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE feltene — trygt å løfte inn overalt, kan aldri krympe noe
   if(g.rod!=null)lp.rod=Math.max(lp.rod||0,+g.rod||0); // kjøpt utstyr kan aldri nedgraderes av en gammel innsending
@@ -1707,6 +1711,7 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.rolex===undefined||P.rolex==="raa"||P.rolex==="klar")P.rolex=(P.rolex==="klar")?{bud:50000}:null; // null | {ferdig:ts} | {bud:kr}
   if(P.turbo==null)P.turbo=false; // turbosnelle (halv kamptid)
   if(P.cooler==null)P.cooler=false; // kjøleribbe: spennet faller raskere når du slipper
+  if(P.silke==null)P.silke=false;   // silkesnøre: FORBRUKSVARE — ryker og er borte
   if(P.belte==null)P.belte=false;
   // Rigg som allerede er kjøpt starter NYOVERHALT, ikke halvslitt. Bunnsmørninga setter
   // gamle båter til 50 døgn tilbake, men den som betalte 30 000 kr for turbosnella under
@@ -2368,6 +2373,11 @@ function reelStep(dt){
   if(P&&P.cooler) tFall *= 1+0.35*riggK();
   var pRise = 100/reelSec;  // innhaling %/sek når man holder
   if(P&&P.cooler) pRise *= 1+0.05*riggK();   // kald snelle går jamnare — sjå notatet over
+  // Silkesnøret: tynt og lett, så du vinn inn fortare på dei som virkeleg dreg.
+  // Berre på hardkjemparane (pull ≥ 1,2) — på ein sei merkar du det ikkje, og då
+  // blir det ikkje ei billig oppgradering av heile spelet. Ingen riggK: snøret blir
+  // ikkje vedlikehalde, det blir brukt opp.
+  if(P&&P.silke&&f.pull>=1.2) pRise *= 1.20;
   var utras=runT>0; // fisken tar ut line: snella hviner, og den vanlige snellelyden tar over straks den slapper av
   if(holding){ tension += tRise*dt; prog += pRise*dt; slackT=0; }
   else { tension -= tFall*dt; if(tension<=1) slackT+=dt; else slackT=0; }
@@ -2413,6 +2423,10 @@ function snap(){ ringFred(60); oddMerk();
   if(hooked) flee={f:hooked, len:hookedLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool();
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); $("#reelui").classList.remove("on"); Snd.snap();
+  // Silkesnøret er ei forbruksvare: det ryk, og då er det borte. Det er heile
+  // handelen — billig og raskt mot dei store, men du betaler kvar gong du bommar.
+  if(P.silke){ P.silke=false; saveAll();
+    setTimeout(function(){ notice("Silkesnøret rauk og gjekk med fisken. Rusten har meir."); }, 1500); }
   var mistet, su=aktivSluk();
   if(su){ if(P.lures[su.k]>0) P.lures[su.k]--; var left=P.lures[su.k]||0;
     mistet="Snøret røk — du mista "+su.n+"! ("+left+" igjen"+(left<1?" — kjøp ny 🛒":"")+")"; }
@@ -3608,6 +3622,9 @@ function openShop(){
   if(shopTab==="utstyr"){
   addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — halverer kamptida mot alt som biter.",30000,P.turbo?"Montert":false,function(){P.riggTs=Date.now(); P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");},
     (P.turbo||P.rod>=2)?null:"Krever "+RODS[2].n);
+  addShop(L,'<img src="spill/assets/silkesnore.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🧵 \'" alt=""> Silkesnøre',
+    "Tynt og lett — du vinner inn 20 % fortere på fisken som virkelig drar. Men det tåler mindre enn vanlig snøre: ryker det, er det borte, og du må kjøpe nytt.",
+    2500,P.silke?"Montert":false,function(){P.silke=true; notice("Silkesnøret er spolt på. Fint som spindelvev — og omtrent like sterkt.");});
   // Kjøleribba henger på turbosnella og er meiningslaus utan henne.
   addShop(L,'<img src="spill/assets/kjoleribbe.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'❄️ \'" alt=""> Kjøleribbe',
     "Kobberribber langs snellehuset. En kald snelle tåler mer: du kan holde inne mye lenger før spennet blir farlig, den kjøler seg raskere ned når du først slipper, og den går jevnere. Rundt en fjerdedel kortere kamp mot de store — og du styrer den selv hele veien.",
