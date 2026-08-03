@@ -63,6 +63,7 @@ VENTA = {
     # ikonet bruker den gamle boka, og overskriften «📖 Arkivet» står til logoen
     # lander. Fjern linjene her når filene kommer, så vokter sjekken dem videre.
     "arkivet-ikon.png":     "under arbeid — faller tilbake til fangstbok.png",
+    "kjoleribbe.png":       "under arbeid — butikkraden viser ❄️ til den finnes",
     # Tettere beskårne portretter til de tre dekksknappene. Faller tilbake på
     # portrett-*.png til de kommer, så knappene ser riktige ut i mellomtiden.
     "knapp-rusten.png":     "under arbeid — faller tilbake til rusten-mot-hoyre.gif",

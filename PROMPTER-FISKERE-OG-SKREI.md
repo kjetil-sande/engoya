@@ -537,3 +537,46 @@ text, no frame, no logo.
 
 **Når den er klar** kan du også lage `knapp-rusten.png` beskåret tettere om
 ansiktet, slik du gjør for de to andre. Spillet plukker den opp av seg selv.
+
+---
+
+## 19. Kjøleribbe til turbosnella
+
+Fil: **`kjoleribbe.png`** — ca. **512 × 400**, transparent
+
+Nytt produkt hos Rusten, 50 000 kr. Henger på turbosnella og gjør at spennet
+faller **35 % raskere** når du slipper — altså kortere pauser mellom dragene,
+ikke kortere kamp. Fram til bildet finnes viser butikkraden ❄️.
+
+Vises som **68 × 60 px** i butikkraden. Alt finere enn det forsvinner.
+
+**To vinkler — velg den du liker best:**
+
+### 19a. Delen alene, som en vare på hylla
+
+16-bit pixel art of a **finned copper cooling block** for a fishing reel, seen
+straight on at a slight angle. A stack of **thin parallel copper fins** rising
+from a machined brass base plate, with two **hex bolts** at the corners and a
+short curved mounting bracket shaped to hug a reel housing. Warm copper and
+brass against dark gunmetal, a few bright highlights along the fin edges, faint
+verdigris in the recesses. **Two or three small white frost wisps** curling up
+between the fins so the purpose reads instantly. Chunky visible pixels, hard
+dark outline, flat blocks of colour, no soft shading, strict pixel grid, no
+anti-aliasing, ordered dithering only, limited 24-colour palette. Fully
+transparent background, no shadow, no frame.
+
+### 19b. Montert på snella, så man ser hva den er til
+
+16-bit pixel art of a **fishing reel with a finned copper cooler bolted to its
+side**, seen from the side at a slight angle. The reel is dark gunmetal with a
+worn brass handle; clamped along its housing sits a **block of thin parallel
+copper fins** held by two hex bolts. **Small white frost wisps** rise from
+between the fins, and a faint pale rime clings to the nearest edges. Warm copper
+and brass against dark metal. Chunky visible pixels, hard dark outline, flat
+blocks of colour, no soft shading, strict pixel grid, no anti-aliasing, ordered
+dithering only, limited 24-colour palette. Fully transparent background, no
+shadow, no frame.
+
+**Merk:** 19b leser tydeligere i butikken, siden man ser at det er en snelle det
+handler om. 19a er penere som gjenstand. Legg inn den du liker — filnavnet er
+det samme.

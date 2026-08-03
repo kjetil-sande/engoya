@@ -505,10 +505,31 @@
   #catchModal .row.berreut #catchRelease{width:100%;font-size:16px;padding:12px 18px}
 
   /* Shop */
-  .shopitem{display:flex;gap:10px;align-items:center;background:#fff8ea;border:2px solid var(--paper-2);border-radius:11px;padding:10px;margin:8px 0}
-  .shopitem .t{flex:1}
-  .shopitem .t b{display:block;font-size:15px}
-  .shopitem .t span{font-size:13.5px;color:var(--ink-soft)}
+  /* Bilde til venstre, tekst til høyre, kjøpsknappen i full bredde under.
+     Før sto alle tre på én linje, og da klemte en lang beskrivelse teksten til
+     en stripe mens knappen brakk «2000 / kr» over to linjer. Nå har teksten
+     hele bredden ved siden av bildet, og knappen sin egen rad. */
+  /* Bilde og navn på første rad, beskrivelsen i FULL bredde under, kjøpsraden
+     nederst. Da får en lang tekst hele kortet å bre seg på i stedet for en smal
+     spalte ved siden av bildet — og korte og lange produkter får samme form. */
+  .shopitem{display:grid;grid-template-columns:auto 1fr;gap:7px 11px;align-items:center;
+    background:#fff8ea;border:2px solid var(--paper-2);border-radius:11px;padding:11px;margin:8px 0}
+  .shopitem .shopimg{grid-column:1;grid-row:1}
+  .shopitem .snavn{grid-column:2;grid-row:1;font-size:15px;font-weight:700;min-width:0}
+  /* «(4 stk)» er ikke en del av navnet — det er en opplysning om pakken. Egen
+     linje under, i mindre og lysere skrift, så navnet får stå alene. */
+  .shopitem .snavn .antal{display:block;font-weight:400;font-size:12.5px;
+    color:var(--ink-soft);margin-top:1px}
+  .shopitem .stekst{grid-column:1/-1;font-size:13.5px;color:var(--ink-soft)}
+  /* Nederste rad: bare knapp = full bredde. Med slitasjeskala deler de 50/50. */
+  .shopitem .kjoprad{grid-column:1/-1;display:flex;gap:10px;align-items:center}
+  /* Skalaen: stolpen krymper, men prosenttallet skal ALDRI brekke over to linjer.
+     «99 %» delte seg i «99» og «%» før nowrap kom på. */
+  .shopitem .kjoprad>.skala{flex:1 1 0;min-width:0;font-size:13.5px;color:var(--ink-soft);
+    display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .shopitem .kjoprad>.skala .fuel{width:auto!important;flex:1 1 auto;min-width:28px}
+  .shopitem .kjoprad>.skala b{flex:0 0 auto}
+  .shopitem .kjoprad>.btn{flex:1 1 0;min-width:0;white-space:nowrap}
 
   /* Book */
   .bookgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:8px}
@@ -608,10 +629,10 @@
   .fam{margin-top:8px}
   .fam .frow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;padding:7px 4px;border-bottom:1px dashed var(--paper-2)}
   .fam .frow>span{text-align:right} /* lange rader som brytes på smal mobil holder høyrejusteringen */
-  .shopitem .t img.shoplogo{height:18px;vertical-align:-4px;margin-right:3px}
-  .shopitem .t img.shoplogo.rund{height:22px;border-radius:50%;vertical-align:-6px}
-  .shopimg{flex:0 0 56px;display:grid;place-items:center;font-size:30px;min-height:44px}
-  .shopimg img{max-width:56px;max-height:44px;object-fit:contain}
+  .shopitem .snavn img.shoplogo{height:18px;vertical-align:-4px;margin-right:3px}
+  .shopitem .snavn img.shoplogo.rund{height:22px;border-radius:50%;vertical-align:-6px}
+  .shopimg{flex:0 0 68px;width:68px;display:grid;place-items:center;font-size:34px;min-height:56px}
+  .shopimg img{max-width:68px;max-height:60px;object-fit:contain}
   .shopimg img.shoplogo{height:auto;max-height:44px;margin:0;vertical-align:baseline}
   .shopimg img.shoplogo.rund{max-height:44px;border-radius:50%}
   #rustenPortrett{display:block;margin:2px auto 0;height:150px;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.12))}
@@ -1357,7 +1378,7 @@ window.addEventListener("storage",function(ev){ // en annen fane skrev lagringen
       if(!egen(DB.players,nm)){ DB.players[nm]=np; return; }
       var lp=DB.players[nm]; lp.caught=lp.caught||{}; famFlett(lp.caught, np.caught);
       flettTrofe(lp, np.trofe);   // to faner/vindauge på same lagring skal aldri kunne tømme skapet
-      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.belte)lp.belte=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.dager)lp.dager=flettDager(lp.dager,np.dager); if(np.tidligereNavn)lp.tidligereNavn=np.tidligereNavn; if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; if(np.riggTs!=null)lp.riggTs=Math.max(lp.riggTs||0,+np.riggTs||0); }
+      if(!P||nm!==P.name){ lp.kr=np.kr; lp.fuel=np.fuel; if(np.lures)lp.lures=np.lures; if(np.pots)lp.pots=np.pots; lp.rod=Math.max(lp.rod||0,np.rod||0); if(np.svc!=null)lp.svc=np.svc; if(np.vinsj)lp.vinsj=true; if(np.ekko)lp.ekko=true; if(np.turbo)lp.turbo=true; if(np.cooler)lp.cooler=true; if(np.belte)lp.belte=true; if(np.tidMs!=null)lp.tidMs=Math.max(lp.tidMs||0,np.tidMs); if(np.dager)lp.dager=flettDager(lp.dager,np.dager); if(np.tidligereNavn)lp.tidligereNavn=np.tidligereNavn; if(np.smorTs!=null)lp.smorTs=np.smorTs; if(np.streak!=null){lp.streak=np.streak; lp.streakDag=np.streakDag;} if(np.streakBest!=null)lp.streakBest=Math.max(lp.streakBest||0,np.streakBest); if(np.naadeMnd!=null)lp.naadeMnd=np.naadeMnd; if(np.riggTs!=null)lp.riggTs=Math.max(lp.riggTs||0,+np.riggTs||0); }
     });
   }catch(e){} });
 /* ---------- Familierekorder på nett (Netlify Blobs via familiekode) ---------- */
@@ -1524,11 +1545,11 @@ function famFlett(mine,andre){ // artsrekorder er monotone: største verdi vinne
 // serverens carry-forward-blokk — ikke i gearInn.
 function gearUt(){ // utstyret som følger spilleren over nett (serveren hvitvasker)
   return {rod:P.rod, fuel:P.fuel, fuelMax:P.fuelMax, svc:P.svc, forsTil:P.forsTil, havnNeste:P.havnNeste,
-    propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
+    propOk:P.propOk, vinsj:P.vinsj, ekko:P.ekko, turbo:P.turbo, cooler:P.cooler, belte:P.belte, motorOk:P.motorOk, motor:P.motor, rig:P.rig,
     lures:P.lures, pots:P.pots, agn:P.agn, rolex:P.rolex, trofe:P.trofe, funnSett:P.funnSett,
     invest:P.invest, innboks:P.innboks, tidMs:P.tidMs, dager:P.dager, tidligereNavn:P.tidligereNavn, sattDekk:P.sattDekk, smorTs:P.smorTs, streak:P.streak, streakDag:P.streakDag, streakBest:P.streakBest, naadeMnd:P.naadeMnd, riggTs:P.riggTs}; }
 function gearFersk(lp){ // fabrikknytt utstyr: trygt å adoptere ALT fra serveren, farlig å sende noe
-  return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.ekko && !lp.belte
+  return (lp.rod||0)===0 && !lp.vinsj && !lp.turbo && !lp.cooler && !lp.ekko && !lp.belte
     && !(lp.pots&&((lp.pots.owned||0)>0||(lp.pots.ownedH||0)>0||(lp.pots.lineOwned||0)>0)); }
 function gearLoft(lp,g){ if(!g||typeof g!=="object")return; // de MONOTONE feltene — trygt å løfte inn overalt, kan aldri krympe noe
   if(g.rod!=null)lp.rod=Math.max(lp.rod||0,+g.rod||0); // kjøpt utstyr kan aldri nedgraderes av en gammel innsending
@@ -1685,6 +1706,7 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.agn==null)P.agn={}; // agnbeholdning
   if(P.rolex===undefined||P.rolex==="raa"||P.rolex==="klar")P.rolex=(P.rolex==="klar")?{bud:50000}:null; // null | {ferdig:ts} | {bud:kr}
   if(P.turbo==null)P.turbo=false; // turbosnelle (halv kamptid)
+  if(P.cooler==null)P.cooler=false; // kjøleribbe: spennet faller raskere når du slipper
   if(P.belte==null)P.belte=false;
   // Rigg som allerede er kjøpt starter NYOVERHALT, ikke halvslitt. Bunnsmørninga setter
   // gamle båter til 50 døgn tilbake, men den som betalte 30 000 kr for turbosnella under
@@ -2300,7 +2322,11 @@ function reelStep(dt){
   if(hookedSuper) reelSec*=0.5; // superagnet bedøver — halv kamptid
   var tRise = 3.4*f.pull;   // spenn opp/sek når man holder
   if(P&&P.belte) tRise *= 1-0.25*riggK();  // 0,75 med fersk rigg, 0,875 med utslitt   // kampbeltet: du tar imot med kroppen, ikke med snøret
+  // Spennet faller når du slipper — det er DENNE ventinga kjøleribba korter ned.
+  // 35 % raskare med fersk rigg, 17,5 % med utsliten, same kurve som resten av
+  // utstyret. Ho gjer ikkje kampen kortare, berre pausane mellom draga.
   var tFall = 16;           // spenn ned/sek når man slipper
+  if(P&&P.cooler) tFall *= 1+0.35*riggK();
   var pRise = 100/reelSec;  // innhaling %/sek når man holder
   var utras=runT>0; // fisken tar ut line: snella hviner, og den vanlige snellelyden tar over straks den slapper av
   if(holding){ tension += tRise*dt; prog += pRise*dt; slackT=0; }
@@ -2357,6 +2383,17 @@ function snap(){ ringFred(60); oddMerk();
   rustenSier("rauk",1400);
   if(navigator.vibrate)navigator.vibrate([90,50,90]);
 }
+// «Ska sei!» — det finst ikkje ein nordlending som ikkje har sagt det når noko er
+// større enn venta. Ordspelet ligg her og ikkje i artspraten, for det skal berre
+// kome når fisken FAKTISK er stor. Elles blir det slitsamt.
+function storFiskOrd(f, len){
+  if(!f.len || f.len[1]<=f.len[0]) return null;
+  if((len-f.len[0])/(f.len[1]-f.len[0]) < 0.72) return null;
+  return { sei:"Ska sei! Den var breiare over ryggen enn han hadde nokon rett til.",
+           torsk:"Det der er ein torsk med skuldrer.",
+           makrell:"Makrell så feit at han glinsar. Rett på grillen med han.",
+           sild:"Nok sild til å fylle ei tynne. Nesten." }[f.k] || null;
+}
 function land(){
   var f=hooked; phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); $("#reelui").classList.remove("on");
   var len=hookedLen||Math.round(rnd(f.len[0],f.len[1])); // samme fisk som du så i vannet
@@ -2390,11 +2427,15 @@ function land(){
   utKn.className=uteHelt?"btn":"btn ghost sm";
   utKn.parentNode.classList.toggle("berreut", uteHelt);
   drawFishInto($("#catchFish"),f,110);
+  // Stempelet roper «NY ART!» tvers over plansjen. Da trenger vi hverken
+  // overskriften eller den grønne NY-brikka som sier nøyaktig det samme —
+  // tre ganger blir ikke tre ganger så tydelig, bare rotete.
+  var stempel = isNew && !f.trophy;
   var cT=$("#catchTitle");
   cT.textContent = (vern||umaal) ? (f.trophy?"STORKVEITA! 🏆":"Godt fiskarskap 💙") : (f.trophy ? "STORKVEITA! 🏆" : (gold?"GYLLEN FISK! ✨" : isNew?"Ny art!":"Fisk!"));
-  cT.style.display = cT.textContent==="Fisk!" ? "none" : ""; // vanleg fangst treng ingen overskrift — bildet seier alt
-  visNyArt(isNew&&!f.trophy); // stempel over plansjen ved førstegangsfangst (storkveita har sin egen fest)
-  $("#catchName").innerHTML="<b>"+artNavn(f)+"</b>"+(gold?' ✨':'')+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>'+(isNew?'<span class="newtag">NY</span>':'')+(isRecord&&!isNew?'<span class="newtag">REKORD</span>':'');
+  cT.style.display = (cT.textContent==="Fisk!" || (stempel && cT.textContent==="Ny art!")) ? "none" : "";
+  visNyArt(stempel); // stempel over plansjen ved førstegangsfangst (storkveita har sin egen fest)
+  $("#catchName").innerHTML="<b>"+artNavn(f)+"</b>"+(gold?' ✨':'')+' <span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>'+(isNew&&!stempel?'<span class="newtag">NY</span>':'')+(isRecord&&!isNew?'<span class="newtag">REKORD</span>':'');
   $("#catchSize").innerHTML="Lengde <b>"+len+" cm</b> · vekt <b>"+wt+" kg</b>";
   $("#catchRig").textContent="Tatt på: "+rigNavn(); // samme opplysning som på rekordkortene
   $("#catchKr").innerHTML=(vern||umaal
@@ -2408,7 +2449,9 @@ function land(){
   if(baro) rustenSier("blaere",1500);
   if(f.k==="havmus"&&depth===2) rustenSier("havmus",1500);
   if(erSkrei(f)) rustenSier("skrei",1500);
-  rustenSier("art_"+f.k,1600); // artspraten — berre om Rusten har noko å seie om nett denne
+  var stor=storFiskOrd(f,len);
+  if(stor) setTimeout(function(){ notice("«"+stor+"» — Rusten"); }, 1500);
+  else rustenSier("art_"+f.k,1600); // artspraten — berre om Rusten har noko å seie om nett denne
   dogShow(0,7); Snd.gladDog(); // fisken er i båten — hunden bjeffer av glede
   if(goldCatch||f.rar===2) setTimeout(Snd.fiskerJubel,400);      // fiskeren jubler over storfangst
   else if(fightT>45) setTimeout(Snd.fiskerLettet,400);              // puster ut etter lang kamp
@@ -3063,6 +3106,12 @@ function pullPot(ty){ ty=ty||"k";
   else if(res.lines.some(function(l){return l.fk==="haakjerring"})){ Snd.trophy(); notice("HÅKJERRINGA GIKK PÅ LINA! 🦈 Havets eldste!"); dogShow(0,7); Snd.gladDog(); setTimeout(Snd.fiskerImponert,500); }
   if(res.lines.length)setTimeout(streakTikk,0); // etter at trekk-boksen er åpnet
   $("#potTitle").textContent = ty==="l"?"Linetrekk":ty==="h"?"Hummerteinetrekk":"Teinetrekk";
+  // Trekkjer du teiner midt på natta, har Rusten ein kommentar. Han har stått der sjølv.
+  var klNo=new Date().getHours();
+  if(klNo>=1&&klNo<5&&res.lines.length) setTimeout(function(){
+    notice("«"+["Snart på tide å krabbe til køys?",
+                "Klokka er over eitt. Krabben søv ikkje, men det burde du.",
+                "Du og krabben er dei einaste som er oppe no."][(Math.random()*3)|0]+"» — Rusten"); }, 2200);
   var L=$("#potList"); L.innerHTML="";
   if(!res.lines.length){
     var tomMsg = ty==="l" ? (res.tapt==="raid"
@@ -3516,6 +3565,11 @@ function openShop(){
   if(shopTab==="utstyr"){
   addShop(L,'<img src="spill/assets/turbosnelle.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Turbosnelle',"Girutveksling i toppklasse — halverer kamptida mot alt som biter.",30000,P.turbo?"Montert":false,function(){P.riggTs=Date.now(); P.turbo=true; notice("Turbosnella er montert — sveiva går som ei symaskin 🎛️");},
     (P.turbo||P.rod>=2)?null:"Krever "+RODS[2].n);
+  // Kjøleribba henger på turbosnella og er meiningslaus utan henne.
+  addShop(L,'<img src="spill/assets/kjoleribbe.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'❄️ \'" alt=""> Kjøleribbe',
+    "Kobberribber langs snellehuset. Snella kjøler seg ned 35 % raskere, så du kan ta nytt tak før fisken rekker å samle seg.",
+    50000,P.cooler?"Montert":false,function(){P.riggTs=Date.now(); P.cooler=true; notice("Kjøleribba sitter — no ryk ikkje fingrane dine på snellehuset ❄️");},
+    P.turbo?null:"Krever turbosnelle");
   addShop(L,'<img src="spill/assets/kampbelte.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎽 \'" alt=""> Kampbelte',
     "Stangenden står i koppen på beltet, så du tar imot med hoftene i stedet for med armene. Spennet stiger 25 % saktere — storfisken fra Dypt og Djuphavet får deg ikke like lett.",12000,P.belte?"Montert":false,
     function(){P.riggTs=Date.now(); P.belte=true; notice("Kampbeltet sitter! 🎽 «Det er ikkje fisken som ryk snøret, gut — det er båten som rullar.»");},
@@ -3554,9 +3608,9 @@ function openKjell(){
   // hva som faktisk er montert, så en som bare har ekkolodd betaler 200, ikke 1500.
   // Vinsjen står bevisst utenfor: den er ikke en bonus, den er døra til Djuphavet, og
   // ingen tilstand skal kunne stenge en sone noen har betalt 15 000 kr for.
-  var rp=riggPct(), rFull=(P.turbo?900:0)+(P.belte?400:0)+(P.ekko?200:0);
+  var rp=riggPct(), rFull=(P.turbo?900:0)+(P.cooler?500:0)+(P.belte?400:0)+(P.ekko?200:0);
   if(rFull>0){
-    var rListe=[P.turbo?"snella":0,P.belte?"beltet":0,P.ekko?"loddet":0].filter(Boolean).join(", ");
+    var rListe=[P.turbo?"snella":0,P.cooler?"kjøleribba":0,P.belte?"beltet":0,P.ekko?"loddet":0].filter(Boolean).join(", ");
     addShop(L,'<img src="spill/assets/verksted-riggservice.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎛️ \'" alt=""> Riggservice',
       "Salt og sjø tærer på "+rListe+" — full overhaling holder i "+RIGG_DOGN+" døgn. "+pctBar(rp)
         +(rp<=0?" <b>Slitt rigg — utstyret virker på halv styrke.</b>":"")
@@ -3584,11 +3638,23 @@ function openKjell(){
 }
 function addShop(L,title,desc,cost,owned,buy,krav){
   var div=document.createElement("div"); div.className="shopitem"+(krav?" laast":"");
-  var m=title.match(/^(<img[^>]*>)\s*([\s\S]*)$/); // bilde først i tittelen → egen stor kolonne over begge linjene
-  div.innerHTML=(m?'<div class="shopimg">'+m[1]+'</div>':'')+'<div class="t"><b>'+(m?m[2]:title)+'</b><span>'+desc
-    +(krav?'<span class="krav">🔒 '+krav+'</span>':'')+'</span></div>';
+  var m=title.match(/^(<img[^>]*>)\s*([\s\S]*)$/); // bilde først i tittelen → egen kolonne til venstre
+  // Slitasjeskalaen står midt i beskrivelsen. Den hentes ut og settes ved siden av
+  // knappen i stedet — der hører den hjemme, og teksten flyter penere uten den.
+  var skala="", ren=desc;
+  var sm=desc.match(/<span class="fuel"[\s\S]*?<\/span>\s*<b>\s*-?\d+\s*%\s*<\/b>/);
+  if(sm){ skala=sm[0]; ren=desc.replace(sm[0],"").replace(/\s{2,}/g," ").trim(); }
+  var navn=(m?m[2]:title);
+  var am=navn.match(/^([\s\S]*?)\s*(\([^()]*\bstk\)|\(\d+\s*dager\))\s*$/);
+  if(am) navn=am[1]+'<span class="antal">'+am[2]+'</span>';
+  div.innerHTML=(m?'<div class="shopimg">'+m[1]+'</div>':'')
+    +'<b class="snavn">'+navn+'</b>'
+    +'<span class="stekst">'+ren+(krav?'<span class="krav">🔒 '+krav+'</span>':'')+'</span>';
+  var rad=document.createElement("div"); rad.className="kjoprad";
+  if(skala){ var sk=document.createElement("div"); sk.className="skala"; sk.innerHTML=skala; rad.appendChild(sk); }
+  div.appendChild(rad);
   var b=document.createElement("button"); b.className="btn sm gold";
-  if(krav){ b.textContent=cost.toLocaleString("nb")+" kr"; b.disabled=true; div.appendChild(b); L.appendChild(div); return; }
+  if(krav){ b.textContent=cost.toLocaleString("nb")+" kr"; b.disabled=true; rad.appendChild(b); L.appendChild(div); return; }
   // «owned» kan være true (da står det Full, som for bensin og teiner) eller en tekst.
   // Utstyr sender inn "Montert", for da skal raden bli STÅENDE i butikken etter kjøp —
   // eieren vil se hva han har, og utstyr skal etter planen kunne ryke senere.
@@ -3601,7 +3667,7 @@ function addShop(L,title,desc,cost,owned,buy,krav){
       while(sN&&sN!==document.body){ if(sN.scrollHeight-sN.clientHeight>4){ sEl=sN; sTop=sN.scrollTop; break; } sN=sN.parentNode; }
       P.kr-=cost; buy(); Snd.buy(); saveAll(); hud(); updateDepthLocks(); updatePotBtn(); (shopRefresh||openShop)();
       if(sEl)sEl.scrollTop=sTop; };}
-  div.appendChild(b); L.appendChild(div);
+  rad.appendChild(b); L.appendChild(div);
 }
 
 /* ---------- Områdekart (fiskeplass-velger) ---------- */
@@ -4938,7 +5004,7 @@ function pratSjekk(){
   //    snelle uten forklaring. Slik blir telefonen en forklaring når den kommer for sent.
   //    q.kjellRigg lagrer riggTs, ikke true — da nullstiller flagget seg selv i samme
   //    øyeblikk spilleren betaler, uten en eneste opprydningslinje på betalingsstedet.
-  if(q.kjellRigg!==P.riggTs && (P.turbo||P.belte||P.ekko) && riggPct()<=15
+  if(q.kjellRigg!==P.riggTs && (P.turbo||P.cooler||P.belte||P.ekko) && riggPct()<=15
      && t>=9 && t<17 && q.kjellDag!==dk && q.rustenDag!==dk){
     q.kjellRigg=P.riggTs; q.kjellDag=dk; anropTelt(); saveAll();
     return pratRing("kjell", "Det er Kjell. Jeg så over riggen din sist du var innom. "
