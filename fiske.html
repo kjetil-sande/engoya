@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="nb">
 <head>
-<!-- Besøksstatistikk lastes KUN etter samtykke (cookie-banner) -->
-<script defer src="samtykke.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Jakten på storkveita</title>
@@ -2900,14 +2898,14 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"annensteine",e:"🦞",n:"Ei anna sin teine — merkt og full",kr:0,w:6,img:"funn-annens-teine.png",trofeKun:true,t:"Vi merkte kor ho låg og sette henne ned att. Slik gjer ein."},
 
  // Levande ting
- {k:"tokrabber",e:"🦀",n:"To krabber i slåsskamp",kr:45,w:12,img:"funn-to-krabber.png",t:"Dei slepte ikkje kvarandre heile vegen opp. Vinnaren fekk sveltast."},
- {k:"kongesnegl",e:"🐚",n:"Kongesnegl",kr:30,w:10,img:"funn-kongesnegl.png",t:"Rusten kokar dei. Ungane vil helst ikkje sjå på."},
+ {k:"tokrabber",e:"🦀",n:"To krabber i slåsskamp",kr:45,w:12,img:"funn-to-krabber.png",t:"Dei slepte ikkje kvarandre heile vegen opp. Vinnaren fekk sveltast.",levande:true},
+ {k:"kongesnegl",e:"🐚",n:"Kongesnegl",kr:30,w:10,img:"funn-kongesnegl.png",t:"Rusten kokar dei. Ungane vil helst ikkje sjå på.",levande:true},
  {k:"eremittkork",e:"🦐",n:"Eremittkreps som har flytta inn i ein kork",kr:0,w:9,img:"funn-eremittkreps-kork.png",trofeKun:true,t:"Skalet var opptatt. Han tok det han fann, og bar det med verdigheit."},
- {k:"sjopolse",e:"🥒",n:"Sjøpølse",kr:20,w:9,img:"funn-sjopolse.png",t:"Ho spytta ut innmaten sin av skrekk. Ho lagar seg ny."},
- {k:"blekksprutunge",e:"🦑",n:"Blekkspruunge",kr:25,w:8,img:"funn-blekksprutunge.png",t:"På storleik med ein tommel, og sinna som ein bikkje."},
+ {k:"sjopolse",e:"🥒",n:"Sjøpølse",kr:20,w:9,img:"funn-sjopolse.png",t:"Ho spytta ut innmaten sin av skrekk. Ho lagar seg ny.",levande:true},
+ {k:"blekksprutunge",e:"🦑",n:"Blekkspruunge",kr:25,w:8,img:"funn-blekksprutunge.png",t:"På storleik med ein tommel, og sinna som ein bikkje.",levande:true},
  {k:"uermedkrok",e:"🪝",n:"Uer med gammel krok i kjeften 💙",kr:0,w:6,img:"funn-uer-med-krok.png",trofeKun:true,t:"Han har gått med han lenge. Vi klipte han laus og sette ueren ut."},
  {k:"aalikar",e:"🪣",n:"Ål i eit gammalt kar",kr:0,w:5,img:"funn-aal-i-kar.png",trofeKun:true,t:"Han hadde budd der ei stund. Vi bar karet ut på djupet og velta det."},
- {k:"hummerstrikk",e:"🦞",n:"Hummer med strikk på klørne",kr:220,w:5,img:"funn-hummer-strikk.png",hummer:true,t:"Nokon mista henne på veg heim. No er ho vår — om sesongen tillèt det."},
+ {k:"hummerstrikk",e:"🦞",n:"Hummer med strikk på klørne",kr:220,w:5,img:"funn-hummer-strikk.png",hummer:true,levande:true,t:"Nokon mista henne på veg heim. No er ho vår — om sesongen tillèt det."},
  {k:"nisereskalle",e:"💀",n:"Nisereskalle",kr:0,w:3,img:"funn-nisereskalle.png",djup:true,trofeKun:true,t:"Rein og kvit. Ho svømte her lenge før nokon av oss."},
 
  // Skattar frå sjøbotnen
@@ -2926,9 +2924,9 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"pilspiss",e:"🏹",n:"Pilspiss frå steinalderen",kr:0,w:1.8,img:"funn-pilspiss.png",djup:true,museum:1800,t:"Skjefta av flint. Nokon sikta med henne på denne fjorden."},
  {k:"dinosaurbein",e:"🦴",n:"DINOSAURBEIN i steinen",kr:0,w:1.2,img:"funn-dinosaurbein.png",djup:true,museum:3500,t:"Museet trong tre veker på å tru det. Namnet ditt står på skiltet."},
  {k:"neandertalskalle",e:"🗿",n:"HODESKALLE — museet seier neandertalar",kr:0,w:0.8,img:"funn-neandertalskalle.png",djup:true,museum:6000,t:"Førti tusen år. Han fiska her han òg, seier dei."},
- {k:"sjostjerne",e:"⭐",n:"Sjøstjerne — den har spist opp agnet",kr:0,w:26},
- {k:"strandkrabbe",e:"🦀",n:"Strandkrabbe (liten)",kr:5,w:22},
- {k:"berggylte",e:"🐟",n:"Berggylte i teina",kr:20,w:18,fimg:"berggylte"},
+ {k:"sjostjerne",e:"⭐",n:"Sjøstjerne — den har spist opp agnet",kr:0,w:26,levande:true},
+ {k:"strandkrabbe",e:"🦀",n:"Strandkrabbe (liten)",kr:5,w:22,levande:true},
+ {k:"berggylte",e:"🐟",n:"Berggylte i teina",kr:20,w:18,fimg:"berggylte",levande:true},
  {k:"stovel",e:"🥾",n:"Gul støvel",kr:0,w:16,img:"funn-stovel.gif",trofeKun:true,t:"Størrelse 44, høyre fot. Rusten har den venstre hjemme, sier han."},
  {k:"skinkeost",e:"🧴",n:"Skinkeosttube (tom)",kr:0,w:14,img:"funn-skinkeost.gif",trofeKun:true,t:"Tømt til siste dråpe. Noen har hatt en fin tur på sjøen."},
  {k:"bilnokler",e:"🔑",n:"Bilnøkler — noen fikk en dårlig dag",kr:0,w:13,img:"funn-bilnokler.gif",trofeKun:true,t:"Volvo, 1998. Et sted står den fortsatt og venter."},
@@ -3037,6 +3035,18 @@ function potBycatch(rng,sone){ // djuphavsrariteter dukker BARE opp på 300-500 
     if(blakk&&r3<0.18){ l.kr=200+Math.round(rng()*16)*50; l.n="Gammel lommebok — det GLIMTER der inne! (+"+l.kr+" kr)"; } // maks 1000
     else if(r3<0.55){ l.kr=7+(rng()<0.5?1:0); l.n="Gammel lommebok — "+l.kr+" kronestykker og en tørket froskefot"; }
     else { l.kr=0; l.n="Gammel lommebok — tom. Kortene er sperret."; } }
+  // ALT du finner kan settes i troféskapet. Før gjaldt det bare funn med et eget
+  // flagg, så en halvrusten kniv ble solgt automatisk for ti kroner og var borte
+  // for godt — og det er nettopp den slags som hører hjemme i et skap.
+  //
+  // Unntakene er få og har grunn: det som LEVER selges eller settes ut (en
+  // strandkrabbe skal ikke stå i hylla), rolexen har sin egen vei via Rusten, og
+  // myntene MÅ til museet.
+  //
+  // Denne står HELT til slutt med vilje: flaskeposten og lommeboka setter sin
+  // egen verdi lenger opp, og trofeKr må være det endelige beløpet — ellers
+  // hadde du fått valget mellom skapet og null kroner.
+  if(!l.valg && !v.levande && !v.rolexFunn && !v.museum){ l.valg=v; l.trofeKr=l.kr; l.kr=0; }
   if(v.rolexFunn)l.rolexFunn=true; return l; }
 var SMAAFISK=[ // går inn i teina etter agnet — same fisken som står på grunna
  {k:"rognkjeks",n:"Rognkjeks (gjekk inn etter agnet)",kr:90},
@@ -3199,18 +3209,19 @@ function pullPot(ty){ ty=ty||"k";
     } else {
       var knapper='<div style="margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
         +'<button class="btn sm gold" id="vTrofe">Sett i troféskapet</button>';
-      if(v.trofeSelg) knapper+='<button class="btn sm" id="vSelg">Selg for '+v.trofeSelg+' kr</button>';
+      var selgKr = v.trofeSelg || vLinje.trofeKr || 0;   // vanlege funn har prisen sin på linja
+      if(selgKr) knapper+='<button class="btn sm" id="vSelg">Selg for '+selgKr+' kr</button>';
       var auk = v.auksjon ? (v.auksjon===true?{selg:5000,min:100,maks:30000}:v.auksjon) : null;
       if(auk) knapper+='<button class="btn sm" id="vSelg">Selg nå — '+auk.selg+' kr</button>'
         +'<button class="btn sm" id="vAuksjon">På auksjon ('+auk.min+'–'+auk.maks.toLocaleString("nb")+')</button>';
       if(v.laas) knapper+='<button class="btn sm" id="vLaas"'+(P.kr<v.laas.pris?' disabled title="Krever '+v.laas.pris+' kr"':'')+'>Bryt opp låsen — '+v.laas.pris+' kr</button>';
-      if(v.trofeKun) knapper+='<button class="btn sm ghost" id="vKast">Kast uti igjen</button>';
+      if(v.trofeKun||(!selgKr&&!auk&&!v.laas)) knapper+='<button class="btn sm ghost" id="vKast">Kast uti igjen</button>';
       $("#potTotal").insertAdjacentHTML("beforeend", knapper+'</div>');
       var laas=function(){ ["vTrofe","vSelg","vAuksjon","vKast","vLaas"].forEach(function(id){ var b=$("#"+id); if(b)b.disabled=true; }); };
       $("#vTrofe").onclick=function(){ if(tatt)return; tatt=true; laas(); leggITrofe(v.k); Snd.trophy();
         notice("Satt i troféskapet — se den i Arkivet 🏺"); };
       if($("#vSelg")) $("#vSelg").onclick=function(){ if(tatt)return; tatt=true; laas();
-        var kr=v.trofeSelg||(auk?auk.selg:0); P.kr+=kr; hud(); saveAll(); Snd.coin(); notice("Solgt til Rusten — "+kr+" kr 💰"); };
+        var kr=selgKr||(auk?auk.selg:0); P.kr+=kr; hud(); saveAll(); Snd.coin(); notice("Solgt til Rusten — "+kr+" kr 💰"); };
       if($("#vAuksjon")) $("#vAuksjon").onclick=function(){ if(tatt)return; tatt=true; laas();
         var kr=Math.max(auk.min,Math.round((auk.min+Math.pow(Math.random(),4)*(auk.maks-auk.min))/100)*100); // som regel smått, men jackpotten finnes
         P.kr+=kr; hud(); saveAll(); Snd.coin();
@@ -3228,8 +3239,8 @@ function pullPot(ty){ ty=ty||"k";
       var gmlT=$("#potTake").onclick; // lukker man uten å velge: ALT havner i skapet — aldri et salg
       $("#potTake").onclick=function(){ if(!tatt){ tatt=true;
           leggITrofe(v.k); saveAll();
-          notice(v.trofeSelg||auk ? "Lagt i troféskapet — du kan selge den derfra når du vil 🏺"
-                                  : "Satt i troféskapet 🏺"); }
+          notice(selgKr||auk ? "Lagt i troféskapet — du kan selge den derfra når du vil 🏺"
+                             : "Satt i troféskapet 🏺"); }
         $("#potTake").onclick=gmlT; if(gmlT)gmlT(); };
     }
   }
