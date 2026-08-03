@@ -622,3 +622,35 @@ everything and is not impressed. **Chunky visible pixels as if drawn on a
 flat blocks of colour with no soft shading and no blending, strict pixel grid,
 no anti-aliasing, ordered dithering only, limited 24-colour palette. Fully
 transparent background, no shadow, no floor, nothing behind him.
+
+---
+
+## 21. Silkesnøre
+
+Fil: **`silkesnore.png`** — ca. **512 × 400**, transparent
+
+Nytt produkt hos Rusten. Tynt, lett snøre som lar deg dra store fisk raskere —
+men det tåler mindre. Navnet bærer begge halvdelene: silke er både det fineste
+og det som ryker først.
+
+Vises som **68 × 60 px** i butikkraden, så alt finere enn det forsvinner.
+
+**Bare spolen.** Ingen stang, ingen snelle, ingen fisk — én spole med hvitt
+snøre på, sett rett forfra og litt fra siden. Snøret må leses som **hvitt og
+tynt**, ikke som tau.
+
+16-bit pixel art of a **single spool of fishing line**, seen straight on at a
+slight angle, nothing else in frame. A **dark grey plastic spool** with a
+flanged rim at top and bottom, wound tightly with **bright white line** — the
+windings visible as fine, even horizontal bands across the middle, catching a
+cool highlight along the upper edge. A **loose end of white line** curves down
+and away from the spool, thin and taut, showing how fine it is. Cool, restrained
+palette: white, pale grey, a hint of blue in the shadows, against the dark
+spool. Chunky visible pixels, hard dark outline, flat blocks of colour, no soft
+shading, strict pixel grid, no anti-aliasing, ordered dithering only, limited
+24-colour palette. Fully transparent background, no shadow, no frame, no rod,
+no reel.
+
+**Om du vil ha den enda tydeligere «lett»:** legg til *a few thin white strands
+drifting loose above the spool, as if the line is almost weightless* — men da
+må de være tykke nok til å synes ved 60 px.

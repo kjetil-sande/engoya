@@ -58,7 +58,10 @@ const egen = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // aldri arve
 // Utstyr følger spilleren over nett (samme «siste innsending vinner»-regel som kroner),
 // slik at familien kan logge inn på en ny enhet og få igjen stang, vinsj, turbosnelle osv.
 const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs", "streak", "streakDag", "streakBest", "riggTs"];
-const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "cooler", "belte", "motorOk", "sattDekk"];
+// «silke» står med vilje IKKE i carry-forward-lista lenger nede: silkesnøret er
+// det eneste utstyret som kan forsvinne, og et snøre som nettopp røk skal ikke
+// komme tilbake fordi noen andre i familien synket.
+const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "cooler", "silke", "belte", "motorOk", "sattDekk"];
 const GEAR_TEKST = { motor: 10, rig: 24, naadeMnd: 7 };
 // Objektfeltene vaskes TYPET (aldri rå gjennomstrømming): nøkler må være pene id-er og
 // verdier tall/boolske — da finnes det ingen vei for skript eller rare typer inn i andres lagring.
