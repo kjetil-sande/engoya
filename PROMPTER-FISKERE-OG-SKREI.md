@@ -732,3 +732,60 @@ perfekt rund. Mest karakter, men også lengst fra «fisk» ved første blikk.
 
 **Prøv gjerne alle tre og se dem ved siden av hverandre på telefonen.** Den som
 fortsatt leser som fisk når du myser, er den riktige.
+
+---
+
+## 23. Liv på bunnen — krabber, eremittkreps og øyne i mørket
+
+Grunt-bunnen skal få småkryp som rusler, og de tre dypere sonene skal få
+øyepar som blinker i mørket. Krypene tegnes som VENSTREVENDTE enkeltbilder —
+koden flipper, flytter og blinker dem, så ingen sprite-ark trengs.
+
+Vises på 20–40 px, så samme regel som alltid: ingen detaljer finere enn
+fem piksler. Felles hale: `Chunky visible pixels, hard dark outline, flat
+blocks of colour, no soft shading, strict pixel grid, no anti-aliasing,
+limited 16-colour palette. Fully transparent background, no shadow, no frame,
+no text. Side view, facing left.`
+
+### 23a. Bunnkrabbe — `bunnkrabbe.png` (256 × 192)
+
+Liten taskekrabbe sett fra siden, beina i gåstilling. (Vi HAR taskekrabbe.png,
+men den er et portrett til teinefangsten — denne skal være i profil og i
+gåfart, mye enklere.)
+
+> 16-bit pixel art of a **small edible crab in side view**, walking on a sandy
+> seabed, facing left. **Broad reddish-brown shell**, one visible claw held low
+> in front, four legs in a mid-step pose, two tiny eye stalks. Warm russet and
+> orange-brown tones with a pale cream underside. Chunky visible pixels, hard
+> dark outline, flat blocks of colour, no soft shading, strict pixel grid, no
+> anti-aliasing, limited 16-colour palette. Fully transparent background, no
+> shadow, no frame, no text. Side view, facing left.
+
+### 23b. Eremittkreps — `eremittkreps.png` (256 × 192)
+
+> 16-bit pixel art of a **small hermit crab in a spiral snail shell**, side
+> view, facing left, walking on sand. The **striped orange-and-cream spiral
+> shell** sits on its back, tilted slightly; soft reddish legs and two small
+> claws stick out from the shell opening, two round eyes on short stalks. Cozy
+> and a little comical. Chunky visible pixels, hard dark outline, flat blocks
+> of colour, no soft shading, strict pixel grid, no anti-aliasing, limited
+> 16-colour palette. Fully transparent background, no shadow, no frame, no
+> text. Side view, facing left.
+
+### 23c. Øynene i mørket — trengs det bilde?
+
+**Anbefaling: nei.** To små lysende prikker som blinker (tennes, slukkes,
+flytter seg mellom økter) tegnes skarpere i kode enn i en PNG på 20 px — og
+koden kan variere avstand, høyde og farge (gulgrønn på Mellomdyp, isblå i
+Djuphavet) gratis. Vil du likevel ha et tegnet par med antydning til
+silhuett rundt, bruk denne:
+
+> 16-bit pixel art of **two glowing pale-yellow eyes in darkness**, side by
+> side, slightly uneven in size, with the faintest hint of a large dark
+> creature silhouette around them — barely visible, almost pure black on
+> black. Nothing else. Chunky visible pixels, no outline glow larger than a
+> few pixels, strict pixel grid, no anti-aliasing. Fully transparent
+> background except the eyes and the faint silhouette, no frame, no text.
+
+Fil i så fall: **`morkeauge.png`** (256 × 128). Koden blinker uansett — den
+slukker begge pikslene et halvt sekund med ujevne mellomrom.
