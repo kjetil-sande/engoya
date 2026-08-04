@@ -149,17 +149,18 @@ sys.exit(1 if avvik else 0)
 PY
 
 python3 - <<'PY'
-# Bensinprisen står to steder: i knappene (håndskrevet HTML) og i needF (JS).
-# Driver de fra hverandre, lyver dybdevelgeren om hva turen koster.
+# Bensinprisen står to steder: i fiskekartet (KART.felt sine kanner) og i needF (JS).
+# Driver de fra hverandre, lyver kartet om hva turen koster. (Dybdeknappene ble
+# erstattet av kartet 4. aug 2026 — vakta fulgte med til den nye kilden.)
 import io, re, sys
 s = io.open('fiske.html', encoding='utf-8').read()
-knapp = re.findall(r'class="bens">.*?x (\d)</small>', s)
+kart = re.findall(r'kanner:(\d)', s)
 m = re.search(r'var needF = \[([\d,]+)\]', s)
 kode = m.group(1).split(',') if m else []
-if knapp == kode and len(knapp) == 4:
-    print("  OK  dybdevelgeren viser samme bensinpris som koden tar (%s)" % "/".join(knapp))
+if kart == kode and len(kart) == 4:
+    print("  OK  fiskekartet viser samme bensinpris som koden tar (%s)" % "/".join(kart))
 else:
-    print("  FEIL  knappene sier %s, koden tar %s" % (knapp, kode)); sys.exit(1)
+    print("  FEIL  kartet sier %s, koden tar %s" % (kart, kode)); sys.exit(1)
 PY
 
 python3 - <<'PY'

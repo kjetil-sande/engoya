@@ -686,49 +686,19 @@ Centred, filling the square edge to edge with a small even margin.`
 ### 22a. Buttfisken — den trygge
 
 Rund i buken, kort hale, sett rett fra siden. Leser som «fisk» øyeblikkelig.
-
-> 16-bit pixel art icon of a **small plump fish** in side view, facing left,
-> filling a square frame. **Deep round belly**, blunt head, **short fanned
-> tail** — the whole silhouette close to a circle with a wedge on the end. One
-> **large simple round eye** with a white dot. Warm colours: **golden amber body
-> with a copper back and a pale cream belly**, strong dark outline all the way
-> around. Two small fins, chunky, no fine detail. Chunky visible pixels, hard
-> dark outline, flat blocks of colour, no soft shading, strict pixel grid, no
-> anti-aliasing, limited 16-colour palette. Fully transparent background, no
-> shadow, no frame, no text. Centred, filling the square edge to edge with a
-> small even margin.
+ 16-bit pixel art icon of a **small plump fish** in side view, facing left, filling a square frame. **Deep round belly**, blunt head, **short fanned tail** — the whole silhouette close to a circle with a wedge on the end. One **large simple round eye** with a white dot. Warm colours: **golden amber body with a copper back and a pale cream belly**, strong dark outline all the way around. Two small fins, chunky, no fine detail. Chunky visible pixels, hard dark outline, flat blocks of colour, no soft shading, strict pixel grid, no anti-aliasing, limited 16-colour palette. Fully transparent background, no shadow, no frame, no text. Centred, filling the square edge to edge with a small even margin.
 
 ### 22b. Kveita ovenfra — den som hører til spillet
 
 Flat, rund silhuett sett rett ovenfra. Nikker til storkveita, og formen er
 nesten en sirkel, så den leser aller best på små skjermer.
-
-> 16-bit pixel art icon of a **halibut seen from directly above**, filling a
-> square frame. A **broad rounded diamond body**, almost circular, with a small
-> narrow tail at the bottom and both eyes on the upper side of the head. Warm
-> colours: **golden brown back mottled with darker amber blotches**, a pale rim
-> along the edge of the fins. Strong dark outline all the way around. Flat,
-> symmetrical, seen straight on — no perspective, no tilt. Chunky visible
-> pixels, hard dark outline, flat blocks of colour, no soft shading, strict
-> pixel grid, no anti-aliasing, limited 16-colour palette. Fully transparent
-> background, no shadow, no frame, no text. Centred, filling the square edge to
-> edge with a small even margin.
+ 16-bit pixel art icon of a **halibut seen from directly above**, filling a square frame. A **broad rounded diamond body**, almost circular, with a small narrow tail at the bottom and both eyes on the upper side of the head. Warm colours: **golden brown back mottled with darker amber blotches**, a pale rim along the edge of the fins. Strong dark outline all the way around. Flat, symmetrical, seen straight on — no perspective, no tilt. Chunky visible pixels, hard dark outline, flat blocks of colour, no soft shading, strict pixel grid, no anti-aliasing, limited 16-colour palette. Fully transparent background, no shadow, no frame, no text. Centred, filling the square edge to edge with a small even margin.
 
 ### 22c. Ringfisken — den særegne
 
 Fisken krøller seg så halen møter snuten. En ring, umulig å ta feil av, og
 perfekt rund. Mest karakter, men også lengst fra «fisk» ved første blikk.
-
-> 16-bit pixel art icon of a **fish curled into a ring**, its tail almost
-> touching its snout, forming a closed circle that fills a square frame. Seen
-> flat from the side, decorative and symmetrical, like a brooch or a coin motif.
-> **Golden amber body with a copper back**, one **large simple round eye** with
-> a white dot, a short fanned tail overlapping the nose. Strong dark outline all
-> the way around, open space in the middle of the ring. Chunky visible pixels,
-> hard dark outline, flat blocks of colour, no soft shading, strict pixel grid,
-> no anti-aliasing, limited 16-colour palette. Fully transparent background, no
-> shadow, no frame, no text. Centred, filling the square edge to edge with a
-> small even margin.
+ 16-bit pixel art icon of a **fish curled into a ring**, its tail almost touching its snout, forming a closed circle that fills a square frame. Seen flat from the side, decorative and symmetrical, like a brooch or a coin motif. **Golden amber body with a copper back**, one **large simple round eye** with a white dot, a short fanned tail overlapping the nose. Strong dark outline all the way around, open space in the middle of the ring. Chunky visible pixels, hard dark outline, flat blocks of colour, no soft shading, strict pixel grid, no anti-aliasing, limited 16-colour palette. Fully transparent background, no shadow, no frame, no text. Centred, filling the square edge to edge with a small even margin.
 
 **Prøv gjerne alle tre og se dem ved siden av hverandre på telefonen.** Den som
 fortsatt leser som fisk når du myser, er den riktige.
@@ -752,25 +722,10 @@ no text. Side view, facing left.`
 Liten taskekrabbe sett fra siden, beina i gåstilling. (Vi HAR taskekrabbe.png,
 men den er et portrett til teinefangsten — denne skal være i profil og i
 gåfart, mye enklere.)
-
-> 16-bit pixel art of a **small edible crab in side view**, walking on a sandy
-> seabed, facing left. **Broad reddish-brown shell**, one visible claw held low
-> in front, four legs in a mid-step pose, two tiny eye stalks. Warm russet and
-> orange-brown tones with a pale cream underside. Chunky visible pixels, hard
-> dark outline, flat blocks of colour, no soft shading, strict pixel grid, no
-> anti-aliasing, limited 16-colour palette. Fully transparent background, no
-> shadow, no frame, no text. Side view, facing left.
+16-bit pixel art of a **small edible crab in side view**, walking on a sandy seabed, facing left. **Broad reddish-brown shell**, one visible claw held low in front, four legs in a mid-step pose, two tiny eye stalks. Warm russet and orange-brown tones with a pale cream underside. Chunky visible pixels, hard dark outline, flat blocks of colour, no soft shading, strict pixel grid, no anti-aliasing, limited 16-colour palette. Fully transparent background, no shadow, no frame, no text. Side view, facing left.
 
 ### 23b. Eremittkreps — `eremittkreps.png` (256 × 192)
-
-> 16-bit pixel art of a **small hermit crab in a spiral snail shell**, side
-> view, facing left, walking on sand. The **striped orange-and-cream spiral
-> shell** sits on its back, tilted slightly; soft reddish legs and two small
-> claws stick out from the shell opening, two round eyes on short stalks. Cozy
-> and a little comical. Chunky visible pixels, hard dark outline, flat blocks
-> of colour, no soft shading, strict pixel grid, no anti-aliasing, limited
-> 16-colour palette. Fully transparent background, no shadow, no frame, no
-> text. Side view, facing left.
+16-bit pixel art of a **small hermit crab in a spiral snail shell**, side view, facing left, walking on sand. The **striped orange-and-cream spiral shell** sits on its back, tilted slightly; soft reddish legs and two small claws stick out from the shell opening, two round eyes on short stalks. Cozy and a little comical. Chunky visible pixels, hard dark outline, flat blocks of colour, no soft shading, strict pixel grid, no anti-aliasing, limited 16-colour palette. Fully transparent background, no shadow, no frame, no text. Side view, facing left.
 
 ### 23c. Øynene i mørket — trengs det bilde?
 
@@ -779,13 +734,7 @@ flytter seg mellom økter) tegnes skarpere i kode enn i en PNG på 20 px — og
 koden kan variere avstand, høyde og farge (gulgrønn på Mellomdyp, isblå i
 Djuphavet) gratis. Vil du likevel ha et tegnet par med antydning til
 silhuett rundt, bruk denne:
-
-> 16-bit pixel art of **two glowing pale-yellow eyes in darkness**, side by
-> side, slightly uneven in size, with the faintest hint of a large dark
-> creature silhouette around them — barely visible, almost pure black on
-> black. Nothing else. Chunky visible pixels, no outline glow larger than a
-> few pixels, strict pixel grid, no anti-aliasing. Fully transparent
-> background except the eyes and the faint silhouette, no frame, no text.
+16-bit pixel art of **two glowing pale-yellow eyes in darkness**, side by side, slightly uneven in size, with the faintest hint of a large dark creature silhouette around them — barely visible, almost pure black on black. Nothing else. Chunky visible pixels, no outline glow larger than a few pixels, strict pixel grid, no anti-aliasing. Fully transparent background except the eyes and the faint silhouette, no frame, no text.
 
 Fil i så fall: **`morkeauge.png`** (256 × 128). Koden blinker uansett — den
 slukker begge pikslene et halvt sekund med ujevne mellomrom.
