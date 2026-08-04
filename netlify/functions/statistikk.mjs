@@ -73,7 +73,10 @@ export default async (req) => {
     if (nei) return Response.json({ feil: nei.feil, google: true, klientId: nei.klientId },
       { status: nei.status });
   } else {
-    const fasit = process.env.STATS_NOKKEL;
+    // .trim(): et usynlig mellomrom eller linjeskift limt inn i Netlify-feltet
+    // skal ikke gi evig «Feil nøkkel» — panelet trimmer det brukeren skriver,
+    // så serveren må trimme sitt.
+    const fasit = (process.env.STATS_NOKKEL || "").trim();
     if (!fasit) {
       return Response.json({ feil: "Panelet er ikke satt opp: hverken PANEL_EPOST eller STATS_NOKKEL er satt i Netlify." },
         { status: 503 });
