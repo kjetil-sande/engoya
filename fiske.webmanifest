@@ -7,7 +7,7 @@
   "background_color": "#123a47",
   "theme_color": "#123a47",
   "icons": [
-    { "src": "/ikoner/hjemskjerm-kveite-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/ikoner/hjemskjerm-kveite-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/spill/assets/hjemskjerm-kveite-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/spill/assets/hjemskjerm-kveite-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }

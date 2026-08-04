@@ -1,17 +1,20 @@
-# Netlify-oppsett for Engøya-siden.
-# Proxyen gjør at nettleseren kan hente nyhetslisten fra Meløy kommune
-# (kommunens server sender ikke CORS-headere, så direktehenting blokkeres).
+# Netlify-oppsett for fiskespillet.no — «Jakten på storkveita».
+# Øy-sidene (og meloy-proxyen deres) bor i sitt eget repo: kjetil-sande/engoya-hytta.
 
 [build]
   # Ren statisk side: ingen byggekommando, publiser repo-rota
   publish = "."
 
+# Spillet ER nettstedet — rota går rett til det. fiske.html beholder navnet sitt
+# fordi hjemskjerm-installasjoner, manifestet og overleveringssiden på engoya.no
+# alle peker dit.
 [[redirects]]
-  from = "/meloy-proxy/*"
-  to = "https://www.meloy.kommune.no/:splat"
-  status = 200
+  from = "/"
+  to = "/fiske.html"
+  status = 301
 
-# Hold hele siden ute av søkemotorene (Google, Bing m.fl.)
+# Skjult for søkemotorer inntil videre — eieren vil spisse spillet før offentlig
+# lansering. Fjernes den dagen eieren sier fra.
 [[headers]]
   for = "/*"
   [headers.values]
