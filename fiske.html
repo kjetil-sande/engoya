@@ -360,8 +360,10 @@
   :root{--snelle:min(28vw,117px)} /* snella er nedjustert tre ganger etter tilbakemelding (fra 46vw/190px) */
   #reelui{display:none}
   #reelui.on{display:flex;position:absolute;left:10px;right:10px;bottom:calc(14px + env(safe-area-inset-bottom));
-    justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:6}
-  #reelui.on .vbar{height:var(--snelle)}
+    justify-content:center;align-items:flex-end;pointer-events:none;z-index:6}
+  #maalarar{position:absolute;left:0;bottom:0;display:flex;gap:9px;align-items:flex-end}
+  /* 10 % høgare enn snella — meir å lese på i kampens hete */
+  #reelui.on .vbar{height:calc(var(--snelle) * 1.1)}
   /* Gnist bak turbosnella: sprite-ark (4 rammer) sentrert på snella, styrt av spennet i JS */
   #gnist{position:absolute;left:50%;bottom:calc(var(--snelle) * -0.28);
     width:calc(var(--snelle) * 1.56);height:calc(var(--snelle) * 1.56);transform:translateX(-50%);
@@ -787,9 +789,14 @@
       <p class="hint" id="hint">Velg dybde og kast ut.</p>
       <div id="reelui">
         <div id="gnist"></div>
-        <div class="vbar tension"><span class="lab">SPENN</span><i id="tensionBar"></i></div>
+        <!-- Begge målarane samla til venstre, så blikket finn dei i eitt: tommelen
+             ligg på snella i midten, og høgre hand skjuler då ingenting. Best for
+             høgrehendte, verre for venstrehendte — eigarens medvitne val. -->
+        <div id="maalarar">
+          <div class="vbar tension"><span class="lab">SPENN</span><i id="tensionBar"></i></div>
+          <div class="vbar prog"><span class="lab">DYBDE</span><i id="progBar"></i></div>
+        </div>
         <img id="snelleImg" src="spill/assets/fiskesnelle-ny.png" alt="" onerror="this.style.visibility='hidden'">
-        <div class="vbar prog"><span class="lab">DYBDE</span><i id="progBar"></i></div>
         <div id="strompil" title="Tidevannsstrømmen: retning og styrke"><span class="strlab">STRØM</span><span id="strompilIkon">→</span><i id="strompilStyrke"></i></div>
       </div>
       <div id="potRow" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
@@ -2456,7 +2463,7 @@ function commitBite(){
   // Hågjelen er ingen sportsfisk. Han napper agnet av kroken og er borte — men berre
   // når det HENG agn der; ein blank sluk har han ingen bruk for.
   if(cf&&cf.k==="haagjel"&&ag&&Math.random()<0.45){
-    if(sceneFish) flee={f:cf, len:sceneFish.sizeLen||60, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*1.2, t:1.0};
+    if(sceneFish) flee={f:cf, len:sceneFish.sizeLen||60, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*1.2*fiskefart(sceneFish.sizeLen), t:1.0};
     phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
     setHint("Bar krok. Noe tok agnet og var borte."); setAction("Kast ut");
     Snd.fiskerSurPool(); rustenSier("haagjel",700); saveAll(); return;
@@ -2489,7 +2496,7 @@ function tryHook(){
   setAction("SVEIV (hold)",true);
 }
 function miss(){
-  if(sceneFish) flee={f:sceneFish.f, len:sceneFish.sizeLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
+  if(sceneFish) flee={f:sceneFish.f, len:sceneFish.sizeLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9*fiskefart(sceneFish.sizeLen), t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool(); // hunden er lei seg
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
   setHint("Fisken slapp… prøv igjen."); setAction("Kast ut"); saveAll();
@@ -3827,6 +3834,15 @@ function openShop(){
       ?'Rusten myser mot havet: «'+kv.bestLen+' cm, ja … Det går rykter om ei kveite på over to meter der ute. Ingen har landa den ennå.»'
       :'Rusten lener seg over disken: «Med det utstyret der er det bare storkveita som gjenstår. Den står djupt — og den venter.»')+'</p>'); }
   } // slutt Utstyr del 2
+  // Rusten ryddar hyllene etter pris, billigst først. Berre VARENE byter plass —
+  // dei sorterte varene fyller dei same DOM-plassane varene stod i, så banneret
+  // med dagens bestilling, fanene og småpraten hans står nøyaktig der dei stod.
+  var alle=[].slice.call(L.children);
+  var sortert=alle.filter(function(r){ return r.dataset&&r.dataset.kost!=null; })
+    .sort(function(a,b){ return (+a.dataset.kost)-(+b.dataset.kost); });
+  var vi=0;
+  alle.forEach(function(r,i){ if(r.dataset&&r.dataset.kost!=null) alle[i]=sortert[vi++]; });
+  alle.forEach(function(r){ L.appendChild(r); });
   modal("shopModal",true);
 }
 function openKjell(){
@@ -3880,6 +3896,7 @@ function openKjell(){
 }
 function addShop(L,title,desc,cost,owned,buy,krav){
   var div=document.createElement("div"); div.className="shopitem"+(krav?" laast":"");
+  div.dataset.kost=cost;
   var m=title.match(/^(<img[^>]*>)\s*([\s\S]*)$/); // bilde først i tittelen → egen kolonne til venstre
   // Slitasjeskalaen står midt i beskrivelsen. Den hentes ut og settes ved siden av
   // knappen i stedet — der hører den hjemme, og teksten flyter penere uten den.
@@ -4674,7 +4691,7 @@ function drawScene(dt){
       cx.strokeStyle=gr; cx.lineWidth=2; cx.stroke();
       cx.restore();
     } else drawBoat(bx,by,mn*0.14);
-    drawFangstPaaRipa(bx,by,bw,bh,bTilt); }
+    }
   // teiner i sona: blåse på vannlinja, grønt tau ned, teine ved bunnen av bildet
   var BPOS=[0.15,0.85,0.22,0.78,0.29,0.72]; // annenhver side av båten — klar av motor, skrog OG kamp-barene i kantene
   var barKlar=44; // spenn-/dybdebaren dekker x 10-32 fra hver kant — 44 gir 12 px luft
@@ -4857,19 +4874,8 @@ function snelleSpinn(dt){
   im.style.transform="rotate("+snelleGrad.toFixed(1)+"deg)";
 }
 var starImg=new Image(); starImg.src="spill/assets/stjerne-full.png";
-function drawFangstPaaRipa(bx,by,bw,bh,bTilt){
-  if(!pending||!pending.f)return;
-  var m=document.getElementById("catchModal");
-  if(!m||!m.classList.contains("on"))return;
-  var im=fiskBilde(pending.f); if(!im||!im.complete||!im.naturalWidth)return;
-  var w=Math.min(bw*0.62, fishScale(pending.f, pending.len)*0.92);
-  var h=w*im.naturalHeight/im.naturalWidth;
-  cx.save();
-  cx.translate(bx,by); cx.rotate(bTilt);
-  cx.globalAlpha=Math.min(1,liftT*3.2);        // siger inn i takt med at han løfter armen
-  cx.drawImage(im, -bw*0.19-w*0.5, -bh*0.17-h*0.5, w, h);
-  cx.restore();
-}
+// drawFangstPaaRipa er fjerna (eiers val 4. aug): fisken låg vassrett under
+// handa hans og såg aldri HALDEN ut. Tommel opp åleine fortel det same, betre.
 // Munnen ligg IKKJE midt i spriten. Målt over alle 37 fiskebileta ligg snuten i snitt
 // 5 % — og på rognkall, brosme og hyse heile 10 % — UNDER biletmidten. drawImage set
 // MIDTEN på kroken, så sluken hamna i panna på fisken i staden for i kjeften.
@@ -4922,13 +4928,18 @@ function pickAmbient(){
   var tot=0, ws=FISH.map(function(f){ var k=(f.trophy&&kveiteFinnes)?0:(f.rar===2?0.06:f.rar===1?0.35:1)*f.w; tot+=k; return k; });
   var r=Math.random()*tot; for(var i=0;i<FISH.length;i++){ r-=ws[i]; if(r<=0)return FISH[i]; } return FISH[0]; }
 var BUNNFRAC=[0.89,0.86,0.93,0.95]; // andel av bakgrunnen som er VANN — under dette ligger sanden
-function newAmbient(){ var f=pickAmbient(), dir=Math.random()<0.5?1:-1, g=colGeom();
+// Jo mindre fisken er, jo kvassare rykk: ein 20 cm sei piler, ei to meters
+// kveite sig. Same faktor for bakgrunnsfisk og rømlingar, så regelen kjennest
+// som éin naturlov og ikkje to tilfeldigheiter.
+function fiskefart(len){ return Math.max(0.55, Math.min(2.4, 55/Math.max(12,len||60))); }
+function newAmbient(){ var f=pickAmbient(), dir=Math.random()<0.5?1:-1, g=colGeom(), L=0;
   var top=Math.max(g?g.wl+14:H*0.32, camY);
   var sand=g?g.imgH*(BUNNFRAC[depth]||0.9):Infinity;   // havbotnen i verdskoordinat
   var bot=Math.min(camY+H, sand);                       // ingen fisk under sanden
   if(bot-top<40)bot=top+40;                             // kameraet heilt nede: hald eit tynt band
   var lo=f.bunn?0.84:(f.rar?0.55:0.10), hi=f.bunn?0.97:0.95; // bunnfisk ved bunnen; sjeldne/legendariske dypere i utsnittet
-  return {f:f, x:dir<0?1.2:-0.2, wy: top+(bot-top)*(lo+Math.random()*(hi-lo)), vx:dir*(0.015+Math.random()*0.045), op:0.4+Math.random()*0.4, sc:0.85+Math.random()*0.3, len:Math.round(rnd(f.len[0],f.len[1])) }; }
+  L=Math.round(rnd(f.len[0],f.len[1]));
+  return {f:f, x:dir<0?1.2:-0.2, wy: top+(bot-top)*(lo+Math.random()*(hi-lo)), op:0.4+Math.random()*0.4, sc:0.85+Math.random()*0.3, len:L, vx:dir*(0.015+Math.random()*0.045)*fiskefart(L) }; }
 function drawAmbient(dt,colTop){
   if(ambient.length===0){ var n=1+Math.floor(Math.random()*5); for(var i=0;i<n;i++)ambient.push(newAmbient()); }
   ambient.forEach(function(a){
