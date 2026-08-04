@@ -44,6 +44,26 @@ først, haptikk ved napp (Android; iPhone støtter ikke API-et).
 
 ## 4. Køen, i anbefalt rekkefølge
 
+**Status 5. aug (stor justeringsbolk gjennomført):** Dagens Bestilling er FERDIG med
+sjekkliste-UI, pose (tekst venstre/pose høyre/innhold i boksen etter åpning) og dagens
+fisk-linja over hyllefanene. GJORT samme bolk: stressbaren står ALLTID ved dybdemåleren;
+bensinbrikka viser pumpe → bar → kanne + «24+8»; Butikk/Verksted/Arkiv-tekstene 50 %
+større; Stang II står før Krabbeteine; bakgrunnsfisken er sone- og sesongfiltrert
+(pickAmbient bruker iSona); regnet er lavpasset (4,5 kHz), volum 0,55→0,40 og loopsømmen
+trimmet; ctx.onstatechange + Snd.vekk() + pageshow-lytter gjenoppliver lyden etter
+Safari-avbrudd (temaet pauses aldri og gjenopptas stumt); lynmotor (lyn-1..4.png,
+PIL-plassholdere inne — eieren genererer ekte, prompter i PROMPTER-DIVERSE.md) med
+2 blink + hovedlyn som står 1 s, torden på tidslinja, dev-hash #uvar; innboksmotoren
+revidert (gravsteiner i flettene begge veier, deterministisk oppgjørs-id=turseed,
+uleste øverst, vakter FØR innboksen lukkes, re-vakter i investJa, ringPe i stedet for
+m.pe) med tilbakepil i telefontoppen → innboksen og «‹ Fiskerkortet» i innboksen;
+«Meld inn»-pille i fiskerkortet → feilmelding.mjs (byte-lik paneldør, doervakta vokter
+nå TRE filer) → egen seksjon i kontrollpanelet; statistikk.mjs kraftig utvidet (økonomi,
+bestillinger, tips-utbredelse, per-art-fangst, tråler per fisker, vedlikehold);
+Bankene-«?» flyttet midt på banken (qx/qy-merkepunkt). VENTER PÅ EIEREN: generere
+bilder fra PROMPTER-DIVERSE.md (tom pose, linekrok, lyn ×4, tropeskap ×10 — FUNN-
+oppføringene legges inn når bildene kommer), og iPhone-verifisering av lydfiksene.
+
 1. **Kontrollpanelet — «legg til så mye verdi vi kan»** (eierens ord).
    Utstyrslisten mangler kjøleribbe, silkesnøre, motor-nivåer og teiner. Ønskelisten:
    sluker/agn og hvilke som har gitt best fangst og flest kveiter (`redskap`-feltet på
@@ -68,6 +88,13 @@ først, haptikk ved napp (Android; iPhone støtter ikke API-et).
    funksjon som rydder blober urørt i X dager (eieren velger X). GDPR art. 17.
    NB: dette blir det eneste stedet i systemet som med vilje sletter — vaktene som
    håndhever «aldri tap» må lære unntaket eksplisitt.
+3b. **Kartet, småfikser** (eierens ønsker 4. aug kveld, i kø ETTER Dagens Bestilling):
+   (a) Saltvær klikkbart → zoomet landsby-utsnitt: Rustens butikk MED SKILT, Kjells verksted
+   med skilt, Målfrids hus, røyk fra pipa, måke- og sjølyd, en katt som slikker poten.
+   Det røde naustet er spillerens. Eieren vurderer å bytte båten mot en koseligere liten
+   fiskebåt. Trenger egen Firefly-prompt (samme faste linjer som PROMPTER-KARTET.md).
+   (b) iOS Safari tap-markering (hvit firkant ved trykk) skal bort:
+   `-webkit-tap-highlight-color:transparent` på kartknappene/generelt — én CSS-linje.
 4a. **Nye fiskearter: Bergen–Trondheim** (eierens ønske 4. aug, i kø). «Vi trenger å få inn
    en del til. Smått og stort» — arter som hører hjemme langs kysten fra Vestlandet til
    Trøndelag. 38 av 80 plasser brukt (MAKS_ARTER=80), så det er god plass. Egen bolk:

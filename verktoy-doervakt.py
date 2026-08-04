@@ -14,7 +14,8 @@
 
 import io, re, sys, difflib
 
-FILER = ["netlify/functions/statistikk.mjs", "netlify/functions/anmeldelser.mjs"]
+FILER = ["netlify/functions/statistikk.mjs", "netlify/functions/anmeldelser.mjs",
+         "netlify/functions/feilmelding.mjs"]
 MONSTER = r'const GOOGLE_TOKENINFO = .*?\nasync function googleDoer\(req\) \{.*?\n\}\n'
 
 dorer = {}
@@ -24,20 +25,21 @@ for f in FILER:
         print("✗ fant ingen googleDoer i " + f); sys.exit(1)
     dorer[f] = m.group(0)
 
-a, b = dorer[FILER[0]], dorer[FILER[1]]
-print("døra er %d tegn, funnet i begge filene." % len(a))
+a = dorer[FILER[0]]
+print("døra er %d tegn, funnet i alle %d filene." % (len(a), len(FILER)))
 
 # Fanger den også en ENDRING, ikke bare fravær? En vakt som alltid sier ja er
 # ingen vakt. Vi prøver den mot en dør der aud-sjekken er fjernet.
 if a.replace("if (k.aud !== klientId)", "if (false)") == a:
     print("✗ motprøven bommet — aud-sjekken finnes ikke å fjerne"); sys.exit(1)
 
-if a != b:
-    print("✗ DØRENE HAR DREVET FRA HVERANDRE:")
-    for l in difflib.unified_diff(a.split("\n"), b.split("\n"),
-                                  FILER[0], FILER[1], lineterm="", n=1):
-        print("   " + l)
-    sys.exit(1)
+for f in FILER[1:]:
+    if a != dorer[f]:
+        print("✗ DØRENE HAR DREVET FRA HVERANDRE:")
+        for l in difflib.unified_diff(a.split("\n"), dorer[f].split("\n"),
+                                      FILER[0], f, lineterm="", n=1):
+            print("   " + l)
+        sys.exit(1)
 
 # aud, iss, email_verified og allowlist må alle stå der. Slettes én, er døra åpen
 # for en hel klasse tokens, og en ren likhetstest ville ikke merket det så lenge
@@ -49,4 +51,4 @@ for krav, hvorfor in [("k.aud !== klientId", "token fra en annen app slipper inn
     if krav not in a:
         print("✗ MANGLER «%s» — da %s" % (krav, hvorfor)); sys.exit(1)
 
-print("✓ identiske, og alle fire sjekkene (aud, iss, verifisert, allowlist) står")
+print("✓ alle %d identiske, og alle fire sjekkene (aud, iss, verifisert, allowlist) står" % len(FILER))

@@ -16,6 +16,7 @@ KILDE = os.path.join(ROT, "fiske.html")
 
 NODVENDIGE = ["famFarlig", "egen", "flettDager", "famFlett", "gearUt", "gearFersk",
               "gearLoft", "gearInn", "newPlayer", "flettTrofe", "flettInvest",
+              "bestillingsDag", "flettTips", "flettBestilling",  # bestillinger og tips (PLAN-BESTILLINGER.md)
               "flettInnboks", "famCode", "lagKopi", "lesKopi", "kopiFilnavn"]
 
 STUBBER = """
