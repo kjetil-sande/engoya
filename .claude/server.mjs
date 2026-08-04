@@ -3,7 +3,7 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
-const ROT = "/Users/kjetilsande/Documents/Claude/Engøya";
+const ROT = "/Users/kjetilsande/Documents/Claude/Fiskespillet";
 const TYPE = { ".html":"text/html; charset=utf-8", ".js":"text/javascript", ".css":"text/css",
   ".png":"image/png", ".jpg":"image/jpeg", ".gif":"image/gif", ".aac":"audio/aac",
   ".mp3":"audio/mpeg", ".mp4":"video/mp4", ".json":"application/json", ".svg":"image/svg+xml" };
