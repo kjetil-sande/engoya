@@ -346,3 +346,14 @@ kart i sikksakk med stiplet rute og rød X (eierens referanse). Nøkle ut magent
 vanlig — glorievasken i spillet tar kantene. (675 tegn)
 
 > Retro video game pixel art style. A single game icon: a folded paper chart standing slightly open, three vertical panels in a zigzag fold. Cream paper with thin dark outlines, small teal water shapes and a simple coastline drawn on the panels, a dashed dark route line winding across all three panels and ending at a bold red X. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading on the folds. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+
+---
+
+## 5. Goodie-posen
+
+`spill/assets/pose-rusten.png` — Rustens papirpose på bestillingslappen (vises ~52 px).
+Kodetegnet placeholder ligger inne; generer og overskriv med samme filnavn, nøkle ut
+magentaen som vanlig. (635 tegn)
+
+> Retro video game pixel art style. A single game icon: a small brown paper grocery bag, slightly crumpled and standing upright, top edge folded over once. A hand-torn yellow note sticks up from inside the bag. Simple handwritten-style dark scribble across the front of the bag, unreadable. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading on the folds. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.

@@ -20,6 +20,7 @@ node --check /tmp/spill.js                  && echo "  OK  fiske.html"
 node --check netlify/functions/familierekorder.mjs && echo "  OK  familierekorder"
 node --check netlify/functions/statistikk.mjs      && echo "  OK  statistikk"
 node --check netlify/functions/anmeldelser.mjs     && echo "  OK  anmeldelser"
+node --check netlify/functions/feilmelding.mjs     && echo "  OK  feilmelding"
 python3 -c "
 import io, re
 s = io.open('kontrollpanel.html', encoding='utf-8').read()
@@ -90,6 +91,28 @@ echo ""
 echo "── Data og synk ─────────────────────────────────────"
 python3 verktoy-synkvakt.py     | tail -1
 python3 verktoy-datatapstest.py | tail -1
+node verktoy-bestillingtest.mjs | tail -1
+node verktoy-bestillingkatalog.mjs | tail -1
+node verktoy-tipstest.mjs | tail -1
+python3 - <<'PYEOF'
+# Fella som har smelt tre ganger: et felt legges i gearUt() men glemmes i serverens
+# hvitvask — og forsvinner stille ved neste synk. Vakta krever at HVERT felt klienten
+# sender, faktisk konsumeres av vaskGear (hvitlistene eller eksplisitt g.<felt>).
+import io, re, sys
+k = io.open('fiske.html', encoding='utf-8').read()
+s = io.open('netlify/functions/familierekorder.mjs', encoding='utf-8').read()
+i = k.index('function gearUt()'); j = k.index('}; }', i)
+felter = sorted(set(re.findall(r'(\w+)\s*:\s*P\.', k[i:j])))
+vg = s[s.index('function vaskGear'):s.index('function flettSpiller')]
+lister = " ".join(re.findall(r'const GEAR_\w+ = \[(.*?)\]', s)) + " " + re.sub(r'//.*', '', vg)
+tekst = re.search(r'const GEAR_TEKST = \{(.*?)\}', s).group(1)
+mangler = [f for f in felter
+           if '"%s"' % f not in lister and 'g.%s' % f not in lister and f not in tekst]
+if mangler:
+    print("  FEIL  gearUt() sender felt serveren kaster: " + ", ".join(mangler)); sys.exit(1)
+print("  OK  alle %d gearUt-felter konsumeres av serverens vask" % len(felter))
+PYEOF
+if [ $? -ne 0 ]; then FEIL=1; fi
 python3 verktoy-kopitest.py     | tail -1
 
 echo ""

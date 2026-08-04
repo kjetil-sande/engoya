@@ -23,7 +23,8 @@ VAKT = "if(egen(DB.players,nytt)&&!DB.players[nytt].remote)return;"
 
 NODVENDIGE = ["famFarlig", "egen", "flettDager", "famFlett", "gearUt", "gearFersk",
               "gearLoft", "gearInn", "famTaImot", "newPlayer", "chosen",
-              "flettTrofe", "flettInvest", "flettInnboks"]
+              "flettTrofe", "flettInvest", "flettInnboks",
+              "bestillingsDag", "flettTips", "flettBestilling"]  # bestillinger og tips (PLAN-BESTILLINGER.md bolk 1)
 
 STUBBER = """
 var DB={players:{},kode:null}, P=null;
