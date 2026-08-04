@@ -91,6 +91,7 @@
   <p class="sub" id="sub">Jakten på storkveita</p>
   <div id="ut"><div class="melding">Henter …</div></div>
   <div id="anmUt"></div>
+  <div id="feilUt"></div>
   <p class="fot" id="fot"></p>
 </main>
 
@@ -317,8 +318,18 @@ function ukeSetning(d){
     + '<p class="forslag"><b>Forslag:</b> ' + f + '</p></div>';
 }
 
+// NPC-fiskerne fra spillet — id → navn (statisk kopi; bare til visning her)
+var TRAALNAVN = {harald:"Harald Nystad", jorunn:"Jorunn Eide", birger:"Birger Kvalvik",
+  solveig:"Solveig Åsen", odd:"Odd Mikkelsen", marit:"Marit Fagerli", trygve:"Trygve Bang",
+  ingrid:"Ingrid Sund", kaare:"Kåre Lind", astrid:"Astrid Holm"};
+// Artsnavnene — id → navn (statisk kopi fra FISH-tabellen i fiske.html)
+var ARTNAVN = {sei:"Sei", lyr:"Lyr", makrell:"Makrell", berggylte:"Berggylte", sandflyndre:"Sandflyndre", skrubbe:"Skrubbe", knurr:"Knurr", hvitting:"Hvitting", lomre:"Lomre", torsk:"Torsk", hyse:"Hyse", sild:"Sild", blastal:"Blåstål", lysing:"Lysing", uer:"Uer", rodspette:"Rødspette", brungylt:"Brungylt", brosme:"Brosme", lange:"Lange", blaalange:"Blålange", skate:"Storskate", haagjel:"Hågjel", havmus:"Havmus", svarthaa:"Svarthå", blaakveite:"Blåkveite", steinbit:"Steinbit", piggha:"Pigghå", makrellstorje:"Makrellstørje", breiflabb:"Breiflabb", maanefisk:"Månefisk", haakjerring:"Håkjerring", rognkjeks:"Rognkjeks", rognkall:"Rognkall", aalekvabbe:"Ålekvabbe", akkar:"Akkar", skolest:"Skolest", haabrann:"Håbrann", kveite:"Kveite"};
+function artNavn(k){ return ARTNAVN[k] || k; }
+
 function tegn(d){
   var f = d.folk, t = d.tid, r = d.retention, p = d.progresjon, u = d.utstyr;
+  var ok = d.okonomi||{}, be = d.bestillinger||{}, ti = d.tips||{}, ar = d.arter||{};
+  var tr = d.traaler||{}, ib = d.innboksen||{}, ve = d.vedlikehold||{}, to = d.trofeer||{};
   var h = ukeSetning(d);
 
   h += '<h2><span class="ikon">👥</span>Folk</h2><div class="rutenett folk">'
@@ -357,7 +368,77 @@ function tegn(d){
   h += '<h2><span class="ikon">🧰</span>Utstyr</h2><div class="rutenett utst">'
     + kort(u.stangIII, "Stang III") + kort(u.vinsj, "vinsj")
     + kort(u.ekkolodd, "ekkolodd") + kort(u.turbosnelle, "turbosnelle")
-    + kort(u.kampbelte, "kampbelte")
+    + kort(u.kampbelte, "kampbelte") + kort(u.kjoleribbe||0, "kjøleribbe")
+    + kort(u.silkesnore||0, "silkesnøre") + kort(u.krabbeteiner||0, "krabbeteiner totalt")
+    + kort(u.hummerteiner||0, "hummerteiner totalt") + kort(u.bunnliner||0, "bunnliner totalt")
+    + kort(u.harRolexProsjekt||0, "rolex-prosjekt i gang")
+    + '</div>'
+    + (u.stangFordeling ? '<div class="kort utst" style="margin-top:10px;border-left:3px solid var(--gull)">'
+      + '<div class="merke" style="margin:0 0 7px">Stangfordeling</div>'
+      + stolper(u.stangFordeling) + '</div>' : "");
+
+  h += '<h2><span class="ikon">💰</span>Økonomi</h2><div class="rutenett oko">'
+    + kort(no(ok.sumKr||0) + " kr", "på bok til sammen")
+    + kort(no(ok.medianKr||0) + " kr", "median per fisker")
+    + kort(no(ok.sumSolgtFisk||0) + " kr", "tjent på solgt fisk")
+    + kort(no(ok.rikeste||0) + " kr", "rikeste fisker", "gull")
+    + '</div>';
+
+  h += '<h2><span class="ikon">📜</span>Rustens bestillinger</h2><div class="rutenett best">'
+    + kort(be.harSettLappen||0, "har tatt imot lappen")
+    + kort(be.fullfoerteTotalt||0, "fullførte totalt")
+    + kort(be.dagensTrukket||0, "har dagens lapp")
+    + kort(be.dagensFerdig||0, "levert i dag", be.dagensFerdig ? "gronn" : "")
+    + kort(be.dagensHentet||0, "pose hentet i dag")
+    + '</div>';
+
+  h += '<h2><span class="ikon">💡</span>Rustens tips</h2><div class="rutenett tips">'
+    + kort(no(ti.snittAntall||0), "tips i snitt")
+    + kort(ti.flestHos||0, "flest hos én fisker")
+    + '</div>'
+    + (ti.utbredelse && Object.keys(ti.utbredelse).length
+      ? '<div class="kort tips" style="margin-top:10px;border-left:3px solid var(--gull)">'
+        + '<div class="merke" style="margin:0 0 7px">Mest utbredte tips</div>'
+        + stolper(ti.utbredelse) + '</div>' : "");
+
+  h += '<h2><span class="ikon">🚢</span>Tråler-spleisen</h2><div class="rutenett traal">'
+    + kort(tr.harInvestert||0, "har vært med på tur")
+    + kort(tr.aktiveTurer||0, "penger ute på tur nå", tr.aktiveTurer ? "gronn" : "")
+    + '</div>';
+  if(tr.perFisker && Object.keys(tr.perFisker).length){
+    h += '<div class="kort traal" style="margin-top:10px;border-left:3px solid var(--gull)">'
+      + '<div class="merke" style="margin:0 0 7px">Per fisker — spillere · turer · inn/ut · spleiset utstyr</div>';
+    Object.entries(tr.perFisker).sort(function(a,b){return b[1].turar-a[1].turar}).forEach(function(par){
+      var e = par[1];
+      h += '<div style="display:flex;justify-content:space-between;gap:8px;font-size:.86rem;padding:3px 0;border-bottom:1px solid var(--kant)">'
+        + '<span>' + esc(TRAALNAVN[par[0]]||par[0]) + '</span>'
+        + '<span>' + e.spillere + ' spillere · ' + e.turar + ' turer · '
+        + no(e.inn) + '→' + no(e.ut) + ' kr · utstyr niv. ' + e.utstyr + '</span></div>';
+    });
+    h += '</div>';
+  }
+
+  if(ar.fanget && Object.keys(ar.fanget).length){
+    h += '<h2><span class="ikon">🐟</span>Artene</h2>'
+      + '<div class="rutenett art">' + kort(ar.harGyllen||0, "har fanget gyllen fisk", "gull") + '</div>'
+      + '<div class="kort art" style="margin-top:10px;border-left:3px solid var(--gull)">'
+      + '<div class="merke" style="margin:0 0 7px">Hvor mange har hver art i boka</div>';
+    Object.entries(ar.fanget).forEach(function(par){
+      h += '<div style="display:flex;justify-content:space-between;font-size:.84rem;padding:2px 0">'
+        + '<span>' + esc(artNavn(par[0])) + '</span><b>' + par[1] + '</b></div>';
+    });
+    h += '</div>';
+  }
+
+  h += '<h2><span class="ikon">🔧</span>Vedlikehold og livstegn</h2><div class="rutenett ved">'
+    + kort(ve.havneavgiftForfalt||0, "skylder havneavgift", ve.havneavgiftForfalt ? "rod" : "")
+    + kort(ve.forsikringUte||0, "uten forsikring", ve.forsikringUte ? "rod" : "")
+    + kort(ve.begroddeSkrog||0, "begrodde skrog")
+    + kort(ve.hostendeMotorer||0, "hostende motorer")
+    + kort(ve.streakBestINo||0, "lengste streak noensinne", "gull")
+    + kort(ib.ulesteTotalt||0, "uleste meldinger totalt")
+    + kort((to.solgteTotalt||0) + " / " + (to.restaurerteTotalt||0), "troféer solgt / restaurert")
+    + kort(ve.harAnmeldt||0, "har lagt igjen anmeldelse")
     + '</div>';
 
   h += '<h2><span class="ikon">🔑</span>Koder</h2><div class="rutenett kode">'
@@ -448,6 +529,51 @@ function hentAnm(){
     .catch(function(){});
 }
 
+/* ---------- Feilmeldinger fra «Meld inn»-knappen ---------- */
+function tegnFeil(d){
+  var a = d.rapporter || [];
+  if(!a.length){ $("#feilUt").innerHTML =
+    '<h2><span class="ikon">🐞</span>Feilmeldinger</h2>' +
+    '<div class="melding">Ingen rapporter. Enten virker alt — eller så finner ingen knappen.</div>'; return; }
+  var h = '<h2><span class="ikon">🐞</span>Feilmeldinger</h2><div class="rutenett feil">' +
+    kort(a.length, "rapporter", a.length ? "rod" : "") + '</div><div style="margin-top:12px">';
+  a.forEach(function(r){
+    h += '<div class="anmrad">' +
+      '<div class="anmtopp">' +
+      (r.kallenavn ? '<span class="anmnavn">' + esc(r.kallenavn) + '</span>' : "") +
+      '<span class="anmnaar">' + new Date(r.naar).toLocaleString("nb",
+        {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) + '</span></div>' +
+      '<p class="anmtekst">' + esc(r.tekst) + '</p>' +
+      (r.hvor ? '<p class="anmtekst" style="opacity:.7;font-size:.8rem">' + esc(r.hvor) + '</p>' : "") +
+      (r.sisteFeil ? '<p class="anmtekst" style="opacity:.7;font-size:.8rem">Siste JS-feil: ' + esc(r.sisteFeil) + '</p>' : "") +
+      (r.ua ? '<p class="anmtekst" style="opacity:.5;font-size:.74rem">' + esc(r.ua) + '</p>' : "") +
+      '<div class="anmknapp"><button class="slett" data-feilslett="' + esc(r.id) + '">Behandlet — slett</button></div></div>';
+  });
+  $("#feilUt").innerHTML = h + '</div>';
+  $("#feilUt").querySelectorAll("[data-feilslett]").forEach(function(b){
+    b.onclick = function(){
+      if(!confirm("Slette denne rapporten?")) return;
+      b.disabled = true;
+      var hh = hodet(); hh["Content-Type"] = "application/json";
+      fetch("/.netlify/functions/feilmelding", { method:"POST", headers:hh,
+        body: JSON.stringify({ slett: b.dataset.feilslett }) })
+        .then(function(r){ if(!r.ok) throw 0; return hentFeil(); })
+        .catch(function(){ b.disabled = false; alert("Gikk ikke. Prøv igjen."); });
+    };
+  });
+}
+function hentFeil(){
+  return fetch("/.netlify/functions/feilmelding", { headers: hodet() })
+    .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+    .then(function(sv){
+      if(sv.ok){ tegnFeil(sv.d); return; }
+      $("#feilUt").innerHTML = '<h2><span class="ikon">🐞</span>Feilmeldinger</h2>' +
+        '<div class="melding">' + esc(sv.d && sv.d.feil ? sv.d.feil : "Fikk ikke hentet dem.") +
+        '<div class="liten">Sjekk at feilmelding-funksjonen er publisert.</div></div>';
+    })
+    .catch(function(){});
+}
+
 function hent(){
   var n = ""; try{ n = localStorage.getItem(NOKKEL) || ""; }catch(e){}
   var h = hodet();
@@ -469,7 +595,7 @@ function hent(){
       if(sv.status === 401){ try{ localStorage.removeItem(NOKKEL); }catch(e){}
         spor(n ? "Feil nøkkel. Prøv igjen." : null); return; }
       if(d.feil){ $("#ut").innerHTML = '<div class="melding">' + esc(d.feil) + '</div>'; return; }
-      tegn(d); hentAnm();
+      tegn(d); hentAnm(); hentFeil();
     })
     .catch(function(){ $("#ut").innerHTML =
       '<div class="melding">Fikk ikke kontakt med serveren. Panelet virker bare på engoya.no, ikke lokalt.</div>'; });
