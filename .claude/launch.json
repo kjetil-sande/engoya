@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "engoya",
+      "name": "spillet",
       "runtimeExecutable": "node",
       "runtimeArgs": [
-        "/Users/kjetilsande/Documents/Claude/Engøya/.claude/server.mjs"
+        "/Users/kjetilsande/Documents/Claude/Fiskespillet/.claude/server.mjs"
       ],
       "port": 8901
     },
@@ -13,7 +13,7 @@
       "name": "hytta",
       "runtimeExecutable": "node",
       "runtimeArgs": [
-        "/Users/kjetilsande/Documents/Claude/Engøya-hytta/.claude/server.mjs"
+        "/Users/kjetilsande/Documents/Claude/Engøya/.claude/server.mjs"
       ],
       "port": 8902
     }
