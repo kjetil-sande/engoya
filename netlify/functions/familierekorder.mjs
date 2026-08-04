@@ -57,11 +57,11 @@ const egen = (o, k) => Object.prototype.hasOwnProperty.call(o, k); // aldri arve
 
 // Utstyr følger spilleren over nett (samme «siste innsending vinner»-regel som kroner),
 // slik at familien kan logge inn på en ny enhet og få igjen stang, vinsj, turbosnelle osv.
-const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs", "streak", "streakDag", "streakBest", "riggTs"];
+const GEAR_TALL = ["rod", "fuel", "fuelMax", "svc", "forsTil", "havnNeste", "tidMs", "smorTs", "streak", "streakDag", "streakBest", "riggTs", "solgt", "bestFerdige"];
 // «silke» står med vilje IKKE i carry-forward-lista lenger nede: silkesnøret er
 // det eneste utstyret som kan forsvinne, og et snøre som nettopp røk skal ikke
 // komme tilbake fordi noen andre i familien synket.
-const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "cooler", "silke", "belte", "motorOk", "sattDekk", "anmeldt"];
+const GEAR_JANEI = ["propOk", "vinsj", "ekko", "turbo", "cooler", "silke", "belte", "motorOk", "sattDekk", "anmeldt", "bestillingIntroSett"];
 const GEAR_TEKST = { motor: 10, rig: 24, naadeMnd: 7 };
 // Objektfeltene vaskes TYPET (aldri rå gjennomstrømming): nøkler må være pene id-er og
 // verdier tall/boolske — da finnes det ingen vei for skript eller rare typer inn i andres lagring.
@@ -183,8 +183,9 @@ function vaskInnboks(a) {
     if (!m || typeof m !== "object") continue;
     if (typeof m.fk !== "string" || !PEN_NOKKEL.test(m.fk)) continue;
     if (typeof m.type !== "string" || !PEN_NOKKEL.test(m.type)) continue;
-    const e = { id: tall(m.id, 4e9), fk: m.fk, type: m.type,
+    const e = { id: tall(m.id, 9e15), fk: m.fk, type: m.type,
                 tid: tall(m.tid, 9e15), lest: !!m.lest };
+    if (m.borte) e.borte = true; // gravstein: besvarte/avviste tilbud skal ikke gjenoppstå
     for (const k of ["timar", "mult", "inn", "ut"]) if (m[k] != null) e[k] = tall(m[k], 9e12);
     if (typeof m.utfall === "string" && PEN_NOKKEL.test(m.utfall)) e.utfall = m.utfall;
     if (typeof m.tekst === "string") e.tekst = m.tekst.slice(0, 1200);
@@ -192,13 +193,15 @@ function vaskInnboks(a) {
   }
   return ut.length ? ut : undefined;
 }
-// Union på id. En melding som finnes ett sted finnes overalt.
+// Union på id. En melding som finnes ett sted finnes overalt — men gravsteiner
+// (borte) og lest er enveis dører, og uke gamle meldinger blir ikke med videre.
 function flettInnboks(gml, ny) {
-  const sett = new Map();
+  const sett = new Map(), no = Date.now();
   for (const m of [...(Array.isArray(gml) ? gml : []), ...(Array.isArray(ny) ? ny : [])]) {
     if (!m || m.id == null) continue;
+    if (no - (+m.tid || 0) >= 7 * 864e5) continue;
     const har = sett.get(m.id);
-    if (har) { if (m.lest) har.lest = true; continue; }   // lest er en enveis dør
+    if (har) { if (m.lest) har.lest = true; if (m.borte) har.borte = true; continue; }
     sett.set(m.id, { ...m });
   }
   return [...sett.values()].sort((a, b) => b.tid - a.tid).slice(0, 30);
@@ -222,6 +225,36 @@ function flettInvest(gml, ny) {
   if (!ut.tur && g.tur && tall(g.tur.ferdig, 9e15) > Date.now()) ut.tur = g.tur;
   return Object.keys(ut).length ? ut : undefined;
 }
+function serverBestillingsDag() { // speiler klientens bestillingsDag(): skifte kl. 04
+  const t = new Date(Date.now() - 4 * 3600e3);
+  return t.getFullYear() * 372 + t.getMonth() * 31 + t.getDate();
+}
+function vaskTips(a) { // tips er varig kunnskap: kun {k, ts} — effekten bor i klienttabellen,
+  // så det finnes ingen tallfelter en manipulert klient kan blåse opp. Cap 120.
+  if (!Array.isArray(a)) return undefined;
+  const ut = [], sett = new Set();
+  for (const t of a) {
+    if (!t || typeof t !== "object") continue;
+    const k = String(t.k || "");
+    if (!PEN_NOKKEL.test(k) || sett.has(k)) continue;
+    sett.add(k);
+    ut.push({ k, ts: Math.min(tall(t.ts, 4102444800000) || 0, Date.now() + 60_000) });
+    if (ut.length >= 120) break;
+  }
+  return ut.length ? ut : undefined;
+}
+function vaskBestilling(b) { // dagens bestilling: dag clampes mot serverens egen kalender —
+  // én feilstilt barne-iPad skal ikke låse spilleren ute i årevis (samme feilklasse som smorTs)
+  if (!b || typeof b !== "object") return undefined;
+  const dag = tall(b.dag, 1e6);
+  if (!dag) return undefined;
+  const ut = { dag: Math.min(dag, serverBestillingsDag() + 1), ferdig: !!b.ferdig, hentet: !!b.hentet };
+  if (typeof b.id === "string" && PEN_NOKKEL.test(b.id)) ut.id = b.id;
+  if (typeof b.tipsId === "string" && PEN_NOKKEL.test(b.tipsId)) ut.tipsId = b.tipsId; // tipset i posen på milepælsdager
+  const krav = vaskTelleObjekt(b.krav, 6); if (krav) ut.krav = krav;
+  const lev = vaskTelleObjekt(b.lev, 6); if (lev) ut.lev = lev;
+  return ut;
+}
 function vaskGear(g) {
   if (!g || typeof g !== "object") return undefined;
   const ut = {};
@@ -239,6 +272,8 @@ function vaskGear(g) {
   const invest = vaskInvest(g.invest); if (invest) ut.invest = invest;
   const innboks = vaskInnboks(g.innboks); if (innboks) ut.innboks = innboks;
   const dager = vaskDager(g.dager, undefined); if (dager) ut.dager = dager; // manglet i hvitelista — døgnloggen ble kastet
+  const tips = vaskTips(g.tips); if (tips) ut.tips = tips;
+  const bestilling = vaskBestilling(g.bestilling); if (bestilling) ut.bestilling = bestilling;
   if (typeof g.tidligereNavn === "string") {
     const tn = g.tidligereNavn.replace(/\p{Cc}/gu, "").trim().slice(0, 14);
     if (tn && !FARLIGE.has(tn)) ut.tidligereNavn = tn;
@@ -303,7 +338,33 @@ function flettSpiller(fam, p) {
       // nyeste service. Én linje, to jobber.
       g.riggTs = Math.max(tall(gml.riggTs, 9e15), tall(g.riggTs, 9e15));
       g.streakBest = Math.max(tall(gml.streakBest, 9e15), tall(g.streakBest, 9e15)); // beste streak er en rekord — aldri ned
-      for (const k of ["vinsj", "ekko", "turbo", "cooler", "belte", "sattDekk", "anmeldt"]) if (gml[k]) g[k] = true; // sette flagg kan aldri tas tilbake
+      g.solgt = Math.max(tall(gml.solgt, 9e15), tall(g.solgt, 9e15));               // solgte fisk telles bare oppover
+      g.bestFerdige = Math.max(tall(gml.bestFerdige, 9e15), tall(g.bestFerdige, 9e15)); // fullførte bestillinger likeså
+      { // tips: union — varig kunnskap kan aldri viskes ut av en gammel klient uten feltet
+        const tk = new Map();
+        (Array.isArray(gml.tips) ? gml.tips : []).forEach((t) => { if (t && t.k) tk.set(t.k, { k: t.k, ts: t.ts || 0 }); });
+        (Array.isArray(g.tips) ? g.tips : []).forEach((t) => {
+          if (!t || !t.k) return;
+          const h = tk.get(t.k);
+          if (h) { if (t.ts && (!h.ts || t.ts < h.ts)) h.ts = t.ts; } // først opptjent bevares
+          else if (tk.size < 120) tk.set(t.k, { k: t.k, ts: t.ts || 0 });
+        });
+        if (tk.size) g.tips = [...tk.values()]; else delete g.tips;
+      }
+      { // bestilling: nyere dag vinner; samme dag flettes monotont (kjent, akseptert
+        // undertelling ved samtidig spill på to enheter — ikke «fiks» til siste-skriv)
+        const gb = gml.bestilling, nb = g.bestilling;
+        if (!nb && gb) g.bestilling = gb;
+        else if (nb && gb && tall(gb.dag, 1e6) > tall(nb.dag, 1e6)) g.bestilling = gb;
+        else if (nb && gb && tall(gb.dag, 1e6) === tall(nb.dag, 1e6)) {
+          nb.lev = nb.lev || {};
+          for (const k of Object.keys(gb.lev || {})) nb.lev[k] = Math.max(tall(nb.lev[k], 1e6), tall(gb.lev[k], 1e6));
+          if (gb.ferdig) nb.ferdig = true;
+          if (gb.hentet) nb.hentet = true;
+          if (gb.tipsId && !nb.tipsId) nb.tipsId = gb.tipsId;
+        }
+      }
+      for (const k of ["vinsj", "ekko", "turbo", "cooler", "belte", "sattDekk", "anmeldt", "bestillingIntroSett"]) if (gml[k]) g[k] = true; // sette flagg kan aldri tas tilbake
       if (g.pots && gml.pots) for (const k of ["lineOwned", "lineKroker"]) // kjøpt line og krokar krymper aldri
         if (gml.pots[k] != null) g.pots[k] = Math.max(tall(gml.pots[k], 99), tall(g.pots[k], 99));
       cur.gear = g;
