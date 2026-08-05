@@ -6830,7 +6830,24 @@ function investSjekk(){
   // gjøres opp NÅ i stedet for å stå låst til 2035. Oppgjøret bruker den lagrede seeden,
   // så spilleren får nøyaktig det trekket han skulle hatt.
   if(t.ferdig-Date.now() > 5*864e5) t.ferdig=Date.now();
-  if(Date.now()<t.ferdig)return;
+  if(Date.now()<t.ferdig){ // midtveis-helsing (6. aug): fiskeren melder fra midt i turen —
+    // gleden ved å vente er halve investeringen. Én gang per tur: deterministisk id
+    // (seed+1) gjør at unionen i fletta sluker dubletter fra andre enheter.
+    var tot=t.ferdig-t.start;
+    if(tot>0 && Date.now()-t.start>tot*0.5){
+      var mid=t.seed+1;
+      if(!(P.innboks||[]).some(function(m){return m&&m.id===mid})){
+        var fm=fiskerVed[t.fk];
+        if(fm){ var ig=t.ferdig-Date.now(), nn=(fm.mal==="nn");
+          var naar=ig>30*3600e3?(nn?"om lag halvtanna døgn":"om cirka halvannet døgn")
+                  :ig>16*3600e3?(nn?"om lag eit døgn":"om cirka et døgn")
+                  :ig>6*3600e3?(nn?"utpå morgonkvisten":"i morgen tidlig")
+                  :(nn?"om nokre timar":"om noen timer");
+          innLegg({type:"prat", fk:t.fk, id:mid,
+            tekst:nn?("Midt i fisket no. Trålen står ute og det ser lovande ut — eg er heime "+naar+". Då får du oppgjeret ditt.")
+                    :("Midt i fisket nå. Trålen står ute og det ser lovende ut — jeg er hjemme "+naar+". Da får du oppgjøret ditt.")});
+        } } }
+    return; }
   var f=fiskerVed[t.fk]; if(!f){ P.invest.tur=null; saveAll(); return; }
   var rng=mulberry32(t.seed), u=investTrekk(f, t.niv||0, rng);
   var ut=Math.round(t.sum*u.mult);
