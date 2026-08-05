@@ -329,3 +329,31 @@ skalere ned den store — 26 px må tegnes for 26 px.
 
 ---
 
+
+---
+
+## Telefonens app-ikoner (5. aug)
+
+Vises 62 px i appnettet, hjørnene rundes av CSS-en — ikonet skal derfor fylle hele
+flaten (flisen i motivet går kant i kant, magentaen utenfor er kun keying-ramme).
+Koden har emoji-fallback, så hvert ikon plugger seg selv inn når fila lander.
+
+`spill/assets/appikon-meldinger.png` — Meldinger 📨:
+
+> Retro video game pixel art style. A single square app icon: a cream paper envelope seen slightly from above, flap open, a small folded letter peeking out, a wax-red seal dot on the flap. Warm paper tones on a deep teal rounded-square tile background, the tile filling the frame edge-to-edge behind the envelope. Chunky and readable at small size: few large details, thick clean pixel outlines. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/appikon-traaleren.png` — Tråleren 🚢:
+
+> Retro video game pixel art style. A single square app icon: a sturdy little Norwegian fishing trawler seen from the side, dark green hull, white wheelhouse, a thin mast with rigging, a puff of exhaust, riding a small blue wave. On a deep blue rounded-square tile background, the tile filling the frame edge-to-edge behind the boat. Chunky and readable at small size: few large details, thick clean pixel outlines. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/appikon-vaeret.png` — Været 🌦️:
+
+> Retro video game pixel art style. A single square app icon: a bright yellow sun half hidden behind a plump grey rain cloud, three slanted rain streaks falling, one tiny lightning spark at the cloud edge. On a pale sky-blue rounded-square tile background, the tile filling the frame edge-to-edge behind the weather. Chunky and readable at small size: few large details, thick clean pixel outlines. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/appikon-vekta.png` — Vekta ⚖️:
+
+> Retro video game pixel art style. A single square app icon: an old harbour spring scale with a round brass dial and a big hook below, a small blue fish hanging from the hook, the needle pointing far right. On a warm sand-coloured rounded-square tile background, the tile filling the frame edge-to-edge behind the scale. Chunky and readable at small size: few large details, thick clean pixel outlines. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/appikon-kystradioen.png` — Kystradioen (til senere) 📻:
+
+> Retro video game pixel art style. A single square app icon: a chunky old VHF marine radio with a coiled microphone cable and round speaker grille, a small green power lamp lit, one thin antenna rising from the corner. On a dark charcoal rounded-square tile background, the tile filling the frame edge-to-edge behind the radio. Chunky and readable at small size: few large details, thick clean pixel outlines. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
