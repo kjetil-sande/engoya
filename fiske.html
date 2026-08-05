@@ -3621,6 +3621,19 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"hummerstrikk",e:"🦞",n:"Hummer med strikk på klørne",kr:220,w:5,img:"funn-hummer-strikk.png",hummer:true,levande:true,t:"Nokon mista henne på veg heim. No er ho vår — om sesongen tillèt det."},
  {k:"nisereskalle",e:"💀",n:"Nisereskalle",kr:0,w:3,img:"funn-nisereskalle.png",djup:true,trofeKun:true,t:"Rein og kvit. Ho svømte her lenge før nokon av oss."},
 
+ // Raritetane frå 5. august — tinga folk har mista, og tinga dei helst skulle mista
+ {k:"supertruse",e:"🩲",n:"Truse med superheltmerke",kr:0,w:3,img:"funn-superhelt-truse.png",trofeKun:true,t:"Vaska hundre gonger og framleis blå. Nokon her ute var uovervinneleg ein gong."},
+ {k:"svommefotter",e:"🦶",n:"Svømmeføter, to stykk",kr:0,w:3.5,img:"funn-svommefotter.png",trofeKun:true,t:"Ein venstre og ein venstre. To ulike badeferiar, same fjøre."},
+ {k:"actionfigur",e:"🦸",n:"Actionfigur med lyssverd",kr:120,w:3,img:"funn-kvinnelig-actionfigur.png",trofeSelg:120,t:"Ho har stått på eit barnerom og vunne kvar einaste kamp. No vaktar ho skapet."},
+ {k:"lekepistol",e:"🔫",n:"Lekepistol med PANG-flagg",kr:90,w:3,img:"funn-lekepistol.png",trofeSelg:90,t:"Flagget sprett ut som det skal. Det farlegaste våpenet på Saltvær."},
+ {k:"frimerker",e:"📬",n:"Frimerkesamling",kr:260,w:2.5,img:"funn-frimerker.png",trofeSelg:260,t:"Sida med fugleframerka klarte seg. Resten av verda er vasstrukken."},
+ {k:"lavalampe",e:"🫧",n:"Gammal lavalampe",kr:180,w:3,img:"funn-lavalampe.png",trofeSelg:180,t:"Ho verkar enno. Klumpane stig like sakte som ein søndag i juli."},
+ {k:"tresko",e:"🥿",n:"Éin tresko",kr:0,w:4,img:"funn-tresko.png",trofeKun:true,t:"Kven misser éin tresko på sjøen? Nokon som hoppa om bord i siste liten."},
+ {k:"skratobakk",e:"🥫",n:"Boks med skråtobakk",kr:0,w:3,img:"funn-skratobakk.png",trofeKun:true,t:"Loket sit som støypt. Lukta av 1962 sit like godt."},
+ {k:"leppestift",e:"💄",n:"Knallraud leppestift",kr:0,w:3,img:"funn-leppestift.png",trofeKun:true,t:"Gullhylster, og ein raudfarge som ropar. Nokon hadde planar den kvelden."},
+ {k:"olflaske",e:"🍾",n:"Ølflaske frå Nordlandsbryggeriet",kr:150,w:2.5,img:"funn-olflaske.png",trofeSelg:150,t:"Korka og full. Rusten kjenner samlarar som ville gråte av dette."},
+ {k:"krokprotese",e:"🪝",n:"Krokprotese frå gamletida",kr:400,w:2,img:"funn-krokprotese.png",trofeSelg:400,t:"Blankpussa krok på treskaft. Kapteinen han høyrde til fann visst aldri klokka han leita etter."},
+
  // Skattar frå sjøbotnen
  {k:"liteanker",e:"⚓",n:"Lite anker, grønt av ir",kr:90,w:5,img:"funn-lite-anker.png",t:"Frå ein robåt som ikkje finst lenger. Det held framleis."},
  {k:"solvskje",e:"🥄",n:"Sølvskje med initialar",kr:180,w:5,img:"funn-solvskje.png",trofeSelg:180,t:"«A.M.» står det. Rusten seier han kjende ein A.M. ein gong."},
@@ -4733,6 +4746,11 @@ function openMap(){
     KART.rute={felt:u,start:performance.now()+500}; }
   if(!KART.anim)KART.anim=requestAnimationFrame(kartTegn);
 }
+// Første kartåpning blinket: kotehavet ble bygget og sprites landet én og én MENS
+// kartet sto åpent (og havet tegnes på nytt når siste sprite er inne). Nå varmes
+// alt i det stille noen sekunder etter oppstart — første åpning er ferdiglastet.
+setTimeout(function(){ try{ if(!KART.sjo)kartHav(); kartBilder();
+  if(!KART.kanne){ KART.kanne=new Image(); KART.kanne.src="spill/assets/bensinkanne.png"; } }catch(e){} }, 4500);
 
 /* ---------- Streak: dager på rad med fangst ---------- */
 // Dagen snus 04:00, ikke midnatt — kveldsfiske etter midnatt teller til «i går».
@@ -4947,9 +4965,9 @@ function flettInnboks(lp, inn){
   lp.innboks=ut.slice(0,30);
 }
 function leggITrofe(k){ if(!P)return; P.trofe=P.trofe||[];
-  // 160, ikke 120: serveren og flettingen bruker 160 (MAKS_TROFE). Med 120 her kastet
-  // klienten troféer som kom rett tilbake ved neste synk, og skapet pendlet fram og tilbake.
-  P.trofe.unshift({k:k, ts:Date.now()}); if(P.trofe.length>160)P.trofe.length=160; saveAll(); }
+  // 220 — NØYAKTIG samme tall som serverens MAKS_TROFE. Ulike tak her og der lot
+  // klienten kaste troféer som kom rett tilbake ved neste synk, og skapet pendlet.
+  P.trofe.unshift({k:k, ts:Date.now()}); if(P.trofe.length>220)P.trofe.length=220; saveAll(); }
 // SESONGKALENDER — gjør sesongen til samling i stedet for hindring. Uten den vet ikke
 // spilleren om makrellen mangler fordi han er uheldig eller fordi det er februar.
 var MNDKORT=["J","F","M","A","M","J","J","A","S","O","N","D"];

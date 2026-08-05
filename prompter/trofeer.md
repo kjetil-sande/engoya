@@ -1,52 +1,9 @@
-# Prompter — pose, linekrok, lyn og troféskapet
+# Prompter — troféskapets rariteter
 
-Samme regler som i PROMPTER-KARTET.md: maks 1024 tegn, magenta bakgrunn som nøkles
-ut i spillet, ingen kunstnernavn, ingen av forbudsordene (west, east, rose, holm,
-skerry, beacon, isometric, «rust red», «bone white»). Lagre med filnavnet som står
-over hver prompt — koden peker allerede dit (eller får peker når bildet finnes).
-
----
-
-## 1. Tom pose — sammenkrøllet til en ball
-
-`spill/assets/pose-rusten-tom.png` — vises i lappen etter at posen er åpnet og tømt.
-
-> Retro video game pixel art style. A single game icon: a small brown paper grocery bag crumpled into a loose round ball, deep creases and sharp folds catching the light, one torn corner sticking out, a hint of the opening squashed shut. The paper looks used and soft. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading in the creases. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
-
----
-
-## 2. Ekstra linekrok
-
-`spill/assets/linekrok.png` — butikkraden «Ekstra linekrok» (koden har allerede
-onerror-fallback til 🪝, så bildet kan legges inn når som helst).
-
-> Retro video game pixel art style. A single game icon: one large fishing longline hook with a short length of tarred line attached, the line ending in a small neat loop. The hook is forged steel with a needle-sharp point and a flattened eye, slightly worn but strong. Chunky and readable at small size: few large details, thick clean pixel outlines, slight cool metallic shading on the bend. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
-
----
-
-## 3. Lyn — fire varianter til ruskevær-overlay
-
-Transparent PNG (magenta nøkles ut). Kode-siden blinker 2–3 av dem kort og lar den
-siste stå i ~1 sekund før rask uttoning; tordenlyden følger med. Høydeformat er best
-— lynet skal stå over hele scenen.
-
-`spill/assets/lyn-1.png` — enkelt, tynt:
-
-> Retro video game pixel art style. A single lightning bolt for a storm overlay, tall portrait format: one thin jagged bolt striking from the top edge down through the frame, sharp zigzag angles, brilliant white core with a pale blue edge glow one pixel wide. No clouds, no ground, only the bolt itself. Clean and readable: hard angular segments, thick clean pixel outlines. The bolt is centred and spans nearly the full height. The entire background is flat solid magenta, one single colour, completely empty; only the top of the bolt touches the top edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
-
-`spill/assets/lyn-2.png` — med to grener:
-
-> Retro video game pixel art style. A single lightning bolt for a storm overlay, tall portrait format: one jagged bolt striking from the top edge down through the frame, with two thinner branches forking off partway down and fading before the bottom, sharp zigzag angles, brilliant white core with a pale blue edge glow one pixel wide. No clouds, no ground, only the bolt. Clean and readable: hard angular segments, thick clean pixel outlines. Centred, spanning nearly the full height. The entire background is flat solid magenta, one single colour, completely empty; only the top of the bolt touches the top edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
-
-`spill/assets/lyn-3.png` — bredt, dobbelt nedslag:
-
-> Retro video game pixel art style. Two lightning bolts for a storm overlay, tall portrait format: a thick main bolt and a thinner second bolt striking side by side from the top edge, both with sharp zigzag angles, crossing close together near the middle, brilliant white cores with a pale blue edge glow one pixel wide. No clouds, no ground, only the bolts. Clean and readable: hard angular segments, thick clean pixel outlines. Centred, spanning nearly the full height. The entire background is flat solid magenta, one single colour, completely empty; only the tops of the bolts touch the top edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
-
-`spill/assets/lyn-4.png` — det store som får stå i ett sekund:
-
-> Retro video game pixel art style. A single massive lightning bolt for a storm overlay, tall portrait format: one wide powerful bolt striking from the top edge all the way down, sharp zigzag angles, several small branches flickering off both sides, brilliant white core three pixels wide with layered pale blue and deep blue edge glows. No clouds, no ground, only the bolt. Clean and readable: hard angular segments, thick clean pixel outlines. Centred, spanning the full height. The entire background is flat solid magenta, one single colour, completely empty; only the top and bottom of the bolt touch the edges. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
-
----
+> Reglene gjelder ALLE prompter i denne mappa: maks **1024 tegn**, magenta bakgrunn
+> som nøkles ut i spillet, ingen kunstnernavn, og ingen av forbudsordene (west, east,
+> rose, holm, skerry, beacon, isometric, «rust red», «bone white»). Full begrunnelse
+> og feilhistorikk står i [kartet.md](kartet.md).
 
 ## 4. Troféskapet — ti nye rariteter
 
@@ -65,9 +22,11 @@ unna til å slippe gjennom filteret.
 
 > Retro video game pixel art style. A single game icon: a pair of old rubber swim fins standing upright side by side, faded turquoise with sun-bleached patches, one fin slightly bent at the tip, adjustable heel straps hanging loose. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading along the blades. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
 
-`spill/assets/funn-romhelt-figur.png` — Luke Skywalker-aktig figur:
+`spill/assets/funn-kvinnelig-actionfigur.png` — romhelt-figuren (Firefly leverte en
+kvinnelig figur, og eieren døpte henne om 5. aug — FUNN-oppføringen skrives til dette
+navnet). Prompten under er justert til henne, om det trengs en runde til:
 
-> Retro video game pixel art style. A single game icon: a small vintage plastic action figure of a young space hero in a simple white tunic and tan trousers, holding a tiny glowing blue energy sword, standing stiffly with the straight arms and simple face of a 1980s toy, paint worn off one boot. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+> Retro video game pixel art style. A single game icon: a small vintage plastic action figure of a young female space hero in a simple white tunic and tan trousers, holding a tiny glowing blue energy sword, standing stiffly with the straight arms and simple face of a 1980s toy, paint worn off one boot. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
 
 `spill/assets/funn-lekepistol.png` — lekepistol med PANG-flagg:
 
@@ -93,6 +52,17 @@ unna til å slippe gjennom filteret.
 
 > Retro video game pixel art style. A single game icon: a bright red lipstick fully wound up from its elegant gold metal tube, the cap standing beside it, the red tip angled and slightly used, a tiny smudge of red at the tube rim. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading and one small highlight on the gold. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
 
+`spill/assets/funn-krokprotese.png` — protesen til kaptein Krok (karakternavnet
+holdes utenfor prompten — Firefly stopper kjente figurer, men en pirats krokprotese
+er generisk nok):
+
+> Retro video game pixel art style. A single game icon: an antique pirate hook prosthesis, a curved polished iron hook mounted on a rounded dark wooden socket with a tarnished brass collar, worn leather straps with a small buckle hanging loose from the open end. A tiny patch of green verdigris on the collar and one small barnacle on the curve of the hook, as if it spent years on the seabed. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm metallic shading with one bright highlight on the hook. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
 `spill/assets/funn-olflaske.png` — gammel ølflaske fra Nordlandsbryggeriet:
 
 > Retro video game pixel art style. A single game icon: an old brown glass beer bottle with a rusty crown cap still on, a faded cream paper label with a simple mountain-and-wave emblem, the label torn at one corner and stained by seawater, a strand of seaweed clinging to the neck. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading on the glass. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+---
+
+Alle elleve er generert og lagt inn i FUNN-tabellen 5. aug — promptene står som
+mal for kommende rariteter.

@@ -115,7 +115,7 @@ function vaskRolex(r) {
   if (r.bud != null) return { bud: tall(r.bud, 1e6) };
   return undefined;
 }
-const MAKS_TROFE = 160;        // dobbelt av de 86 som finnes. Aldri en grense noen når.
+const MAKS_TROFE = 220;        // godt over de 108 som finnes. Aldri en grense noen når. SAMME tall som klientens leggITrofe.
 function vaskTrofe(t) {
   if (!Array.isArray(t)) return undefined;
   const ut = [];

@@ -13,7 +13,7 @@
 import { getStore } from "@netlify/blobs";
 
 const ARTER_TOTALT = 38;      // FISH.length i fiske.html
-const TROFE_TOTALT = 86;      // trofeMulige()
+const TROFE_TOTALT = 108;     // trofeMulige() kjørt mot den ekte FUNN-tabellen 5. aug (86 var alt foreldet)
 const DAG = 864e5;
 
 // Samme bestillingsdøgn som spillet og familierekorder.mjs: lokal dag som byttes 04:00
