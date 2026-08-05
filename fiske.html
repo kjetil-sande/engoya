@@ -1004,6 +1004,16 @@
       <button class="svar" id="ringSvar">Svar</button></div>
   </div></div>
 
+  <!-- SPØR: spillets egen prompt/confirm/alert — webviews (Instagram/Facebook) mangler de ekte -->
+  <div class="modal" id="sporModal" style="z-index:60"><div class="cardwrap" style="max-width:360px">
+    <div class="card"><p id="sporTekst" style="margin:.2em 0 .7em;font-size:15.5px;line-height:1.45"></p>
+      <input id="sporFelt" maxlength="40" style="display:none;width:100%;box-sizing:border-box;font-family:inherit;font-size:16px;padding:10px;border-radius:9px;border:2px solid var(--paper-2)">
+      <div class="row" style="justify-content:flex-end;gap:8px;margin-top:10px">
+        <button class="btn sm ghost" id="sporAvbryt">Avbryt</button>
+        <button class="btn sm gold" id="sporOkKnapp">OK</button></div>
+    </div>
+  </div></div>
+
   <!-- MELD INN: feilrapport fra spilleren -->
   <div class="modal" id="feilModal"><div class="cardwrap" style="max-width:380px">
     <img src="spill/assets/knapp-lukk.png" id="feilLukk" class="lukkx" alt="Lukk">
@@ -1649,7 +1659,8 @@ function kortSync(){ // egen blob, ved siden av familiens — familiekoden røre
   .then(function(){ kortBusy=false; }).catch(function(){ kortBusy=false; });
 }
 function kortHent(){
-  var c=(prompt("Skriv fiskerkortet ditt — tre ord og fire tall, slik: kveite-storm-anker-4271")||"").trim().toLowerCase();
+ sporTekstFelt("Skriv fiskerkortet ditt — tre ord og fire tall, slik: kveite-storm-anker-4271").then(function(c0){
+  var c=(c0||"").trim().toLowerCase();
   if(!c)return;
   if(c===famCode().toLowerCase()){ notice("Det er familiekoden, ikke fiskerkortet ditt 🙂"); return; }
   fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:c})})
@@ -1660,6 +1671,7 @@ function kortHent(){
     famTaImot(j); renderPlayers(); hud();
     notice("Hentet inn 🎣 "+navn.join(", ")+" er tilbake. Ingenting ble overskrevet.");
   }).catch(function(){ notice("Fikk ikke kontakt akkurat nå — prøv igjen om litt."); });
+ });
 }
 
 /* ---------- Anmeldelser: fem stjerner og noen ord ----------
@@ -1915,6 +1927,9 @@ function gearInn(lp,g){ if(!g||typeof g!=="object")return; // på fjernspeil: si
   if(typeof g.motor==="string")lp.motor=g.motor; if(typeof g.rig==="string")lp.rig=g.rig; }
 function famTaImot(j){ // flett serverens familiebilde inn lokalt — erstatt aldri, lokal fremgang kan ikke krympes
   if(!j||!j.players)return;
+  DB.papirkurv=[]; if(j.papirkurv)Object.keys(j.papirkurv).forEach(function(nm){ // angreknappen i naustet trenger navn og dato
+    var ts=+(j.papirkurv[nm]&&j.papirkurv[nm].ts)||0;
+    if(Date.now()-ts<90*864e5)DB.papirkurv.push({navn:nm,ts:ts}); });
   // Navnebytte: det gamle navnet blir liggende igjen på serveren. Vi sletter det ALDRI der —
   // vi folder det bare inn i det nye navnet lokalt, så ingen ser en tvilling av seg selv.
   var doptOm={};
@@ -2003,34 +2018,53 @@ function renderPlayers(){
   // Ber om KALLENAVN med vilje. Velger ingen å oppgi ekte navn, finnes det heller ingen
   // personopplysninger å beskytte — og da slipper vi aldersgrenser og foreldresamtykke
   // for et spill barna faktisk spiller. Se personvern.html.
-  add.onclick=function(){var nm=(prompt("Hva heter fiskeren? Bruk gjerne et kallenavn — spillet trenger ikke ditt virkelige navn 🎣")||"").trim().slice(0,14); if(!nm)return;
-    if(nm==="__proto__"||nm==="constructor"||nm==="prototype"){ alert("Velg et annet navn 🙂"); return; }
+  add.onclick=function(){ sporTekstFelt("Hva heter fiskeren? Bruk gjerne et kallenavn — spillet trenger ikke ditt virkelige navn 🎣").then(function(nm0){
+    var nm=(nm0||"").trim().slice(0,14); if(!nm)return;
+    if(nm==="__proto__"||nm==="constructor"||nm==="prototype"){ sporOk("Velg et annet navn 🙂"); return; }
     // «Er dette deg?» — «Synne :)» med mellomrom laget en gang en tom tvilling av «Synne:)»,
     // og 21 arter så ut som tapt. Et navn som nesten matcher en i familien er nesten alltid
     // samme person — spør før vi lager en ny fisker.
     var likNorm=function(s){return String(s).toLowerCase().replace(/\s+/g,"")};
     var lik=null; Object.keys(DB.players).forEach(function(k){ if(!lik&&k!==nm&&likNorm(k)===likNorm(nm))lik=k; });
-    if(lik&&confirm("Det finnes alt en fisker i familien som heter «"+lik+"». Er dette deg?")){
-      DB.last=lik; chosen(lik); saveAll(); renderPlayers(); return; }
-    if(!Object.prototype.hasOwnProperty.call(DB.players,nm))DB.players[nm]=newPlayer(nm); DB.last=nm; chosen(nm); saveAll(); renderPlayers()};
+    var lagNy=function(){ if(!Object.prototype.hasOwnProperty.call(DB.players,nm))DB.players[nm]=newPlayer(nm); DB.last=nm; chosen(nm); saveAll(); renderPlayers(); };
+    if(lik){ sporJaNei("Det finnes alt en fisker i familien som heter «"+lik+"». Er dette deg?","Ja, det er meg","Nei, lag ny").then(function(ja){
+        if(ja){ DB.last=lik; chosen(lik); saveAll(); renderPlayers(); } else lagNy(); }); return; }
+    lagNy(); });};
   box.appendChild(add);
   if(!famCode()){ var lg=document.createElement("button"); lg.className="btn sm ghost"; // ny nettleser: hent familien med koden deres
     lg.textContent="Logg inn med kode"; lg.onclick=famLogin; box.appendChild(lg); }
+  if(famCode()&&DB.papirkurv&&DB.papirkurv.length){ // angrefristen: slettede fiskere kan hentes opp i 90 dager
+    DB.papirkurv.forEach(function(pk){ var dg=Math.max(0,90-Math.floor((Date.now()-pk.ts)/864e5));
+      var gj=document.createElement("button"); gj.className="btn sm ghost";
+      gj.textContent="Gjenopprett «"+pk.navn+"» ("+dg+" dager igjen)";
+      gj.onclick=function(){ gjenopprettSpiller(pk.navn); }; box.appendChild(gj); }); }
+}
+function gjenopprettSpiller(navn){
+  sporJaNei("Hente «"+navn+"» opp av papirkurven? Fangstboka og alt annet kommer tilbake slik det var.","Gjenopprett","Avbryt").then(function(ja){
+    if(!ja)return;
+    fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({code:famCode(), gjenopprett:navn})})
+    .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
+    .then(function(j){ famTaImot(j); renderPlayers(); notice("«"+navn+"» er tilbake i naustet 💙"); })
+    .catch(function(){ sporOk("Fikk ikke kontakt med havet — prøv igjen om litt."); });
+  });
 }
 function famLogin(){
-  var c=(prompt("Skriv koden — familiens felles kode, eller din egen personlige (4–40 tegn).")||"").trim();
-  if(!c)return; if(c.length<4||c.length>40){ alert("Koden er 4–40 tegn 🙂"); return; }
+ sporTekstFelt("Skriv koden — familiens felles kode, eller din egen personlige (4–40 tegn).").then(function(c0){
+  var c=(c0||"").trim();
+  if(!c)return; if(c.length<4||c.length>40){ sporOk("Koden er 4–40 tegn 🙂"); return; }
   $("#plist").insertAdjacentHTML("beforeend",'<span class="muted">Leter etter familien …</span>');
   fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:c})}) // ren henting — skriver ingenting på serveren
   .then(function(r){ return r.ok?r.json():Promise.reject(r.status); })
   .then(function(j){
     var antall=(j&&j.players)?Object.keys(j.players).filter(function(n){return !famFarlig(n)}).length:0;
-    if(!antall){ renderPlayers(); alert("Fant ingen med den koden. Sjekk stavemåten 🙂"); return; } // en skrivefeil skal ikke lagres og splitte familien
+    if(!antall){ renderPlayers(); sporOk("Fant ingen med den koden. Sjekk stavemåten 🙂"); return; } // en skrivefeil skal ikke lagres og splitte familien
     try{localStorage.setItem("storkveita-familiekode",c)}catch(e){}
     famTaImot(j); famLast=0; renderPlayers();
-    alert(antall===1?"Velkommen tilbake! Trykk på navnet ditt og fisk i vei 🎣":"Velkommen! Fant "+antall+" i familien 👨‍👩‍👧 Trykk på navnet ditt og fisk i vei.");
+    sporOk(antall===1?"Velkommen tilbake! Trykk på navnet ditt og fisk i vei 🎣":"Velkommen! Fant "+antall+" i familien 👨‍👩‍👧 Trykk på navnet ditt og fisk i vei.");
   })
-  .catch(function(){ renderPlayers(); alert("Fikk ikke kontakt med havet 🌊 Prøv igjen om litt."); });
+  .catch(function(){ renderPlayers(); sporOk("Fikk ikke kontakt med havet 🌊 Prøv igjen om litt."); });
+ });
 }
 function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller er en EKTE lokal spiller — kan aldri auto-slettes av nettspeilingen
   if(!P.lures)P.lures={0:3,1:0,2:0};
@@ -4265,8 +4299,9 @@ function visProfil(){
     +'<button class="btn sm gold" id="pfInnboks">'
       +'<img src="spill/assets/ikon-konvolutt.png" alt="" style="height:17px;vertical-align:-3px;margin-right:6px;image-rendering:pixelated" onerror="this.outerHTML=&quot;📨 &quot;">'
       +'Telefonen'+(nUlest?' ('+nUlest+')':'')+'</button></div>';
-  h+='<div class="row" style="justify-content:center;margin-top:10px">'
-    +'<button id="pfFeil" class="feilpille">🐞 Meld inn</button></div>';
+  h+='<div class="row" style="justify-content:center;margin-top:10px;gap:8px">'
+    +'<button id="pfFeil" class="feilpille">🐞 Meld inn</button>'
+    +'<button id="pfSlett" class="feilpille" style="color:#a33e35">Slett fiskeren</button></div>';
 
   $("#profilKort").innerHTML=h;
   $("#pfNavnBytt").onclick=byttNavn;
@@ -4289,8 +4324,52 @@ function visProfil(){
   $("#pfTilNaust").onclick=function(){ modal("profilModal",false); tilNaustet(); };
   $("#pfInnboks").onclick=function(){ modal("profilModal",false); visTelefon(); };
   if($("#pfFeil"))$("#pfFeil").onclick=function(){ modal("profilModal",false); visFeilmelding(); };
+  if($("#pfSlett"))$("#pfSlett").onclick=function(){ modal("profilModal",false); slettMeg(); };
   modal("profilModal",true);
 }
+
+/* ---------- Slett meg: GDPR-sletting med dobbel bekreftelse ---------- */
+function slettMeg(){
+  if(!P)return; var navn=P.name;
+  sporJaNei("Dette sletter «"+navn+"» — fangstboka, troféene og pengene, både her og på nett. Fiskeren ligger i papirkurven i 90 dager (kan gjenopprettes fra naustet), så slettes den for godt. Er du sikker?","Ja, fortsett","Avbryt").then(function(ja){
+    if(!ja)return;
+    sporJaNei("Vil du laste ned en sikkerhetskopi først? Da kan fiskeren vekkes til live igjen senere.","Last ned kopi","Nei takk").then(function(kopi){
+      if(kopi)lastNedKopi();
+      sporTekstFelt("Skriv navnet («"+navn+"») for å bekrefte slettingen:").then(function(sv){
+        if(sv===null)return;
+        if((sv||"").trim()!==navn){ sporOk("Navnet stemte ikke — ingenting er slettet."); return; }
+        var jobber=[], kode=famCode(), kort=kortKode();
+        [kode,kort].forEach(function(c){ if(!c)return;
+          jobber.push(fetch(FAM_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({code:c, fjern:navn})}).then(function(r){ if(!r.ok)throw 0; })); });
+        Promise.all(jobber).then(function(){
+          delete DB.players[navn]; if(DB.last===navn)DB.last=null; P=null; saveAll();
+          tilNaustet();
+          sporOk("«"+navn+"» er slettet. Takk for alle timene på Lopphavet 💙");
+        }).catch(function(){ sporOk("Fikk ikke kontakt med havet — ingenting er slettet. Prøv igjen om litt."); });
+      });
+    });
+  });
+}
+
+/* ---------- Spør: prompt/confirm/alert i spillets egne klær ---------- */
+var sporAktiv=null; // {res} — én om gangen; en ny avbryter den forrige pent
+function spor(tekst, valg){ valg=valg||{};
+  return new Promise(function(res){
+    if(sporAktiv)sporAktiv(null); sporAktiv=res;
+    $("#sporTekst").textContent=tekst;
+    var f=$("#sporFelt"); f.style.display=valg.felt?"":"none"; f.value=valg.verdi||"";
+    $("#sporOkKnapp").textContent=valg.ok||"OK";
+    $("#sporAvbryt").style.display=valg.bareOk?"none":"";
+    $("#sporAvbryt").textContent=valg.avbryt||"Avbryt";
+    modal("sporModal",true);
+    if(valg.felt)setTimeout(function(){ try{f.focus()}catch(e){} },60);
+  });
+}
+function sporFerdig(svar){ var r=sporAktiv; sporAktiv=null; modal("sporModal",false); if(r)r(svar); }
+function sporTekstFelt(tekst, verdi){ return spor(tekst,{felt:true,verdi:verdi}).then(function(s){ return s===true?$("#sporFelt").value:null; }); }
+function sporJaNei(tekst, ok, avbryt){ return spor(tekst,{ok:ok||"Ja",avbryt:avbryt||"Avbryt"}).then(function(s){ return s===true; }); }
+function sporOk(tekst){ return spor(tekst,{bareOk:true}); }
 
 /* ---------- Meld inn: feilrapport rett til kontrollpanelet ---------- */
 function visFeilmelding(){
@@ -4319,11 +4398,12 @@ function sendFeilmelding(){
 function byttNavn(){
   if(!P)return;
   var gml=P.name;
-  var nytt=(prompt("Nytt navn på fiskeren? Kallenavn holder — maks 14 tegn.", gml)||"").trim().slice(0,14);
+ sporTekstFelt("Nytt navn på fiskeren? Kallenavn holder — maks 14 tegn.", gml).then(function(n0){
+  var nytt=(n0||"").trim().slice(0,14);
   if(!nytt||nytt===gml)return;
-  if(nytt==="__proto__"||nytt==="constructor"||nytt==="prototype"){ alert("Velg et annet navn 🙂"); return; }
+  if(nytt==="__proto__"||nytt==="constructor"||nytt==="prototype"){ sporOk("Velg et annet navn 🙂"); return; }
   if(Object.prototype.hasOwnProperty.call(DB.players,nytt)){
-    alert("«"+nytt+"» er allerede i bruk i familien. Velg et annet 🙂"); return; }
+    sporOk("«"+nytt+"» er allerede i bruk i familien. Velg et annet 🙂"); return; }
   DB.players[nytt]=P; P.name=nytt;
   // Bytter du TILBAKE til et navn du har hatt før, er sporet en løkke — da fjernes det.
   if(P.tidligereNavn===nytt) delete P.tidligereNavn; else P.tidligereNavn=gml;
@@ -4333,6 +4413,7 @@ function byttNavn(){
   famLast=0; syncFam(true); // navnet skal ut til de andre enhetene med én gang
   visProfil();
   notice("Du heter "+nytt+" nå 🎣");
+ });
 }
 
 function tilNaustet(){ Snd.ambienceOff(); Snd.utrasLyd(false); phase="idle"; hooked=null; sceneFish=null;
@@ -4438,7 +4519,7 @@ function bestillingLappHTML(dk){ // Rustens håndskrevne lapp — alt PÅ lappen
     return '<div class="bchip'+(klar?" klar":"")+'"><span class="bboks">'+(klar?"✓":"")+'</span>'+img
       +'<span class="bnavn">'+esc(navn)+'</span><b style="margin-left:auto">'+lev+'/'+mål+'</b></div>'; }).join("");
   var fam=famBestillinger(b), famH="";
-  if(fam.length)famH='<div class="bfam">I lag med deg: '+fam.map(function(x){
+  if(fam.length)famH='<div class="bfam">'+fam.map(function(x){
     return esc(x.navn)+(x.ferdig?" er ferdig ✓":" har "+x.lev+" av "+x.krav); }).join(" · ")+'</div>';
   var råd=(b.tipsId&&TIPS_DEF[b.tipsId])?'<div class="brad">Rustens råd: «'+esc(TIPS_DEF[b.tipsId].tekst)+'»</div>':'';
   return '<div class="blapp"><div class="bniv">'+NIVA[bd.niv]+'</div><div class="btit">'+esc(bd.tit)+'</div>'
@@ -5169,10 +5250,11 @@ function renderFam(){
     ? '<p class="muted center" style="margin-top:10px;font-size:13.5px">Familiekode: <b>'+esc(code)+'</b>'+(famInfo?' · '+esc(famInfo):'')+' <button class="btn sm" id="famBytt">Bytt</button></p>'
     : '<p class="muted center" style="margin-top:10px"><button class="btn sm gold" id="famKoble">Koble familien sammen på nett</button><br><span class="muted" style="font-size:12.5px">Samme kode på alle enheter → felles rekorder på hytta og hjemme</span></p>');
   var kb=$("#famKoble")||$("#famBytt");
-  if(kb)kb.onclick=function(){ var c=(prompt("Kode (4–40 tegn) — familiens felles, eller din egen personlige. Hold den hemmelig!", code||"")||"").trim();
-    if(!c)return; if(c.length<4){ alert("Minst 4 tegn 🙂"); return; } if(c.length>40){ alert("Maks 40 tegn 🙂"); return; }
+  if(kb)kb.onclick=function(){ sporTekstFelt("Kode (4–40 tegn) — familiens felles, eller din egen personlige. Hold den hemmelig!", code||"").then(function(c0){
+    var c=(c0||"").trim();
+    if(!c)return; if(c.length<4){ sporOk("Minst 4 tegn 🙂"); return; } if(c.length>40){ sporOk("Maks 40 tegn 🙂"); return; }
     try{localStorage.setItem("storkveita-familiekode",c)}catch(e){}
-    famInfo="kobler til …"; renderFam(); famLast=0; syncFam(true); };
+    famInfo="kobler til …"; renderFam(); famLast=0; syncFam(true); }); };
 }
 function famRecords(){ // beste lengde per art på tvers av alle spillere (lokale + familie på nett)
   var out={};
@@ -6791,6 +6873,9 @@ function investUtstyr(){
 $("#playBtn").onclick=startGame;
 $("#innLukk").onclick=function(){ modal("innModal",false); };
 $("#feilLukk").onclick=function(){ modal("feilModal",false); };
+$("#sporOkKnapp").onclick=function(){ sporFerdig(true); };
+$("#sporAvbryt").onclick=function(){ sporFerdig(null); };
+$("#sporFelt").addEventListener("keydown",function(e){ if(e.key==="Enter")sporFerdig(true); });
 $("#telefonModal").addEventListener("click",function(e){ if(e.target===this){ modal("telefonModal",false); } }); // trykk utenfor telefonen legger den ned
 $("#feilSend").onclick=sendFeilmelding;
 $("#innTilbake").onclick=function(){ modal("innModal",false); Snd.click(); visTelefon(); };
