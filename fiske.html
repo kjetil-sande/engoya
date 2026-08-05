@@ -772,7 +772,7 @@
   .feilpille{border:0;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;
     background:rgba(93,78,55,.10);color:var(--ink-soft);padding:7px 16px;border-radius:99px}
   .feilpille:active{transform:translateY(1px)}
-  .mappin:not(.locked):hover,.mappin:not(.locked):active{outline:3px solid rgba(255,255,255,.85);outline-offset:-2px;border-radius:14px}
+  /* ingen outline ved trykk — den hvite firkanten over link-området så ikke bra ut (eieren, 6. aug) */
   a.exit{position:absolute;top:10px;right:10px;z-index:6}
   /* Sentrert beskjed-boks (à la «Hvem fisker?»-boksen) for viktige meldinger, f.eks. tom for bensin */
   /* left:50% gjer at auto-breidda berre har dei siste 50 % av containeren å gå på,
@@ -2221,7 +2221,7 @@ function setDepth(d){
   if(typeof updatePotBtn==="function")updatePotBtn();
 }
 
-function toSea(){Snd.ambienceOn(); Snd.themeOff(); bestillingVarsel(); // musikken følger med ut og siger sakte ut (5,5 s) show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Fisk!"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
+function toSea(){Snd.ambienceOn(); Snd.themeOff(); /* musikken følger med ut og siger ut over 5,5 s */ bestillingVarsel(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Fisk!"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase!=="idle")return;
     var b=P&&P.bestilling, mangler=[];
     if(b&&!b.ferdig&&P.bestillingIntroSett){ Object.keys(b.krav).forEach(function(a){ var m=b.krav[a]-((b.lev&&b.lev[a])||0);
@@ -4765,7 +4765,7 @@ function kartTegn(ts){
     cx.setLineDash([]); cx.restore(); }
   var fam=(getComputedStyle(document.body).fontFamily||"sans-serif");
   KART.felt.forEach(function(f){ var im=KART.bilder[f.navn],laast=kartLaast(f.d);
-    var w=KART.W*f.w/100,fx=KART.W*(f.qx!=null?f.qx:f.x)/100,fy=KART.H*(f.qy!=null?f.qy:f.y)/100,h=w*.62,iy;
+    var w=KART.W*f.w/100*1.1,fx=KART.W*(f.qx!=null?f.qx:f.x)/100,fy=KART.H*(f.qy!=null?f.qy:f.y)/100,h=w*.62,iy; // 10 % større steder (eieren, 6. aug)
     if(im&&im.ok){ h=w*im.h/im.w; iy=fy-h*.55;
       if(laast){cx.globalAlpha=.55; cx.drawImage(im.sil,fx-w/2,iy,w,h); cx.globalAlpha=1;}
       else cx.drawImage(im.el,fx-w/2,iy,w,h);
