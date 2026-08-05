@@ -1227,6 +1227,11 @@ var Snd=(function(){
         }catch(e){}
       } else tenn(); // iOS kan seie «running» og likevel vere stum — manglande noder tennest på nytt
       loadAll(); },
+    sov:function(){ // fanen gjemmes: SLIPP lydsesjonen — ellers spiller havet videre når Safari legges bort
+      try{ if(theme&&!theme.paused)theme.pause(); }catch(e){}
+      try{ if(ringtone&&!ringtone.paused)ringtone.pause(); }catch(e){}
+      try{ if(ctx&&ctx.state==="running")ctx.suspend(); }catch(e){}
+      }, // vekk() er speilbildet: resume + restart av loops + theme.play() ved retur
     vekk:function(){ // retur fra bakgrunn/bfcache: OS-et kan ha pauset alt uten å si fra
       var c=AC();
       function alle(){ for(var k in loops) if(loops[k].want){ stopLoop(k); startLoop(k); } }
@@ -6933,7 +6938,8 @@ if(location.hash.indexOf("lyddebug")>=0){ setInterval(function(){ try{ document.
 // lyd: lås opp Web Audio + start tema ved første trykk; mute-knapper; klikk-lyd på knapper
 document.addEventListener("gesturestart",function(e){e.preventDefault()}); document.addEventListener("gesturechange",function(e){e.preventDefault()}); // pinch-zoom reelt av (iOS)
 window.addEventListener("pointerdown",function(){ Snd.unlock(); },{passive:true}); // permanent: vekker lyden etter iOS-avbrudd
-document.addEventListener("visibilitychange",function(){ if(!document.hidden)Snd.vekk(); });
+document.addEventListener("visibilitychange",function(){ if(document.hidden)Snd.sov(); else Snd.vekk(); });
+window.addEventListener("pagehide",function(){ Snd.sov(); }); // Safari legges bort → stillhet med en gang
 window.addEventListener("pageshow",function(){ Snd.vekk(); }); // bfcache-retur i Safari sender ikke alltid visibilitychange
 function lydIkon(){ var av=Snd.isMuted();
   var mm=$("#muteBtnMenu"); if(mm)mm.textContent=av?"🔇":"🔊";
