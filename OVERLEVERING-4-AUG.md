@@ -52,7 +52,7 @@ større; Stang II står før Krabbeteine; bakgrunnsfisken er sone- og sesongfilt
 (pickAmbient bruker iSona); regnet er lavpasset (4,5 kHz), volum 0,55→0,40 og loopsømmen
 trimmet; ctx.onstatechange + Snd.vekk() + pageshow-lytter gjenoppliver lyden etter
 Safari-avbrudd (temaet pauses aldri og gjenopptas stumt); lynmotor (lyn-1..4.png,
-PIL-plassholdere inne — eieren genererer ekte, prompter i PROMPTER-DIVERSE.md) med
+PIL-plassholdere inne — eieren genererer ekte, prompter i prompter/-mappa) med
 2 blink + hovedlyn som står 1 s, torden på tidslinja, dev-hash #uvar; innboksmotoren
 revidert (gravsteiner i flettene begge veier, deterministisk oppgjørs-id=turseed,
 uleste øverst, vakter FØR innboksen lukkes, re-vakter i investJa, ringPe i stedet for
@@ -61,7 +61,7 @@ m.pe) med tilbakepil i telefontoppen → innboksen og «‹ Fiskerkortet» i inn
 nå TRE filer) → egen seksjon i kontrollpanelet; statistikk.mjs kraftig utvidet (økonomi,
 bestillinger, tips-utbredelse, per-art-fangst, tråler per fisker, vedlikehold);
 Bankene-«?» flyttet midt på banken (qx/qy-merkepunkt). VENTER PÅ EIEREN: generere
-bilder fra PROMPTER-DIVERSE.md (tom pose, linekrok, lyn ×4, tropeskap ×10 — FUNN-
+bilder fra prompter/-mappa (tom pose, linekrok, lyn ×4, tropeskap ×10 — FUNN-
 oppføringene legges inn når bildene kommer), og iPhone-verifisering av lydfiksene.
 
 1. **Kontrollpanelet — «legg til så mye verdi vi kan»** (eierens ord).
@@ -80,7 +80,7 @@ oppføringene legges inn når bildene kommer), og iPhone-verifisering av lydfiks
    nettlesere uten prompt-støtte (innebygde webviews à la Instagram/Facebook). Bør byttes
    til egen dialog en dag — i kø.
 3. **Bunnliv.** Krabber/eremittkreps på Grunt-bunnen når eieren har generert
-   `bunnkrabbe.png` og `eremittkreps.png` (prompter i PROMPTER-FISKERE-OG-SKREI.md §23).
+   `bunnkrabbe.png` og `eremittkreps.png` (prompter i prompter/fiskere-og-folk.md §23).
    Blinkende øyepar i mørket på de tre dype nivåene tegnes i kode (gulgrønn på
    Mellomdyp, isblå i Djuphavet) — kan bygges uten å vente på bilder.
 4. **Kontosletting.** «Slett meg» i fiskerkortet (fjerner spilleren fra familieblob +
@@ -92,14 +92,14 @@ oppføringene legges inn når bildene kommer), og iPhone-verifisering av lydfiks
    (a) Saltvær klikkbart → zoomet landsby-utsnitt: Rustens butikk MED SKILT, Kjells verksted
    med skilt, Målfrids hus, røyk fra pipa, måke- og sjølyd, en katt som slikker poten.
    Det røde naustet er spillerens. Eieren vurderer å bytte båten mot en koseligere liten
-   fiskebåt. Trenger egen Firefly-prompt (samme faste linjer som PROMPTER-KARTET.md).
+   fiskebåt. Trenger egen Firefly-prompt (samme faste linjer som prompter/kartet.md).
    (b) iOS Safari tap-markering (hvit firkant ved trykk) skal bort:
    `-webkit-tap-highlight-color:transparent` på kartknappene/generelt — én CSS-linje.
 4a. **Nye fiskearter: Bergen–Trondheim** (eierens ønske 4. aug, i kø). «Vi trenger å få inn
    en del til. Smått og stort» — arter som hører hjemme langs kysten fra Vestlandet til
    Trøndelag. 38 av 80 plasser brukt (MAKS_ARTER=80), så det er god plass. Egen bolk:
    artsdata i FISK-tabellen + sprite- og silhuett-prompter per art (mønster i
-   PROMPTER-FISKERE-OG-SKREI.md). Kandidater å vurdere: sjøørret, lysprikkfisk, brisling,
+   prompter/fiskere-og-folk.md). Kandidater å vurdere: sjøørret, lysprikkfisk, brisling,
    horngjel, taggmakrell, mulle, havål, gapeflyndre, glassvar, piggvar, slettvar, sypike,
    øyepål, kolmule, vassild, laksesild, tangsprell, ulke, dvergulke, paddetorsk.
 4b. **Telefonen: apper og investeringsoversikt** (eierens ønske 4. aug, i kø). Kvote-/investeringsmodulen
@@ -128,7 +128,7 @@ oppføringene legges inn når bildene kommer), og iPhone-verifisering av lydfiks
 - **X** for automatisk kontosletting.
 - ~~noindex~~ — avgjort 4. aug: står til spillet er finpusset mer.
 - ~~fiskespill.no~~ — gjort 4. aug.
-- **Kannekost til Bankene** (se §7) og **navnene på kartet** (se PROMPTER-KARTET.md).
+- **Kannekost til Bankene** (se §7) og **navnene på kartet** (se prompter/kartet.md).
 
 ## 6. Premiumretningen (utredet 4. aug, dommerbedømt mot koden)
 

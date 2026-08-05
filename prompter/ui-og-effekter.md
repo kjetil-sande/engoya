@@ -1,0 +1,331 @@
+# Prompter — UI, effekter og utstyr
+
+> Reglene gjelder ALLE prompter i denne mappa: maks **1024 tegn**, magenta bakgrunn
+> som nøkles ut i spillet, ingen kunstnernavn, og ingen av forbudsordene (west, east,
+> rose, holm, skerry, beacon, isometric, «rust red», «bone white»). Full begrunnelse
+> og feilhistorikk står i [kartet.md](kartet.md).
+
+## 1. Tom pose — sammenkrøllet til en ball
+
+`spill/assets/pose-rusten-tom.png` — vises i lappen etter at posen er åpnet og tømt.
+
+> Retro video game pixel art style. A single game icon: a small brown paper grocery bag crumpled into a loose round ball, deep creases and sharp folds catching the light, one torn corner sticking out, a hint of the opening squashed shut. The paper looks used and soft. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading in the creases. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+---
+
+## 2. Ekstra linekrok
+
+`spill/assets/linekrok.png` — butikkraden «Ekstra linekrok» (koden har allerede
+onerror-fallback til 🪝, så bildet kan legges inn når som helst).
+
+> Retro video game pixel art style. A single game icon: one large fishing longline hook with a short length of tarred line attached, the line ending in a small neat loop. The hook is forged steel with a needle-sharp point and a flattened eye, slightly worn but strong. Chunky and readable at small size: few large details, thick clean pixel outlines, slight cool metallic shading on the bend. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+---
+
+## 3. Lyn — fire varianter til ruskevær-overlay
+
+Transparent PNG (magenta nøkles ut). Kode-siden blinker 2–3 av dem kort og lar den
+siste stå i ~1 sekund før rask uttoning; tordenlyden følger med. Høydeformat er best
+— lynet skal stå over hele scenen.
+
+`spill/assets/lyn-1.png` — enkelt, tynt:
+
+> Retro video game pixel art style. A single lightning bolt for a storm overlay, tall portrait format: one thin jagged bolt striking from the top edge down through the frame, sharp zigzag angles, brilliant white core with a pale blue edge glow one pixel wide. No clouds, no ground, only the bolt itself. Clean and readable: hard angular segments, thick clean pixel outlines. The bolt is centred and spans nearly the full height. The entire background is flat solid magenta, one single colour, completely empty; only the top of the bolt touches the top edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/lyn-2.png` — med to grener:
+
+> Retro video game pixel art style. A single lightning bolt for a storm overlay, tall portrait format: one jagged bolt striking from the top edge down through the frame, with two thinner branches forking off partway down and fading before the bottom, sharp zigzag angles, brilliant white core with a pale blue edge glow one pixel wide. No clouds, no ground, only the bolt. Clean and readable: hard angular segments, thick clean pixel outlines. Centred, spanning nearly the full height. The entire background is flat solid magenta, one single colour, completely empty; only the top of the bolt touches the top edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/lyn-3.png` — bredt, dobbelt nedslag:
+
+> Retro video game pixel art style. Two lightning bolts for a storm overlay, tall portrait format: a thick main bolt and a thinner second bolt striking side by side from the top edge, both with sharp zigzag angles, crossing close together near the middle, brilliant white cores with a pale blue edge glow one pixel wide. No clouds, no ground, only the bolts. Clean and readable: hard angular segments, thick clean pixel outlines. Centred, spanning nearly the full height. The entire background is flat solid magenta, one single colour, completely empty; only the tops of the bolts touch the top edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/lyn-4.png` — det store som får stå i ett sekund:
+
+> Retro video game pixel art style. A single massive lightning bolt for a storm overlay, tall portrait format: one wide powerful bolt striking from the top edge all the way down, sharp zigzag angles, several small branches flickering off both sides, brilliant white core three pixels wide with layered pale blue and deep blue edge glows. No clouds, no ground, only the bolt. Clean and readable: hard angular segments, thick clean pixel outlines. Centred, spanning the full height. The entire background is flat solid magenta, one single colour, completely empty; only the top and bottom of the bolt touch the edges. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+---
+
+## 4. Mobiltelefonen
+
+For at meldingen skal føles som en ekte SMS, ikke en dialogboks.
+
+**Anbefalingen min: ikke lag en hel telefonramme.** En ramme rundt hele kortet må
+skalere fra 320 px til iPad uten å bli tynn eller grøtete, og den stjeler plass fra
+teksten på små skjermer. Det som faktisk selger «telefon» er toppen og bunnen.
+
+### 4a. Statuslinja på toppen
+
+Fil: **`sms-topplinje.png`** — **512 × 56**, sømløs venstre↔høyre, transparent
+16-bit pixel art iOS-style phone status bar strip. Left side: a small clock reading "07:14". Right side: cellular signal bars, a wifi arc, and a battery icon roughly two-thirds full. Rendered in **flat light grey-white on transparent**, no background fill — it will sit on a dark bar. Very small, very clean, extremely legible at 1:1. Strict pixel grid, hard edges, no anti-aliasing. Leave the centre third empty so a notch can sit there.
+
+Kakles vannrett, så bredden spiller ingen rolle.
+
+### 4b. Hjemindikatoren nederst
+
+Fil: **`sms-bunnstrek.png`** — **160 × 12**, transparent
+A single rounded horizontal bar, light grey, like the iPhone home indicator. Pixel art, hard edges, transparent background. Nothing else.
+
+### Om du likevel vil ha hele telefonen
+
+Fil: **`sms-telefon.png`** — **360 × 720**, transparent midt
+16-bit pixel art smartphone seen straight on, dark grey aluminium body, rounded corners, thin bezel, small notch at the top centre, subtle side buttons. The screen area must be **fully transparent** so the message can render through it. Soft drop shadow outside the body only. Strict pixel grid, hard edges, no anti-aliasing.
+
+Da må jeg vite det, for kortet må låses til 1:2-format og det koster plass i liggende.
+
+---
+
+## 5. Konvolutt-ikonet
+
+Fil: **`ikon-konvolutt.png`** — **64 × 64**, transparent
+
+Ligger til venstre i «Innboks»-knappen, vises som 17 px høy.
+16-bit pixel art envelope icon, seen straight on, slightly tilted. Warm cream paper with a visible fold line forming a V across the front, and a thin darker edge. Simple and chunky — it must read clearly at 17 pixels high. No text, no stamp, no seal. Strict pixel grid, hard edges, no anti-aliasing, transparent background.
+
+Fram til fila finnes bruker knappen 📨 som reserve, så ingenting brekker.
+
+---
+
+## 6. «Bytt spiller»-ikonet
+
+Fil: **`ikon-bytt-spiller.png`** — **64 × 64**, transparent
+
+Ligger til venstre i «Bytt spiller»-knappen, vises som 17 px høy.
+
+**Viktig om fargen:** knappen er brun (`#b07c4a`) med hvit tekst. ⚓-emojien
+som lå der tegner seg selv i mørk grå og forsvant nesten helt. Ikonet må derfor
+være **lyst** — samme kremhvite som teksten ved siden av — ikke mørkt.
+
+Fram til fila finnes brukes ⚓ med en lysningsfilter, så knappen er lesbar nå.
+
+### Alternativ A — anker *(anbefalt: mest lesbart på 17 px)*
+
+16-bit pixel art anchor icon, seen straight on, perfectly symmetrical. Rendered in a single **light cream-white** (#f6ecd0) with one slightly darker cream for the inner shading only — it will sit on a mid-brown button and must read as bright. Classic admiralty anchor: ring at the top, straight shank, horizontal stock, two curved flukes. Chunky and simple — it must read clearly at 17 pixels high, so no rope, no chain, no fine detail. Strict pixel grid, hard edges, no anti-aliasing, transparent background.
+
+### Alternativ B — to fiskere som bytter plass *(treffer ordet «bytt» bedre)*
+
+16-bit pixel art icon of two overlapping fisherman silhouettes seen from the shoulders up, one slightly behind and to the right of the other, with a small circular swap arrow curving between them. Rendered in flat **light cream-white** (#f6ecd0) only, with a single darker cream used to separate the two silhouettes — no other colours; it sits on a mid-brown button and must read as bright. Extremely simplified: a beanie-shaped head and shoulders is enough. Must read clearly at 17 pixels high. Strict pixel grid, hard edges, no anti-aliasing, transparent background.
+
+**Min anbefaling:** A. Knappen tar deg tilbake til naustet, så ankeret er både
+riktig og det som overlever nedskaleringen til 17 px. B er mer presist på ordet
+«bytt», men to figurer pluss en pil blir grøt på så få piksler.
+
+---
+
+## 8. «Slingredemparen» — den finnes ikke. Men to andre gjør det.
+
+Du har rett, og feilen er min: jeg foreslo et navn uten å sjekke om tingen
+finnes. **Det finnes ikke noe fiskeutstyr som monteres rett over snella for å
+dempe rykk.** Det som sitter der på en ekte stang er håndtaket og
+snellefestet, og ingen av dem har den funksjonen. En kjetting under stanga gir
+ikke mening heller — den ville bare hengt og slengt.
+
+Men problemet er ekte, og virkeligheten har to løsninger på det. Begge er
+tydelige på 64 piksler, og begge kan forklares til en tiåring på én setning.
+
+### Anbefalt: **Kampbelte** (gimbal / fighting belt)
+
+Fil: **`kampbelte.png`** — **256 × 256**, transparent
+
+Dette er tingen. Et polstret belte med en metallkopp foran; enden av stanga
+står i koppen, og du tar imot med hoftene og lårene i stedet for med armene.
+Når båten ruller, går bevegelsen gjennom kroppen din i stedet for ut i snøret.
+Det er nøyaktig mekanikken vi bygger, og det er standardutstyr på dyphavsfiske
+over hele verden.
+
+Rusten kan si det på én setning: *«Det er ikkje fisken som ryk snøret, gut —
+det er båten som rullar. Med beltet tek du imot med kroppen.»*
+
+16-bit pixel art of a deep-sea fishing **fighting belt (gimbal belt)**, seen straight on from the front, laid flat. A wide padded waist pad in cracked dark brown leather with visible stitching along the edges, a heavy brass-coloured metal gimbal cup mounted at the centre where the rod butt sits, and two thick webbing straps in faded orange running out to each side with simple metal buckles. Worn and salt-stained, clearly used for years — not new. Chunky and readable: the cup in the middle must be the first thing you see. Strict pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette. Fully transparent background, no shadow, no frame.
+
+### Alternativ: **Stanghylse med fjær** (fjærbelastet stangholder)
+
+Fil: **`stanghylse.png`** — **256 × 256**, transparent
+
+Hvis du heller vil ha noe som monteres på båten enn på kroppen: en stangholder
+i ripa med en fjær i bunnen. Den tar opp rykkene når båten går i sjø. Ekte
+utstyr, og den passer godt til at fisken senere skal hvile på ripa.
+
+16-bit pixel art of a **spring-loaded rod holder** for a small boat gunwale, seen from the side at a slight angle. A tube of galvanised steel angled outward, clamped to a short section of weathered wooden gunwale, with a visible coiled steel spring at its base where the tube meets the mount. A knurled brass tightening knob on the clamp. Salt-weathered metal with a few rust spots, pale grey-blue steel and warm brown wood. Chunky and readable — the coiled spring must be clearly visible as the working part. Strict pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette. Fully transparent background, no shadow, no frame.
+
+### Min anbefaling
+
+**Kampbeltet.** Det er den ene av de to som faktisk handler om *å holde
+lenger* — som er nøyaktig det oppgraderingen gjør i koden (fisken trenger
+25 % lengre tid på å bygge opp nok spenn til å rive seg løs). Stanghylsa
+handler mer om å la stanga stå av seg selv, og det gjør vi ikke i spillet.
+
+Beltet er også det eneste av utstyret i butikken som sitter på *deg* og ikke
+på båten, og det er en fin liten forskjell.
+
+---
+
+## 10. Bensinpumpe til «Fyll bensin»
+
+Fil: **`bensinpumpe.png`** — ca. **400 × 400**, transparent
+
+Ligger til venstre i «Fyll bensin»-raden hos Rusten. Vises som **44 px høy** i
+butikklista, så formen må lese på det målet — detaljer under et par piksler
+forsvinner.
+
+Plassen er allerede laget i koden. Fram til fila finnes brukes ⛽ som reserve,
+så ingenting brekker.
+
+**Merk:** raden rett under er «Ekstra bensinkanne» med en rød kanne. Pumpa bør
+derfor **ikke** være rød — ellers ser de to radene like ut på et lite skjermbilde.
+Grønn slange og messingfarget håndtak skiller dem tydelig, og grønt er dessuten
+det man forbinder med bensinpumper på norske stasjoner.
+
+16-bit pixel art of a **fuel pump nozzle** (the handheld part only, not the whole pump), seen from the side at a slight three-quarter angle, hanging with the spout pointing down-left. Chunky brass-and-steel body with a visible trigger guard and squeeze handle, a short curved metal spout, and a thick dark-green rubber hose curling away from the back of the grip and out of frame. A few drops of fuel at the spout tip. Weathered and well used — scuffed metal, a little grime in the seams, one small dent. Warm brass, pale steel and deep green; **no red anywhere**. Chunky and readable: it must be recognisable at 44 pixels high, so no fine text, no gauge dials, no small logos. Strict pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette. Fully transparent background, no shadow, no frame.
+
+---
+
+## 11. Riggservice hos Propell-Kjell
+
+Fil: **`verksted-riggservice.png`** — ca. **400 × 400**, transparent
+
+Fjerde rad i verkstedet, ved siden av Bunnsmørning, Båtservice og Båtforsikring.
+Vises som **44 px høy**. Fram til fila finnes brukes 🎛️ som reserve, så
+ingenting brekker — men den emojien er en grå knotteboks som ikke sier noe om
+hva raden er.
+
+**Merk:** de tre andre radene har hvert sitt tydelige motiv — en malingsbøtte med
+pensel, en verktøykasse, et forsikringssegl. Riggservicen må skille seg fra
+verktøykassa, som er nærmest i tema. Løsningen er å vise *det som serviceres*
+i stedet for verktøyet: snella på benken, halvveis åpnet.
+
+16-bit pixel art of a **large fishing reel lying open on a workbench**, seen from
+a slight three-quarter angle above. The side plate is off and resting against the
+reel, showing the brass gears inside. A small oil can with a long thin spout
+stands beside it, and a folded oily rag lies under the reel. Salt crust and dried
+white residue on the outer casing, bright polished brass on the exposed gears —
+the contrast between worn outside and cared-for inside is the whole point of the
+image. Warm brass, gunmetal grey, pale wood bench, one small red oil-can detail.
+Chunky and readable: it must be recognisable at 44 pixels high, so no fine text,
+no tiny screws, no logos. Strict pixel grid, hard-edged pixels, no anti-aliasing,
+no gradients, ordered dithering only, limited 24-colour palette. Fully transparent
+background, no shadow, no frame.
+
+---
+
+## 12. Sildehekle
+
+Fil: **`sluk-sildehekle.png`** — ca. **400 × 400**, transparent
+
+Ny sluk hos Rusten, 70 kr. Vises i sluksettet og i butikklista, samme størrelse
+som de andre slukene. Teknikken er beskrevet av eierens svigerfar: man «hekler»
+sild med et oppheng med små kroker og røde perler som ligner tyttebær. Båten står
+i ro og man pumper hekla opp og ned gjennom stimen.
+
+**Merk:** dette er ikke én sluk, det er en *forsats* — flere kroker på samme
+tafs. Den må lese som en rekke, ikke som et enkelt blikk, ellers ser den ut som
+alle de andre slukene i lista. Sammenlign med `sluk-markpilk` som er samme type
+redskap; de to skal kunne skilles fra hverandre på et lite ikon, og det er de
+røde perlene som gjør jobben.
+
+16-bit pixel art of a **Norwegian herring rig (sildehekle)** hanging vertically:
+a single vertical line with **five short side-branches**, evenly spaced, each
+ending in a small silver hook dressed with a **bright red bead** and a wisp of
+white or silver tinsel. A small lead weight at the very bottom. The red beads are
+the whole point — they must read clearly as a row of red dots against the line,
+because that is what tells the rig apart from the plain lure icons. Muted silver
+and gunmetal for line and hooks, **strong red** for the beads, a hint of pale
+tinsel. Chunky and readable: it must work at 44 pixels tall, so no fine knots, no
+text, no more than five branches. Strict pixel grid, hard-edged pixels, no
+anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette.
+Fully transparent background, no shadow, no frame.
+
+---
+
+## 14. «NY ART!»-stempelet
+
+Fil: **`ny-art.png`** — ca. **512 × 220**, transparent
+
+Dette er merket som spretter opp øverst til høyre på fangstplansjen første gang
+du får en art du aldri har hatt før. Akkurat nå står det et rødt tekstmerke der
+i stedet — koden bytter til bildet av seg selv i det fila lander i mappa.
+
+**Teknisk, viktig:**
+
+- Vises **72 piksler høyt**. Alt som er finere enn det forsvinner — ingen tynne
+  streker, ingen skygge under teksten, ingen detaljer i bakgrunnen.
+- Bredden er fri, men hold deg under 3 ganger høyden, ellers stikker det ut av
+  plansjen på en 320 px-skjerm.
+- Teksten **NY ART!** må stå i selve bildet. Den kommer ikke på oppå.
+- Det skaleres med `image-rendering: pixelated`, så det må være ekte pixel art
+  i den samme stilen som spill-logoen — ikke et glatt bilde som blir skalert ned.
+
+Spillet legger selv på en liten sprett-animasjon (skalerer fra 0 til 115 % og
+tilbake), så bildet skal stå **helt rolig og rett** — ikke tegn inn bevegelse,
+fartsstriper eller skrå vinkel.
+
+16-bit pixel art **stamp badge** reading **"NY ART!"** in bold condensed
+Norwegian-style block capitals. Designed to look like a **weathered wooden sign
+or an inked rubber stamp** in the same handmade harbour style as the game's
+wooden title sign: warm timber tones, thick dark outline, chunky letterforms
+with a soft cream fill and a darker bevel underneath. A small decorative accent
+is welcome — a tiny fish silhouette, a hook, or a starburst behind the text —
+but keep it to one. Slight wear and chipping at the edges, as if it has been
+nailed to a boathouse wall for years. Strict pixel grid, hard-edged pixels, no
+anti-aliasing, no gradients, ordered dithering only, limited 24-colour palette.
+Fully transparent background, no drop shadow, no frame, no border box.
+
+**Alternativ, hvis du heller vil ha stempel enn skilt:** bytt «weathered wooden
+sign» mot *circular red ink stamp, rough uneven ink coverage, slightly rotated
+letterpress look* — men da må teksten fortsatt være vannrett og lesbar ved 72 px.
+
+---
+
+## 15. Arkivet — logoen
+
+Fil: **`arkivet-logo.png`** — ca. **880 × 460**, transparent
+
+Skiltet henger foran Målfrid, akkurat som Propell-Kjell-skiltet henger foran Kjell.
+Derfor må boka ligge **på tvers** — bred og lav. En bok som står på høykant blir en
+smal søyle, og da har hun ingen plass å stå bak.
+
+**Dette er feilen som går igjen:** hver gang det står «sett ovenfra» eller
+«liggende», tegner generatoren boka i **isometri** — vridd på skrå, med toppen
+som en rombe. Da blir skiltet en diamant, og Målfrid får ingen rett kant å stå
+bak. Løsningen er å be om det motsatte: **rett forfra, helt flatt, uten dybde.**
+
+Tenk deg boka **hengt opp på en vegg** som et skilt — ikke liggende på et bord.
+Du ser permen rett forfra. Øverste kant er en **vannrett strek** tvers over.
+Ingen vridning, ingen perspektiv, ingen hjørne som stikker mot deg.
+
+**Målene som betyr noe:**
+
+- **Toppkanten skal være helt vannrett.** Dette er det viktigste.
+- **Klart bredere enn høy** — sikt mot dobbelt så bred.
+- Vises maks 130 px høy. Ingen tynne streker, ingen liten skrift.
+- **ARKIVET må kunne leses ved 130 px** — store, tykke bokstaver som fyller
+  bredden, ikke et lite stempel i hjørnet.
+- Ingenting rundt boka: intet bord, ingen skygge, ingen ramme. Alt som ligger
+  under blir liggende oppå Målfrid.
+
+16-bit pixel art of a **closed ledger book seen straight on, flat front view,
+completely orthographic — no perspective, no isometric angle, no rotation, no
+tilt**. The top edge is a **perfectly horizontal straight line** all the way
+across, as if the book were mounted flat on a wall. **Wide landscape shape, twice
+as wide as it is tall.** The cover fills the frame: worn deep sea-green leather
+with **brass corner protectors** at all four corners and a brass clasp on the
+right edge. **ARKIVET** stamped across it in **large, thick, worn gold serif
+capitals**, spread over the full width, level and upright, slightly uneven as if
+pressed by hand. A thin band of yellowed page edges along the bottom. Strict
+pixel grid, hard-edged pixels, no anti-aliasing, no gradients, ordered dithering
+only, limited 24-colour palette. Fully transparent background, no shadow, no
+table, no floor, nothing behind or beneath the book.
+
+**Hvis den fortsatt kommer på skrå,** legg til dette til slutt og fjern alt annet
+som antyder rom: *«front view only, like a flat sticker or a wall sign, zero
+perspective»*. Ordene «lying», «resting», «on a table» og «from above» er det
+som utløser isometrien — de må ikke stå der.
+
+**Liten utgave til knappen på dekket:** `arkivet-ikon.png`, ca. **256 × 256**.
+Her har du ikke plass til ordet — dette vises på **26 piksler**. Tegn bare boka:
+samme grønne perm, messingklaff, gullkant, sett rett forfra og litt ovenfra, tett
+beskåret så den fyller ramma. Ingen tekst. Lag den som eget bilde heller enn å
+skalere ned den store — 26 px må tegnes for 26 px.
+
+---
+

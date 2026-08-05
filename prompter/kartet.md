@@ -357,3 +357,14 @@ Kodetegnet placeholder ligger inne; generer og overskriv med samme filnavn, nøk
 magentaen som vanlig. (635 tegn)
 
 > Retro video game pixel art style. A single game icon: a small brown paper grocery bag, slightly crumpled and standing upright, top edge folded over once. A hand-torn yellow note sticks up from inside the bag. Simple handwritten-style dark scribble across the front of the bag, unreadable. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading on the folds. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+
+---
+
+## 6. Saltvær-landsbyen — zoomet utsnitt (klikkbart Saltvær)
+
+`spill/assets/saltvaer-landsby.png` — vises når man trykker på Saltvær i kartet.
+Skiltene er SYMBOLER (fisk hos Rusten, propell hos Kjell) — tekst på skilt blir
+grøt i Firefly, og spillet kan legge navn oppå senere. (1004 tegn)
+
+> Retro video game pixel art style. High three-quarter aerial view with a strong sense of depth and elevation. Warm golden northern light from the upper left, long soft shadows. A cosy Norwegian fishing village on a green rocky islet: a bait shop with a hanging sign showing a painted fish, a workshop with a sign showing a propeller, an old house with tall windows, a few weathered wooden homes, thin smoke from one chimney, a small red boathouse at the waterline, a wooden fishing boat at a stone pier, drying racks, gulls, and a small cat on the pier licking its paw. Densely detailed, warm and lived-in, no purple or pink cast. An irregular organic natural form — no square base, no diorama tile, no flat platform. Only a narrow band of water and white foam hugs the islet; immediately beyond the foam the entire background is flat solid magenta on all four sides, one single colour, completely empty, and nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text.
