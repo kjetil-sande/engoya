@@ -12,3 +12,5 @@ spill/assets/*.ai
 spill/assets/*ORIG*
 ikoner/*.ai
 node_modules/
+spill/Sluk-og-agn-rapport.pdf
+*.pdf
