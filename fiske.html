@@ -4786,12 +4786,24 @@ function kartTegn(ts){
     if(!laast&&f.kanner&&KART.kanne&&KART.kanne.complete&&KART.kanne.naturalWidth){ // avstanden i bensin, som på dekksraden
       var kb=26,ks=4,tot=f.kanner*kb+(f.kanner-1)*ks,kx=fx-tot/2;
       for(var ki=0;ki<f.kanner;ki++)cx.drawImage(KART.kanne,kx+ki*(kb+ks),ny2+72,kb,kb); }
+    if(!laast&&f.d>=0&&f.d<=3&&P&&P.pots&&P.pots.out.length&&KART.boye&&KART.boye.complete&&KART.boye.naturalWidth){
+      var ute=P.pots.out.filter(function(tn){return tn.zone===f.d}); // bruket ditt i sjøen — blåse med antall og ståtid-farge
+      if(ute.length){ var eldst=Math.min.apply(null,ute.map(function(tn){return +tn.setAt||Date.now()}));
+        var timer=(Date.now()-eldst)/3600000, bfarge=timer>=40?"#cc4b3a":timer>=20?"#e6b45a":"#4f9d6b";
+        var bx=fx+w*0.44, by=iy-6;
+        cx.drawImage(KART.boye,bx,by,34,34);
+        cx.beginPath(); cx.arc(bx+30,by+4,8,0,6.283); cx.fillStyle=bfarge; cx.fill();
+        cx.lineWidth=2.5; cx.strokeStyle="rgba(18,58,71,.85)"; cx.stroke();
+        cx.font="700 30px "+fam; cx.textAlign="center"; cx.lineWidth=7;
+        cx.strokeStyle="rgba(18,58,71,.85)"; cx.fillStyle="#F2ECE2";
+        cx.strokeText(""+ute.length,bx+17,by+62); cx.fillText(""+ute.length,bx+17,by+62); } }
   });
   if(matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches){ KART.anim=0; return; }
   KART.anim=requestAnimationFrame(kartTegn);
 }
 function openMap(){
   if(!KART.kanne){ KART.kanne=new Image(); KART.kanne.src="spill/assets/bensinkanne.png"; }
+  if(!KART.boye){ KART.boye=new Image(); KART.boye.src="spill/assets/blaase-boye.png"; } // bruket ditt vises på kartet
   if(!KART.sjo)kartHav(); kartBilder();
   KART.rute=null; if(KART.lukkT){clearTimeout(KART.lukkT);KART.lukkT=0;}
   document.querySelectorAll(".mappin").forEach(function(p){ p.classList.toggle("locked",kartLaast(+p.dataset.d)); });
@@ -5231,13 +5243,16 @@ function updateDyptImg(){ var v=dyptVariant(); if(v===dyptCur)return; dyptCur=v;
     pre4.onload=function(){ if(v!==dyptCur)return; waterImg[3]=pre4; settWLF(3,pre4); };
     pre4.src=u; } } // bytt aldri bort lastede bilder før de nye er klare
 updateDyptImg();
+var vaerNaa=null; // {temp, vind, kveld} — til Været-appen på telefonen
 (function(){ try{ var c=JSON.parse(localStorage.getItem("storkveita-vaer")||"null");
-    if(c&&Date.now()-c.t<1800000){ seaWx=c.code; updateDyptImg(); return; } }catch(e){}
+    if(c&&Date.now()-c.t<1800000){ seaWx=c.code; vaerNaa={temp:c.temp,vind:c.vind,kveld:c.kveld}; updateDyptImg(); return; } }catch(e){}
   fetch("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=66.8706&lon=13.6733").then(function(r){return r.json()}).then(function(j){
-    var t0=j.properties.timeseries[0], d=t0.data;
+    var t0=j.properties.timeseries[0], d=t0.data, inst=(d.instant&&d.instant.details)||{};
     seaWx=(d.next_1_hours&&d.next_1_hours.summary.symbol_code)||(d.next_6_hours&&d.next_6_hours.summary.symbol_code)||"";
+    vaerNaa={temp:inst.air_temperature, vind:inst.wind_speed,
+      kveld:(d.next_6_hours&&d.next_6_hours.summary.symbol_code)||""};
     oppdaterVaerLyd();
-    try{localStorage.setItem("storkveita-vaer",JSON.stringify({t:Date.now(),code:seaWx}))}catch(e){}
+    try{localStorage.setItem("storkveita-vaer",JSON.stringify({t:Date.now(),code:seaWx,temp:vaerNaa.temp,vind:vaerNaa.vind,kveld:vaerNaa.kveld}))}catch(e){}
     updateDyptImg();
   }).catch(function(){});
 })();
@@ -5839,7 +5854,7 @@ var krabber=[], krabbeDepth=-1;
 function drawKrabber(dt){
   if(depth!==0)return; var g=colGeom(); if(!g)return;
   var mn=Math.min(W,H); // mn er LOKAL i alle tegnefunksjonene — glemte den 5. aug og frøs hele scenen
-  var sand=g.imgH*(BUNNFRAC[0]||0.89);
+  var sand=g.imgH*((BUNNFRAC[0]||0.89)+0.055); // et stykke NED på sanden — ikke oppe i taren (eierens justering 5. aug)
   if(camY+H<sand-40)return; // bunnen er ikke i bildet
   if(krabbeDepth!==depth||!krabber.length){ krabbeDepth=depth; krabber=[];
     var typer=["bunnkrabbe-gronn","bunnkrabbe-roed","bunnkrabbe-gronn","eremittkreps"];
@@ -5847,8 +5862,8 @@ function drawKrabber(dt){
       fart:0.010+Math.random()*0.014, ty:typer[i], t:Math.random()*7, pause:0}); }
   for(var j=0;j<krabber.length;j++){ var k=krabber[j]; k.t+=dt;
     if(k.pause>0){ k.pause-=dt; }
-    else{ k.x+=k.dir*k.fart*dt*(0.35+0.65*Math.abs(Math.sin(k.t*7))); // rykkete sidelengs tusling
-      if(Math.random()<dt*0.08)k.pause=0.6+Math.random()*1.8;         // stopper og «tenker»
+    else{ k.x+=k.dir*k.fart*0.5*dt*(0.35+0.65*Math.abs(Math.sin(k.t*7))); // sindig sidelengs — krabber har god tid
+      if(Math.random()<dt*0.45)k.pause=2.5+Math.random()*5;               // står mest i ro (eierens ønske)
       if(k.x<0.06||k.x>0.92){ k.dir*=-1; k.x=Math.max(0.06,Math.min(0.92,k.x)); } }
     var im=krabbeImg[k.ty]; if(!im||!im.complete||!im.naturalWidth)continue;
     var kw=mn*(k.ty==="eremittkreps"?0.045:0.058), kh=kw*im.naturalHeight/im.naturalWidth;
@@ -6325,9 +6340,13 @@ function visTelefon(){
   L.innerHTML='<div class="appnett">'
     +'<button class="appikon" id="appMeld"><span class="ai">📨</span><span class="an">Meldinger</span>'+(n?'<span class="varsel2">'+(n>9?"9+":n)+'</span>':'')+'</button>'
     +'<button class="appikon" id="appTraal"><span class="ai">🚢</span><span class="an">Tråleren</span></button>'
+    +'<button class="appikon" id="appVaer"><span class="ai">🌦️</span><span class="an">Været</span></button>'
+    +'<button class="appikon" id="appVekt"><span class="ai">⚖️</span><span class="an">Vekta</span></button>'
     +'</div>';
   $("#appMeld").onclick=function(){ Snd.click(); modal("telefonModal",false); visInnboks(); };
   $("#appTraal").onclick=function(){ Snd.click(); visTraalApp(); };
+  $("#appVaer").onclick=function(){ Snd.click(); visVaerApp(); };
+  $("#appVekt").onclick=function(){ Snd.click(); visVektApp(); };
   Snd.click(); modal("telefonModal",true);
 }
 function telHode(tittel){ return '<div class="telhode"><button class="smstilbake" id="telTilbake">&lsaquo;</button>'+tittel+'</div>'; }
@@ -6349,6 +6368,57 @@ function visTraalApp(){ investInit();
       +"●".repeat(niv)+"○".repeat(4-niv)+'</span></div>'; });
   if(rader)h+='<div class="telseksjon">Fiskerne dine</div>'+rader;
   if(!noe)h+='<div class="teltom">Ingen turer ennå. Fiskerne ringer når de har en andel ledig — svarer du ja, følger du turen her. 🛥️</div>';
+  $("#telInnhold").innerHTML=h;
+  $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
+}
+var VAERNAVN={clearsky:"Klårvêr",fair:"Lettskya",partlycloudy:"Delvis skya",cloudy:"Overskya",
+  lightrain:"Lett regn",rain:"Regn",heavyrain:"Kraftig regn",lightrainshowers:"Lette regnbyer",
+  rainshowers:"Regnbyer",heavyrainshowers:"Kraftige byer",sleet:"Sludd",snow:"Snø",lightsnow:"Lett snø",
+  heavysnow:"Tett snø",fog:"Skodde",rainandthunder:"Regn og torevêr",heavyrainandthunder:"Uvêr og tore"};
+function vaerTekst(kode){ if(!kode)return "—"; var k=kode.replace(/_(day|night|polartwilight)$/,"");
+  return VAERNAVN[k]||k.replace(/andthunder/," og tore").replace(/showers/,"byer"); }
+function visVaerApp(){
+  var h=telHode("Været"), s=stromNaa();
+  h+='<div class="telseksjon">Frå Meteorologisk institutt</div>';
+  h+='<div class="telnotat"><b>No: '+esc(vaerTekst(vxKode()))+'</b>'
+    +(vaerNaa&&vaerNaa.temp!=null?Math.round(vaerNaa.temp)+" °C":"")
+    +(vaerNaa&&vaerNaa.vind!=null?" · vind "+Math.round(vaerNaa.vind)+" m/s":"")
+    +(vaerNaa&&vaerNaa.kveld?"<br>Utover kvelden: "+esc(vaerTekst(vaerNaa.kveld)):"")+'</div>';
+  if(uvaerNaa())h+='<div class="telnotat" style="border-color:#c0392b"><b>Kuling- og torevarsel</b>Hald deg nær land, og sjå opp for lyn over Lopphavet. ⛈️</div>';
+  h+='<div class="telseksjon">Flo og fjære</div>';
+  // Spillets nivåmodell: L(t)=−cos(2πt/(2·M2)) — toppene ligger på t=k·M2, flo når k er odde.
+  var no=Date.now(), rad="", k0=Math.ceil(no/M2);
+  for(var i=0;i<4;i++){ var k=k0+i, tt=k*M2, d2=new Date(tt);
+    var flo=(k%2)===1;
+    rad+='<div class="telrad" style="padding:7px 13px"><span class="tt"><b>'+(flo?"Flo":"Fjære")+'</b>'
+      +'<span>'+["søndag","måndag","tysdag","onsdag","torsdag","fredag","laurdag"][d2.getDay()]+'</span></span>'
+      +'<span class="niva">'+("0"+d2.getHours()).slice(-2)+":"+("0"+d2.getMinutes()).slice(-2)+'</span></div>'; }
+  h+=rad;
+  h+='<div class="telnotat">'+(s.stigende?"Sjøen stig — ":"Sjøen fell — ")
+    +(s.fart>0.66?"god straum i sundet.":s.fart>0.25?"jamn straum.":"nesten stillevatn.")
+    +(s.spring?" Springflo i desse dagar (ny-/fullmåne).":s.nipp?" Nippflo — små utslag.":"")+'</div>';
+  $("#telInnhold").innerHTML=h;
+  $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
+}
+function visVektApp(){
+  var h=telHode("Vekta"), alle=[];
+  Object.keys(DB.players||{}).forEach(function(navn){ var p=DB.players[navn];
+    Object.keys((p&&p.caught)||{}).forEach(function(k){ var r=p.caught[k], f=byKey[k];
+      if(r&&r.bestLen&&f)alle.push({navn:navn,art:f.n,len:r.bestLen,wt:r.bestWt,rts:r.rts}); }); });
+  if(!alle.length)h+='<div class="teltom">Ingen rekorder ennå — første fisk på vekta blir familiehistorie. ⚖️</div>';
+  else{
+    alle.sort(function(a,b){return b.len-a.len});
+    h+='<div class="telseksjon">Familiens fem største</div>';
+    alle.slice(0,5).forEach(function(r,i){
+      h+='<div class="telrad" style="padding:7px 13px"><span class="tt"><b>'+(i+1)+". "+esc(r.art)+'</b>'
+        +'<span>'+esc(r.navn)+(r.rts?" · "+tidSiden(r.rts):"")+'</span></span>'
+        +'<span class="niva">'+r.len+' cm'+(r.wt?" · "+r.wt+" kg":"")+'</span></div>'; });
+    var beste={}; alle.forEach(function(r){ if(!beste[r.art]||r.len>beste[r.art].len)beste[r.art]=r; });
+    h+='<div class="telseksjon">Rekord per art</div>';
+    Object.keys(beste).sort().forEach(function(a){ var r=beste[a];
+      h+='<div class="telrad" style="padding:6px 13px"><span class="tt"><b>'+esc(a)+'</b><span>'+esc(r.navn)+'</span></span>'
+        +'<span class="niva">'+r.len+' cm</span></div>'; });
+  }
   $("#telInnhold").innerHTML=h;
   $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
 }
