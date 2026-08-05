@@ -745,6 +745,29 @@
     padding:5px 11px;border-radius:99px;box-shadow:0 1px 3px rgba(13,33,41,.25)}
   #smsTilbake{display:none;place-items:center;position:static;flex:0 0 auto;width:34px;height:34px;padding:0;border-radius:50%;
     background:rgba(246,236,208,.16);color:#f6ecd0;font-size:23px;line-height:1;box-shadow:none} /* tilbakepila i telefontoppen */
+  #telefonModal .card{max-width:400px;padding:0;overflow:hidden;max-height:min(94vh,780px);display:flex;flex-direction:column}
+  #telInnhold{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f4f0e6;text-align:left}
+  .appnett{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:22px 16px}
+  .appikon{border:0;cursor:pointer;background:transparent;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:7px;position:relative}
+  .appikon .ai{width:62px;height:62px;border-radius:15px;display:grid;place-items:center;font-size:30px;
+    background:linear-gradient(160deg,#fff8ea,#efe7d4);border:2px solid var(--paper-2);box-shadow:0 2px 0 var(--paper-2)}
+  .appikon .an{font-size:12.5px;font-weight:700;color:var(--ink)}
+  .appikon .varsel2{position:absolute;top:-5px;right:6px;min-width:20px;height:20px;border-radius:99px;background:#c0392b;color:#fff;
+    font-size:12px;font-weight:800;display:grid;place-items:center;padding:0 5px}
+  .telhode{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--wood-dark);color:#f6ecd0;font-weight:800;font-size:17px}
+  .telhode .smstilbake{position:static;flex:0 0 auto;width:32px;height:32px;padding:0;border-radius:50%;
+    background:rgba(246,236,208,.16);color:#f6ecd0;font-size:21px;display:grid;place-items:center;box-shadow:none}
+  .telrad{display:flex;gap:10px;align-items:center;padding:10px 13px;border-bottom:1px solid rgba(93,78,55,.15)}
+  .telrad img{width:44px;height:44px;border-radius:50%;object-fit:cover;image-rendering:pixelated;background:#a7cac8;flex:0 0 44px}
+  .telrad img.speil{transform:scaleX(-1)}
+  .telrad .tt{min-width:0;flex:1}
+  .telrad .tt b{display:block;font-size:14.5px}
+  .telrad .tt span{display:block;font-size:12.5px;color:var(--ink-soft);font-family:var(--mono)}
+  .telrad .niva{font-family:var(--mono);font-size:13px;color:var(--wood-dark);white-space:nowrap}
+  .telnotat{margin:9px 13px;padding:9px 12px;background:#fff8ea;border:2px solid var(--paper-2);border-radius:10px;font-size:13.5px;line-height:1.4}
+  .telnotat b{display:block;font-size:13px;margin-bottom:2px}
+  .telseksjon{margin:13px 13px 5px;font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+  .teltom{padding:26px 20px;text-align:center;color:var(--ink-soft);font-size:14px;line-height:1.5}
   .feilpille{border:0;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;
     background:rgba(93,78,55,.10);color:var(--ink-soft);padding:7px 16px;border-radius:99px}
   .feilpille:active{transform:translateY(1px)}
@@ -964,8 +987,8 @@
   <!-- INNBOKS -->
   <div class="modal" id="innModal"><div class="cardwrap" style="max-width:400px">
     <img src="spill/assets/knapp-lukk.png" id="innLukk" class="lukkx" alt="Lukk innboksen">
-    <div class="card"><button class="smstilbake" id="innTilbake">&lsaquo; Fiskerkortet</button>
-      <h2 style="margin:26px 0 .6em">Innboks</h2>
+    <div class="card"><button class="smstilbake" id="innTilbake">&lsaquo; Telefonen</button>
+      <h2 style="margin:26px 0 .6em">Meldinger</h2>
       <div id="innListe"></div></div>
   </div></div>
 
@@ -986,6 +1009,16 @@
       <textarea id="feilTekst" maxlength="1000" rows="5" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:14.5px;padding:9px;border-radius:9px;border:2px solid var(--paper-2);resize:vertical" placeholder="Hva skjedde? Hva prøvde du på?"></textarea>
       <div class="row" style="justify-content:flex-end;margin-top:9px"><button class="btn gold" id="feilSend">Send</button></div>
     </div>
+  </div></div>
+
+  <!-- TELEFONEN: hjemskjerm med apper (Meldinger, Tråleren, Notater) -->
+  <div class="modal" id="telefonModal"><div class="card center" id="telCard">
+    <div class="smsstatus"><b id="telKlokke"></b>
+      <img src="spill/assets/sms-signal.png" alt="" onerror="this.style.display='none'">
+      <span class="sfyll"></span>
+      <img src="spill/assets/sms-status-hoegre.png" alt="" onerror="this.style.display='none'"></div>
+    <div id="telInnhold"></div>
+    <div class="smsbunn"></div>
   </div></div>
 
   <!-- SMS: fiskar søkjer investor -->
@@ -4211,7 +4244,7 @@ function visProfil(){
       +'Bytt spiller</button>'
     +'<button class="btn sm gold" id="pfInnboks">'
       +'<img src="spill/assets/ikon-konvolutt.png" alt="" style="height:17px;vertical-align:-3px;margin-right:6px;image-rendering:pixelated" onerror="this.outerHTML=&quot;📨 &quot;">'
-      +'Innboks'+(nUlest?' ('+nUlest+')':'')+'</button></div>';
+      +'Telefonen'+(nUlest?' ('+nUlest+')':'')+'</button></div>';
   h+='<div class="row" style="justify-content:center;margin-top:10px">'
     +'<button id="pfFeil" class="feilpille">🐞 Meld inn</button></div>';
 
@@ -4234,7 +4267,7 @@ function visProfil(){
   lydIkon(); $("#pfLyd").onclick=function(){ toggleMute(); };
   if($("#pfAnmeld"))$("#pfAnmeld").onclick=function(){ modal("profilModal",false); visAnmeldelse(); };
   $("#pfTilNaust").onclick=function(){ modal("profilModal",false); tilNaustet(); };
-  $("#pfInnboks").onclick=function(){ modal("profilModal",false); visInnboks(); };
+  $("#pfInnboks").onclick=function(){ modal("profilModal",false); visTelefon(); };
   if($("#pfFeil"))$("#pfFeil").onclick=function(){ modal("profilModal",false); visFeilmelding(); };
   modal("profilModal",true);
 }
@@ -6285,6 +6318,54 @@ function investTilbod(){
 }
 
 // Ekte klokkeslett i statuslinja — det er det som gjer at det ser ut som ein telefon.
+/* ---------- Telefonen (5. aug): hjemskjerm med Meldinger, Tråleren og Notater ---------- */
+function visTelefon(){
+  var e=$("#telKlokke"); if(e){ var d0=new Date(); e.textContent=("0"+d0.getHours()).slice(-2)+":"+("0"+d0.getMinutes()).slice(-2); }
+  var n=uleste(), L=$("#telInnhold");
+  L.innerHTML='<div class="appnett">'
+    +'<button class="appikon" id="appMeld"><span class="ai">📨</span><span class="an">Meldinger</span>'+(n?'<span class="varsel2">'+(n>9?"9+":n)+'</span>':'')+'</button>'
+    +'<button class="appikon" id="appTraal"><span class="ai">🚢</span><span class="an">Tråleren</span></button>'
+    +'<button class="appikon" id="appNotat"><span class="ai">📒</span><span class="an">Notater</span></button>'
+    +'</div>';
+  $("#appMeld").onclick=function(){ Snd.click(); modal("telefonModal",false); visInnboks(); };
+  $("#appTraal").onclick=function(){ Snd.click(); visTraalApp(); };
+  $("#appNotat").onclick=function(){ Snd.click(); visNotatApp(); };
+  Snd.click(); modal("telefonModal",true);
+}
+function telHode(tittel){ return '<div class="telhode"><button class="smstilbake" id="telTilbake">&lsaquo;</button>'+tittel+'</div>'; }
+function visTraalApp(){ investInit();
+  var h=telHode("Tråleren"), iv=P.invest, noe=false;
+  if(iv.tur){ var f0=fiskerVed[iv.tur.fk], igjen=Math.max(0,iv.tur.ferdig-Date.now());
+    var tt=Math.floor(igjen/3600000), mm=Math.floor(igjen%3600000/60000);
+    h+='<div class="telnotat"><b>Penger ute på tur</b>'+esc((f0?f0.n:iv.tur.fk)+" · "
+      +Math.round(iv.tur.del*100)+" % andel · "+iv.tur.sum.toLocaleString("nb")+" kr inn")
+      +'<br>Tilbake om '+(igjen<=0?"kort tid":tt+" t "+mm+" min")+' ⏱️</div>'; noe=true; }
+  var rader="";
+  FISKERE.forEach(function(f){ var hi=iv.hist[f.k], niv=investNivaa(f.k);
+    if(!hi&&!niv)return; noe=true;
+    var st=investStat(f,niv);
+    rader+='<div class="telrad"><img class="'+(f.speil?"speil":"")+'" src="spill/assets/'+f.img+'" alt="" onerror="this.style.visibility=\'hidden\'">'
+      +'<span class="tt"><b>'+esc(f.n)+'</b><span>'+esc(f.b)+'</span>'
+      +(hi?'<span>'+hi.turar+' turer · '+hi.inn.toLocaleString("nb")+' inn → '+hi.ut.toLocaleString("nb")+' ut</span>':'<span>Spleiset utstyr, ingen turer ennå</span>')
+      +'</span><span class="niva" title="Spleiset utstyr — kommer tom hjem '+Math.round(st.tom*100)+' av 100 turer">'
+      +"●".repeat(niv)+"○".repeat(4-niv)+'</span></div>'; });
+  if(rader)h+='<div class="telseksjon">Fiskerne dine</div>'+rader;
+  if(!noe)h+='<div class="teltom">Ingen turer ennå. Fiskerne ringer når de har en andel ledig — svarer du ja, følger du turen her. 🛥️</div>';
+  $("#telInnhold").innerHTML=h;
+  $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
+}
+function visNotatApp(){
+  var h=telHode("Notater"), tips=(P.tips||[]).filter(function(x){return x&&TIPS_DEF[x.k]});
+  if(!tips.length)h+='<div class="teltom">Tom notatbok — ennå. Rustens råd havner her når du leverer lapp nr 7 i syklusen. 📒</div>';
+  else{ var RNAVN=["Vanlige fisker","Sjeldne fisker","Legendariske fisker"];
+    for(var r=0;r<3;r++){ var iR=tips.filter(function(x){return tipsRang(x.k)===r});
+      if(!iR.length)continue;
+      h+='<div class="telseksjon">'+RNAVN[r]+'</div>';
+      iR.forEach(function(x){ var td=TIPS_DEF[x.k], f=byKey[td.art];
+        h+='<div class="telnotat"><b>'+esc(f?f.n:td.art)+'</b>'+esc(tipsBokLinje(x.k))+'</div>'; }); } }
+  $("#telInnhold").innerHTML=h;
+  $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
+}
 function settKlokke(){ var e=$("#smsKlokke"); if(!e)return; var d=new Date();
   e.textContent=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
 // Fiskaren hugsar korleis det gjekk sist. Fire tonar: det gjekk strålande, det
@@ -6604,8 +6685,9 @@ function investUtstyr(){
 $("#playBtn").onclick=startGame;
 $("#innLukk").onclick=function(){ modal("innModal",false); };
 $("#feilLukk").onclick=function(){ modal("feilModal",false); };
+$("#telefonModal").addEventListener("click",function(e){ if(e.target===this){ modal("telefonModal",false); } }); // trykk utenfor telefonen legger den ned
 $("#feilSend").onclick=sendFeilmelding;
-$("#innTilbake").onclick=function(){ modal("innModal",false); Snd.click(); visProfil(); };
+$("#innTilbake").onclick=function(){ modal("innModal",false); Snd.click(); visTelefon(); };
 $("#smsTilbake").onclick=function(){ // ut av meldingen uten å svare — tilbudet ligger fortsatt i innboksen
   if(smsAktiv&&!smsAktiv.resultat&&smsAktiv.meld){ /* ikke et nei — bare tilbake */ }
   smsAktiv=null; modal("smsModal",false); Snd.click(); smsTilbakeInn(); };
