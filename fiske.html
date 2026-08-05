@@ -6325,11 +6325,9 @@ function visTelefon(){
   L.innerHTML='<div class="appnett">'
     +'<button class="appikon" id="appMeld"><span class="ai">📨</span><span class="an">Meldinger</span>'+(n?'<span class="varsel2">'+(n>9?"9+":n)+'</span>':'')+'</button>'
     +'<button class="appikon" id="appTraal"><span class="ai">🚢</span><span class="an">Tråleren</span></button>'
-    +'<button class="appikon" id="appNotat"><span class="ai">📒</span><span class="an">Notater</span></button>'
     +'</div>';
   $("#appMeld").onclick=function(){ Snd.click(); modal("telefonModal",false); visInnboks(); };
   $("#appTraal").onclick=function(){ Snd.click(); visTraalApp(); };
-  $("#appNotat").onclick=function(){ Snd.click(); visNotatApp(); };
   Snd.click(); modal("telefonModal",true);
 }
 function telHode(tittel){ return '<div class="telhode"><button class="smstilbake" id="telTilbake">&lsaquo;</button>'+tittel+'</div>'; }
@@ -6351,18 +6349,6 @@ function visTraalApp(){ investInit();
       +"●".repeat(niv)+"○".repeat(4-niv)+'</span></div>'; });
   if(rader)h+='<div class="telseksjon">Fiskerne dine</div>'+rader;
   if(!noe)h+='<div class="teltom">Ingen turer ennå. Fiskerne ringer når de har en andel ledig — svarer du ja, følger du turen her. 🛥️</div>';
-  $("#telInnhold").innerHTML=h;
-  $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
-}
-function visNotatApp(){
-  var h=telHode("Notater"), tips=(P.tips||[]).filter(function(x){return x&&TIPS_DEF[x.k]});
-  if(!tips.length)h+='<div class="teltom">Tom notatbok — ennå. Rustens råd havner her når du leverer lapp nr 7 i syklusen. 📒</div>';
-  else{ var RNAVN=["Vanlige fisker","Sjeldne fisker","Legendariske fisker"];
-    for(var r=0;r<3;r++){ var iR=tips.filter(function(x){return tipsRang(x.k)===r});
-      if(!iR.length)continue;
-      h+='<div class="telseksjon">'+RNAVN[r]+'</div>';
-      iR.forEach(function(x){ var td=TIPS_DEF[x.k], f=byKey[td.art];
-        h+='<div class="telnotat"><b>'+esc(f?f.n:td.art)+'</b>'+esc(tipsBokLinje(x.k))+'</div>'; }); } }
   $("#telInnhold").innerHTML=h;
   $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
 }
