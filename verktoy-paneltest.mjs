@@ -81,7 +81,9 @@ try {
 
   console.log("\n5. INGEN PERSONDATA UT");
   const tekst = JSON.stringify(d);
-  sjekk("ingen kallenavn i svaret", !/Kari|Ola|Nybegynner|Sluttet/.test(tekst));
+  const utenTopp = JSON.stringify({ ...d, toppliste: null });
+  sjekk("kallenavn KUN i topplista", !/Kari|Ola|Nybegynner|Sluttet/.test(utenTopp));
+  sjekk("topplista har kallenavn (eierens valg 5. aug)", /Kari/.test(JSON.stringify(d.toppliste)));
   sjekk("kontroll: testen ville fanget et navn", /fiskere/.test(tekst));
 
   console.log("");

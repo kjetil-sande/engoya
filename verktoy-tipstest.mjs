@@ -5,8 +5,8 @@
 //   · hvert tips-par er RAPPORT-EKTE: koden har allerede b > 1 for (rigg, art) —
 //     tipset avslører en sann sammenheng, det dikter ikke opp en ny
 //   · tipsFaktor gir m KUN når arten stemmer OG riktig rigg er aktiv — ellers 1
-//   · trappa: første tips ved 12 fullførte, deretter 8–14 mellom hver, deterministisk
-//   · rekkefølgen: verd 1 → 2 → 3, milepæl-tipsene aller sist (kveita)
+//   · trappa (5. aug): ALLE vanlige tips før sjeldne; legendariske låses opp først
+//     når alle sjeldne FISKER er fanget; verd stiger innenfor hvert trinn
 //   · tips rører aldri størrelse: sizeLen/hookedLen-koden refererer ikke tips
 //
 //   node verktoy-tipstest.mjs
@@ -54,7 +54,7 @@ var slukDef={}; SLUK.forEach(function(u){slukDef[u.k]=u});
 ${tabell("AGN")}
 var agnDef={}; AGN.forEach(function(a){agnDef[a.k]=a});
 ${objekt("TIPS_DEF")}
-var P={name:"Testfisker", tips:[]};
+var P={name:"Testfisker", tips:[], caught:{}};
 var __ag=null, __su=null;
 function aktivAgn(){ return __ag; }
 function aktivSluk(){ return __su; }
@@ -64,12 +64,16 @@ ${funksjon("tipsFaktor")}
 var __sone=3; function maksSone(){ return __sone; }
 var __fredFri=true; function fredetNaa(f){ return false; } // sesongnøytral prøvebenk
 ${funksjon("syklusPos")}
+${funksjon("tipsRang")}
+${funksjon("alleSjeldneFanget")}
+${funksjon("tipsPoolNaa")}
 ${funksjon("tipsNeste")}
 ${funksjon("syklusTips")}
 export function settRigg(agK, suK){ __ag=agK?agnDef[agK]:null; __su=suK?slukDef[suK]:null; }
 export function settTips(liste){ P.tips=liste.map(function(k){return {k:k, ts:1}}); }
 export function settSone(z){ __sone=z; }
-export { TIPS_DEF, byKey, slukDef, agnDef, tipsFaktor, tipsNeste, syklusPos, syklusTips };
+export function settFanget(liste){ P.caught={}; liste.forEach(function(k){P.caught[k]={count:1}}); }
+export { TIPS_DEF, byKey, slukDef, agnDef, tipsFaktor, tipsNeste, syklusPos, syklusTips, tipsRang };
 `;
 const fil = join(mkdtempSync(join(tmpdir(), "tips-")), "t.mjs");
 writeFileSync(fil, kilde);
@@ -102,20 +106,33 @@ S.settTips(["uer-brunost"]); S.settRigg("brunost", null);
 if (S.tipsFaktor(S.byKey.uer) !== S.TIPS_DEF["uer-brunost"].m) feil("agn-tips + riktig agn ga ikke m"); else ok();
 if (S.tipsFaktor(S.byKey.torsk) !== 1) feil("annen art skulle gitt 1"); else ok();
 
-/* 3. Syklusen: dag 14 velger felles fisk deterministisk, aldri utenfor rekkevidde */
-if (S.syklusPos(13) !== 13 || S.syklusPos(14) !== 0 || S.syklusPos(27) !== 13) feil("syklusPos regner feil"); else ok();
-S.settTips([]); S.settSone(3);
-if (S.syklusTips(13) !== S.syklusTips(13)) feil("syklusfisken er ikke deterministisk"); else ok();
-if (S.syklusTips(13) === S.syklusTips(27)) feil("syklusfisken roterer ikke mellom sykluser"); else ok();
-S.settSone(0); const lavId = S.syklusTips(13); const lavF = S.byKey[S.TIPS_DEF[lavId].art];
-if (lavF.z > 0) feil("nybegynner fikk syklusfisk utenfor sonen sin: " + lavId); else ok();
-if (!/tipsGi\(sid\)/.test(K)) feil("dag 14-lappen deler ikke ut tipset ved trekk"); else ok();
-S.settTips([]); S.settSone(3);
+/* 3. Syklusen (7 fullførte lapper): lapp nr 7 velger tips deterministisk, aldri utenfor rekkevidde */
+if (S.syklusPos(6) !== 6 || S.syklusPos(7) !== 0 || S.syklusPos(13) !== 6) feil("syklusPos regner feil"); else ok();
+S.settTips([]); S.settFanget([]); S.settSone(3);
+if (S.syklusTips(6) !== S.syklusTips(6)) feil("syklustipset er ikke deterministisk"); else ok();
+if (S.syklusTips(6) === S.syklusTips(13)) feil("syklustipset roterer ikke mellom sykluser"); else ok();
+S.settSone(0); const lavId = S.syklusTips(6); const lavF = S.byKey[S.TIPS_DEF[lavId].art];
+if (lavF.z > 0) feil("nybegynner fikk syklustips utenfor sonen sin: " + lavId); else ok();
+if (!/tipsGi\(sid\)/.test(K)) feil("lapp nr 7 deler ikke ut tipset"); else ok();
+/* trinn-portene: bare vanlige først; legendariske låst til alle sjeldne er FANGET */
+S.settTips([]); S.settFanget([]);
+if (S.tipsRang(S.tipsNeste()) !== 0) feil("trappa starter ikke på vanlige"); else ok();
+const alleR0 = Object.keys(S.TIPS_DEF).filter((k) => S.tipsRang(k) === 0);
+S.settTips(alleR0);
+if (S.tipsRang(S.tipsNeste()) !== 1) feil("sjeldne låses ikke opp når alle vanlige er eid"); else ok();
+const alleR01 = Object.keys(S.TIPS_DEF).filter((k) => S.tipsRang(k) <= 1);
+S.settTips(alleR01); S.settFanget([]);
+if (S.tipsNeste() !== null) feil("legendariske delt ut FØR alle sjeldne fisker er fanget"); else ok();
+const sjeldne = []; for (const f of S.byKey ? Object.values(S.byKey) : []) if ((f.rar || 0) === 1) sjeldne.push(f.k);
+S.settFanget(sjeldne);
+if (S.tipsRang(S.tipsNeste()) !== 2) feil("legendariske låses ikke opp av fangst av alle sjeldne"); else ok();
+/* full vandring: alt deles ut, rang aldri synkende, kveita sist */
+S.settTips([]); S.settSone(3); S.settFanget(sjeldne);
 const rekke = []; const eid = [];
 for (let i = 0; i < Object.keys(S.TIPS_DEF).length; i++) { S.settTips(eid); const n = S.tipsNeste(); if (!n) break; rekke.push(n); eid.push(n); }
 if (rekke.length !== Object.keys(S.TIPS_DEF).length) feil("trappa deler ikke ut alle tipsene"); else ok();
-const verdRekke = rekke.map((k) => (S.TIPS_DEF[k].milepael ? 9 : S.TIPS_DEF[k].verd));
-if (!verdRekke.every((v, i) => i === 0 || v >= verdRekke[i - 1])) feil("rekkefølgen stiger ikke verd 1→2→3→milepæl"); else ok();
+const rangRekke = rekke.map((k) => S.tipsRang(k));
+if (!rangRekke.every((v, i) => i === 0 || v >= rangRekke[i - 1])) feil("rekkefølgen faller i rang (vanlig→sjelden→legendarisk)"); else ok();
 if (!S.TIPS_DEF[rekke[rekke.length - 1]].milepael) feil("kveitetipset ligger ikke sist"); else ok();
 
 /* 4. rigB har koblingen, og størrelses-koden er tips-fri */
