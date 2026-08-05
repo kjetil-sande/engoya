@@ -202,7 +202,7 @@
   #sea.fishing #hud{opacity:0;pointer-events:none} /* menyen fader bort mens snøret står ute — full ro på havet */
   #sea.fishing #notice{opacity:0;transition:opacity .3s}
   #actionBtn{touch-action:none}   /* ELLES tek Chrome på Android gesten som rulling og slepper sveiven */
-  .actionbtn{width:min(100%,560px);box-sizing:border-box;text-align:center;padding-top:19px;padding-bottom:19px;font-size:18px}
+  .actionbtn{width:min(100%,560px);box-sizing:border-box;text-align:center;padding-top:19px;padding-bottom:19px;font-size:18px;font-weight:800}
   /* Botnraden: sluksettet til venstre, kastet til høgre. Begge i tommelbuen. */
   .kastrad{display:flex;gap:8px;align-items:stretch;width:min(100%,560px);box-sizing:border-box}
   .kastrad .actionbtn{flex:0 0 118px;width:auto;min-width:0;font-size:17px;padding-left:6px;padding-right:6px}
@@ -216,20 +216,20 @@
   /* Dekksraden: alt du kan trykke på mellom kast, samlet i tommelsonen — og med NAVN,
      for navnløsheten var det egentlige problemet, ikke antallet knapper. */
   .dekk{display:flex;gap:5px;width:min(100%,560px);box-sizing:border-box}
-  .dekk button{flex:1 1 0;min-width:0;height:88px;border:0;border-radius:11px;position:relative;cursor:pointer;
+  .dekk button{flex:1 1 0;min-width:0;height:96px;border:0;border-radius:11px;position:relative;cursor:pointer;
     background:var(--paper);color:var(--ink);box-shadow:0 4px 0 var(--paper-2);
-    font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:6px 2px;
+    font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px 2px 9px;
     transition:transform .05s}
   .dekk button:active{transform:translateY(2px);box-shadow:0 2px 0 var(--paper-2)}
   /* Tre portretter, ikke tre redskaper — det er mennesker du går til. De er
      kvadratiske, så max-width må følge høyden, ellers klipper object-fit ansiktet. */
-  .dekk .di{height:35px;max-width:46px;object-fit:contain;image-rendering:pixelated}
+  .dekk .di{height:47px;max-width:62px;object-fit:contain;image-rendering:pixelated} /* +35 % (eieren, 6. aug) */
   .dekk .di.e{font-size:30px;line-height:35px}
   .dekk .t{font-size:17px;font-weight:700;line-height:1;white-space:nowrap}
   /* Sluksettet er større enn dekksknappane — det er her du faktisk gjer eit val */
   /* Sluksettet: sluken skal SYNAST, og namnet står ved sida i same storleik som «Kast ut» */
   .kastrad #kartBtn{flex:0 0 64px;width:64px;justify-content:center;padding:6px}
-  #hudLure,#kartBtn{position:relative;cursor:pointer;border:0;border-radius:11px;padding:8px 10px;box-sizing:border-box;
+  #hudLure,#kartBtn{position:relative;cursor:pointer;border:0;border-radius:11px;padding:8px 10px 8px 16px;box-sizing:border-box;
     background:var(--paper);color:var(--ink);box-shadow:0 4px 0 var(--paper-2);
     font-family:inherit;font-weight:700;display:flex;flex-direction:row;align-items:center;
     justify-content:flex-start;gap:9px;transition:transform .05s} /* ikonet står alltid til venstre */
@@ -678,7 +678,7 @@
   .rlab.r1{background:#dcebf7;color:#2f6ea0;border:1px solid #9cc4e0}
   .rlab.r2{background:#fdf3d6;color:#9a7418;border:1px solid var(--gold)}
   @media (max-height:430px){
-    .dekk button{height:66px;gap:6px} .dekk .di{height:28px} .dekk .di.e{font-size:24px;line-height:28px} .dekk .t{font-size:15px} #hudLure .t{font-size:15px} /* mobil i landskap: kompakt bunnpanel så fisken synes under kamp */
+    .dekk button{height:70px;gap:5px} .dekk .di{height:36px} .dekk .di.e{font-size:24px;line-height:28px} .dekk .t{font-size:15px} #hudLure .t{font-size:15px} /* mobil i landskap: kompakt bunnpanel så fisken synes under kamp */
     .vbar{height:64px} #reelui .bars{gap:10px}
     #sea .bottom{gap:4px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
     #rekModal,#catchModal{padding-bottom:calc(6px + env(safe-area-inset-bottom))}
@@ -883,7 +883,7 @@
       <div class="kastrad" id="kastrad">
         <button id="kartBtn" title="Fiskekartet — velg fiskeplass"><img src="spill/assets/knapp-kart.png" class="di" alt="" onerror="this.outerHTML='&#128506;'"></button>
         <button id="hudLure" title="Sluksettet — velg agn og sluk"><img id="lureBilde" src="spill/assets/fiskeskrin.png" class="di" onerror="this.src='spill/assets/fiskeskrin.png'" alt=""><span class="t" id="lureNavn">Sluksett</span></button>
-        <button class="btn gold actionbtn" id="actionBtn">Fisk!</button>
+        <button class="btn gold actionbtn" id="actionBtn">FISK!</button>
       </div>
     </div>
   </section>
@@ -1307,6 +1307,7 @@ var Snd=(function(){
     },
     // Musikken skal ikkje kuttast når du legg frå kaia — han skal sige ut.
     themeOff:function(){ if(!theme||theme.paused)return;
+      if(lobbyT){ clearInterval(lobbyT); lobbyT=null; } lobbyFerdig=true; // innfadingen slipper taket — ellers slåss den mot utfadingen
       if(temaT){clearInterval(temaT); temaT=null;}
       var v0=theme.volume, t0=Date.now();
       temaT=setInterval(function(){
@@ -2221,7 +2222,7 @@ function setDepth(d){
   if(typeof updatePotBtn==="function")updatePotBtn();
 }
 
-function toSea(){Snd.ambienceOn(); Snd.themeOff(); /* musikken følger med ut og siger ut over 5,5 s */ bestillingVarsel(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Fisk!"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
+function toSea(){Snd.ambienceOn(); Snd.themeOff(); /* musikken følger med ut og siger ut over 5,5 s */ bestillingVarsel(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("FISK!"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase!=="idle")return;
     var b=P&&P.bestilling, mangler=[];
     if(b&&!b.ferdig&&P.bestillingIntroSett){ Object.keys(b.krav).forEach(function(a){ var m=b.krav[a]-((b.lev&&b.lev[a])||0);
@@ -2865,7 +2866,7 @@ function pilkSlutt(){
   // #reelui MÅ av, som i miss(), escape(), snap() og land(). Uten dette blir strømpila
   // og dybdesøyla liggende OVER Rusten-, Verksted- og dybdeknappene når du er tilbake
   // på dekk og skal kaste på nytt.
-  phase="idle"; Snd.reelSound(false); $("#reelui").classList.remove("on"); pilkKlem=0; setAction("Fisk!");
+  phase="idle"; Snd.reelSound(false); $("#reelui").classList.remove("on"); pilkKlem=0; setAction("FISK!");
   var L2=$("#potList"); L2.innerHTML=""; var total=0, sildAgn=0;
   var suP=aktivSluk(), pilkNavn=(suP&&suP.n)||"Markpilk"; // rekorden skal si hva du faktisk fisket med
   if(!pilkFangst.length){ L2.innerHTML='<p class="muted center">Ikke et napp på makkene denne gangen — stimen sto nok dypere.</p>'; }
@@ -2999,7 +3000,7 @@ function commitBite(){
   if(cf&&cf.k==="haagjel"&&ag&&Math.random()<0.45){
     if(sceneFish) flee={f:cf, len:sceneFish.sizeLen||60, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*1.2*fiskefart(sceneFish.sizeLen), t:1.0};
     phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
-    setHint("Bar krok. Noe tok agnet og var borte."); setAction("Fisk!");
+    setHint("Bar krok. Noe tok agnet og var borte."); setAction("FISK!");
     Snd.fiskerSurPool(); rustenSier("haagjel",700); saveAll(); return;
   }
   hooked=cf; hookedLen=(sceneFish&&sceneFish.sizeLen)||Math.round(rnd(cf.len[0],cf.len[1])); phase="bite"; hookWindow=1.6;
@@ -3066,7 +3067,7 @@ function miss(){
   if(sceneFish) flee={f:sceneFish.f, len:sceneFish.sizeLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9*fiskefart(sceneFish.sizeLen), t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool(); // hunden er lei seg
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); hooked=null; sceneFish=null; $("#reelui").classList.remove("on");
-  setHint("Fisken slapp… prøv igjen."); setAction("Fisk!"); saveAll();
+  setHint("Fisken slapp… prøv igjen."); setAction("FISK!"); saveAll();
   rustenSier("bomm",1400);
 }
 function reelStep(dt){
@@ -3146,7 +3147,7 @@ function escape(){ ringFred(60);
   if(hooked) flee={f:hooked, len:hookedLen, x:(lureSX/W)||0.5, wy:lureSY+camY, vx:(Math.random()<0.5?-1:1)*0.9, t:1.15};
   dogShow(2,3); Snd.sadDog(); if(Math.random()<0.55)Snd.fiskerSurPool();
   phase="idle"; Snd.reelSound(false); Snd.utrasLyd(false); $("#reelui").classList.remove("on"); hooked=null; sceneFish=null;
-  setHint("Du ga for mye slakk og fisken glapp! Sluken er i god behold."); setAction("Fisk!"); saveAll();
+  setHint("Du ga for mye slakk og fisken glapp! Sluken er i god behold."); setAction("FISK!"); saveAll();
   rustenSier("slapp",1400);
   if(navigator.vibrate)navigator.vibrate(30);
 }
@@ -3165,7 +3166,7 @@ function snap(){ ringFred(60); oddMerk();
   else mistet="Snøret røk — agnet og kroken forsvant i dypet!"; // agnet ble alt brukt ved nappet
   hooked=null; sceneFish=null;
   setHint(mistet);
-  setAction("Fisk!"); hud(); saveAll();
+  setAction("FISK!"); hud(); saveAll();
   rustenSier("rauk",1400);
   if(navigator.vibrate)navigator.vibrate([90,50,90]);
 }
@@ -3265,7 +3266,7 @@ function resolveCatch(sell){
     bestillingTell(pc.f.k,1); } // solgt på kaia = levert til Rusten
   else { /* slipp ut: arten er registrert i boka, men ingen penger */ }
   pending=null; modal("catchModal",false); hud(); saveAll(); updateRigChip();
-  setHint(sell==="agn"?("Skjært opp til agn — +3 "+agnDef[pc.agnAv].n.toLowerCase()+" i sluksettet 🧰"):sell===true?("Solgt for "+pc.kr+" kr."):(pc.vern||pc.umaal)?"Satt varsomt ut igjen 💙":"Sluppet ut."); setAction("Fisk!");
+  setHint(sell==="agn"?("Skjært opp til agn — +3 "+agnDef[pc.agnAv].n.toLowerCase()+" i sluksettet 🧰"):sell===true?("Solgt for "+pc.kr+" kr."):(pc.vern||pc.umaal)?"Satt varsomt ut igjen 💙":"Sluppet ut."); setAction("FISK!");
 }
 
 /* ---------- Vær: regn, vind, torden + motorrøyk ---------- */
@@ -3602,8 +3603,8 @@ function renderRig(){
         P.kr-=kjop.pris; kjop.fn();
         Snd.buy(); hud(); saveAll(); updateRigChip(); renderRig(); };
       d.appendChild(kb); }
-    if(kanVelges)d.onclick=function(){ P.rig=nokkel; saveAll(); updateRigChip(); renderRig(); Snd.click();
-    };
+    if(kanVelges)d.onclick=function(){ P.rig=nokkel; saveAll(); updateRigChip(); Snd.click();
+      modal("rigModal",false); }; // valget lukker menyen — ett trykk, ferdig (eieren, 6. aug)
     L.appendChild(d);
   }
   L.insertAdjacentHTML("beforeend",'<p class="muted center" style="margin:2px 0;font-weight:700;font-size:13.5px">— Sluker (ryker bare med snøret) —</p>');
@@ -5862,13 +5863,13 @@ function drawKrabber(dt){
     for(var i=0;i<4;i++)krabber.push({x:0.10+0.75*Math.random(), dir:Math.random()<0.5?1:-1,
       fart:0.010+Math.random()*0.014, ty:typer[i], t:Math.random()*7, pause:0}); }
   for(var j=0;j<krabber.length;j++){ var k=krabber[j]; k.t+=dt;
-    if(k.pause>0){ k.pause-=dt; }
-    else{ k.x+=k.dir*k.fart*0.5*dt*(0.35+0.65*Math.abs(Math.sin(k.t*7))); // sindig sidelengs — krabber har god tid
-      if(Math.random()<dt*0.45)k.pause=2.5+Math.random()*5;               // står mest i ro (eierens ønske)
+    if(k.pause>0){ k.pause-=dt; if(k.pause<=0&&Math.random()<0.5)k.dir*=-1; } // ny retning når han våkner — litt random
+    else{ k.x+=k.dir*k.fart*0.22*dt;                                     // kjempesakte sig, ingen rykk
+      if(Math.random()<dt*0.55)k.pause=3+Math.random()*6;                // står mest helt i ro
       if(k.x<0.06||k.x>0.92){ k.dir*=-1; k.x=Math.max(0.06,Math.min(0.92,k.x)); } }
     var im=krabbeImg[k.ty]; if(!im||!im.complete||!im.naturalWidth)continue;
     var kw=mn*(k.ty==="eremittkreps"?0.045:0.058), kh=kw*im.naturalHeight/im.naturalWidth;
-    var y=sand-camY-kh*0.75+Math.sin(k.t*7)*1.2;
+    var y=sand-camY-kh*0.75; // ingen dupping — krabber flyter ikke (eieren, 6. aug)
     if(y<-40||y>H+40)continue;
     cx.save(); cx.globalAlpha=0.92;
     if(k.dir<0){ cx.translate(W*k.x+kw/2,y); cx.scale(-1,1); cx.drawImage(im,0,0,kw,kh); }
@@ -5881,16 +5882,16 @@ function drawOyne(dt){ // blinkende øyepar i mørket — gulgrønne på Dypt, i
   var mn=Math.min(W,H);
   if(camY<g.imgH*0.30)return; // først når man er godt nede i mørket
   if(dypOyneD!==depth||!dypOyne.length){ dypOyneD=depth; dypOyne=[];
-    for(var i=0;i<5;i++)dypOyne.push({x:0.06+0.88*Math.random(), fy:0.45+0.5*Math.random(),
-      vent:3+Math.random()*14, dur:0, t:Math.random()*9, gap:0.008+Math.random()*0.010, sc:0.7+Math.random()*0.9}); }
+    for(var i=0;i<5;i++)dypOyne.push({x:0.06+0.88*Math.random(), fy:0.87+0.11*Math.random(),
+      vent:3+Math.random()*14, dur:0, t:Math.random()*9, gap:0.006+Math.random()*0.007, sc:0.7+Math.random()*0.9}); }
   var farge=depth===2?[196,232,120]:[150,214,255];
   for(var j=0;j<dypOyne.length;j++){ var o=dypOyne[j]; o.t+=dt;
     if(o.dur<=0){ if(o.t>=o.vent){ o.dur=1.6+Math.random()*2.6; o.t=0;
-        o.x=0.06+0.88*Math.random(); o.fy=0.45+0.5*Math.random(); } continue; }
+        o.x=0.06+0.88*Math.random(); o.fy=0.87+0.11*Math.random(); } continue; } // nytt blikk, nytt sted — men alltid nede ved bunnen
     if(o.t>=o.dur){ o.dur=0; o.t=0; o.vent=5+Math.random()*18; continue; }
     var wy=g.imgH*(o.fy*(BUNNFRAC[depth]||0.9)), y=wy-camY;
     if(y<-20||y>H+20)continue;
-    var f=o.t/o.dur, a=Math.sin(f*Math.PI)*0.55, r=mn*0.006*o.sc, gapx=W*o.gap;
+    var f=o.t/o.dur, a=Math.sin(f*Math.PI)*0.55, r=mn*0.004*o.sc, gapx=W*o.gap; // en tredjedel mindre (eieren, 6. aug)
     var blunk=(f>0.44&&f<0.52)?0.12:1; // et lite blunk midt i — de er i live
     cx.save(); cx.globalCompositeOperation="screen";
     var gl=cx.createRadialGradient(W*o.x,y,0,W*o.x,y,r*7);
