@@ -1048,9 +1048,10 @@ var Snd=(function(){
   // Lobbyen: svakt → mellomsvakt. Ute på havet er sjøen 0,187 og måkane 0,22.
   var LOBBY_HAV0=0.060, LOBBY_HAV1=0.155, LOBBY_FUGL0=0.050, LOBBY_FUGL1=0.170;
   var LOBBY_FADE=4200, TEMA_V=0.45, TEMA_FADE=2200;   // opninga er 1000 stille + 2800 pan
-  // TEMA_UT: eigaren opplevde 1400 ms som ei hard bråstopp ved fyrste kast.
+  // TEMA_UT: 5500 ms — eierens ønske 5. aug: musikken følger med ut på sjøen
+  // og siger sakte ut over 5–6 sekunder. (Historikk: 1400 var bråstopp, 2600 ved kast.)
   // 2600 ms er midt i dei 2–3 sekunda han bad om.
-  var lobbyT=null, temaT=null, lobbyFerdig=false, TEMA_UT=2600;
+  var lobbyT=null, temaT=null, lobbyFerdig=false, TEMA_UT=5500;
   try{ muted = localStorage.getItem("storkveita-muted")==="1"; }catch(e){}
   function AC(){ if(!ctx){ try{ ctx=new (window.AudioContext||window.webkitAudioContext)();
     if(ctx)ctx.onstatechange=function(){ if(ctx.state!=="running"&&!document.hidden){
@@ -2186,7 +2187,7 @@ function setDepth(d){
   if(typeof updatePotBtn==="function")updatePotBtn();
 }
 
-function toSea(){Snd.ambienceOn(); bestillingVarsel(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Fisk!"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
+function toSea(){Snd.ambienceOn(); Snd.themeOff(); bestillingVarsel(); // musikken følger med ut og siger sakte ut (5,5 s) show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("Fisk!"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase!=="idle")return;
     var b=P&&P.bestilling, mangler=[];
     if(b&&!b.ferdig&&P.bestillingIntroSett){ Object.keys(b.krav).forEach(function(a){ var m=b.krav[a]-((b.lev&&b.lev[a])||0);
@@ -2318,7 +2319,7 @@ function cast(){
   else if(Date.now()>P.havnNeste && P.svc%45===22) notice("Ørnes Båtforening purrer på havneavgiften ⚓ (betal hos Propell-Kjell)");
   else if(riggPct()<=0 && P.svc%45===33) notice("Snella går tregt og beltet er stivt — riggservice hos Propell-Kjell 🎛️"); // rest 33 kolliderer ikke med 11 eller 22
   P.fuel-=needF; hud(); saveAll(); Snd.cast(); castT=0.45; // ETT kast-animasjon
-  Snd.themeOff();               // fyrste kast: musikken sig ut, sjøen tek over
+  Snd.themeOff();               // reserve: skulle temaet fortsatt spille, sig det ut no
   phase="sink"; descend=0; rullSilhuett();
   var g=colGeom(), mn=Math.min(W,H);
   if(g){ lureW=g.wl+mn*0.05; lureTargetW=g.imgH*LTF[depth]-mn*0.04; // fra rett under overflata → like over bunn-dekoren
