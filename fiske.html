@@ -1294,7 +1294,7 @@ var Snd=(function(){
       wantLoop("vindL", vilVind && vaerPaa);
       this.fadeLoopVol("regn",  REGN_V*(vilRegn?1:0)*d, 0.6);
       this.fadeLoopVol("vindL", VIND_V*(vilVind?1:0)*d, 0.6);
-      if(ned)this.fadeLoopVol("undervann", 0.05+0.29*dyp, 0.6); },
+      if(ned)this.fadeLoopVol("undervann", (0.05+0.29*dyp)*(djupSone()?1.18:1), 0.6); }, // 18 % mer trøkk i dypet på de to nederste (eieren, 6. aug)
     overflateStille:function(){ return djupSone() && dykket && dypNa>0.8; }, // til enkeltlydar
     _maal:function(){ var ut={sone:soneNa, dykket:dykket, dyp:dypNa, stille:this.overflateStille(),
         tema:theme?{spelar:!theme.paused, vol:+temaVolLes().toFixed(3), gain:!!temaGain}:null};
