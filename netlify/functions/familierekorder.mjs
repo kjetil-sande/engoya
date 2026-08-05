@@ -445,16 +445,51 @@ export default async (req) => {
   let skriv = false;
   if (typeof body.fjern === "string") { // familien rydder: fjern en spiller fra gruppa (koden er familiens nøkkel)
     const navnF = body.fjern.trim().slice(0, 14);
-    if (navnF && !FARLIGE.has(navnF) && egen(fam.players, navnF)) { delete fam.players[navnF]; skriv = true; }
+    if (navnF && !FARLIGE.has(navnF) && egen(fam.players, navnF)) {
+      // GDPR-slettingen (6. aug): spilleren legges i PAPIRKURVEN i 90 dager før den
+      // slettes for godt — Simen skal ikke kunne slette Simon ved et uhell uten
+      // angrefrist. Gravsteinen (sletta) hindrer at gamle kopier fra andre enheter
+      // gjenoppliver spilleren via synk i mellomtiden.
+      fam.papirkurv = fam.papirkurv || {};
+      fam.papirkurv[navnF] = { spiller: fam.players[navnF], ts: Date.now() };
+      delete fam.players[navnF];
+      fam.sletta = fam.sletta || {}; fam.sletta[navnF] = Date.now(); skriv = true; }
+  }
+  if (typeof body.gjenopprett === "string") { // angreknappen: hent fiskeren opp av papirkurven
+    const navnG = body.gjenopprett.trim().slice(0, 14);
+    const pk = fam.papirkurv && fam.papirkurv[navnG];
+    if (pk && pk.spiller && !egen(fam.players, navnG)) {
+      fam.players[navnG] = pk.spiller;
+      delete fam.papirkurv[navnG];
+      if (fam.sletta) delete fam.sletta[navnG];
+      skriv = true;
+    }
   }
   if (body.player) { flettSpiller(fam, body.player); skriv = true; }
+  if (fam.papirkurv) { // etter 90 dager er angrefristen ute — DA skjer den ekte slettingen
+    for (const [nvn, pk] of Object.entries(fam.papirkurv))
+      if (Date.now() - (+pk.ts || 0) > 90 * 864e5) { delete fam.papirkurv[nvn]; skriv = true; }
+    if (!Object.keys(fam.papirkurv).length) delete fam.papirkurv;
+  }
+  if (fam.sletta) { // gravsteinene håndheves: gamle kopier avvises, et NYTT liv (yngre ts) visker ut merket
+    for (const [nvn, ts] of Object.entries(fam.sletta)) {
+      const p = fam.players[nvn];
+      if (p && (+p.ts || 0) > +ts) { delete fam.sletta[nvn]; skriv = true; }
+      else if (p) { delete fam.players[nvn]; skriv = true; }
+      else if (Date.now() - +ts > 90 * 864e5) { delete fam.sletta[nvn]; skriv = true; } // 90 dager holder
+    }
+  }
   if (skriv) {
     fam.updatedAt = Date.now();
     await lager.setJSON(nokkel, fam); // kun endringer skriver — rene hentinger lar bloben ligge
   }
 
+  // Papirkurven sendes som SAMMENDRAG (navn + dato) — angreknappen i naustet trenger
+  // ikke selve spillerdataene, de blir liggende trygt i bloben til gjenopprettingen.
+  const kurv = {};
+  if (fam.papirkurv) for (const [nvn, pk] of Object.entries(fam.papirkurv)) kurv[nvn] = { ts: +pk.ts || 0 };
   return Response.json(
-    { players: fam.players },
+    { players: fam.players, papirkurv: kurv },
     { headers: { "Cache-Control": "no-store" } }
   );
 };
