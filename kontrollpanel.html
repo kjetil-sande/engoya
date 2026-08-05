@@ -21,7 +21,7 @@
     h1{font-size:1.5rem;margin:0 0 2px}
     .sub{color:var(--daempa);font-size:.86rem;margin:0 0 20px}
     h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.09em;color:var(--daempa);
-      margin:26px 0 10px;font-weight:600}
+      margin:44px 0 10px;font-weight:600} /* god luft opp til bolken over (eierens ønske 5. aug) */
     .rutenett{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
     .kort{background:var(--kort);border:1px solid var(--kant);border-radius:12px;padding:13px 15px}
     .tall{font-size:1.85rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
@@ -81,6 +81,14 @@
     .melding .liten{color:var(--daempa);font-size:.82rem;margin-top:10px}
     .fot{margin-top:26px;color:var(--daempa);font-size:.78rem;line-height:1.5}
     a{color:var(--gull)}
+    .bolk{display:block}
+    @media(min-width:1000px){ main{max-width:1400px}
+      .masonry{columns:2;column-gap:20px}
+      .masonry .bolk{break-inside:avoid;-webkit-column-break-inside:avoid} }
+    .topprad{display:flex;justify-content:space-between;gap:8px;font-size:.88rem;
+      padding:4px 0;border-bottom:1px solid var(--kant)}
+    .topprad b{font-variant-numeric:tabular-nums}
+    .topprad .plass{color:var(--daempa);width:26px;flex:none}
   </style>
 </head>
 <body>
@@ -339,6 +347,18 @@ function tegn(d){
     + kort(f.aktive30, "siste 30 dager")
     + '</div>';
 
+  var tl = d.toppliste || [];
+  if(tl.length){
+    h += '<h2><span class="ikon">🏆</span>Toppliste</h2>'
+      + '<div class="kort" style="border-left:3px solid var(--gull)">';
+    tl.forEach(function(r, i){
+      h += '<div class="topprad' + (i >= 10 ? ' topp100" style="display:none' : '') + '">'
+        + '<span class="plass">' + (i + 1) + '.</span><span style="flex:1">' + esc(r.navn) + '</span>'
+        + '<b>' + r.arter + ' arter · ' + r.trofe + ' troféer · ' + no(r.kr) + ' kr · ' + r.timer + ' t</b></div>';
+    });
+    if(tl.length > 10) h += '<button id="visTopp100" style="margin-top:10px;padding:6px 13px;font-size:.84rem">Vis topp 100</button>';
+    h += '</div>';
+  }
   h += '<h2><span class="ikon">🔁</span>Holder spillet på dem?</h2><div class="rutenett ret">'
     + kort(r.prosent == null ? "–" : r.prosent + " %",
            "av dem som begynte for over en uke siden fisker fortsatt",
@@ -371,7 +391,6 @@ function tegn(d){
     + kort(u.kampbelte, "kampbelte") + kort(u.kjoleribbe||0, "kjøleribbe")
     + kort(u.silkesnore||0, "silkesnøre") + kort(u.krabbeteiner||0, "krabbeteiner totalt")
     + kort(u.hummerteiner||0, "hummerteiner totalt") + kort(u.bunnliner||0, "bunnliner totalt")
-    + kort(u.harRolexProsjekt||0, "rolex-prosjekt i gang")
     + '</div>'
     + (u.stangFordeling ? '<div class="kort utst" style="margin-top:10px;border-left:3px solid var(--gull)">'
       + '<div class="merke" style="margin:0 0 7px">Stangfordeling</div>'
@@ -382,6 +401,7 @@ function tegn(d){
     + kort(no(ok.medianKr||0) + " kr", "median per fisker")
     + kort(no(ok.sumSolgtFisk||0) + " kr", "tjent på solgt fisk")
     + kort(no(ok.rikeste||0) + " kr", "rikeste fisker", "gull")
+    + kort(u.harRolexProsjekt||0, "rolex-prosjekt i gang")
     + '</div>';
 
   h += '<h2><span class="ikon">📜</span>Rustens bestillinger</h2><div class="rutenett best">'
@@ -390,6 +410,9 @@ function tegn(d){
     + kort(be.dagensTrukket||0, "har dagens lapp")
     + kort(be.dagensFerdig||0, "levert i dag", be.dagensFerdig ? "gronn" : "")
     + kort(be.dagensHentet||0, "pose hentet i dag")
+    + kort(no(be.snittFullfoerte||0), "fullførte lapper i snitt")
+    + kort(be.fulleSykluser||0, "har nådd lapp nr 7", be.fulleSykluser ? "gull" : "")
+    + kort(be.tipsDeltUt||0, "fisketips delt ut")
     + '</div>';
 
   h += '<h2><span class="ikon">💡</span>Rustens tips</h2><div class="rutenett tips">'
@@ -446,9 +469,17 @@ function tegn(d){
     + kort(f.tommeKoder, "tomme (ubrukte kort)")
     + '</div>';
 
+  h = '<div class="masonry"><section class="bolk">'
+    + h.replace(/<h2>/g, '</section><section class="bolk"><h2>')
+    + '</section></div>';
   $("#ut").innerHTML = h;
+  var v100 = $("#visTopp100");
+  if(v100) v100.onclick = function(){
+    document.querySelectorAll(".topprad.topp100").forEach(function(r){ r.style.display = ""; });
+    v100.remove();
+  };
   $("#sub").textContent = "Hentet " + new Date(d.hentet).toLocaleString("nb");
-  $("#fot").textContent = d.merknad + " Tallene er samlet — ingen navn forlater serveren.";
+  $("#fot").textContent = d.merknad + " Tallene er samlet; kallenavn vises kun i topplista, bak innloggingen.";
 }
 
 // Begge hentingene MÅ bruke samme innlogging. Ett sted å endre den.

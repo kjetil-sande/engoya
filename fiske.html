@@ -687,6 +687,8 @@
   .slot.locked{opacity:.72}
   .slot.locked .nm{color:var(--ink-soft)}
   .slot.trophy{border-color:var(--gold);background:#fdf3d6}
+  .slot.srar1{border-color:#9cc4e0} /* sjelden: blå ramme */
+  .slot.srar2{border-color:var(--gold);border-width:2.5px} /* legendarisk: gullramme */
   .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .tabs button{flex:1 1 auto;min-width:0;border:0;background:var(--paper-2);color:var(--wood-dark);font-weight:700;padding:8px 6px;border-radius:9px;cursor:pointer;white-space:nowrap}
   @media (max-width:389px){ .tabs{gap:4px} .tabs button{padding:7px 4px;font-size:13px} }
@@ -2511,19 +2513,24 @@ function bestillingKandidater(niv,mnd){ return BESTILLINGER.filter(function(b){
   if(b.treng==="teine"&&(P.pots.owned||0)<1)return false;
   if(b.treng==="vinsj"&&!P.vinsj)return false;
   if((+b.krav.krabbe||0)>4&&(P.pots.owned||0)<2)return false; // store krabbelag krever to teiner
-  if(b.id==="blaastaal"&&!(P.tips||[]).some(function(t){return t&&t.k==="blaastal-borstemark"}))return false;
   return Object.keys(b.krav).every(function(a){return bestillingArtOK(a,mnd)}); }); }
 function bestillingTrekk(){ // aldri re-trekk samme dag — lagret krav er sannheten
   var d=bestillingsDag(), mnd=new Date(Date.now()-4*3600e3).getMonth();
   var rng=mulberry32(navnehash(P.name)^d);
-  // SYKLUSEN: dagene 1–5 er lette, 6–10 middels, 11–13 krevende, og dag 14 er
-  // syklusfiskens dag — så tung som spilleren tåler. Utstyret gater uansett nedover.
-  var pos=syklusPos(d), niv=pos<5?1:pos<10?2:pos<13?3:4;
+  // SYKLUSEN (5. aug): teller FULLFØRTE lapper, ikke kalenderdager — hull i spillingen
+  // koster ingenting. Lapp 1–6 er vanlige fisk + krabbe/hummer i sesong, stigende
+  // vanskelighet. Lapp nr 7 er krevende, inneholder en sjelden art, og har tipset med.
+  var ferd=P.bestFerdige||0, pos=syklusPos(ferd), niv=pos<3?1:pos<5?2:pos<6?3:4;
   var ms=maksSone(); niv=Math.min(niv, ms===0?2:ms===1?3:4); // aldri be om mer enn utstyret rekker
-  if(arterFanget(P)<5)niv=1; // ferske fiskere får lette lapper uansett dag
-  var kand=null, sykId=(pos===13)?syklusTips(d):null, sykArt=sykId?TIPS_DEF[sykId].art:null;
+  if(arterFanget(P)<5)niv=1; // ferske fiskere får lette lapper uansett
+  var kand=null, sykId=(pos===6)?syklusTips(ferd):null, sykArt=sykId?TIPS_DEF[sykId].art:null;
+  function artRar(a){ var f=byKey[a]; return f?(f.rar||0):0; } // krabbe/hummer teller som vanlige
   while(niv>=1){ kand=bestillingKandidater(niv,mnd);
-    if(kand.length&&sykArt){ var med=kand.filter(function(b){return b.krav[sykArt]}); if(med.length)kand=med; } // dag 14: helst en lapp med syklusfisken i
+    if(kand.length){ var rf=(pos===6)
+        ? kand.filter(function(b){return Object.keys(b.krav).some(function(a){return artRar(a)>=1})})   // nr 7: MED sjelden art
+        : kand.filter(function(b){return Object.keys(b.krav).every(function(a){return artRar(a)===0})}); // 1–6: bare vanlige
+      if(rf.length)kand=rf; } // finnes ingen som passer regelen denne måneden, gjelder lappen likevel
+    if(kand.length&&sykArt){ var med=kand.filter(function(b){return b.krav[sykArt]}); if(med.length)kand=med; } // helst en lapp med tipsfisken i
     if(kand.length)break; niv--; } // nivå 1 kan aldri bli tom (rene z0-arter, høy ss)
   if(!kand||!kand.length)return null; // skulle aldri skje — men en dag uten lapp er bedre enn krasj
   // felles-først: dagens felleskandidat trekkes på dagen ALENE (dailyFish-formelen), så
@@ -2531,13 +2538,15 @@ function bestillingTrekk(){ // aldri re-trekk samme dag — lagret krav er sannh
   var felles=BESTILLINGER[((d*9301+49297)%233280)%BESTILLINGER.length];
   var valgt=(felles&&kand.indexOf(felles)>=0)?felles:kand[Math.floor(rng()*kand.length)];
   var krav={}; Object.keys(valgt.krav).forEach(function(k){krav[k]=valgt.krav[k];}); // KOPI — katalogendringer rører aldri en pågående dag
-  return {dag:d, id:valgt.id, krav:krav, lev:{}, ferdig:false, hentet:false}; }
+  var ut={dag:d, id:valgt.id, krav:krav, lev:{}, ferdig:false, hentet:false};
+  if(sykId)ut.tipsId=sykId; // lapp nr 7: Rustens råd følger lappen fra første stund
+  return ut; }
 function bestillingSjekk(){ if(!P)return null; var d=bestillingsDag();
   if(P.bestilling&&P.bestilling.dag===d)return P.bestilling;
   if(P.bestilling&&P.bestilling.ferdig&&!P.bestilling.hentet)return P.bestilling; // uhentet pose overlever dagsskiftet — aldri tapt
   P.bestilling=bestillingTrekk();
-  if(P.bestilling&&syklusPos(P.bestilling.dag)===13){ var sid=syklusTips(P.bestilling.dag);
-    if(sid){ P.bestilling.tipsId=sid; tipsGi(sid); } } // dag 14: Rustens råd følger lappen — sted og redskap rett i boka
+  var sid=P.bestilling&&P.bestilling.tipsId;
+  if(sid){ tipsGi(sid); } // tipset på lappen skrives i boka — tipsGi er idempotent, så resynk er ufarlig
   saveAll(); return P.bestilling; }
 function bestillingTell(art,n){ // det som kom over kaikanten og ble til penger, teller
   if(!P)return; var b=bestillingSjekk(); if(!b||b.ferdig)return;
@@ -2622,22 +2631,32 @@ function tipsFaktor(f){ // tipseierens personlige fordel — KUN napp-vekting, a
 // tyngre utover, og den FJORTANDE dagen kjem den krevjande fisken. Fullfører du henne,
 // ligg tipset for akkurat den fisken i posen — og legg seg på artskortet i Mi bok.
 // ~2 tips i måneden: tynt smurt utover, slik oppmerksomheten varer.
-function syklusPos(dag){ return ((dag%14)+14)%14; } // 0–12 vanlige dager, 13 = krevende fisk
-function tipsNeste(){ // reserve-velger: verd 1 → 2 → 3, milepæl-tipsene (kveita) aller sist
+function syklusPos(ferdige){ return ((ferdige%7)+7)%7; } // teller FULLFØRTE lapper: 0–5 vanlige, 6 = lapp nr 7 (krevende, sjelden fisk, tips)
+function tipsRang(id){ var td=TIPS_DEF[id]; if(!td)return 0; if(td.milepael)return 2;
+  var f=byKey[td.art]; return f?Math.min(2,f.rar||0):0; } // 0 vanlige, 1 sjeldne, 2 legendariske/milepæl
+function alleSjeldneFanget(){ return FISH.every(function(f){ return (f.rar||0)!==1 || (P.caught&&P.caught[f.k]); }); }
+function tipsPoolNaa(){ // trappa: alle vanlige tips først, så sjeldne, og legendariske
+  // først når alle sjeldne FISKER er fanget (eierens stige, 5. aug)
   var eid={}; (P.tips||[]).forEach(function(t){ if(t)eid[t.k]=1; });
-  var alle=Object.keys(TIPS_DEF).filter(function(k){return !eid[k]});
-  alle.sort(function(a,b){ var A=TIPS_DEF[a],B=TIPS_DEF[b];
-    if(!!A.milepael!==!!B.milepael)return A.milepael?1:-1;
+  var alle=Object.keys(TIPS_DEF);
+  var r0=alle.filter(function(k){return tipsRang(k)===0&&!eid[k]});
+  if(r0.length)return r0;
+  var r1=alle.filter(function(k){return tipsRang(k)===1&&!eid[k]});
+  if(r1.length)return r1;
+  if(!alleSjeldneFanget())return []; // Rusten har lært bort alt han tør — fang de sjeldne først
+  return alle.filter(function(k){return tipsRang(k)===2&&!eid[k]}); }
+function tipsNeste(){ // reserve-velger: trappa (vanlig → sjelden → legendarisk), verd stigende innenfor
+  var pool=tipsPoolNaa();
+  pool.sort(function(a,b){ var A=TIPS_DEF[a],B=TIPS_DEF[b];
     if(A.verd!==B.verd)return A.verd-B.verd; return a<b?-1:1; });
-  return alle.length?alle[0]:null; }
-function syklusTips(dag){ // syklusens fisk: felles rotasjon på syklusnummeret (kjøkkenbordprat),
-  // men aldri utenfor det SPILLEREN kan nå — da glir vi deterministisk til neste i rekka
-  var pool=Object.keys(TIPS_DEF).filter(function(k){return !TIPS_DEF[k].milepael});
-  var eid={}; (P.tips||[]).forEach(function(t){ if(t)eid[t.k]=1; });
-  var c=Math.floor(dag/14), start=((c*9301+49297)%233280)%pool.length;
+  return pool.length?pool[0]:null; }
+function syklusTips(ferdige){ // lapp nr 7 sitt tips: rotasjon i GJELDENDE trinn av trappa,
+  // aldri utenfor det spilleren kan nå — da glir vi deterministisk til neste i rekka
+  var pool=tipsPoolNaa(); if(!pool.length)return null;
+  var c=Math.floor(ferdige/7), start=((c*9301+49297)%233280)%pool.length;
   for(var i=0;i<pool.length;i++){ var id=pool[(start+i)%pool.length], td=TIPS_DEF[id], f=byKey[td.art];
-    if(eid[id])continue; if(f&&f.z<=maksSone()&&!fredetNaa(f))return id; }
-  return tipsNeste(); } // alt nådd og eid → kveitetipset står for tur
+    if(f&&f.z<=maksSone()&&!fredetNaa(f))return id; }
+  return tipsNeste(); } // ingen i rekkevidde → trappas neste uansett
 // Tipset deles ut I DET LAPPEN TREKKES på dag 14 — Rusten sender ingen etter storfisken
 // uten råd om korleis. Ingen krav om fullførte dager først; boklinja legger seg straks.
 function bestillingVarsel(){ var v=$("#bestVarsel"); if(!v||!P)return;
@@ -4839,15 +4858,18 @@ function starsHTML(bestLen,f){ // stjerner = hvor stor rekordfangsten er ift. ar
   var t=(bestLen-f.len[0])/(f.len[1]-f.len[0]); if(t<0)t=0; if(t>1)t=1; var s=t*5, h='<div class="stars" title="'+(Math.round(s*10)/10)+' av 5 – størrelse mot artens maks">';
   for(var i=0;i<5;i++){ var src=s>=i+1?"stjerne-full":(s>=i+0.5?"stjerne-halv":"stjerne-tom"); h+='<img src="spill/assets/'+src+'.png" alt="">'; }
   return h+'</div>'; }
+function tipsForArt(k){ var ut=[]; (P.tips||[]).forEach(function(t){ if(t&&TIPS_DEF[t.k]&&TIPS_DEF[t.k].art===k)ut.push(t.k); }); return ut; }
 function renderMine(){
   var g=document.createElement("div"); g.className="bookgrid";
-  FISH.forEach(function(f){
+  // Samlerekkefølgen (5. aug): alle vanlige først, så sjeldne, til slutt legendariske —
+  // innbyrdes beholder artene sin kjente rekkefølge (sort er stabil).
+  FISH.slice().sort(function(a,b){ return (a.rar||0)-(b.rar||0); }).forEach(function(f){
     var rec=P.caught[f.k];
-    var slot=document.createElement("div"); slot.className="slot"+(rec?"":" locked")+(f.trophy?" trophy":"");
+    var slot=document.createElement("div"); slot.className="slot"+(rec?"":" locked")+(f.trophy?" trophy":"")+" srar"+(f.rar||0);
     slot.style.cursor="pointer"; slot.onclick=function(){ renderArtDetalj(f); }; // min egen side om arten
     if(rec){
       var c=document.createElement("canvas"); slot.appendChild(c); drawFish(c,f,56,34,false);
-      slot.insertAdjacentHTML("beforeend",'<div class="nm">'+f.n+(rec.gold?' <span title="Gyllen fanget!">✨</span>':'')+'</div><div class="best">'+rec.bestLen+' cm · '+(rec.bestWt||"?")+' kg · '+rec.count+' stk</div>'+(rec.redskap?'<div class="best redsk" title="'+esc(rec.redskap)+'">🪝 '+esc(rec.redskap)+'</div>':'')+starsHTML(rec.bestLen,f)+'<span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>');
+      slot.insertAdjacentHTML("beforeend",'<div class="nm">'+f.n+(rec.gold?' <span title="Gyllen fanget!">✨</span>':'')+(tipsForArt(f.k).length?' <span title="Rusten har gitt deg råd om denne">💡</span>':'')+'</div><div class="best">'+rec.bestLen+' cm · '+(rec.bestWt||"?")+' kg · '+rec.count+' stk</div>'+(rec.redskap?'<div class="best redsk" title="'+esc(rec.redskap)+'">🪝 '+esc(rec.redskap)+'</div>':'')+starsHTML(rec.bestLen,f)+'<span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>');
     } else {
       var c2=document.createElement("canvas"); slot.appendChild(c2); drawFish(c2,f,56,34,true);
       slot.insertAdjacentHTML("beforeend",'<div class="nm">'+(f.trophy?"???":f.n)+'</div><div class="best">ikke fanget</div>'+'<span class="rlab r'+(f.rar||0)+'">'+RARN[f.rar||0]+'</span>');
@@ -4873,6 +4895,8 @@ function renderArtDetalj(f){ // MIN side om arten (familiens tall står i Rekord
     if(r.rts) box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Rekorden er fra</b><span>'+tidSiden(r.rts)+'</span></div>');
     box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Stjerner</b><span>'+starsHTML(r.bestLen,f)+'</span></div>');
   }
+  tipsForArt(f.k).forEach(function(id){ // Rustens råd hører hjemme på artens egen side i boka
+    box.insertAdjacentHTML("beforeend",'<div class="frow"><b>Rustens råd</b><span>'+esc(tipsBokLinje(id))+'</span></div>'); });
   $("#artTilbake").onclick=function(){ renderMine(); };
 }
 function trofeDef(k){ for(var i=0;i<FUNN.length;i++)if(FUNN[i].k===k)return FUNN[i]; return null; }
@@ -5602,6 +5626,8 @@ function drawScene(dt){
   drawSilhuett(dt);
   // små luftbobler som stiger opp gjennom vannet (fader ut før overflata)
   drawBubbles(dt, Math.max(0,wlY), wlY);
+  drawOyne(dt);    // øynene lengst bak i mørket
+  drawKrabber(dt); // krabbene på sanden, under fisken
   // ambient silhuett-fisk som krysser skjermen (1–5, 40–80 % opasitet)
   drawAmbient(dt,colTop);
   // maneter driver forbi foran fiskestimen
@@ -5770,6 +5796,57 @@ function pickAmbient(){
     var k=(f.trophy&&kveiteFinnes)?0:(f.rar===2?0.06:f.rar===1?0.35:1)*w*sesongFaktor(f); tot+=k; return k; });
   var r=Math.random()*tot; for(var i=0;i<pool.length;i++){ r-=ws[i]; if(r<=0)return pool[i]; } return pool[0]; }
 var BUNNFRAC=[0.89,0.86,0.93,0.95]; // andel av bakgrunnen som er VANN — under dette ligger sanden
+/* ---------- Bunnliv (5. aug): krabber på Grunt-bunnen, øyepar i mørket der nede ---------- */
+var krabbeImg={}; ["bunnkrabbe-gronn","bunnkrabbe-roed","eremittkreps"].forEach(function(n){
+  var im=new Image(); im.onerror=function(){}; im.src="spill/assets/"+n+".png"; krabbeImg[n]=im; });
+var krabber=[], krabbeDepth=-1;
+function drawKrabber(dt){
+  if(depth!==0)return; var g=colGeom(); if(!g)return;
+  var sand=g.imgH*(BUNNFRAC[0]||0.89);
+  if(camY+H<sand-40)return; // bunnen er ikke i bildet
+  if(krabbeDepth!==depth||!krabber.length){ krabbeDepth=depth; krabber=[];
+    var typer=["bunnkrabbe-gronn","bunnkrabbe-roed","bunnkrabbe-gronn","eremittkreps"];
+    for(var i=0;i<4;i++)krabber.push({x:0.10+0.75*Math.random(), dir:Math.random()<0.5?1:-1,
+      fart:0.010+Math.random()*0.014, ty:typer[i], t:Math.random()*7, pause:0}); }
+  for(var j=0;j<krabber.length;j++){ var k=krabber[j]; k.t+=dt;
+    if(k.pause>0){ k.pause-=dt; }
+    else{ k.x+=k.dir*k.fart*dt*(0.35+0.65*Math.abs(Math.sin(k.t*7))); // rykkete sidelengs tusling
+      if(Math.random()<dt*0.08)k.pause=0.6+Math.random()*1.8;         // stopper og «tenker»
+      if(k.x<0.06||k.x>0.92){ k.dir*=-1; k.x=Math.max(0.06,Math.min(0.92,k.x)); } }
+    var im=krabbeImg[k.ty]; if(!im||!im.complete||!im.naturalWidth)continue;
+    var kw=mn*(k.ty==="eremittkreps"?0.045:0.058), kh=kw*im.naturalHeight/im.naturalWidth;
+    var y=sand-camY-kh*0.75+Math.sin(k.t*7)*1.2;
+    if(y<-40||y>H+40)continue;
+    cx.save(); cx.globalAlpha=0.92;
+    if(k.dir<0){ cx.translate(W*k.x+kw/2,y); cx.scale(-1,1); cx.drawImage(im,0,0,kw,kh); }
+    else cx.drawImage(im,W*k.x-kw/2,y,kw,kh);
+    cx.restore(); }
+}
+var dypOyne=[], dypOyneD=-1;
+function drawOyne(dt){ // blinkende øyepar i mørket — gulgrønne på Dypt, isblå i Djuphavet
+  if(depth<2)return; var g=colGeom(); if(!g)return;
+  if(camY<g.imgH*0.30)return; // først når man er godt nede i mørket
+  if(dypOyneD!==depth||!dypOyne.length){ dypOyneD=depth; dypOyne=[];
+    for(var i=0;i<5;i++)dypOyne.push({x:0.06+0.88*Math.random(), fy:0.45+0.5*Math.random(),
+      vent:3+Math.random()*14, dur:0, t:Math.random()*9, gap:0.008+Math.random()*0.010, sc:0.7+Math.random()*0.9}); }
+  var farge=depth===2?[196,232,120]:[150,214,255];
+  for(var j=0;j<dypOyne.length;j++){ var o=dypOyne[j]; o.t+=dt;
+    if(o.dur<=0){ if(o.t>=o.vent){ o.dur=1.6+Math.random()*2.6; o.t=0;
+        o.x=0.06+0.88*Math.random(); o.fy=0.45+0.5*Math.random(); } continue; }
+    if(o.t>=o.dur){ o.dur=0; o.t=0; o.vent=5+Math.random()*18; continue; }
+    var wy=g.imgH*(o.fy*(BUNNFRAC[depth]||0.9)), y=wy-camY;
+    if(y<-20||y>H+20)continue;
+    var f=o.t/o.dur, a=Math.sin(f*Math.PI)*0.55, r=mn*0.006*o.sc, gapx=W*o.gap;
+    var blunk=(f>0.44&&f<0.52)?0.12:1; // et lite blunk midt i — de er i live
+    cx.save(); cx.globalCompositeOperation="screen";
+    var gl=cx.createRadialGradient(W*o.x,y,0,W*o.x,y,r*7);
+    gl.addColorStop(0,"rgba("+farge[0]+","+farge[1]+","+farge[2]+","+(a*0.30).toFixed(3)+")");
+    gl.addColorStop(1,"rgba("+farge[0]+","+farge[1]+","+farge[2]+",0)");
+    cx.fillStyle=gl; cx.fillRect(W*o.x-r*7,y-r*7,r*14,r*14);
+    cx.fillStyle="rgba("+farge[0]+","+farge[1]+","+farge[2]+","+(a*blunk).toFixed(3)+")";
+    cx.beginPath(); cx.arc(W*o.x-gapx,y,r,0,6.283); cx.arc(W*o.x+gapx,y,r,0,6.283); cx.fill();
+    cx.restore(); }
+}
 // Jo mindre fisken er, jo kvassare rykk: ein 20 cm sei piler, ei to meters
 // kveite sig. Same faktor for bakgrunnsfisk og rømlingar, så regelen kjennest
 // som éin naturlov og ikkje to tilfeldigheiter.

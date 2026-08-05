@@ -2,8 +2,9 @@
 //
 // Alt her regnes ut av data som ALLEREDE ligger lagret for at spillet skal virke
 // på tvers av enheter. Ingenting samles inn for statistikkens skyld, og ingenting
-// forlater denne funksjonen som kan peke på en enkeltperson: kallenavn brukes bare
-// til å telle unike fiskere, og sendes aldri ut.
+// forlater denne funksjonen som kan peke på en enkeltperson — med ETT unntak
+// (eierens valg 5. aug): topplista sender kallenavn, bak panelets dør. Resten
+// av svaret er navnløst, og kallenavn er selvvalgte spillernavn, aldri fulle navn.
 //
 // Låst med STATS_NOKKEL (Netlify → Environment variables). Mangler nøkkelen, er
 // panelet stengt — det faller ALDRI tilbake til åpent.
@@ -178,6 +179,13 @@ export default async (req) => {
   }
 
   const alle = [...fiskere.values()];
+  // Topplista er ENESTE sted kallenavn forlater serveren (eierens valg 5. aug) —
+  // panelet står uansett bak Google-/nøkkeldøra. Resten av svaret er navnløst.
+  const toppliste = [...fiskere.entries()]
+    .map(([navn, f]) => ({ navn, arter: f.arter, trofe: f.trofe, kr: f.kr,
+      timer: Math.round(Object.values(f.dager).reduce((a, b) => a + b, 0) / 3600000) }))
+    .sort((a, b) => b.arter - a.arter || b.trofe - a.trofe || b.kr - a.kr)
+    .slice(0, 100);
   const aktivInnen = (f, d) => Object.keys(f.dager).some((k) => iDag - dagNr(k) < d);
   const spiltMinutt = (f) => Math.round(Object.values(f.dager).reduce((a, b) => a + b, 0) / 60000);
 
@@ -197,6 +205,8 @@ export default async (req) => {
 
   return Response.json({
     hentet: new Date(naa).toISOString(),
+
+    toppliste,
 
     folk: {
       fiskere: alle.length,
@@ -277,6 +287,9 @@ export default async (req) => {
       dagensTrukket: alle.filter((f) => f.best && f.best.dag === serverBestillingsDag()).length,
       dagensFerdig: alle.filter((f) => f.best && f.best.dag === serverBestillingsDag() && f.best.ferdig).length,
       dagensHentet: alle.filter((f) => f.best && f.best.dag === serverBestillingsDag() && f.best.hentet).length,
+      snittFullfoerte: alle.length ? +(alle.reduce((a, f) => a + f.bestFerdige, 0) / alle.length).toFixed(1) : 0,
+      fulleSykluser: alle.filter((f) => f.bestFerdige >= 7).length, // har nådd lapp nr 7 minst én gang
+      tipsDeltUt: alle.reduce((a, f) => a + f.tipsAnt, 0),
     },
 
     tips: {
