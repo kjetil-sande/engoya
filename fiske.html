@@ -409,6 +409,7 @@
   #snelleImg{width:var(--snelle);height:var(--snelle);object-fit:contain;image-rendering:pixelated;
     will-change:transform;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))} /* roteres jevnt av snelleSpinn */
   /* snella ER knappen når snøret er ute: ren sprite, ingen gullflate eller ramme */
+  #actionBtn{touch-action:none;-webkit-user-select:none;user-select:none} /* Android: fingerglidning skal ALDRI bli scroll → pointercancel → mistet grep */
   #actionBtn.snellebtn{width:var(--snelle);height:var(--snelle);border-radius:50%;padding:0;border:0;
     background-color:transparent!important;background-size:contain;background-position:center;
     background-repeat:no-repeat;image-rendering:pixelated;box-shadow:none;color:transparent}
@@ -1079,6 +1080,16 @@ var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&
 /* ---------- Lyd: tema-musikk + syntetiserte effekter (Web Audio) ---------- */
 var Snd=(function(){
   var ctx=null, muted=false, theme=null, ringtone=null, reelT=0;
+  // iPhone-sannheten (6. aug): iOS Safari IGNORERER theme.volume — HTMLAudio kan bare
+  // volumstyres via WebAudio-gain. Temaet rutes derfor gjennom en gain-node når
+  // konteksten finnes; elementet pauses fortsatt aldri (lydankeret). Fallback: volume.
+  var temaKilde=null, temaGain=null;
+  function temaKobling(){ if(temaGain||!theme)return; var c=AC(); if(!c)return;
+    try{ temaKilde=c.createMediaElementSource(theme); temaGain=c.createGain();
+      temaGain.gain.value=TEMA_V; temaKilde.connect(temaGain); temaGain.connect(c.destination);
+      theme.volume=1; }catch(e){} } // koblingen kan bare gjøres én gang per element
+  function temaVol(v){ if(temaGain)temaGain.gain.value=v; else if(theme)theme.volume=v; }
+  function temaVolLes(){ return temaGain?temaGain.gain.value:(theme?theme.volume:0); }
   // Lobbyen: svakt → mellomsvakt. Ute på havet er sjøen 0,187 og måkane 0,22.
   var LOBBY_HAV0=0.060, LOBBY_HAV1=0.155, LOBBY_FUGL0=0.050, LOBBY_FUGL1=0.170;
   var LOBBY_FADE=4200, TEMA_V=0.45, TEMA_FADE=2200;   // opninga er 1000 stille + 2800 pan
@@ -1261,14 +1272,15 @@ var Snd=(function(){
       if(ned)this.fadeLoopVol("undervann", 0.05+0.29*dyp, 0.6); },
     overflateStille:function(){ return djupSone() && dykket && dypNa>0.8; }, // til enkeltlydar
     _maal:function(){ var ut={sone:soneNa, dykket:dykket, dyp:dypNa, stille:this.overflateStille(),
-        tema:theme?{spelar:!theme.paused, vol:+theme.volume.toFixed(3)}:null};
+        tema:theme?{spelar:!theme.paused, vol:+temaVolLes().toFixed(3), gain:!!temaGain}:null};
       for(var k in loops){ var L=loops[k];
         ut[k]={vil:!!L.want, vol:+(L.vol||0).toFixed(4), gain:(L.node&&L.node.g)? +L.node.g.gain.value.toFixed(4) : null}; }
       return ut; },
-    themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; theme.volume=TEMA_V; }
+    themeOn:function(){ if(!theme){ theme=new Audio("spill/lyd/lobby-tema.mp3"); theme.loop=true; }
+      temaKobling(); if(!temaGain&&theme.volume!==1)theme.volume=TEMA_V;
       if(temaT){clearInterval(temaT); temaT=null;}   // snudde du i døra, skal han ikkje halde fram med å fade ut
-      if(lobbyFerdig)theme.volume=TEMA_V;
-      if(!theme.paused&&theme.volume===0)theme.volume=TEMA_V; // spilte stumt (iOS-vernet) — skru opp
+      if(lobbyFerdig)temaVol(TEMA_V);
+      if(!theme.paused&&temaVolLes()===0)temaVol(TEMA_V); // spilte stumt (iOS-vernet) — skru opp
       theme.muted=muted; var pr=theme.play(); if(pr&&pr.catch)pr.catch(function(){}); return pr; },
     // Lobbyen har sjø og måkar òg, men lågare enn ute på havet, og dei sig opp
     // medan biletet panorerer: svakt før scrollen, mellomsvakt når logoen har landa.
@@ -1285,7 +1297,7 @@ var Snd=(function(){
     _lobbyFade:function(){
       if(lobbyFerdig||lobbyT)return;
       var self=this, t0=Date.now();
-      if(theme)theme.volume=0;
+      temaKobling(); temaVol(0);
       lobbyT=setInterval(function(){
         // forlet du lobbyen midt i fadet, eig ambienceOn() miksen — då slepper vi taket
         var m=document.getElementById("menu");
@@ -1293,7 +1305,7 @@ var Snd=(function(){
         var u=Math.min(1,(Date.now()-t0)/LOBBY_FADE), e=u*(2-u);   // ease-out
         self.settLoopVol("sea",  LOBBY_HAV0 +(LOBBY_HAV1 -LOBBY_HAV0 )*e);
         self.settLoopVol("bird", LOBBY_FUGL0+(LOBBY_FUGL1-LOBBY_FUGL0)*e);
-        if(theme)theme.volume=TEMA_V*Math.min(1,(Date.now()-t0)/TEMA_FADE);
+        temaVol(TEMA_V*Math.min(1,(Date.now()-t0)/TEMA_FADE));
         if(u>=1){ clearInterval(lobbyT); lobbyT=null; lobbyFerdig=true; }
       },110);
     },
@@ -1309,15 +1321,15 @@ var Snd=(function(){
     themeOff:function(){ if(!theme||theme.paused)return;
       if(lobbyT){ clearInterval(lobbyT); lobbyT=null; } lobbyFerdig=true; // innfadingen slipper taket — ellers slåss den mot utfadingen
       if(temaT){clearInterval(temaT); temaT=null;}
-      var v0=theme.volume, t0=Date.now();
+      var v0=temaVolLes(), t0=Date.now();
       temaT=setInterval(function(){
         var u=Math.min(1,(Date.now()-t0)/TEMA_UT);
-        theme.volume=Math.max(0,v0*(1-u));
+        temaVol(Math.max(0,v0*(1-u)));
         // iOS-vern: temaet PAUSES ALDRI — det spiller videre stumt. Når HTMLAudio pauses,
         // slipper Safari lydsesjonen, WebAudio-konteksten blir avbrutt, og ALL lyd dør
         // («musikken fades ut og alt blir stille», rapportert 4. aug). Et stumt loop
         // koster ingenting og holder sesjonen åpen. themeOn() skrur bare volumet opp.
-        if(u>=1){ clearInterval(temaT); temaT=null; theme.volume=0; }
+        if(u>=1){ clearInterval(temaT); temaT=null; temaVol(0); }
       },60);
     },
     click:function(){ if(buffers.klikk1||buffers.klikk2){ altClick=!altClick; oneShot(altClick&&buffers.klikk1?"klikk1":"klikk2"); } else beep(430,0.05,"square",0.05,320); },
@@ -3241,7 +3253,8 @@ function land(){
   if(f.k==="havmus"&&depth===2) rustenSier("havmus",1500);
   if(erSkrei(f)) rustenSier("skrei",1500);
   var stor=storFiskOrd(f,len);
-  if(stor) setTimeout(function(){ notice("«"+stor+"» — Rusten"); }, 1500);
+  if(stor&&!sagtIOkta["stor_"+f.k]){ sagtIOkta["stor_"+f.k]=1; // «Ska sei!» er morosamt FYRSTE gong i økta — så held Rusten munn
+    setTimeout(function(){ notice("«"+stor+"» — Rusten"); }, 1500); }
   else rustenSier("art_"+f.k,1600); // artspraten — berre om Rusten har noko å seie om nett denne
   dogShow(0,7); Snd.gladDog(); // fisken er i båten — hunden bjeffer av glede
   if(goldCatch||f.rar===2) setTimeout(Snd.fiskerJubel,400);      // fiskeren jubler over storfangst
@@ -3677,6 +3690,10 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"aalikar",e:"🪣",n:"Ål i eit gammalt kar",kr:0,w:5,img:"funn-aal-i-kar.png",trofeKun:true,t:"Han hadde budd der ei stund. Vi bar karet ut på djupet og velta det."},
  {k:"hummerstrikk",e:"🦞",n:"Hummer med strikk på klørne",kr:220,w:5,img:"funn-hummer-strikk.png",hummer:true,levande:true,t:"Nokon mista henne på veg heim. No er ho vår — om sesongen tillèt det."},
  {k:"nisereskalle",e:"💀",n:"Nisereskalle",kr:0,w:3,img:"funn-nisereskalle.png",djup:true,trofeKun:true,t:"Rein og kvit. Ho svømte her lenge før nokon av oss."},
+
+ // Bunnlivet kan hamne i teina (6. aug) — same artar som tuslar på sanden ved Kvitholmen
+ {k:"strandkrabbe",e:"🦀",n:"Strandkrabbe, grøn og sinna",kr:15,w:7,img:"bunnkrabbe-gronn.png",levande:true,t:"Lita, grøn og heilt overtydd om at ho eig teina. Rusten kjøper ho til agn."},
+ {k:"eremitt",e:"🐚",n:"Eremittkreps på flyttefot",kr:0,w:5,img:"eremittkreps.png",trofeKun:true,t:"Han bar huset sitt inn i teina og nekta å flytte ut. No står han i skapet — med huset."},
 
  // Raritetane frå 5. august — tinga folk har mista, og tinga dei helst skulle mista
  {k:"supertruse",e:"🩲",n:"Truse med superheltmerke",kr:0,w:3,img:"funn-superhelt-truse.png",trofeKun:true,t:"Vaska hundre gonger og framleis blå. Nokon her ute var uovervinneleg ein gong."},
@@ -5861,17 +5878,32 @@ function drawKrabber(dt){
   if(krabbeDepth!==depth||!krabber.length){ krabbeDepth=depth; krabber=[];
     var typer=["bunnkrabbe-gronn","bunnkrabbe-roed","bunnkrabbe-gronn","eremittkreps"];
     for(var i=0;i<4;i++)krabber.push({x:0.10+0.75*Math.random(), dir:Math.random()<0.5?1:-1,
-      fart:0.010+Math.random()*0.014, ty:typer[i], t:Math.random()*7, pause:0}); }
+      fart:0.012, ty:typer[i], t:Math.random()*7, mt:null, m:"ro", grav:0, skvett:0}); }
+  var sandSkjermY=sand-camY;
   for(var j=0;j<krabber.length;j++){ var k=krabber[j]; k.t+=dt;
-    if(k.pause>0){ k.pause-=dt; if(k.pause<=0&&Math.random()<0.5)k.dir*=-1; } // ny retning når han våkner — litt random
-    else{ k.x+=k.dir*k.fart*0.22*dt;                                     // kjempesakte sig, ingen rykk
-      if(Math.random()<dt*0.55)k.pause=3+Math.random()*6;                // står mest helt i ro
+    // Tilstander: «ro» (oftest), «gaa» (byks i vekslende tempo), «grav» (ned i sanden).
+    if(k.mt==null){ k.m="ro"; k.mt=1+Math.random()*3; k.grav=0; }
+    k.mt-=dt;
+    if(k.mt<=0){ var r=Math.random();
+      if(r<0.55){ k.m="ro"; k.mt=2+Math.random()*6; }
+      else if(r<0.90){ k.m="gaa"; k.mt=0.7+Math.random()*1.8;
+        k.dir=Math.random()<0.5?-1:1; k.fart=0.006+Math.random()*0.045; } // noen byks kjappe, noen sige
+      else { k.m="grav"; k.mt=3+Math.random()*4; } }
+    // Sluken nærmer seg bunnen like ved? Da hender det krabben skvetter unna.
+    if(phase!=="idle"&&k.skvett<=0&&typeof lureSX==="number"&&typeof lureSY==="number"&&lureSY>sandSkjermY-70){
+      var dxl=W*k.x-lureSX;
+      if(Math.abs(dxl)<W*0.16&&Math.random()<dt*1.5){ k.m="gaa"; k.mt=0.8;
+        k.dir=dxl<0?-1:1; k.fart=0.055; k.skvett=5+Math.random()*6; } } // og så trenger han en pust
+    if(k.skvett>0)k.skvett-=dt;
+    if(k.m==="gaa"){ k.x+=k.dir*k.fart*dt;
       if(k.x<0.06||k.x>0.92){ k.dir*=-1; k.x=Math.max(0.06,Math.min(0.92,k.x)); } }
+    k.grav=Math.max(0,Math.min(1,(k.grav||0)+(k.m==="grav"?dt*1.6:-dt*1.6))); // glir ned i og opp av sanden
     var im=krabbeImg[k.ty]; if(!im||!im.complete||!im.naturalWidth)continue;
     var kw=mn*(k.ty==="eremittkreps"?0.045:0.058), kh=kw*im.naturalHeight/im.naturalWidth;
-    var y=sand-camY-kh*0.75; // ingen dupping — krabber flyter ikke (eieren, 6. aug)
+    var y=sand-camY-kh*0.75+kh*0.42*k.grav; // nedgravd = senket i sanden
     if(y<-40||y>H+40)continue;
     cx.save(); cx.globalAlpha=0.92;
+    cx.beginPath(); cx.rect(0,0,W,sandSkjermY+2); cx.clip(); // det under sandkanten er I sanden
     if(k.dir<0){ cx.translate(W*k.x+kw/2,y); cx.scale(-1,1); cx.drawImage(im,0,0,kw,kh); }
     else cx.drawImage(im,W*k.x-kw/2,y,kw,kh);
     cx.restore(); }
