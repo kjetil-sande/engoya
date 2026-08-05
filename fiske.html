@@ -992,8 +992,9 @@
   <!-- INNBOKS -->
   <div class="modal" id="innModal"><div class="cardwrap" style="max-width:400px">
     <img src="spill/assets/knapp-lukk.png" id="innLukk" class="lukkx" alt="Lukk innboksen">
-    <div class="card"><button class="smstilbake" id="innTilbake">&lsaquo; Telefonen</button>
-      <h2 style="margin:26px 0 .6em">Meldinger</h2>
+    <div class="card"><div style="display:flex;align-items:center;gap:10px;margin:0 0 10px">
+      <button class="smstilbake" id="innTilbake" title="Tilbake til telefonen" style="position:static;width:34px;height:34px;padding:0;border-radius:50%;font-size:22px;display:grid;place-items:center;background:rgba(93,78,55,.12);color:var(--ink);box-shadow:none">&lsaquo;</button>
+      <h2 style="margin:0">Meldinger</h2></div>
       <div id="innListe"></div></div>
   </div></div>
 
@@ -6256,6 +6257,8 @@ var TRAALUTSTYR=[
  {n:"Nytt ekkolodd",      del:0.70,  t:"Stimen blir funnet i stedet for lett etter."},
  {n:"Kraftblokk og vinsj",del:1.24,  t:"Halve tiden på hvert hal. Flere hal per tur."}];
 // Utstyr til ein 110 000-tråler kan ikkje koste det same som til ein 18 000-sjark.
+var UTFALL_RAUK={k:"rauk", mult:0, v:0,
+  t:"Det kokte — heilt til nota rauk i hivinga. Halvparten rann attende i havet. Litt vart det likevel."};
 function traalPris(f, trinn){ var u=TRAALUTSTYR[trinn]; if(!u)return 0;
   return Math.round(f.kost*u.del/1000)*1000; }
 
@@ -6696,6 +6699,7 @@ function ringTaImot(){
   if(m.type==="prat"){ visPrat(f, m.tekst, true); return; }
   if(m.type==="resultat"){
     var u=null; for(var i=0;i<UTFALL.length;i++) if(UTFALL[i].k===m.utfall)u=UTFALL[i];
+    if(m.utfall==="rauk")u=UTFALL_RAUK;
     visResultat(f, u||UTFALL[2], m.inn, m.ut, true);
     return;
   }
@@ -6790,6 +6794,7 @@ function apneMelding(m){
   if(m.type==="prat"){ visPrat(f, m.tekst, false); return; }
   if(m.type==="resultat"){
     var u=null; for(var i=0;i<UTFALL.length;i++) if(UTFALL[i].k===m.utfall)u=UTFALL[i];
+    if(m.utfall==="rauk")u=UTFALL_RAUK;
     visResultat(f, u||UTFALL[2], m.inn, m.ut, true);
     return;
   }
@@ -6843,13 +6848,25 @@ function investSjekk(){
                   :ig>16*3600e3?(nn?"om lag eit døgn":"om cirka et døgn")
                   :ig>6*3600e3?(nn?"utpå morgonkvisten":"i morgen tidlig")
                   :(nn?"om nokre timar":"om noen timer");
-          innLegg({type:"prat", fk:t.fk, id:mid,
-            tekst:nn?("Midt i fisket no. Trålen står ute og det ser lovande ut — eg er heime "+naar+". Då får du oppgjeret ditt.")
-                    :("Midt i fisket nå. Trålen står ute og det ser lovende ut — jeg er hjemme "+naar+". Da får du oppgjøret ditt.")});
+          // Samme trekk som oppgjøret vil gjøre — fiskeren VET om det koker der ute.
+          var uF=investTrekk(fm, t.niv||0, mulberry32(t.seed));
+          var mld;
+          if(uF.mult>=1.9){ // det koker! Entusiastisk ANROP — og så kan nota ryke i hivinga …
+            mld=innLegg({type:"prat", fk:t.fk, id:mid,
+              tekst:nn?("Det KOKAR her ute! Trålen er tung alt, og eg gler meg til å kome heim med fangsten — "+naar+" er eg ved kaia. Kryss fingrane for at alt held!")
+                      :("Det KOKER her ute! Trålen er tung allerede, og jeg gleder meg til å komme hjem med fangsten — "+naar+" er jeg ved kaia. Kryss fingrene for at alt holder!")});
+            ringOpp(fm, mld); // opptatt? Da ligger den som ulest melding i stedet
+          } else {
+            innLegg({type:"prat", fk:t.fk, id:mid,
+              tekst:nn?("Midt i fisket no. Trålen står ute og det ser lovande ut — eg er heime "+naar+". Då får du oppgjeret ditt.")
+                      :("Midt i fisket nå. Trålen står ute og det ser lovende ut — jeg er hjemme "+naar+". Da får du oppgjøret ditt.")});
+          }
         } } }
     return; }
   var f=fiskerVed[t.fk]; if(!f){ P.invest.tur=null; saveAll(); return; }
   var rng=mulberry32(t.seed), u=investTrekk(f, t.niv||0, rng);
+  if(u.mult>=1.9 && mulberry32(t.seed^0x5EED)()<0.25){ // koker-turer: 1 av 4 ryker nota i hivinga
+    u={k:"rauk", mult:+(u.mult*0.45).toFixed(2), t:UTFALL_RAUK.t}; }
   var ut=Math.round(t.sum*u.mult);
   P.kr+=ut; P.invest.tur=null;
   var h=P.invest.hist[t.fk]||(P.invest.hist[t.fk]={turar:0,inn:0,ut:0});
