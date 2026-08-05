@@ -749,8 +749,9 @@
   #telInnhold{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f4f0e6;text-align:left}
   .appnett{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:22px 16px}
   .appikon{border:0;cursor:pointer;background:transparent;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:7px;position:relative}
-  .appikon .ai{width:62px;height:62px;border-radius:15px;display:grid;place-items:center;font-size:30px;
+  .appikon .ai{width:62px;height:62px;border-radius:15px;display:grid;place-items:center;font-size:30px;overflow:hidden;
     background:linear-gradient(160deg,#fff8ea,#efe7d4);border:2px solid var(--paper-2);box-shadow:0 2px 0 var(--paper-2)}
+  .appikon .ai img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated}
   .appikon .an{font-size:12.5px;font-weight:700;color:var(--ink)}
   .appikon .varsel2{position:absolute;top:-5px;right:6px;min-width:20px;height:20px;border-radius:99px;background:#c0392b;color:#fff;
     font-size:12px;font-weight:800;display:grid;place-items:center;padding:0 5px}
@@ -6337,11 +6338,12 @@ function investTilbod(){
 function visTelefon(){
   var e=$("#telKlokke"); if(e){ var d0=new Date(); e.textContent=("0"+d0.getHours()).slice(-2)+":"+("0"+d0.getMinutes()).slice(-2); }
   var n=uleste(), L=$("#telInnhold");
+  function ai(fil,emoji){ return '<span class="ai"><img src="spill/assets/appikon-'+fil+'.png" onerror="this.outerHTML=\''+emoji+'\'" alt=""></span>'; }
   L.innerHTML='<div class="appnett">'
-    +'<button class="appikon" id="appMeld"><span class="ai">📨</span><span class="an">Meldinger</span>'+(n?'<span class="varsel2">'+(n>9?"9+":n)+'</span>':'')+'</button>'
-    +'<button class="appikon" id="appTraal"><span class="ai">🚢</span><span class="an">Tråleren</span></button>'
-    +'<button class="appikon" id="appVaer"><span class="ai">🌦️</span><span class="an">Været</span></button>'
-    +'<button class="appikon" id="appVekt"><span class="ai">⚖️</span><span class="an">Vekta</span></button>'
+    +'<button class="appikon" id="appMeld">'+ai("meldinger","📨")+'<span class="an">Meldinger</span>'+(n?'<span class="varsel2">'+(n>9?"9+":n)+'</span>':'')+'</button>'
+    +'<button class="appikon" id="appTraal">'+ai("traaleren","🚢")+'<span class="an">Tråleren</span></button>'
+    +'<button class="appikon" id="appVaer">'+ai("vaeret","🌦️")+'<span class="an">Været</span></button>'
+    +'<button class="appikon" id="appVekt">'+ai("vekta","⚖️")+'<span class="an">Vekta</span></button>'
     +'</div>';
   $("#appMeld").onclick=function(){ Snd.click(); modal("telefonModal",false); visInnboks(); };
   $("#appTraal").onclick=function(){ Snd.click(); visTraalApp(); };
