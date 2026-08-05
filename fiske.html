@@ -6450,9 +6450,9 @@ function pratInit(){ investInit(); var iv=P.invest;
 var TERSKEL=10000, LOTTAR=[0.05,0.10,0.20,0.30,0.40,0.50], LOTT_TAK=0.35;
 // Rytma på telefonen, målt i HAVTID — ikkje kalendertid.
 var INNSEGLINGSFRED=6*60000;    // seks minutt på havet før nokon får ringje
-var TILBOD_PAUSE  =150*60000;   // to og ein halv time HAVTID mellom kvart tilbod
+var TILBOD_PAUSE  =90*60000;    // halvannan time HAVTID mellom kvart tilbod (eieren ville høre mer fra fiskerne, 6. aug)
 var ANROP_PAUSE   =12*60000;    // minst tolv minutt havtid mellom to anrop av noko slag
-var ANROP_TAK     =2;           // maks to anrop per døgn
+var ANROP_TAK     =3;           // maks tre anrop per døgn (opp frå to — same grunn)
 // Under eit døgn: timar. Over: døgn — det er slik ein fiskar snakkar, og
 // «tar ~86 timer» seier ingenting til ein tiåring.
 function turTid(t){ if(t<24) return "tar ~"+Math.round(t)+" timer";

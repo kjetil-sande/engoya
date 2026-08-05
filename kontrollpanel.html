@@ -18,10 +18,13 @@
     /* Skiltet er pixel art — det MÅ skaleres hardt, ellers blir det grøt. */
     .logo{display:block;width:100%;max-width:220px;height:auto;margin:0 0 13px;
       image-rendering:pixelated;image-rendering:crisp-edges}
+    .topp{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:22px}
+    .topp .logo{margin:0}
+    .topptekst{text-align:right}
     h1{font-size:1.5rem;margin:0 0 2px}
-    .sub{color:var(--daempa);font-size:.86rem;margin:0 0 20px}
-    h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.09em;color:var(--daempa);
-      margin:44px 0 10px;font-weight:600} /* god luft opp til bolken over (eierens ønske 5. aug) */
+    .sub{color:var(--daempa);font-size:.86rem;margin:0}
+    h2{font-size:1.44rem;text-transform:uppercase;letter-spacing:.07em;color:var(--daempa);
+      margin:44px 0 12px;font-weight:700} /* 75 % større + god luft (eierens ønsker 5.–6. aug) */
     .rutenett{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
     .kort{background:var(--kort);border:1px solid var(--kant);border-radius:12px;padding:13px 15px}
     .tall{font-size:1.85rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
@@ -50,7 +53,7 @@
     .anmknapp button{margin-top:0;padding:6px 13px;font-size:.84rem}
     .anmknapp .av{background:transparent;color:var(--daempa);border:1px solid var(--kant)}
     .anmknapp .slett{background:transparent;color:var(--rod);border:1px solid var(--rod)}
-    h2 .ikon{margin-right:7px;font-size:1.05rem;vertical-align:-1px}
+    h2 .ikon{margin-right:9px;font-size:1.5rem;vertical-align:-2px}
     /* Ukerapporten er ikke et kort blant kortene — den er svaret, og skal se sånn ut. */
     .uke{background:linear-gradient(160deg,#1b4459,#14364a);border:1px solid var(--gull);
       border-radius:14px;padding:17px 19px;margin:6px 0 4px}
@@ -93,10 +96,12 @@
 </head>
 <body>
 <main>
-  <img class="logo" src="spill/assets/spill-logo-liten.png"
-       alt="Jakten på storkveita" onerror="this.remove()">
-  <h1>Kontrollpanel</h1>
-  <p class="sub" id="sub">Jakten på storkveita</p>
+  <header class="topp">
+    <img class="logo" src="spill/assets/spill-logo-liten.png"
+         alt="Jakten på storkveita" onerror="this.remove()">
+    <div class="topptekst"><h1>Kontrollpanel</h1>
+      <p class="sub" id="sub">Jakten på storkveita</p></div>
+  </header>
   <div id="ut"><div class="melding">Henter …</div></div>
   <div id="anmUt"></div>
   <div id="feilUt"></div>
@@ -385,16 +390,17 @@ function tegn(d){
     + '<div class="merke" style="margin:0 0 7px">Arter fanget</div>'
     + stolper(p.arterFordeling) + '</div>';
 
-  h += '<h2><span class="ikon">🧰</span>Utstyr</h2><div class="rutenett utst">'
+  h += '<h2><span class="ikon">🧰</span>Utstyr</h2>'
+    + (u.stangFordeling ? '<div class="kort utst" style="margin-bottom:10px;border-left:3px solid var(--gull)">'
+      + '<div class="merke" style="margin:0 0 7px">Stangfordeling</div>'
+      + stolper(u.stangFordeling) + '</div>' : "")
+    + '<div class="rutenett utst">'
     + kort(u.stangIII, "Stang III") + kort(u.vinsj, "vinsj")
     + kort(u.ekkolodd, "ekkolodd") + kort(u.turbosnelle, "turbosnelle")
     + kort(u.kampbelte, "kampbelte") + kort(u.kjoleribbe||0, "kjøleribbe")
     + kort(u.silkesnore||0, "silkesnøre") + kort(u.krabbeteiner||0, "krabbeteiner totalt")
     + kort(u.hummerteiner||0, "hummerteiner totalt") + kort(u.bunnliner||0, "bunnliner totalt")
-    + '</div>'
-    + (u.stangFordeling ? '<div class="kort utst" style="margin-top:10px;border-left:3px solid var(--gull)">'
-      + '<div class="merke" style="margin:0 0 7px">Stangfordeling</div>'
-      + stolper(u.stangFordeling) + '</div>' : "");
+    + '</div>';
 
   h += '<h2><span class="ikon">💰</span>Økonomi</h2><div class="rutenett oko">'
     + kort(no(ok.sumKr||0) + " kr", "på bok til sammen")
