@@ -168,7 +168,8 @@
   #hudReserve{display:flex;align-items:center;gap:3px}
   #hudReserve.tom{opacity:.45} /* kanna gråner når reserven er tom — men står der så en VET den finnes */
   .hudKanne{height:17px;image-rendering:pixelated}
-  #hudFuelTall{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+  #hudFuelTall,#hudReserveTall{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+  #hudReserve{margin-left:4px} /* lite gap: tallet ved baren hører til tanken, +X hører til kanna */
   #muteBtnMenu{font-size:24px}
 
   /* Sea controls */
@@ -822,7 +823,7 @@
     <div id="hud">
       <button class="fiskerknapp" id="openProfil" title="Fiskerkortet"><img src="spill/assets/ikon-fiskeren.png" alt="Fiskerkortet" onerror="this.outerHTML='🧑'"><span id="profilPrikk"></span></button>
       <div class="chip"><span class="hudPenge">💰</span> <b id="hudKr">0</b> kr</div>
-      <div class="chip"><img src="spill/assets/bensinpumpe.png" alt="Bensin" class="hudBensin" onerror="this.outerHTML='⛽'"> <div class="fuel"><i id="hudFuel"></i></div><span id="hudReserve"><img src="spill/assets/bensinkanne.png" alt="" class="hudKanne" onerror="this.style.display='none'"><b id="hudFuelTall">24</b></span></div>
+      <div class="chip"><img src="spill/assets/bensinpumpe.png" alt="Bensin" class="hudBensin" onerror="this.outerHTML='⛽'"> <div class="fuel"><i id="hudFuel"></i></div><b id="hudFuelTall">24</b><span id="hudReserve"><img src="spill/assets/bensinkanne.png" alt="" class="hudKanne" onerror="this.style.display='none'"><b id="hudReserveTall">+0</b></span></div>
       <div class="spacer"></div>
     </div>
     <div id="notice"></div>
@@ -2037,7 +2038,8 @@ function hud(){
   $("#hudKr").textContent=P.kr;
   $("#hudFuel").style.width=Math.max(0,Math.min(100,P.fuel/P.fuelMax*100))+"%";
   var res=Math.max(0,P.fuel-P.fuelMax); // bensin på kanne over full tank (maks 8 = to kanner)
-  $("#hudFuelTall").textContent=Math.max(0,Math.min(P.fuel,P.fuelMax))+(res>0?"+"+res:"");
+  $("#hudFuelTall").textContent=Math.max(0,Math.min(P.fuel,P.fuelMax)); // tanken sitt tall står ved baren
+  $("#hudReserveTall").textContent="+"+res;                             // kanna sitt tall står ved kanna
   $("#hudReserve").classList.toggle("tom",res<=0);
   updateRigChip();
   verkstedVarsel();
