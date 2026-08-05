@@ -5802,6 +5802,7 @@ var krabbeImg={}; ["bunnkrabbe-gronn","bunnkrabbe-roed","eremittkreps"].forEach(
 var krabber=[], krabbeDepth=-1;
 function drawKrabber(dt){
   if(depth!==0)return; var g=colGeom(); if(!g)return;
+  var mn=Math.min(W,H); // mn er LOKAL i alle tegnefunksjonene — glemte den 5. aug og frøs hele scenen
   var sand=g.imgH*(BUNNFRAC[0]||0.89);
   if(camY+H<sand-40)return; // bunnen er ikke i bildet
   if(krabbeDepth!==depth||!krabber.length){ krabbeDepth=depth; krabber=[];
@@ -5825,6 +5826,7 @@ function drawKrabber(dt){
 var dypOyne=[], dypOyneD=-1;
 function drawOyne(dt){ // blinkende øyepar i mørket — gulgrønne på Dypt, isblå i Djuphavet
   if(depth<2)return; var g=colGeom(); if(!g)return;
+  var mn=Math.min(W,H);
   if(camY<g.imgH*0.30)return; // først når man er godt nede i mørket
   if(dypOyneD!==depth||!dypOyne.length){ dypOyneD=depth; dypOyne=[];
     for(var i=0;i<5;i++)dypOyne.push({x:0.06+0.88*Math.random(), fy:0.45+0.5*Math.random(),
