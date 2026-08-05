@@ -433,9 +433,11 @@
   .innrad img{width:38px;height:38px;border-radius:50%;object-fit:cover;image-rendering:pixelated;
     background:#a7cac8;flex:0 0 38px}
   .innrad .it{flex:1;min-width:0}
-  .innrad .in{font-weight:700;font-size:14px;color:var(--wood-dark)}
+  .innrad .in{display:block;font-weight:700;font-size:14px;color:var(--wood-dark);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap} /* navnet på egen linje — det rant inn i forhåndsvisningen på iPhone */
   .innrad.ulest .in::after{content:"●";color:var(--red);font-size:12.5px;margin-left:6px;vertical-align:2px}
-  .innrad .ib{font-size:14px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .innrad .ib{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    font-size:14px;color:var(--ink-soft);line-height:1.3} /* to linjer, så … — setninger skal få brekke */
   .innrad .id2{font-size:12.5px;color:var(--ink-soft);opacity:.7;flex:0 0 auto}
   /* Innkomande anrop. Stort bilete, namn, og to knappar — som ein telefon. */
   #ringModal .card{max-width:340px;padding:0;overflow:hidden;background:#1b2530}
