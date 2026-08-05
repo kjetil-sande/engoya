@@ -5651,7 +5651,7 @@ function loop(now){
     // å se. Gulvet er dermed bare en synlighetssikring, ikke det som bestemmer.
     var gw=colGeom();
     var mPx=gw?(gw.imgH*(BUNNFRAC[depth]||0.9)-gw.wl)/SONEDJUP[depth]:H*0.02;
-    var tak=Math.min(H*0.30, (lureTargetW-camBottom)*0.55, Math.max(H*0.008, mPx));
+    var tak=Math.min(H*0.30, (lureTargetW-camBottom)*0.55, 20); // flatt 20 px-rykk — samme følelse på alle nivåer (eieren, 6. aug)
     // Farten følger taket. Med den gamle faste farten (0,16·H per sekund) ville et
     // tak på 16 px vært nådd på 0,13 s — et smell, ikke et rykk. Nå tar det ~0,55 s
     // opp og ~0,9 s tilbake, uansett hvor stort taket er.
