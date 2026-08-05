@@ -1202,10 +1202,14 @@ var Snd=(function(){
   function oneShot(name,skala,rate){ var c=AC(),o=ONESHOT[name]; if(!c||!o||muted)return; var buf=buffers[name]; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; if(rate)s.playbackRate.value=rate; // rate varierer tonehøgda så same klipp ikkje blir gjenkjenneleg
     var g=c.createGain(); g.gain.value=o.vol*(skala==null?1:skala); s.connect(g); g.connect(c.destination); try{s.start()}catch(e){} }
-  function loadAll(){ var c=AC(); if(loaded||!c)return; loaded=true; var list=[];
-    for(var k in loops)list.push([k,loops[k].url]); for(var k2 in ONESHOT)list.push([k2,ONESHOT[k2].url]);
-    list.forEach(function(p){ fetch(p[1]).then(function(r){return r.arrayBuffer()}).then(function(ab){return c.decodeAudioData(ab)})
-      .then(function(buf){ buffers[p[0]]=buf; if(loops[p[0]]&&loops[p[0]].want)startLoop(p[0]); }).catch(function(){}); }); }
+  function loadAll(){ var c=AC(); if(loaded||!c)return; loaded=true;
+    var hent=function(p){ fetch(p[1]).then(function(r){return r.arrayBuffer()}).then(function(ab){return c.decodeAudioData(ab)})
+      .then(function(buf){ buffers[p[0]]=buf; if(loops[p[0]]&&loops[p[0]].want)startLoop(p[0]); }).catch(function(){}); };
+    for(var k in loops)hent([k,loops[k].url]); // stemningsloopene straks
+    var resten=[]; for(var k2 in ONESHOT)resten.push([k2,ONESHOT[k2].url]);
+    var i=0; (function pulje(){ if(i>=resten.length)return; // engangsklippene i rolige puljer — 57 samtidige fetch la seg foran alt annet
+      var slutt=Math.min(i+6,resten.length); for(;i<slutt;i++)hent(resten[i]);
+      setTimeout(pulje,300); })(); }
   var soneNa=0, sistSone=-1, vilRegn=false, vilVind=false;
   var REGN_V=0.40, VIND_V=0.28;                      // grunnvolum frå loops-tabellen (regn ned frå 0.55 — det var for høgt)
   function djupSone(){ return soneNa>=2; }           // Dypt og Djuphavet
@@ -1438,6 +1442,19 @@ var fishImg={}, fishSil={};
 var skreiImg=new Image(); skreiImg.src="spill/assets/fisk-skrei.png";
 // Torsken bytter drakt i skreisesongen. Mangler fila, faller vi tilbake på
 // den vanlige torsken — ingenting brekker.
+/* Lastprioritering (6. aug): kald start lastet ~16 MB i én bølge — tungt på mobilnett.
+   Kritisk grafikk (naustet, båten, HUD, himmel) lastes straks; fiskene, silhuettene og
+   de andre sonebakgrunnene går i utsatt-køen: puljer på 6 hvert 400 ms etter load. */
+var SEINLAST=[], seinlastStart=false;
+function seinSrc(im, src, naa){ if(naa||seinlastStart){ im.src=src; } else SEINLAST.push([im,src]); }
+function seinlastKjor(){ if(seinlastStart)return; seinlastStart=true;
+  var i=0; (function neste(){ if(i>=SEINLAST.length){ SEINLAST=[]; return; }
+    var slutt=Math.min(i+6,SEINLAST.length);
+    for(;i<slutt;i++){ SEINLAST[i][0].src=SEINLAST[i][1]; }
+    setTimeout(neste, 400); })(); }
+window.addEventListener("load", function(){ setTimeout(seinlastKjor, 2500); });
+setTimeout(seinlastKjor, 12000); // sikkerhetsnett: load-hendelsen kan drukne i treg lasting
+
 function fiskBilde(f){
   if(typeof erSkrei==="function" && erSkrei(f) && skreiImg.complete && skreiImg.naturalWidth) return skreiImg;
   return fishImg[f.k];
@@ -1446,10 +1463,10 @@ var LIKNER={sild:"makrell",sandflyndre:"rodspette",skrubbe:"rodspette",lomre:"ro
   lysing:"lyr",blaalange:"lange",haagjel:"pigghaa",svarthaa:"pigghaa",haakjerring:"pigghaa",havmus:"brosme",blaakveite:"kveite",maanefisk:"breiflabb"}; // midlertidig lookalike til egen kunst er generert — egen PNG overtar automatisk
 FISH.forEach(function(f){ var base=FIMG[f.k]||f.k, fb=LIKNER[f.k];
   var im=new Image(); if(fb)im.onerror=function(){ im.onerror=null; im.src="spill/assets/"+fb+".png"; };
-  im.src="spill/assets/"+base+".png"; fishImg[f.k]=im;
+  seinSrc(im,"spill/assets/"+base+".png"); fishImg[f.k]=im;
   var sn=(f.k==="sei")?"sei-silhuett":base+"-silhuette"; // sei mangler 'e' i filnavnet; resten følger mønsteret
   var s=new Image(); if(fb)s.onerror=function(){ s.onerror=null; s.src="spill/assets/"+fb+"-silhuette.png"; };
-  s.src="spill/assets/"+sn+".png"; fishSil[f.k]=s;
+  seinSrc(s,"spill/assets/"+sn+".png"); fishSil[f.k]=s;
 });
 var ZONE=["Grunt","Mellomdyp","Dypt","Djuphavet"];
 var DEPM=["0–50 m","50–150 m","150–300 m","300–500 m"];
@@ -5315,7 +5332,7 @@ var boatImg=new Image(),boatReady=false; boatImg.onload=function(){boatReady=tru
 var waterImg=[new Image(),new Image(),new Image(),new Image()];
 ["kvitholmen","tralsund"].forEach(function(n,i){ // sonebakgrunnene heter det stedene heter
   waterImg[i].onerror=function(){ this.onerror=null; this.src="spill/assets/"+n+".jpg"; }; // manglende variant → dagbildet
-  waterImg[i].src="spill/assets/"+n+".jpg";
+  seinSrc(waterImg[i],"spill/assets/"+n+".jpg", i===((typeof depth==="number")?depth:0)); // din sone straks, resten i køen
 });
 var n4Fallback=false; // nivå 4: mangler skumring/natt-variant → fall tilbake til -dag (mangler alt → sonen skjules)
 waterImg[3].onerror=function(){ if(!n4Fallback){ n4Fallback=true; waterImg[3].src="spill/assets/uthavet-dag.jpg"; } };
@@ -5345,14 +5362,14 @@ function updateDyptImg(){ var v=dyptVariant(); if(v===dyptCur)return; dyptCur=v;
     pre.onload=function(){ if(v!==dyptCur)return; waterImg[i]=pre; settWLF(i,pre); };
     pre.onerror=function(){ if(v!=="dag"||this.dataset.prov)return;  // dag: prøv «-dag» først, så den gamle
       this.dataset.prov="1"; this.src="spill/assets/"+n+".jpg"; };
-    pre.src="spill/assets/"+n+"-"+v+".jpg"; });
+    seinSrc(pre,"spill/assets/"+n+"-"+v+".jpg", i===depth); });
   // Dypt lastet rett på det levende bildet. Da står sonen tom mens den laster,
   // og den kan ikke vernes mot kappløpet. Nå samme mønster som de andre.
   var pre3=new Image();
   pre3.onload=function(){ if(v!==dyptCur)return; waterImg[2]=pre3; settWLF(2,pre3); };
-  pre3.src="spill/assets/svartrenna-"+v+".jpg";
+  seinSrc(pre3,"spill/assets/svartrenna-"+v+".jpg", depth===2);
   var u="spill/assets/uthavet-"+v+".jpg";
-  if(!vinsjKlar()){ n4Fallback=false; waterImg[3].src=u; } // ingenting lastet ennå — direktelast (med dag-fallback)
+  if(!vinsjKlar()){ n4Fallback=false; seinSrc(waterImg[3],u, depth===3); } // ingenting lastet ennå — køen tar den (straks om du STÅR der)
   else { var pre4=new Image();
     pre4.onload=function(){ if(v!==dyptCur)return; waterImg[3]=pre4; settWLF(3,pre4); };
     pre4.src=u; } } // bytt aldri bort lastede bilder før de nye er klare
