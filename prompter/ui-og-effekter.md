@@ -357,3 +357,12 @@ Koden har emoji-fallback, så hvert ikon plugger seg selv inn når fila lander.
 `spill/assets/appikon-kystradioen.png` — Kystradioen (til senere) 📻:
 
 > Retro video game pixel art style. A single square app icon: a chunky old VHF marine radio with a coiled microphone cable and round speaker grille, a small green power lamp lit, one thin antenna rising from the corner. On a dark charcoal rounded-square tile background, the tile filling the frame edge-to-edge behind the radio. Chunky and readable at small size: few large details, thick clean pixel outlines. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+---
+
+## Telefonikonet i fiskerkortet (6. aug)
+
+`spill/assets/ikon-telefon.png` — vises ~26 px på den store Telefonen-knappen i
+fiskerkortet (koden har 📱-fallback, ikonet plugger seg selv inn). (653 tegn)
+
+> Retro video game pixel art style. A single game icon: a small dark smartphone standing upright, slightly tilted, rounded corners, thin lighter frame, the screen glowing warmly with a tiny envelope symbol and a little red notification dot in the corner, a slim home indicator line at the bottom of the screen. Chunky and readable at small size: few large details, thick clean pixel outlines, one soft screen-glow highlight. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.

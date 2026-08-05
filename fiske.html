@@ -773,6 +773,8 @@
   .telnotat b{display:block;font-size:13px;margin-bottom:2px}
   .telseksjon{margin:13px 13px 5px;font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
   .teltom{padding:26px 20px;text-align:center;color:var(--ink-soft);font-size:14px;line-height:1.5}
+  .pftelefon{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
+    padding:13px;font-size:17.5px;margin:12px 0 2px} /* telefonen skal FINNES — stor og øverst (eieren, 6. aug) */
   .feilpille{border:0;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;
     background:rgba(93,78,55,.10);color:var(--ink-soft);padding:7px 16px;border-radius:99px}
   .feilpille:active{transform:translateY(1px)}
@@ -4247,6 +4249,10 @@ function visProfil(){
       +'</div>'
     +'<button class="btn sm ghost" id="pfLyd"></button>'
     +'</div></div>';
+  var nUlest=uleste();
+  h+='<button class="btn gold pftelefon" id="pfInnboks">'
+    +'<img src="spill/assets/ikon-telefon.png" alt="" style="height:26px;image-rendering:pixelated" onerror="this.outerHTML=&quot;📱&quot;">'
+    +'Telefonen'+(nUlest?'<span class="varsel2" style="position:static;margin-left:4px">'+(nUlest>9?"9+":nUlest)+'</span>':'')+'</button>';
 
   h+='<div class="pfbolk"><h4>Arkivet</h4>'
     +'<div class="pfrad"><span>Arter fanget</span><b>'+arter+' av '+tot+'</b></div>'
@@ -4316,14 +4322,10 @@ function visProfil(){
     +'<div class="row" style="gap:8px"><button class="btn sm" id="pfKopiUt">Last ned kopi</button>'
     +'<button class="btn sm ghost" id="pfKopiInn">Les inn kopi</button></div></div>';
 
-  var nUlest=uleste();
   h+='<div class="row" style="justify-content:center;margin-top:16px;gap:8px">'
     +'<button class="btn sm" id="pfTilNaust">'
       +'<img src="spill/assets/ikon-bytt-spiller.png" alt="" style="height:17px;vertical-align:-3px;margin-right:6px;image-rendering:pixelated" onerror="this.outerHTML=&quot;<span style=\'filter:brightness(2.1) saturate(.35);margin-right:5px&quot;+&quot;\'>⚓</span>&quot;">'
-      +'Bytt spiller</button>'
-    +'<button class="btn sm gold" id="pfInnboks">'
-      +'<img src="spill/assets/ikon-konvolutt.png" alt="" style="height:17px;vertical-align:-3px;margin-right:6px;image-rendering:pixelated" onerror="this.outerHTML=&quot;📨 &quot;">'
-      +'Telefonen'+(nUlest?' ('+nUlest+')':'')+'</button></div>';
+      +'Bytt spiller</button></div>';
   h+='<div class="row" style="justify-content:center;margin-top:10px;gap:8px">'
     +'<button id="pfFeil" class="feilpille">🐞 Meld inn</button>'
     +'<button id="pfSlett" class="feilpille" style="color:#a33e35">Slett fiskeren</button></div>';
