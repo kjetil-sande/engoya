@@ -5796,8 +5796,10 @@ function snelleSpinn(dt){
   var im=$("#snelleImg"), ab=$("#actionBtn"); if(!im)return;
   var rund=!!(ab&&ab.classList.contains("snellebtn"));
   im.style.visibility=rund?"":"hidden"; // snella vises BARE når den runde knappen er aktiv (aldri oppå «HUGG!»)
-  // SPENN står alltid ved sida av DYBDE (eierens ønske 5. aug) — tom søyle utenfor kamp
-  if(phase!=="reel"){ var tb0=$("#tensionBar"); if(tb0&&tb0.style.height!=="0%")tb0.style.height="0%"; }
+  // SPENN står alltid ved sida av DYBDE (eierens ønske 5. aug) — begge tomme utenfor kamp,
+  // ellers arver søylene høyden fra FORRIGE kamp (landet fisk = full DYBDE ved neste kast)
+  if(phase!=="reel"){ var tb0=$("#tensionBar"); if(tb0&&tb0.style.height!=="0%")tb0.style.height="0%";
+    var pb0=$("#progBar"); if(pb0&&pb0.style.height!=="0%")pb0.style.height="0%"; }
   var fart=0; // sveiver du, går snella framover; tar fisken ut line, spinner den bakover
   if(phase==="reel"){ fart = runT>0 ? -520 : (holding?400:0); }
   else if(phase==="pilkfiske"){ fart = holding ? (pilkKlem<0?0:330) : (pilkKlem>0?0:-190); } // står hekla i toppen eller på bunnen, står snella òg
