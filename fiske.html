@@ -773,6 +773,13 @@
   .telnotat b{display:block;font-size:13px;margin-bottom:2px}
   .telseksjon{margin:13px 13px 5px;font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
   .teltom{padding:26px 20px;text-align:center;color:var(--ink-soft);font-size:14px;line-height:1.5}
+  .albumnett{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:4px 10px 12px}
+  .albumrute{border:0;padding:0;background:transparent;cursor:pointer;aspect-ratio:1;overflow:hidden;border-radius:6px}
+  .albumrute img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;display:block}
+  .albumrute:active{transform:scale(.96)}
+  .albumstor{padding:10px 12px 0}
+  .albumstor img{width:100%;height:auto;image-rendering:pixelated;border-radius:8px;display:block}
+  .albumtekst{padding:10px 14px 16px;font-size:14.5px;line-height:1.45;color:var(--ink);font-style:italic}
   .pftelefon{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
     padding:13px;font-size:17.5px;margin:12px 0 2px} /* telefonen skal FINNES — stor og øverst (eieren, 6. aug) */
   .feilpille{border:0;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;
@@ -2324,7 +2331,9 @@ function setDepth(d){
   if(typeof updatePotBtn==="function")updatePotBtn();
 }
 
-function toSea(){Snd.ambienceOn(); Snd.themeOff(); /* musikken følger med ut og siger ut over 5,5 s */ bestillingVarsel(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("FISK!"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
+function toSea(){ // eit feilbilete dukkar opp av seg sjølv av og til — som dei gjer
+  if(P&&!P.albumTilf&&Math.random()<0.35){ P.albumTilf=1; saveAll(); }
+  Snd.ambienceOn(); Snd.themeOff(); /* musikken følger med ut og siger ut over 5,5 s */ bestillingVarsel(); show("sea"); dekkFlyttetVarsel(); havVarsler(); phase="idle"; hooked=null; sceneFish=null; flee=null; updateDyptImg(); camY=camHome(); boatIn=0; fisherT=0; dog.vis=false; dog.rise=0; dog.t=6+Math.random()*8; hud(); updateDepthLocks(); setAction("FISK!"); $("#reelui").classList.remove("on"); resize(); setDepth(depth===3?(P.vinsj&&vinsjKlar()?3:Math.min(2,P.rod)):Math.min(depth,P.rod));
   var dk=dailyFish(); setTimeout(function(){ if(phase!=="idle")return;
     var b=P&&P.bestilling, mangler=[];
     if(b&&!b.ferdig&&P.bestillingIntroSett){ Object.keys(b.krav).forEach(function(a){ var m=b.krav[a]-((b.lev&&b.lev[a])||0);
@@ -6542,11 +6551,13 @@ function visTelefon(){
     +'<button class="appikon" id="appTraal">'+ai("traaleren","🚢")+'<span class="an">Tråleren</span></button>'
     +'<button class="appikon" id="appVaer">'+ai("vaeret","🌦️")+'<span class="an">Været</span></button>'
     +'<button class="appikon" id="appVekt">'+ai("vekta","⚖️")+'<span class="an">Vekta</span></button>'
+    +'<button class="appikon" id="appAlbum">'+ai("albumet","📷")+'<span class="an">Albumet</span></button>'
     +'</div>';
   $("#appMeld").onclick=function(){ Snd.click(); modal("telefonModal",false); visInnboks(); };
   $("#appTraal").onclick=function(){ Snd.click(); visTraalApp(); };
   $("#appVaer").onclick=function(){ Snd.click(); visVaerApp(); };
   $("#appVekt").onclick=function(){ Snd.click(); visVektApp(); };
+  $("#appAlbum").onclick=function(){ Snd.click(); visAlbumApp(); };
   Snd.click(); modal("telefonModal",true);
 }
 function telHode(tittel){ return '<div class="telhode"><button class="smstilbake" id="telTilbake">&lsaquo;</button>'+tittel+'</div>'; }
@@ -6621,6 +6632,98 @@ function visVektApp(){
   }
   $("#telInnhold").innerHTML=h;
   $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
+}
+/* ---------- Albumet (6. aug): fiskarens eigne bilete på telefonen ----------
+   Nokre ligg der frå fyrste stund — dei eldste minna gjer det alltid. Resten dukkar
+   opp når noko skjer: fyrste kveita, fyrste turen med ein tråler, ti artar i boka.
+   Feilbileta kjem tilfeldig, som dei gjer i verkelegheita. */
+var ALBUM=[
+ {f:"album-41-krabbefiske",t:"Krabbefiske i fjøra",b:"Seks år og heilt sikker på at eg hadde teke havets største krabbe."},
+ {f:"album-42-haand-i-haand",t:"Ut med far",b:"Han sa aldri mykje. Men han tok meg med."},
+ {f:"album-43-paa-mors-fang",t:"På mors fang",b:"Ho hadde radioen på og handa i håret mitt. Eg sov som ein stein."},
+ {f:"album-44-fyrste-turen",t:"Fyrste turen i båten",b:"Korkvest og knyttneve rundt ripa. Eg slapp ikkje taket på ein time."},
+ {f:"album-45-heile-slekta",t:"Heile slekta utanfor naustet",b:"Ni stykke i finstasen, og eg klarte ikkje stå stille."},
+ {f:"album-21-bryllaupsbiletet",t:"Bryllaupet",b:"Ho lo i to dagar etterpå. Eg gjorde vel det same."},
+ {f:"album-16-kaffe-paa-kaia",t:"Kaffe på kaia",b:"Dottera mi med kaffi og halve kaia i latter."},
+ {f:"album-10-motoren-i-delar",t:"Motoren i delar",b:"Kjell sa det var enkelt. Kaffien vart kald tre gonger."},
+ {f:"album-40-katten-i-tauverket",t:"Katten i tauverket",b:"Han eig kaia. Vi andre får låne henne."},
+
+ {f:"album-01-storste-torsken",t:"Største torsken",b:"Han var breiare over ryggen enn han hadde nokon rett til.",krav:"arter5"},
+ {f:"album-03-full-kasse",t:"Full kasse",b:"Ei kasse sei og ryggen i spenn. Det er ein god dag.",krav:"arter5"},
+ {f:"album-12-morgon-ved-kai",t:"Morgon ved kai",b:"Halv fem. Sjøen låg som eit spegl, og eg hadde han for meg sjølv.",krav:"arter5"},
+ {f:"album-14-rot-i-akterenden",t:"Rot i akterenden",b:"Eg VEIT kvar alt er. Det er systemet mitt.",krav:"arter10"},
+ {f:"album-05-fyrste-fisken",t:"Fyrste fisken",b:"Han sa ingenting på fem sekund. Så skreik han.",krav:"arter10"},
+ {f:"album-19-altfor-stor-vest",t:"Altfor stor vest",b:"Ho voks i han til slutt. Det gjer dei alltid.",krav:"arter10"},
+ {f:"album-18-fiskesuppe",t:"Fiskesuppe",b:"Tre generasjonar rundt same gryta. Nokon søler alltid.",krav:"arter15"},
+ {f:"album-08-hjellen",t:"På hjellen",b:"Frost i treverket og fjell så langt auga rekk.",krav:"arter15"},
+ {f:"album-36-maaken-tok-nista",t:"Måken tok nista",b:"Han venta. Han visste nøyaktig når eg såg vekk.",krav:"arter15"},
+ {f:"album-06-paa-vekta",t:"På vekta",b:"Nåla gjekk lenger enn eg torde håpe.",krav:"arter20"},
+ {f:"album-39-midnattssola",t:"Midnattssola",b:"Klokka eitt om natta, og heile havet var av kopar.",krav:"arter20"},
+ {f:"album-35-nordlys-over-naustet",t:"Nordlys over naustet",b:"Eg står ute og frys kvar gong. Det er verdt det.",krav:"arter25"},
+ {f:"album-24-det-kvite-huset",t:"Det kvite huset",b:"Ho ville sjå Middelhavet. Eg sa ja med ein gong.",krav:"arter25"},
+ {f:"album-17-solnedgang-paa-svaberget",t:"Solnedgang på svaberget",b:"Ho sit slik heilt til sola er borte. Kvar gong.",krav:"arter30"},
+ {f:"album-20-krabben-i-to-fingrar",t:"Krabben i to fingrar",b:"Dottera mi held han. Sonen min ler så han må setje seg.",krav:"arter30"},
+
+ {f:"album-02-kveita-paa-dekk",t:"Kveita på dekk",b:"Ho dekte heile dekket. Eg sat berre og såg på henne.",krav:"kveite"},
+ {f:"album-04-teina-kom-opp",t:"Teina kom opp",b:"Fem krabber og eit humør som ikkje var til å spøke med.",krav:"teine"},
+ {f:"album-07-rekekar",t:"Rekekaret",b:"Avisa, ei flaske og eit kar med reker. Ingenting manglar.",krav:"teine"},
+ {f:"album-13-ekkoloddet",t:"Ekkoloddet",b:"Der stod dei. Heile skjermen full.",krav:"ekko"},
+ {f:"album-11-ny-propell",t:"Ny propell",b:"Blank som ein spegl. Kjell nikka og sa «endeleg».",krav:"propell"},
+ {f:"album-09-paa-slipp",t:"På slipp",b:"Ny botnmåling og ei veke på land. Ho fortener det.",krav:"smurt"},
+ {f:"album-15-baaten-i-snoe",t:"Båten i snø",b:"Ho ligg og ventar. Det gjer eg òg.",krav:"vinter"},
+ {f:"album-37-storm-mot-moloen",t:"Storm mot moloen",b:"Vi vart heime den dagen. Klokt val.",krav:"uvaer"},
+ {f:"album-38-kaffekjelen",t:"Kaffekjelen",b:"Kokar i lugaren medan det bles ute. Beste plassen som finst.",krav:"uvaer"},
+
+ {f:"album-22-solstolen",t:"Solstolen",b:"To kvite bein som vart raude på under ein time.",krav:"rik"},
+ {f:"album-23-drinken-med-paraply",t:"Drinken med paraply",b:"Paraply i glaset. Kva skal ein seie.",krav:"rik"},
+ {f:"album-25-middelhavsfisken",t:"Middelhavsfisken",b:"Ein tredjedel av ein torsk, og eg smilte like breitt.",krav:"rik"},
+ {f:"album-26-buffeten",t:"Buffeten",b:"Reker, melon, kjøttkaker og kake. På éin tallerken.",krav:"rik"},
+ {f:"album-27-same-solnedgang",t:"Same solnedgangen",b:"Varmare, ja. Men ikkje finare enn heime.",krav:"rik"},
+
+ {f:"album-28-tommelen",t:"Tommelen",b:"Der er tommelen min. Der er havet, ein stad bak.",krav:"tilf"},
+ {f:"album-29-i-lomma",t:"I lomma",b:"Telefonen tok dette heilt av seg sjølv.",krav:"tilf"},
+ {f:"album-30-halve-hovudet",t:"Halve hovudet",b:"Eg veit ikkje kva eg prøvde på her.",krav:"tilf"},
+ {f:"album-31-dekket",t:"Dekket",b:"Eit framifrå bilete av ei støvle.",krav:"tilf"},
+ {f:"album-33-blitsen-i-glaset",t:"Blitsen i glaset",b:"Blitsen tok i ruta. Det einaste ein ser er lyset.",krav:"tilf"},
+ {f:"album-34-hunden-som-sprang",t:"Hunden som sprang",b:"Han stod stille i to timar. Ikkje då eg tok bilete.",krav:"tilf"}
+];
+function albumOpen(a){ // er dette biletet låst opp?
+  if(!a.krav)return true;
+  if(!P)return false;
+  var k=a.krav, arter=arterFanget(P), tr=(P.trofe||[]).filter(function(x){return !x.borte}).length;
+  if(k.indexOf("arter")===0)return arter>=+k.slice(5);
+  if(k==="kveite")return !!(P.caught&&P.caught.kveite);
+  if(k==="teine")return (P.pots&&(P.pots.owned||P.pots.ownedH))>0;
+  if(k==="ekko")return !!P.ekko;
+  if(k==="propell")return !!P.propOk&&(P.riggTs||0)>0;
+  if(k==="smurt")return (P.smorTs||0)>0&&arter>=3;
+  if(k==="vinter"){ var m=new Date().getMonth(); return m>=10||m<=2; }
+  if(k==="uvaer")return typeof gloomyWx==="function"&&gloomyWx();
+  if(k==="rik")return (P.solgt||0)>=4000;
+  if(k==="tilf")return ((P.albumTilf||0)>0); // feilbileta dukkar opp av seg sjølve
+  return false;
+}
+function albumTell(){ var n=0; ALBUM.forEach(function(a){ if(albumOpen(a))n++; }); return n; }
+function visAlbumApp(){
+  var h=telHode("Albumet"), aapne=ALBUM.filter(albumOpen);
+  h+='<div class="telseksjon">'+aapne.length+' av '+ALBUM.length+' bilete</div><div class="albumnett">';
+  aapne.forEach(function(a,i){
+    h+='<button class="albumrute" data-i="'+ALBUM.indexOf(a)+'">'
+      +'<img src="spill/assets/'+a.f+'.png" alt="" onerror="this.style.visibility=\'hidden\'"></button>'; });
+  h+='</div>';
+  if(aapne.length<ALBUM.length)h+='<div class="teltom" style="padding:14px">Fleire bilete dukkar opp etter kvart som du fiskar. 📷</div>';
+  $("#telInnhold").innerHTML=h;
+  $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
+  $("#telInnhold").querySelectorAll(".albumrute").forEach(function(b){
+    b.onclick=function(){ Snd.click(); visAlbumBilde(+b.dataset.i); }; });
+}
+function visAlbumBilde(i){
+  var a=ALBUM[i]; if(!a)return;
+  var h=telHode(a.t)
+    +'<div class="albumstor"><img src="spill/assets/'+a.f+'.png" alt="" onerror="this.style.visibility=\'hidden\'"></div>'
+    +'<div class="albumtekst">'+esc(a.b)+'</div>';
+  $("#telInnhold").innerHTML=h;
+  $("#telTilbake").onclick=function(){ Snd.click(); visAlbumApp(); };
 }
 function settKlokke(){ var e=$("#smsKlokke"); if(!e)return; var d=new Date();
   e.textContent=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
