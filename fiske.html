@@ -945,6 +945,7 @@
     <img src="spill/assets/rusten-logo.png" alt="Rustens agn og redskap" style="display:none;margin:-38px auto 4px;position:relative;z-index:2;max-width:86%;max-height:80px;image-rendering:pixelated"
       onload="this.style.display='block';this.nextElementSibling.style.display='none'">
     <h2 style="text-align:center">Rustens agn &amp; redskap</h2>
+    <img id="rustenBaat" alt="Rustens sjark" style="display:none;width:100%;max-width:320px;height:auto;image-rendering:pixelated;margin:2px auto 4px" onerror="this.style.display='none'">
     <p class="muted" id="shopKr"></p>
     <div id="shopList"></div>
   </div></div></div>
@@ -3499,7 +3500,8 @@ function dogn(){
 var DOGNORD=["natt","gry","dag","skumring"];
 // Måkene søv om natta: ingen skrik, og berre ei einsleg silhuett på vengene.
 // Brukt både av lyden og av flokkstorleiken, så dei to aldri kjem i utakt.
-function maakeDogn(){ var f=dogn().fase; return f===0?0 : (f===2?1 : 0.45); }
+function maakeDogn(){ if(typeof uvaerNaa==="function"&&uvaerNaa())return 0; // uvêr: fuglane teier
+  var f=dogn().fase; return f===0?0 : (f===2?1 : 0.45); }
 function maakeTal(dag){ var f=dogn().fase; return f===0?1 : (f===2?dag : dag-1); }
 // Lyset når ikke ned: full effekt på Grunt, halv på Mellomdyp, nesten ingen på Dypt, null i Djuphavet
 var DOGNDYP=[1,0.5,0.15,0];
@@ -3588,9 +3590,9 @@ function lynAlpha(tt){
   if(tt<0.20)return 0;
   if(tt<0.30)return 1;               // blink 2
   if(tt<0.42)return 0;
-  var h=tt-0.42;                     // hovedlynet: holder 1 s, fader ut på 0,25 s
-  if(h<1.0)return 1;
-  return Math.max(0,1-(h-1.0)/0.25);
+  var h=tt-0.42;                     // hovudlynet: står 0,35 s og fader ut på 0,3 s
+  if(h<0.35)return 1;
+  return Math.max(0,1-(h-0.35)/0.30);
 }
 function uvaerNaa(){ return tordenNaa() || (regnerNaa() && /heavy/.test(vxKode())); } // skikkelig ruskevær
 function vxKode(){ return (window.__wx!=null?window.__wx:seaWx)||""; }
@@ -3625,18 +3627,11 @@ function tegnVaer(dt){
       cx.save(); cx.globalAlpha=(1-ph)*0.55;
       cx.drawImage(roykImg, mx2-stq/2+Math.sin(bob*1.8+i*2)*mn*0.012, my2-ph*mn*0.14-stq/2, stq, stq); cx.restore(); }
   }
-  if(lynSeq){ lynSeq.t+=dt;
-    var la=lynAlpha(lynSeq.t);
-    if(la>0&&wlY>0){ // bare når himmelen er i bildet
-      cx.save(); cx.globalCompositeOperation="screen";
-      cx.fillStyle="rgba(215,228,255,"+(0.20*la)+")"; cx.fillRect(0,0,W,wlY); // hele himmelen blitser
-      var lim=lynSeq.im;
-      if(lim&&lim.complete&&lim.naturalWidth){ var lh=wlY*0.92, lw2=lh*lim.naturalWidth/lim.naturalHeight;
-        cx.globalAlpha=la; cx.drawImage(lim, W*lynSeq.x-lw2/2, 0, lw2, lh); }
-      cx.restore(); }
-    if(!lynSeq.lydOK&&lynSeq.t>=lynSeq.lydT){ lynSeq.lydOK=true; // lyset kommer først, så smellet
+  if(lynSeq){ lynSeq.t+=dt; // KLOKKA og LYDEN bur her; sjølve lynet blir teikna i drawScene,
+    // bak båt og skjer — elles ligg det som eit klistremerke oppå kulissene.
+    if(!lynSeq.lydOK&&lynSeq.t>=lynSeq.lydT){ lynSeq.lydOK=true; // lyset kjem fyrst, så smellet
       if(!Snd.overflateStille()){ Snd.torden(); if(navigator.vibrate)navigator.vibrate(120); } }
-    if(lynSeq.t>2.2)lynSeq=null;
+    if(lynSeq.t>1.5)lynSeq=null;
   }
   if(regnerNaa()&&regnImg[0].complete&&regnImg[0].naturalWidth){
     regnFase+=dt*9; var ts2=W/13; // rutenett ~13 kolonner (eiers kalibrering — større dråper)
@@ -5751,6 +5746,14 @@ function drawScene(dt){
       cx.drawImage(bolgeCv, wxx*DPR, 0, wkol*DPR, bbh, wxx, wlY-wb+woff, wkol, wb*2);
     }
   }
+  if(lynSeq && wlY>0){ // lynet står i himmelen BAK alt anna — teikna her, ikkje i tegnVaer
+    var la0=lynAlpha(lynSeq.t);
+    if(la0>0){ cx.save(); cx.globalCompositeOperation="screen";
+      cx.fillStyle="rgba(215,228,255,"+(0.20*la0)+")"; cx.fillRect(0,0,W,wlY);
+      var lim0=lynSeq.im;
+      if(lim0&&lim0.complete&&lim0.naturalWidth){ var lh0=wlY*0.40, lw0=lh0*lim0.naturalWidth/lim0.naturalHeight;
+        cx.globalAlpha=la0; cx.drawImage(lim0, W*lynSeq.x-lw0/2, 0, lw0, lh0); } // lite, og heng frå toppen
+      cx.restore(); } }
   // påskeegg: sjøormen (ultra-sjelden, bare langt nede i Dypt — et blekt gigantisk omriss i det fjerne)
   if(depth===2 && g && camY>g.imgH*0.35 && !serpent){ serpentCd-=dt;
     if(serpentCd<=0 && Math.random()<dt/240){ var sdir=Math.random()<0.5?1:-1;
@@ -5763,7 +5766,8 @@ function drawScene(dt){
     if(serpent.x<-0.45||serpent.x>1.45){ serpent=null; serpentCd=240; } }
   drawClouds(dt,g); // skyer bak måkene
   // himmel-liv kun når overflata er i bildet
-  if(g&&wlY>H*0.15) drawGullField(cx,W,H,gulls,dt,camY+wlY*0.08,camY+wlY*0.52,maakeTal(2),gullSpawn,camY); // måkene bor i verdensrommet over vannlinja — og held seg godt over sjøen
+  if(g&&wlY>H*0.15&&!uvaerNaa()) drawGullField(cx,W,H,gulls,dt,camY+wlY*0.08,camY+wlY*0.52,maakeTal(2),gullSpawn,camY);
+  else if(uvaerNaa()&&gulls.length)gulls.length=0; // uvêr: måkene søkjer ly, og lufta blir tom // måkene bor i verdensrommet over vannlinja — og held seg godt over sjøen
   // båt + fisker forankret til vannlinja – ruller opp og ut av bildet når kameraet følger sluken ned
   var lineX, top;
   var inE=1-Math.pow(1-boatIn,2); // båten glir på plass etter turen ut (ease-out)
@@ -7217,7 +7221,9 @@ if(location.hash.indexOf("#tilsjos")===0){ setTimeout(function(){ // dev: rett p
   var nm="Testfisker"; if(!Object.prototype.hasOwnProperty.call(DB.players,nm))DB.players[nm]=newPlayer(nm);
   DB.last=nm; chosen(nm); saveAll(); toSea(); },900); }
 window.addEventListener("hashchange",function(){ if(location.hash==="#kart"||location.hash==="#kartalle"){ KART.demoAlle=(location.hash==="#kartalle"); openMap(); } });
-if(location.hash.indexOf("uvar")>=0){ window.__wx="heavyrainandthunder"; } // dev: fiske.html#uvar tvinger ruskevær (lyn, torden, regn)
+if(location.hash.indexOf("uvar")>=0){ window.__wx="heavyrainandthunder"; // dev: fiske.html#uvar tvinger ruskevær (lyn, torden, regn)
+  // …og #uvartest gir lyn kvart sjuande sekund, så ein kan sjå heile sekvensen utan å vente
+  if(location.hash.indexOf("uvartest")>=0) setInterval(function(){ tordenCool=0; }, 7000); }
 if(location.hash.indexOf("lyddebug")>=0){ setInterval(function(){ try{ document.title=JSON.stringify(Snd._maal()); }catch(e){ document.title="maal-feil: "+e.message; } },1000); } // feilsøking: fiske.html#lyddebug viser hele lydmiksen i fanetittelen
 // lyd: lås opp Web Audio + start tema ved første trykk; mute-knapper; klikk-lyd på knapper
 document.addEventListener("gesturestart",function(e){e.preventDefault()}); document.addEventListener("gesturechange",function(e){e.preventDefault()}); // pinch-zoom reelt av (iOS)
