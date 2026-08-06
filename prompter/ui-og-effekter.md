@@ -366,3 +366,15 @@ Koden har emoji-fallback, så hvert ikon plugger seg selv inn når fila lander.
 fiskerkortet (koden har 📱-fallback, ikonet plugger seg selv inn). (653 tegn)
 
 > Retro video game pixel art style. A single game icon: a small dark smartphone standing upright, slightly tilted, rounded corners, thin lighter frame, the screen glowing warmly with a tiny envelope symbol and a little red notification dot in the corner, a slim home indicator line at the bottom of the screen. Chunky and readable at small size: few large details, thick clean pixel outlines, one soft screen-glow highlight. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+---
+
+## App-ikon til Albumet og Kystradioen (6. aug)
+
+`spill/assets/appikon-albumet.png` — Albumet 📷 (667 tegn):
+
+> Retro video game pixel art style. A single square app icon: a very simple stylised landscape — two overlapping dark mountain triangles, a small round sun above them, and a straight horizon line, like a classic photo-app symbol. On a soft cream rounded-square tile background, the tile filling the frame edge-to-edge behind the landscape. Chunky and readable at small size: very few details, thick clean pixel outlines, flat shapes only. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/appikon-kystradioen.png` — Kystradioen 📻 (om du vil ha eit eige) (633 tegn):
+
+> Retro video game pixel art style. A single square app icon: a simple stylised radio tower — a narrow dark mast with two crossbars and three curved signal arcs radiating from the top to one side. On a deep charcoal rounded-square tile background, the tile filling the frame edge-to-edge behind the tower. Chunky and readable at small size: very few details, thick clean pixel outlines, flat shapes only. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.

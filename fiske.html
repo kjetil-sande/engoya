@@ -780,6 +780,12 @@
   .albumstor{padding:10px 12px 0}
   .albumstor img{width:100%;height:auto;image-rendering:pixelated;border-radius:8px;display:block}
   .albumtekst{padding:10px 14px 16px;font-size:14.5px;line-height:1.45;color:var(--ink);font-style:italic}
+  .radiorad{display:flex;gap:9px;padding:9px 13px;border-bottom:1px solid rgba(93,78,55,.14)}
+  .radiorad.vaer{background:#eef3f6}
+  .radiorad.min{background:#fdf3d6}
+  .radiorad .rkl{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);flex:0 0 auto;padding-top:1px}
+  .radiorad .rtx{font-size:13.5px;line-height:1.4;min-width:0}
+  .radiorad .rtx b{display:block;font-size:13px;color:var(--wood-dark)}
   .pftelefon{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
     padding:13px;font-size:17.5px;margin:12px 0 2px} /* telefonen skal FINNES — stor og øverst (eieren, 6. aug) */
   .feilpille{border:0;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;
@@ -6552,12 +6558,14 @@ function visTelefon(){
     +'<button class="appikon" id="appVaer">'+ai("vaeret","🌦️")+'<span class="an">Været</span></button>'
     +'<button class="appikon" id="appVekt">'+ai("vekta","⚖️")+'<span class="an">Vekta</span></button>'
     +'<button class="appikon" id="appAlbum">'+ai("albumet","📷")+'<span class="an">Albumet</span></button>'
+    +'<button class="appikon" id="appRadio">'+ai("kystradioen","📻")+'<span class="an">Kystradioen</span></button>'
     +'</div>';
   $("#appMeld").onclick=function(){ Snd.click(); modal("telefonModal",false); visInnboks(); };
   $("#appTraal").onclick=function(){ Snd.click(); visTraalApp(); };
   $("#appVaer").onclick=function(){ Snd.click(); visVaerApp(); };
   $("#appVekt").onclick=function(){ Snd.click(); visVektApp(); };
   $("#appAlbum").onclick=function(){ Snd.click(); visAlbumApp(); };
+  $("#appRadio").onclick=function(){ Snd.click(); visRadioApp(); };
   Snd.click(); modal("telefonModal",true);
 }
 function telHode(tittel){ return '<div class="telhode"><button class="smstilbake" id="telTilbake">&lsaquo;</button>'+tittel+'</div>'; }
@@ -6724,6 +6732,77 @@ function visAlbumBilde(i){
     +'<div class="albumtekst">'+esc(a.b)+'</div>';
   $("#telInnhold").innerHTML=h;
   $("#telTilbake").onclick=function(){ Snd.click(); visAlbumApp(); };
+}
+/* ---------- Kystradioen (6. aug): VHF-loggen på kanal 16 ----------
+   Bodø Radio gjenfødt som LOGG, ikkje som anrop — problemet var aldri stemma, det var
+   at ho ringde. Fem oppføringar per døgn, trekt deterministisk av dagen: heile familien
+   høyrer det same, og loggen står stille til i morgon. Gjenbruker vêret frå MET, dei ti
+   fiskarane med målforma si, og turen din om du har pengar ute. */
+var RADIO_VAER=[
+ "Kystvarsel for Helgeland og Salten: {vind}. Sikt god. Neste melding klokka 0600.",
+ "Meteorologisk institutt melder {vind} i natt, minkande utover morgonen.",
+ "Varsel for kystfarvatna: {vind}. Fartøy under femten meter bør ta omsyn.",
+ "Kystvarsel: {vind}. Ingen farevarsel er sendt ut for området."];
+var RADIO_VIND=["laber bris frå sør","frisk bris, aukande til kuling","liten kuling frå nordvest",
+ "stiv kuling og grov sjø","lett bris og stille sjø","bris frå vest, roleg sjø"];
+var RADIO_INNSLAG=[
+ {t:"{fiskar} kallar Bodø Radio. Melder posisjon vest av Eggakanten, alt vel om bord."},
+ {t:"{fiskar} melder frå: går inn til kai i kveld. Full kasse."},
+ {t:"{fiskar} kallar. Har fått motortrøbbel, men klarar seg sjølv. Ingen assistanse naudsynt."},
+ {t:"{fiskar} melder om mykje sild på ekkoloddet nord for Trålsund."},
+ {t:"{fiskar} kallar Bodø Radio og melder at det står torsk tett på Svartrenna."},
+ {t:"{fiskar}: «Eg seier ikkje meir på telefonen. Dei høyrer jo på.»"},
+ {t:"{fiskar} melder om drivande garn i leia. Farvél for småbåtar."},
+ {t:"{fiskar} kallar. Spør om nokon har sett teina hans. Blå blåse, merkt med kvitt."},
+ {t:"Til alle fartøy: kvalobservasjon meldt i Lopphavet. Hald god avstand."},
+ {t:"Sjømerke slokna ved innløpet til Saltvær. Kystverket er varsla."},
+ {t:"Øving med redningsskøyta i morgon føremiddag. Ingen fare på ferde."},
+ {t:"Til alle fartøy: hugs at hummarfisket opnar fyrste oktober."},
+ {t:"Rusten på Saltvær melder at agnlageret er fylt opp. «Kom og hent før det blir gammalt.»"},
+ {t:"Propell-Kjell melder at verkstaden held stengt til klokka ti i morgon. «Eg skal fiske sjølv.»"},
+ {t:"Målfrid i arkivet minner om at rekordane skal meldast inn same dagen dei blir sette."},
+ {t:"Uidentifisert gjenstand drivande i Uthavet. Truleg ei tønne."},
+ {t:"Fyrlykta på Kvitholmen er skifta. Takk til alle som melde frå."},
+ {t:"Ein fritidsfiskar melder at han har mista lua. «Ho er raud. Ho betyr mykje for meg.»"},
+ {t:"Minner om lyttevakt på kanal 16. Nødtrafikk har alltid forrang."},
+ {t:"Fiskeridirektoratet melder om kontroll i området komande veke."}];
+function radioLogg(){ // deterministisk av dagen — familien høyrer det same
+  var d=bestillingsDag(), rng=mulberry32(d^0x5AD10), ut=[];
+  var v=RADIO_VAER[(rng()*RADIO_VAER.length)|0].replace("{vind}",RADIO_VIND[(rng()*RADIO_VIND.length)|0]);
+  if(typeof uvaerNaa==="function"&&uvaerNaa())
+    v="KULINGVARSEL for Helgeland og Salten: sterk kuling og høg sjø. Fartøy blir bedne om å søkje hamn.";
+  ut.push({kl:"0545", a:"Bodø Radio", t:v, vaer:true});
+  var brukt={}, brukteF={}, kl=["0820","1105","1440","1915","2230"];
+  for(var i=0;i<4;i++){
+    var n=(rng()*RADIO_INNSLAG.length)|0, teljar=0;
+    while(brukt[n]&&teljar<40){ n=(n+1)%RADIO_INNSLAG.length; teljar++; }
+    brukt[n]=1;
+    var mal=RADIO_INNSLAG[n].t;
+    var fi=(rng()*FISKERE.length)|0, t2=0;
+    while(brukteF[fi]&&t2<20){ fi=(fi+1)%FISKERE.length; t2++; } // same båt kallar ikkje to gonger same døgn
+    brukteF[fi]=1; var f=FISKERE[fi];
+    var eigen=mal.indexOf("{fiskar}")===0; // «{fiskar} melder …» → namnet står alt som avsendar
+    var tx=eigen?mal.replace(/^\{fiskar\}\s*/,"").replace(/^kallar/,"Kallar").replace(/^melder/,"Melder")
+                :mal.replace("{fiskar}", f.n);
+    if(eigen&&tx.charAt(0)===":")tx=tx.slice(1).trim();
+    ut.push({kl:kl[i], a:eigen?f.n:"Bodø Radio", t:tx.charAt(0).toUpperCase()+tx.slice(1)});
+  }
+  // Står pengane dine ute, kjem båten på lufta til slutt — det er DIN tur dette
+  if(P&&P.invest&&P.invest.tur){ var ft=fiskerVed[P.invest.tur.fk];
+    if(ft)ut.push({kl:kl[4], a:ft.n, min:true,
+      t:(ft.mal==="nn"?"kallar Bodø Radio. Trålen står ute, og det ser bra ut. Er i hamn snart."
+                      :"kaller Bodø Radio. Trålen står ute, og det ser bra ut. Er i havn snart.")}); }
+  return ut;
+}
+function visRadioApp(){
+  var h=telHode("Kystradioen")+'<div class="telseksjon">Kanal 16 · siste døgn</div>';
+  radioLogg().forEach(function(r){
+    h+='<div class="radiorad'+(r.vaer?" vaer":"")+(r.min?" min":"")+'">'
+      +'<span class="rkl">'+r.kl+'</span>'
+      +'<span class="rtx"><b>'+esc(r.a)+'</b>'+esc(r.t)+'</span></div>'; });
+  h+='<div class="teltom" style="padding:14px 20px">Loggen skiftar ved daggry. 📻</div>';
+  $("#telInnhold").innerHTML=h;
+  $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
 }
 function settKlokke(){ var e=$("#smsKlokke"); if(!e)return; var d=new Date();
   e.textContent=("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2); }
