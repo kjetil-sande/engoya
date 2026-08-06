@@ -1407,8 +1407,19 @@ var Snd=(function(){
   };
 })();
 
-/* ---------- Fiskedata (14 arter, rangert) ---------- */
-var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
+/* ---------- Fiskedata (rangert) ---------- */
+/* rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk. Rekkefølgen skal ALLTID merkes i kassa:
+   mest vanlig fisk, så sjelden, og legendarisk sist. rar avgjør hvilken pulje du
+   havner i (se startWait), w avgjør hvem du får INNENFOR puljen — og w er relativ
+   til de andre i samme sone, ikke en absolutt sjanse.
+
+   Bånd for w, så en ny art ikke skyver sonen sin ut av form:
+     80–100  sonens ansikt   sei og makrell (Grunt), torsk (Mellomdyp)
+     38–70   fast følge      hyse, brosme, lyr, sandflyndre, hågjel, ulke, uer, lange
+     16–34   bifangst        brisling, sild, kolmule, blåkveite, sypike, øyepål
+      2–14   glimt           kveite, breiflabb, håkjerring, månefisk
+   zbw er samme skala i artens ANDRE sone, og skal ligge under w. */
+var FISH=[
  {k:"sei",n:"Sei",z:0,pull:0.7,w:100,len:[30,70],kg:4,pris:30,col:"#6b7a72",shape:"torpedo",rar:0,fight:0.8,min:45,dg:[0.6,1.5,1.0,1.5],syn:true,str:0.85},
  {k:"lyr",n:"Lyr",z:0,zb:1,zbw:12,pull:0.9,w:45,len:[35,78],kg:5,pris:40,col:"#b0895a",shape:"torpedo",rar:0,fight:0.75,dg:[0.5,1.6,0.9,1.6],syn:true,ss:[0.5,0.5,0.6,0.7,0.9,1.1,1.3,1.3,1.2,0.9,0.7,0.5],str:0.85},
  {k:"makrell",n:"Makrell",z:0,pull:1.15,w:80,len:[24,46],kg:8,pris:25,col:"#2e7d8b",shape:"streak",rar:0,fight:0.8,min:30,dg:[0.1,1.6,1.0,1.6],ss:[0,0,0,0,0,0.4,1.5,1.5,1.0,0.15,0,0],str:0.85},
@@ -1450,8 +1461,11 @@ var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
  {k:"skolest",n:"Skolest",z:3,pull:1.0,w:26,len:[45,100],kg:2,pris:320,col:"#6b7078",shape:"eel",rar:1,fight:0.2}, // nesten bare hale
  {k:"haabrann",n:"Håbrann",z:1,zb:2,zbw:14,pull:2.8,w:5,len:[150,300],kg:10,reelSec:1500,pris:0,col:"#46586b",shape:"shark",rar:2,fight:0.95,freda:true,dg:[0.6,1.5,1.0,1.5],ss:[0.4,0.4,0.5,0.7,1.0,1.3,1.5,1.5,1.3,1.0,0.6,0.4]}, // totalfreda siden 2010 — settes alltid ut
  // ——— Bergen–Trondheim-bolken (6. aug): 18 arter frå kysten mellom Vestlandet og Trøndelag ———
- // Kalibrert mot naboane sine: w = kor ofte ho kjem, pris = kva Rusten gir, kg = vektkoeffisient
- // (vekt = (len/100)³·kg). Sesongtala (ss) følgjer ekte vandringar nord for Stad.
+ // pris = kva Rusten gir, kg = vektkoeffisient (vekt = (len/100)³·kg). Sesongtala (ss)
+ // følgjer ekte vandringar nord for Stad.
+ // w vart sett for høgt i fyrste slepp: sypike 55 og øyepål 48 låg i same band som
+ // torsken (90) og hysa (70), og med juksa (sypike ×2,4, øyepål ×2,2) åt dei to
+ // tjuekronersfiskane Mellomdjupet. No ligg dei i bifangstbandet, der dei høyrer heime.
  {k:"sjoorret",n:"Sjøørret",z:0,pull:1.4,w:16,len:[30,70],kg:8,pris:220,col:"#8e9aa6",shape:"torpedo",rar:1,fight:0.75,min:35,dg:[0.5,1.7,0.7,1.7],syn:true,ss:[0.3,0.3,0.6,1.2,1.5,1.3,0.9,0.9,1.3,1.5,0.8,0.4],str:0.85}, // gyter i elva, beitar i sjøen — morgon og kveld er timane
  {k:"brisling",n:"Brisling",z:0,pull:0.2,w:34,len:[8,16],kg:9,pris:6,col:"#b9c6cf",shape:"streak",rar:0,fight:0.1,syn:true,ss:[0.4,0.4,0.6,0.9,1.3,1.5,1.5,1.4,1.2,0.9,0.6,0.4]}, // silda sin vesle bror — går i tette stimar
  {k:"horngjel",n:"Horngjel",z:0,pull:0.9,w:20,len:[50,90],kg:1.2,pris:60,col:"#5c8a6b",shape:"streak",rar:1,fight:0.6,syn:true,ss:[0,0,0,0.1,1.2,1.6,1.5,1.2,0.5,0.1,0,0],str:0.85}, // sommargjest med grøne bein — hoppar som ein liten marlin
@@ -1461,11 +1475,11 @@ var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
  {k:"ulke",n:"Ulke",z:0,zb:1,zbw:12,bunn:true,pull:0.5,w:40,len:[15,35],kg:14,pris:15,col:"#8a6b52",shape:"deep",rar:0,fight:0.2,syn:true,str:0.3}, // hovudet er halve fisken. Alle får ulke.
  {k:"piggvar",n:"Piggvar",z:0,zb:1,zbw:10,bunn:true,pull:1.0,w:6,len:[30,70],kg:16,pris:350,col:"#7a6a58",shape:"flat",rar:1,fight:0.35,syn:true,ss:[0.3,0.3,0.5,0.9,1.3,1.5,1.4,1.3,1.1,0.8,0.5,0.3]}, // delikatessen — sjeldan så langt nord, og verd deretter
  {k:"slettvar",n:"Slettvar",z:0,zb:1,zbw:10,bunn:true,pull:0.9,w:8,len:[28,60],kg:14,pris:240,col:"#8a7a62",shape:"flat",rar:1,fight:0.3,syn:true,ss:[0.3,0.3,0.5,0.9,1.3,1.5,1.4,1.3,1.1,0.8,0.5,0.3]}, // piggvaren si glatte syster
- {k:"sypike",n:"Sypike",z:1,zb:0,zbw:12,pull:0.4,w:55,len:[15,30],kg:7,pris:20,col:"#b09a86",shape:"cod",rar:0,fight:0.15,syn:true}, // torskefisk i miniatyr — store augo, kort skjeggtråd
- {k:"oyepaal",n:"Øyepål",z:1,zb:2,zbw:16,pull:0.3,w:48,len:[12,22],kg:7,pris:10,col:"#9aa8b0",shape:"cod",rar:0,fight:0.1}, // augo som tinnknappar — industrifisk, men ho tel i boka
+ {k:"sypike",n:"Sypike",z:1,zb:0,zbw:10,pull:0.4,w:20,len:[15,30],kg:7,pris:20,col:"#b09a86",shape:"cod",rar:0,fight:0.15,syn:true}, // torskefisk i miniatyr — store augo, kort skjeggtråd
+ {k:"oyepaal",n:"Øyepål",z:1,zb:2,zbw:12,pull:0.3,w:16,len:[12,22],kg:7,pris:10,col:"#9aa8b0",shape:"cod",rar:0,fight:0.1}, // augo som tinnknappar — industrifisk, men ho tel i boka
  {k:"gapeflyndre",n:"Gapeflyndre",z:1,zb:2,zbw:12,bunn:true,pull:0.7,w:18,len:[25,55],kg:11,pris:90,col:"#8a7a68",shape:"flat",rar:1,fight:0.25,syn:true}, // munnen står halvopen støtt — derav namnet
  {k:"havaal",n:"Havål",z:1,zb:2,zbw:20,pull:2.2,w:10,len:[80,200],kg:3.5,pris:180,col:"#4a4a42",shape:"eel",rar:1,fight:0.7,dg:[1.9,0.9,0.35,1.4],str:0.3}, // nattdyret — han kjem ut av steinrøysa når sola er nede
- {k:"kolmule",n:"Kolmule",z:2,zb:3,zbw:20,pull:0.5,w:42,len:[22,42],kg:6,pris:35,col:"#7a8894",shape:"cod",rar:0,fight:0.15}, // står i tjukke slør over eggakanten
+ {k:"kolmule",n:"Kolmule",z:2,zb:3,zbw:16,pull:0.5,w:30,len:[22,42],kg:6,pris:35,col:"#7a8894",shape:"cod",rar:0,fight:0.15}, // står i tjukke slør over eggakanten
  {k:"vassild",n:"Vassild",z:2,zb:3,zbw:16,pull:0.6,w:20,len:[28,50],kg:6,pris:190,col:"#9fb0bd",shape:"streak",rar:1,fight:0.2,syn:true}, // sølvblank med agurklukt — Rusten sver på at ho er undervurdert
  {k:"glassvar",n:"Glassvar",z:2,zb:1,zbw:10,bunn:true,pull:0.7,w:14,len:[25,50],kg:9,pris:160,col:"#b0a894",shape:"flat",rar:1,fight:0.25}, // så tynn at lyset går gjennom henne
  {k:"laksesild",n:"Laksesild",z:3,zb:2,zbw:12,pull:0.2,w:26,len:[6,14],kg:8,pris:60,col:"#8a94a8",shape:"streak",rar:1,fight:0.1,lys:true}, // rader av blå lykter langs buken — ho stig mot overflata om natta
@@ -3016,7 +3030,8 @@ function startWait(){
   if(!erfaren())setHint("Hold inne snella for å lokke — dra sluken små rykk oppover 🎣");
   var agEff=aktivAgn(), suEff=(slukAnbefalt()&&aktivSluk())||null; // MÅ settes før rullene (agn styrer trekningen)
   goldCatch=Math.random()<0.025;
-  // 1 av 150 er legendarisk, 1 av 75 er sjelden — og de biter ikke alltid (25 % / 50 %)
+  // Hver sjelden art er 1 av 300, hver legendarisk 1 av 1200 — og de biter ikke
+  // alltid (50 % / 25 %). Ratene står nede ved pL/pR, der de regnes om til puljesjanser.
   var zf=FISH.filter(function(f){return iSona(f) && f.k!=="makrellstorje"}); // størja tas ALDRI på bunnsluk; allZ (steinbit) biter overalt; zb = art med to soner
   var t2=zf.filter(function(f){return f.rar===2}), t1=zf.filter(function(f){return f.rar===1}), t0=zf.filter(function(f){return !f.rar});
   var base=t0.length?t0:(t1.length?t1:zf); // sonens hverdagsfisk (i Dypt spiller de «sjeldne» hverdagsrollen)
@@ -3050,7 +3065,23 @@ function startWait(){
     return v; }
   var roll=Math.random(), pool, bc, ek=P.ekko?1+0.5*riggK():1; // ekkoloddet ser stimene: +50 % sjanse for sjelden/legendarisk
   if(agEff&&agEff.rar)ek*=agEff.rar; // Rustens Spesialagn: +50 %
-  var pL=ek/150*beste(t2), pR=ek/75*beste(t1); // riggen lokker også de sjeldne fram
+  // Sjeldenheten hører til ARTEN, ikke til puljen. De faste puljetallene (1/75 til alle
+  // sjeldne, 1/150 til alle legendariske) delte den samme sjansen på stadig flere arter
+  // etter hvert som havet vokste — og de to puljene vokste ulikt. Etter 6. aug-bolken
+  // sto det slik i Djuphavet: håkjerringa, eneste legendariske der nede, kom på 0,67 %
+  // av kastene, mens havmusa måtte dele 1,33 % med åtte andre sjeldne og endte på
+  // 0,23 %. Den legendariske var tre ganger vanligere enn den sjeldne. Samme bilde på
+  // Grunt og Mellomdyp.
+  //
+  // Nå eier hver art sin egen rate, og puljesjansen er summen av artene i puljen. Da
+  // holder vanlig > sjelden > legendarisk seg selv — også neste gang vi slipper atten
+  // nye arter, uansett hvilken sone de havner i.
+  var pL=t2.length/1200*ek*beste(t2), pR=t1.length/300*ek*beste(t1); // riggen lokker også de sjeldne fram
+  // Hverdagsfisken skal ALLTID være det du får mest av. Ekkolodd, spesialagn og en godt
+  // matchet rigg ganger opp begge tallene over, og i en sone med sytten sjeldne arter
+  // kunne summen ellers vokst forbi hverdagsfisken. Taket gjør flertallet til en
+  // garanti i stedet for et regnestykke som må gå opp.
+  var pS=pL+pR; if(pS>0.30){ pL*=0.30/pS; pR*=0.30/pS; }
   if(agEff&&agEff.superLegend){ // Superagnet: en LEGENDE kommer — fra hele havet, ikke bare denne sonen (storkveita tar ingen snarveier)
     var sl=FISH.filter(function(f){return f.rar===2&&!f.trophy});
     if(sl.length){ var sw=sl.map(function(f){return Math.max(1,Math.round(f.pris/1200))}), st=0; // de gjeveste oftest

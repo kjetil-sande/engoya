@@ -165,11 +165,24 @@ rp = io.open('verktoy-rapportdata.js', encoding='utf-8').read()
 def bmap(t):
     return {m.group(1): m.group(2).replace(' ', '')
             for m in re.finditer(r'\{k:"([^"]+)".*?b:\{([^}]*)\}', t)}
+# Sone og vekt avgjør hvem du får opp. Sto de ulikt i de to filene, ville rapporten
+# vist en annen fordeling enn spillerne opplever — akkurat den feilen sypika lagde.
+def fmap(t):
+    ut = {}
+    for m in re.finditer(r'\{k:"([^"]+)"[^\n]*', t):
+        rad = m.group(0)
+        ut[m.group(1)] = tuple(
+            (re.search(r'[,{]%s:(-?[\d.]+)' % f, rad) or [None, None])[1]
+            for f in ('z', 'zb', 'zbw', 'w', 'rar'))
+    return ut
 avvik = []
 for n in ('SLUK', 'AGN'):
     a, b = bmap(tab(sp, n)), bmap(tab(rp, n))
     for k in sorted(set(a) | set(b)):
         if a.get(k) != b.get(k): avvik.append('%s/%s' % (n, k))
+fa, fb = fmap(tab(sp, 'FISH')), fmap(tab(rp, 'FISH'))
+for k in sorted(set(fa) | set(fb)):
+    if fa.get(k) != fb.get(k): avvik.append('FISH/%s' % k)
 print("  OK  rapporttabellen er lik spillets" if not avvik
       else "  FEIL  rapportdata har drevet fra spillet: " + ", ".join(avvik))
 sys.exit(1 if avvik else 0)

@@ -51,11 +51,11 @@ var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
  {k:"ulke",n:"Ulke",z:0,zb:1,zbw:12,bunn:true,pull:0.5,w:40,len:[15,35],kg:14,pris:15,col:"#8a6b52",shape:"deep",rar:0,fight:0.2,syn:true,str:0.3}, // hovudet er halve fisken. Alle får ulke.
  {k:"piggvar",n:"Piggvar",z:0,zb:1,zbw:10,bunn:true,pull:1.0,w:6,len:[30,70],kg:16,pris:350,col:"#7a6a58",shape:"flat",rar:1,fight:0.35,syn:true,ss:[0.3,0.3,0.5,0.9,1.3,1.5,1.4,1.3,1.1,0.8,0.5,0.3]}, // delikatessen — sjeldan så langt nord, og verd deretter
  {k:"slettvar",n:"Slettvar",z:0,zb:1,zbw:10,bunn:true,pull:0.9,w:8,len:[28,60],kg:14,pris:240,col:"#8a7a62",shape:"flat",rar:1,fight:0.3,syn:true,ss:[0.3,0.3,0.5,0.9,1.3,1.5,1.4,1.3,1.1,0.8,0.5,0.3]}, // piggvaren si glatte syster
- {k:"sypike",n:"Sypike",z:1,zb:0,zbw:12,pull:0.4,w:55,len:[15,30],kg:7,pris:20,col:"#b09a86",shape:"cod",rar:0,fight:0.15,syn:true}, // torskefisk i miniatyr — store augo, kort skjeggtråd
- {k:"oyepaal",n:"Øyepål",z:1,zb:2,zbw:16,pull:0.3,w:48,len:[12,22],kg:7,pris:10,col:"#9aa8b0",shape:"cod",rar:0,fight:0.1}, // augo som tinnknappar — industrifisk, men ho tel i boka
+ {k:"sypike",n:"Sypike",z:1,zb:0,zbw:10,pull:0.4,w:20,len:[15,30],kg:7,pris:20,col:"#b09a86",shape:"cod",rar:0,fight:0.15,syn:true}, // torskefisk i miniatyr — store augo, kort skjeggtråd
+ {k:"oyepaal",n:"Øyepål",z:1,zb:2,zbw:12,pull:0.3,w:16,len:[12,22],kg:7,pris:10,col:"#9aa8b0",shape:"cod",rar:0,fight:0.1}, // augo som tinnknappar — industrifisk, men ho tel i boka
  {k:"gapeflyndre",n:"Gapeflyndre",z:1,zb:2,zbw:12,bunn:true,pull:0.7,w:18,len:[25,55],kg:11,pris:90,col:"#8a7a68",shape:"flat",rar:1,fight:0.25,syn:true}, // munnen står halvopen støtt — derav namnet
  {k:"havaal",n:"Havål",z:1,zb:2,zbw:20,pull:2.2,w:10,len:[80,200],kg:3.5,pris:180,col:"#4a4a42",shape:"eel",rar:1,fight:0.7,dg:[1.9,0.9,0.35,1.4],str:0.3}, // nattdyret — han kjem ut av steinrøysa når sola er nede
- {k:"kolmule",n:"Kolmule",z:2,zb:3,zbw:20,pull:0.5,w:42,len:[22,42],kg:6,pris:35,col:"#7a8894",shape:"cod",rar:0,fight:0.15}, // står i tjukke slør over eggakanten
+ {k:"kolmule",n:"Kolmule",z:2,zb:3,zbw:16,pull:0.5,w:30,len:[22,42],kg:6,pris:35,col:"#7a8894",shape:"cod",rar:0,fight:0.15}, // står i tjukke slør over eggakanten
  {k:"vassild",n:"Vassild",z:2,zb:3,zbw:16,pull:0.6,w:20,len:[28,50],kg:6,pris:190,col:"#9fb0bd",shape:"streak",rar:1,fight:0.2,syn:true}, // sølvblank med agurklukt — Rusten sver på at ho er undervurdert
  {k:"glassvar",n:"Glassvar",z:2,zb:1,zbw:10,bunn:true,pull:0.7,w:14,len:[25,50],kg:9,pris:160,col:"#b0a894",shape:"flat",rar:1,fight:0.25}, // så tynn at lyset går gjennom henne
  {k:"laksesild",n:"Laksesild",z:3,zb:2,zbw:12,pull:0.2,w:26,len:[6,14],kg:8,pris:60,col:"#8a94a8",shape:"streak",rar:1,fight:0.1,lys:true}, // rader av blå lykter langs buken — ho stig mot overflata om natta
@@ -134,9 +134,13 @@ function fordeling(rig,d){
     return v; }
   function andel(pl){ var v=vekt(pl),t=0; v.forEach(function(x){t+=x}); var o={}; pl.forEach(function(f,i){o[f.k]=v[i]/t}); return o; }
   var ut={};
-  var pB=andel(base); for(var k in pB) ut[k]=pB[k]*0.974;
-  if(t1.length&&t1!==base){ var pR=andel(t1); for(var k2 in pR) ut[k2]=(ut[k2]||0)+pR[k2]*0.0133; }
-  if(t2.length){ var pL=andel(t2); for(var k3 in pL) ut[k3]=(ut[k3]||0)+pL[k3]*0.0067; }
+  // Samme regnestykke som startWait i fiske.html: puljesjansen er summen av artene
+  // i puljen, ikke et fast tall. Endrer du ratene der, endrer du dem her.
+  var sL=t2.length/1200, sR=(t1.length&&t1!==base)?t1.length/300:0;
+  var sS=sL+sR; if(sS>0.30){ sL*=0.30/sS; sR*=0.30/sS; }
+  var pB=andel(base); for(var k in pB) ut[k]=pB[k]*(1-sL-sR);
+  if(sR){ var pR=andel(t1); for(var k2 in pR) ut[k2]=(ut[k2]||0)+pR[k2]*sR; }
+  if(sL){ var pL=andel(t2); for(var k3 in pL) ut[k3]=(ut[k3]||0)+pL[k3]*sL; }
   return ut;
 }
 var RIGG=[].concat(SLUK.filter(function(u){return !u.pilk&&!u.dud}).map(function(u){return {k:u.k,n:u.n,t:"sluk",pris:u.pris,rec:u.rec,b:u.b};}),
