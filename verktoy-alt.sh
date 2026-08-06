@@ -7,6 +7,10 @@
 # med && foran en push. Faller ett ledd, stopper resten.
 
 set -e
+# pipefail (6. aug): `set -e` ser BARE siste ledd i et rør — og siste ledd er `tail`,
+# som alltid lykkes. Uten denne linja var alle «… | tail -1»-testene blinde for feil,
+# og porten sa GRØNT mens to vakter lå og krasjet. Den fella koster et døgn hver gang.
+set -o pipefail
 cd "$(dirname "$0")"
 
 echo "── Syntaks ──────────────────────────────────────────"

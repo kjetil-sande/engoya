@@ -43,9 +43,9 @@ try {
       dager: Object.fromEntries(dager.map(d => [dagKey(d), 3600000])), ...utstyr } });
 
   _sett({
-    fam1: { players: { Kari: spiller("Kari", 38, 86, [0,1,2,9,20], {rod:2,vinsj:true,ekko:true}),
+    fam1: { players: { Kari: spiller("Kari", 56, 109, [0,1,2,9,20], {rod:2,vinsj:true,ekko:true}),
                        Ola: spiller("Ola", 12, 4, [0,3,8]) } },
-    kort1:{ kort:true, players:{ Kari: spiller("Kari", 38, 86, [0,1,2,9,20], {rod:2,vinsj:true}) } }, // SAMME person
+    kort1:{ kort:true, players:{ Kari: spiller("Kari", 56, 109, [0,1,2,9,20], {rod:2,vinsj:true}) } }, // SAMME person
     kort2:{ kort:true, players:{} },                                  // delt ut, ikke tatt i bruk
     fam2: { players:{ Nybegynner: spiller("Nybegynner", 2, 0, [0]) } },
     fam3: { players:{ Sluttet: spiller("Sluttet", 20, 10, [40,41,42]) } },
