@@ -74,6 +74,9 @@ VENTA = {
     "knapp-rusten.png":     "under arbeid — faller tilbake til portrett-rusten.png",
     "knapp-kjell.png":      "under arbeid — faller tilbake til portrett-kjell.png",
     "knapp-maalfrid.png":   "under arbeid — faller tilbake til portrett-maalfrid.png",
+    # Reketråleren i arbeid. Halet tegner sjøen, bølgene, wirene og nota selv, så
+    # scenen står og virker uten henne — det står bare en tekst der båten skal være.
+    "traaler-reke-hal.png": "under arbeid — halet viser en plassholdertekst i mellomtiden",
 }
 
 har = set(p.split('/')[-1] for p in subprocess.run(

@@ -418,6 +418,28 @@
   .vbar{width:22px;height:120px;border-radius:8px;background:rgba(13,33,41,.6);border:2px solid #2c5a63;position:relative;overflow:hidden}
   .vbar > i{position:absolute;left:0;right:0;bottom:0;transition:height .05s linear}
   .vbar.tension > i{background:linear-gradient(0deg,#4f9d6b,#e6b45a 60%,#cc4b3a)}
+  /* ---- HALET ---- */
+  /* MERK: ingen position her — .screen gir alt position:absolute;inset:0, og ein
+     «position:relative» hadde teke bort inset-a og gjort skjermen null høg. */
+  #halCv{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #halTopp{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 14px);
+    display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;padding:0 10px}
+  #halRad{display:flex;align-items:center;gap:9px;max-width:100%}
+  .halEnde{font-family:var(--mono);font-size:12.5px;color:#eaf3ee;white-space:nowrap;
+    text-shadow:0 1px 3px rgba(0,0,0,.85)}
+  /* Baren er VANNRETT og LENGDA VEKS med kapasiteten — ein større sekk er noko du
+     ser før du har fanga eit einaste kilo. Breidda blir sett i JS. */
+  #halBar{position:relative;height:19px;border-radius:10px;background:rgba(13,33,41,.62);
+    border:2px solid #2c5a63;overflow:hidden;flex:0 0 auto}
+  #halBar > i{position:absolute;left:0;top:0;bottom:0;width:0;
+    background:linear-gradient(90deg,#c96a4a,#e08a5a 55%,#f0b07a);transition:width .12s linear}
+  #halBar > b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:11.5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9)}
+  #halBar.full{border-color:#f0c060;box-shadow:0 0 10px 2px rgba(240,192,96,.5)}
+  #halStatus{margin:0;font-family:var(--mono);font-size:12.5px;color:#dfe9e2;text-align:center;
+    text-shadow:0 1px 3px rgba(0,0,0,.85);min-height:16px}
+  #halBunn{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
+    display:flex;justify-content:center}
   /* Kjøleribba i arbeid: ei svak, kald glo rundt spennmålaren medan han fell. */
   .vbar.tension.kjoler{border-color:#6fb6d6;box-shadow:0 0 9px 2px rgba(130,205,255,.45)}
   .vbar.prog > i{background:linear-gradient(0deg,#0d3b4a,#2e8b9e,#7fd0dd)}
@@ -865,6 +887,22 @@
   </section>
 
   <!-- SEA -->
+  <!-- HALET: reketrålaren i arbeid. Eiga scene, eige lerret — sjøen rullar mot
+       venstre, og kapasitetsbaren over båten fyller seg medan trålen står ute. -->
+  <section class="screen" id="hal">
+    <canvas id="halCv"></canvas>
+    <div id="halTopp">
+      <div id="halRad">
+        <span class="halEnde" id="halLo">0 kr</span>
+        <div id="halBar"><i id="halFyll"></i><b id="halNaa"></b></div>
+        <span class="halEnde" id="halHi">0 kr</span>
+      </div>
+      <p id="halStatus"></p>
+    </div>
+    <div id="halBunn">
+      <button class="btn" id="halHiv">Hiv trålen</button>
+    </div>
+  </section>
   <section class="screen" id="sea">
     <div id="hud">
       <button class="fiskerknapp" id="openProfil" title="Fiskerkortet"><img src="spill/assets/ikon-fiskeren.png" alt="Fiskerkortet" onerror="this.outerHTML='🧑'"><span id="profilPrikk"></span></button>
@@ -5653,8 +5691,228 @@ function drawFishInto(box,f,size){ box.innerHTML=""; var c=document.createElemen
   var w=size*1.5,h=size*0.9; c.style.width=w+"px"; c.style.height=h+"px"; drawFish(c,f,w,h,false); }
 
 var t0=performance.now(), bob=0;
+/* ================= HALET: reketråling ===================================
+   Slik gjer dei det langs kysten: trålen blir sett ut, båten går sakte (2–3 knop)
+   i timevis over eit rekefelt, og reka står ikkje jamt utover — ho står i FLAK.
+   Difor er eit hal aldri ei jamn stigning. Du kan gå ein time utan noko som helst
+   og så treffe eit flak som fyller sekken på ti minutt. Det er nettopp den uvissa
+   som gjer at folk gidd å stå og sjå på, og det er den vi modellerer her:
+
+     - eit hal er 1–4 flak (ekkoloddet finn 1–2 til)
+     - kvart flak har eit tilfeldig STARTPUNKT i halet og ei tilfeldig VEKT
+     - vekta er skeivfordelt (^1.8), så eitt flak dominerer ofte dei andre
+
+   Ligg det dominerande flaket seint, skjer det «ingenting» heilt til det tek av.
+   Ligg alle tidleg, skyt baren opp og stoppar på tjue prosent. Same maskineri,
+   heilt ulik oppleving — utan at vi treng å skrive kvar variant for hand.
+   ---------------------------------------------------------------------- */
+var halBaatImg=new Image(); halBaatImg.onerror=function(){}; halBaatImg.src="spill/assets/traaler-reke-hal.png";
+var halCv=$("#halCv"), halCx=(halCv&&halCv.getContext)?halCv.getContext("2d"):null;
+var halW=0, halH=0, halBolgeCv=document.createElement("canvas"), halBolgeCx=halBolgeCv.getContext("2d");
+var HAL=null;
+function halKr(n){ return Math.round(n).toLocaleString("nb"); } // spelet elles skriv tal slik
+
+// Sekkestorleik i kroner. Dette ER makskapasiteten baren viser heilt til høgre.
+var HAL_KAP=[60000,110000,180000];
+function halKap(){ var n=(P&&P.traalPose)|0; return HAL_KAP[Math.min(n,HAL_KAP.length-1)]; }
+function halRigg(){ return { rist:!!(P&&P.traalRist), lodd:!!(P&&P.traalLodd), vinsj:!!(P&&P.traalVinsj) }; }
+
+function halFlak(rng, rigg){
+  var n=1+Math.floor(rng()*4);
+  if(rigg.lodd) n+=1+Math.floor(rng()*2);   // loddet finn flak du elles hadde gått rett forbi
+  var flak=[], sum=0;
+  for(var i=0;i<n;i++){
+    var lg=0.03+rng()*0.14;
+    var v=Math.pow(rng(),1.8);              // skeivt: som regel eitt stort og nokre små
+    flak.push({t0:0.02+rng()*(0.95-lg), lg:lg, v:v}); sum+=v;
+  }
+  if(sum<=0){ flak[0].v=1; sum=1; }
+  flak.forEach(function(f){ f.v/=sum; });
+  flak.sort(function(a,b){ return a.t0-b.t0; });
+  return flak;
+}
+
+function halStart(){
+  var rng=mulberry32((Date.now()^(Math.random()*1e9))|0), rigg=halRigg(), kap=halKap();
+  // Kor mykje reke som står der ute i det heile. Vid spreiing med vilje: eit hal
+  // skal kunne bli nesten tomt, og det skal kunne sprengje sekken.
+  var r=rng(), andel;
+  if(r<0.10)      andel=0.02+rng()*0.08;    // tom trål — det hender, og det må det få gjere
+  else if(r<0.55) andel=0.12+rng()*0.28;
+  else if(r<0.88) andel=0.40+rng()*0.35;
+  else            andel=0.75+rng()*0.50;    // over 1,0 = sekken går full før halet er ferdig
+  if(rigg.lodd) andel*=1.15;                // du finn meir når du ser kvar ho står
+  var tak=rigg.vinsj?1.0:0.85;              // utan kraftblokk greier dei ikkje hive ein heilt full sekk
+  HAL={ t:0, lengd:25+rng()*15, flak:halFlak(rng,rigg), rull:0, bob:0,
+        kap:kap, tak:tak, total:kap*andel, verdi:0, full:false, ferdig:false,
+        status:"Trålen er ute." };
+  halMaal();
+}
+
+// Baren si LENGDE fortel kor stor sekken er, før du har fanga eitt kilo.
+function halMaal(){
+  var b=$("#halBar"); if(!b||!HAL)return;
+  var full=Math.min(halH?halW:window.innerWidth, 900)-150;
+  var frac=HAL.kap/HAL_KAP[HAL_KAP.length-1];
+  b.style.width=Math.round(full*(0.52+0.48*frac))+"px";
+  $("#halLo").textContent="0 kr";
+  $("#halHi").textContent=halKr(HAL.kap)+" kr";
+}
+
+function halAndel(tt){ // kor mykje av totalen som er i sekken ved tida tt
+  var s=0;
+  for(var i=0;i<HAL.flak.length;i++){ var f=HAL.flak[i];
+    var u=(tt-f.t0)/f.lg; u=u<0?0:(u>1?1:u);
+    s+=f.v*(u*u*(3-2*u));   // mjuk inn og ut — flaket kjem gradvis, ikkje som eit hopp
+  }
+  return s;
+}
+
+function halSteg(dt){
+  if(!HAL||HAL.ferdig)return;
+  HAL.t+=dt; HAL.rull+=dt*118; HAL.bob+=dt*2.6;   // sjøen renn mot venstre; båten er i fart
+  var tt=Math.min(1,HAL.t/HAL.lengd);
+  var v=HAL.total*halAndel(tt);
+  var loft=HAL.kap*HAL.tak;
+  if(v>=loft){ v=loft; if(!HAL.full){ HAL.full=true;
+      HAL.status=HAL.tak<1?"Sekken er så tung som vinsjen klarer!":"SEKKEN ER FULL!"; } }
+  HAL.verdi=v;
+  if(tt>=1||HAL.full) halSlutt();
+  else if(!HAL.full){
+    var fart=halAndel(Math.min(1,tt+0.02))-halAndel(tt);
+    HAL.status = fart>0.012 ? "Det koker der nede!" : (v>0 ? "Jevn reke." : "Ikke et kilo ennå.");
+  }
+  var f=$("#halFyll"), n=$("#halNaa"), b=$("#halBar");
+  if(f)f.style.width=Math.min(100,HAL.verdi/HAL.kap*100)+"%";
+  if(n)n.textContent=halKr(HAL.verdi)+" kr";
+  if(b)b.classList.toggle("full",HAL.full);
+  var s=$("#halStatus"); if(s)s.textContent=HAL.status;
+}
+
+function halSlutt(){
+  if(!HAL||HAL.ferdig)return; HAL.ferdig=true;
+  $("#halHiv").textContent="Ferdig";
+  var s=$("#halStatus");
+  if(s)s.textContent=HAL.verdi<HAL.kap*0.05 ? "Trålen kom opp med tang og lite annet."
+      : "Trålen er oppe: "+halKr(HAL.verdi)+" kr.";
+}
+
+function tegnHal(dt){
+  if(!halCx||!HAL)return;
+  var r=$("#stage").getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
+  if(halW!==r.width||halH!==r.height){ halW=r.width; halH=r.height;
+    halCv.width=halW*dpr; halCv.height=halH*dpr; halCx.setTransform(dpr,0,0,dpr,0,0); halMaal(); }
+  var W2=halW, H2=halH, mn=Math.min(W2,H2), wl=H2*0.34, g=halCx; // vasslinja på 34 %, same som ute på havet
+  g.clearRect(0,0,W2,H2);
+  // --- SJØEN: Uthavet, same bilete som den djupaste sona.
+  //     Bildet er 1600 breitt og 10090 høgt — altså smalt. Skalerer vi det så
+  //     vasslinja i bildet treffer vasslinja vår, blir flisa berre ~490 px brei, og
+  //     ei vanleg gjentaking ville synt ein hard skjøt kvart fjerde sekund.
+  //     Difor SPEGLAR vi annakvar flis: då er høgre kant av den eine alltid identisk
+  //     med venstre kant av den neste, og skjøten finst ikkje. På ope hav utan
+  //     landemerke ser ingen at bildet vender; ein ser berre at sjøen renn forbi.
+  var uh=(typeof waterImg!=="undefined")&&waterImg[3];
+  if(uh&&uh.complete&&uh.naturalWidth){
+    var sc=wl/((WLF[3]||0.089)*uh.naturalHeight);        // vasslinje mot vasslinje
+    var tw=uh.naturalWidth*sc;
+    var srcH=Math.min(uh.naturalHeight, H2/sc);          // berre den biten som havnar på skjermen
+    var per=tw*2, start=-(HAL.rull%per);
+    var hy=Math.ceil(srcH*sc);
+    for(var k=0; start+k*tw < W2; k++){
+      var x=Math.round(start+k*tw), br=Math.ceil(tw)+1;   // +1 px lapp: brøkbreidder gav elles ei hårfin glipe
+      if(x+br<0)continue;
+      if(k%2){ g.save(); g.translate(x+br,0); g.scale(-1,1);
+        g.drawImage(uh, 0,0, uh.naturalWidth, srcH, 0,0, br, hy); g.restore(); }
+      else g.drawImage(uh, 0,0, uh.naturalWidth, srcH, x,0, br, hy);
+    }
+  } else {
+    var sky=g.createLinearGradient(0,0,0,wl);
+    sky.addColorStop(0,"#1d3b57"); sky.addColorStop(1,"#4d7893");
+    g.fillStyle=sky; g.fillRect(0,0,W2,wl);
+    var sjo=g.createLinearGradient(0,wl,0,H2);
+    sjo.addColorStop(0,"#2c5c74"); sjo.addColorStop(1,"#15374a");
+    g.fillStyle=sjo; g.fillRect(0,wl,W2,H2-wl);
+    // tre lag med striper i ulik fart — parallaksen gjer at sjøen får djupn
+    for(var L=0;L<3;L++){
+      var fart=0.35+L*0.55, hgt=mn*(0.010+L*0.007), avst=mn*(0.16+L*0.10);
+      g.fillStyle="rgba(255,255,255,"+(0.05+L*0.035)+")";
+      var y0=wl+(H2-wl)*(0.08+L*0.26), o=(HAL.rull*fart)%avst;
+      for(var sx=-o; sx<W2; sx+=avst) g.fillRect(sx, y0, avst*0.42, hgt);
+    }
+  }
+  // --- bølgjestripe ved vasslinja, same knep som ute på havet men RASKARE:
+  //     klokka er HAL.bob, som går 2,6 ganger så fort som duppen til den kvite båten.
+  if(!ROLIG_SJO){
+    var wb=Math.max(8,Math.round(mn*0.020)), wk=Math.max(4,Math.round(W2/110));
+    var bw=Math.ceil(W2*dpr), bh=Math.ceil(wb*2*dpr);
+    if(halBolgeCv.width!==bw||halBolgeCv.height!==bh){ halBolgeCv.width=bw; halBolgeCv.height=bh; }
+    halBolgeCx.clearRect(0,0,bw,bh);
+    halBolgeCx.drawImage(halCv, 0, -Math.round((wl-wb)*dpr));
+    for(var wx=0; wx<W2; wx+=wk){
+      var wo=Math.sin(wx*0.019+HAL.bob*1.9)*3.6 + Math.sin(wx*0.045-HAL.bob*1.2+1.3)*2.2;
+      g.drawImage(halBolgeCv, wx*dpr, 0, wk*dpr, bh, wx, wl-wb+wo, wk, wb*2);
+    }
+  }
+  // --- TRÅLEN. Du ser aldri ei reke. Du ser wirane gå akterut og ned, og du anar
+  //     nota eit stykke under overflata før ho blir borte i det blå. Reka står på
+  //     200-400 meter; skulle vi teikna henne, ville vi lyge om kor djupt det er.
+  //     Alt du VEIT om fangsten, veit du frå baren. Det er heile poenget.
+  var akter=W2*0.50-mn*0.30, dupp=Math.sin(HAL.bob*1.15)*3.0+Math.sin(HAL.bob*0.63+1.7)*1.4;
+  (function(){
+    var ned=(H2-wl)*0.42, borte=wl+ned;             // så langt ned nota er å sjå
+    g.save(); g.lineCap="round";
+    for(var w=0;w<2;w++){                            // to wirar, litt ulik lengd
+      var x1=akter-mn*0.02*w, y1=wl-mn*0.055+dupp;
+      var x2=akter-mn*(0.20+0.03*w), y2=wl+mn*0.012;
+      g.strokeStyle="rgba(225,235,240,"+(0.55-0.12*w)+")"; g.lineWidth=1.6;
+      g.beginPath(); g.moveTo(x1,y1); g.quadraticCurveTo((x1+x2)/2, y1+mn*0.03, x2, y2); g.stroke();
+    }
+    var gr=g.createLinearGradient(0,wl,0,borte);     // nota bleiknar nedover
+    gr.addColorStop(0,"rgba(120,175,150,.40)"); gr.addColorStop(1,"rgba(120,175,150,0)");
+    g.strokeStyle=gr; g.lineWidth=1.3;
+    var mx=akter-mn*0.215, bx=akter-mn*0.46;         // munnen oppe, posen nede bakover
+    for(var s=0;s<=6;s++){                            // langsgåande masketrådar
+      var f=s/6, x0=mx-mn*0.02*s*0.5, sp=mn*(0.055-0.028*f);
+      g.beginPath(); g.moveTo(x0, wl+sp*0.3);
+      g.quadraticCurveTo((x0+bx)/2, wl+ned*0.55+sp, bx, borte-mn*0.01); g.stroke();
+    }
+    for(var t2=1;t2<=4;t2++){                         // tverrbanda, så det les som eit nett
+      var ff=t2/5, yy=wl+ned*ff, xa=mx-(mx-bx)*ff*0.92;
+      g.beginPath(); g.moveTo(xa, yy-mn*(0.05-0.03*ff)); g.lineTo(xa, yy+mn*(0.05-0.03*ff)); g.stroke();
+    }
+    g.restore();
+  })();
+  var bi=halBaatImg;
+  if(bi.complete&&bi.naturalWidth){
+    var bw2=mn*0.78, bh2=bw2*bi.naturalHeight/bi.naturalWidth;
+    g.save(); g.translate(W2*0.50, wl-bh2*0.30+dupp);
+    g.rotate(Math.sin(HAL.bob*0.5)*0.012);
+    g.drawImage(bi,-bw2/2,-bh2/2,bw2,bh2); g.restore();
+  } else {
+    g.fillStyle="rgba(235,240,238,.16)"; g.font=Math.round(mn*0.032)+"px monospace";
+    g.textAlign="center"; g.fillText("traaler-reke-hal.png manglar", W2*0.5, wl-mn*0.06); g.textAlign="left";
+  }
+}
+
+function halOpne(){ show("hal"); halStart();
+  // Uthavet-bildet blir elles fyrst henta når du står i den djupaste sona. Her er
+  // det bakgrunnen, så vi ber om det med ein gong — same veg som spelet elles gjer.
+  if(!waterImg[3].complete||!waterImg[3].naturalWidth){
+    if(typeof updateDyptImg==="function")updateDyptImg();
+    if(!waterImg[3].getAttribute("src"))
+      waterImg[3].src="spill/assets/uthavet-"+((typeof dyptVariant==="function"&&dyptVariant())||"dag")+".jpg";
+  }
+  var b=$("#halHiv"); b.textContent="Hiv trålen"; b.disabled=false;
+  $("#halFyll").style.width="0%"; $("#halNaa").textContent="0 kr"; $("#halBar").classList.remove("full");
+  halMaal(); }
+function halLukk(){ HAL=null; show("sea"); }
+$("#halHiv").onclick=function(){ Snd.click();
+  if(!HAL) return halLukk();
+  if(!HAL.ferdig){ halSlutt(); return; }   // hiv tidleg: du får det som ligg i sekken no
+  halLukk(); };
 function loop(now){
   var dt=Math.min(0.05,(now-t0)/1000); t0=now; bob+=dt; if(castT>0)castT-=dt;
+  if($("#hal").classList.contains("on")){ halSteg(dt); tegnHal(dt); }
   kampLagerT-=dt; if(kampLagerT<=0){ kampLagerT=1.5; if(phase==="reel"&&hooked)kampFrys(); else if(kampFrossen)kampTin(); } // kampen fryses mens den står på
   if(boatIn<1&&!boatHold){ boatIn=Math.min(1,boatIn+dt/1.4); if(boatIn>=1)Snd.motorOff(); }
   else if(fisherT<1) fisherT=Math.min(1,fisherT+dt/0.5);
@@ -7255,6 +7513,7 @@ window.addEventListener("hashchange",function(){ if(location.hash==="#kart"||loc
 if(location.hash.indexOf("uvar")>=0){ window.__wx="heavyrainandthunder"; // dev: fiske.html#uvar tvinger ruskevær (lyn, torden, regn)
   // …og #uvartest gir lyn kvart sjuande sekund, så ein kan sjå heile sekvensen utan å vente
   if(location.hash.indexOf("uvartest")>=0) setInterval(function(){ tordenCool=0; }, 7000); }
+if(location.hash.indexOf("halet")>=0) setTimeout(halOpne, 1200); // dev: fiske.html#halet går rett i trålen
 if(location.hash.indexOf("lyddebug")>=0){ setInterval(function(){ try{ document.title=JSON.stringify(Snd._maal()); }catch(e){ document.title="maal-feil: "+e.message; } },1000); } // feilsøking: fiske.html#lyddebug viser hele lydmiksen i fanetittelen
 // lyd: lås opp Web Audio + start tema ved første trykk; mute-knapper; klikk-lyd på knapper
 document.addEventListener("gesturestart",function(e){e.preventDefault()}); document.addEventListener("gesturechange",function(e){e.preventDefault()}); // pinch-zoom reelt av (iOS)
