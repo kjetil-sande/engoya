@@ -10,6 +10,8 @@ video/*-ORIG.*
 spill/assets/*.psd
 spill/assets/*.ai
 spill/assets/*ORIG*
+# Rå motoropptak (91 s, 2,9 MB kvar) — spillet bruker dei korte loopane med same namn
+spill/lyd/*-ORIG.*
 ikoner/*.ai
 node_modules/
 spill/Sluk-og-agn-rapport.pdf
