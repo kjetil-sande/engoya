@@ -89,10 +89,10 @@ sjekk("snitt per aktiv regnes av de aktive", d.uke.snittMinuttPerAktiv === 15,
 
 console.log("\n3. GRENSEN FOR NYTT INNHOLD");
 sett([
-  fisker("Nesten", [[1, 30]], 33),   // 33 av 38 = over 85 %
-  fisker("Ferdig", [[2, 30]], 38),   // alt
+  fisker("Nesten", [[1, 30]], 49),   // 49 av 56 = over 85 %
+  fisker("Ferdig", [[2, 30]], 56),   // alt
   fisker("Fersk", [[1, 30]], 4),
-  fisker("Ferdig-men-borte", [[40, 30]], 38),
+  fisker("Ferdig-men-borte", [[40, 30]], 56),
 ]);
 d = await kjor();
 sjekk("to nærmer seg grensen", d.uke.naerSlutten === 2, "=" + d.uke.naerSlutten);

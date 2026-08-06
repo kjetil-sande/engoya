@@ -30,6 +30,9 @@ ${funksjon("gearLoft")}
 ${funksjon("gearInn")}
 function flettDager(a,b){ return Object.assign({}, a||{}, b||{}); }
 function flettInvest(){ } function flettInnboks(){ return []; }
+// gearLoft flettar meir enn troféskapet no — desse er stumme her fordi testen
+// måler ÉN ting: at skapet aldri krympar. Manglar dei, krasjar heile vakta.
+function flettTips(){ } function flettBestilling(){ }
 var P=null;
 export { flettTrofe, gearLoft, gearInn };
 `).toString("base64"));

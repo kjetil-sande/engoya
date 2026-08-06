@@ -39,24 +39,54 @@ var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
  {k:"akkar",n:"Akkar",z:1,zb:2,zbw:20,pull:0.8,w:16,len:[25,60],kg:6,pris:150,col:"#8a4a5c",shape:"eel",rar:1,fight:0.4,dg:[1.8,1.2,0.5,1.5],ss:[1.4,1.1,0.6,0.3,0.2,0.2,0.2,0.3,0.6,1.2,1.6,1.6]}, // storakkar — vintergjest, kan utebli i årevis
  {k:"skolest",n:"Skolest",z:3,pull:1.0,w:26,len:[45,100],kg:2,pris:320,col:"#6b7078",shape:"eel",rar:1,fight:0.2}, // nesten bare hale
  {k:"haabrann",n:"Håbrann",z:1,zb:2,zbw:14,pull:2.8,w:5,len:[150,300],kg:10,reelSec:1500,pris:0,col:"#46586b",shape:"shark",rar:2,fight:0.95,freda:true,dg:[0.6,1.5,1.0,1.5],ss:[0.4,0.4,0.5,0.7,1.0,1.3,1.5,1.5,1.3,1.0,0.6,0.4]}, // totalfreda siden 2010 — settes alltid ut
+ // ——— Bergen–Trondheim-bolken (6. aug): 18 arter frå kysten mellom Vestlandet og Trøndelag ———
+ // Kalibrert mot naboane sine: w = kor ofte ho kjem, pris = kva Rusten gir, kg = vektkoeffisient
+ // (vekt = (len/100)³·kg). Sesongtala (ss) følgjer ekte vandringar nord for Stad.
+ {k:"sjoorret",n:"Sjøørret",z:0,pull:1.4,w:16,len:[30,70],kg:8,pris:220,col:"#8e9aa6",shape:"torpedo",rar:1,fight:0.75,min:35,dg:[0.5,1.7,0.7,1.7],syn:true,ss:[0.3,0.3,0.6,1.2,1.5,1.3,0.9,0.9,1.3,1.5,0.8,0.4],str:0.85}, // gyter i elva, beitar i sjøen — morgon og kveld er timane
+ {k:"brisling",n:"Brisling",z:0,pull:0.2,w:34,len:[8,16],kg:9,pris:6,col:"#b9c6cf",shape:"streak",rar:0,fight:0.1,syn:true,ss:[0.4,0.4,0.6,0.9,1.3,1.5,1.5,1.4,1.2,0.9,0.6,0.4]}, // silda sin vesle bror — går i tette stimar
+ {k:"horngjel",n:"Horngjel",z:0,pull:0.9,w:20,len:[50,90],kg:1.2,pris:60,col:"#5c8a6b",shape:"streak",rar:1,fight:0.6,syn:true,ss:[0,0,0,0.1,1.2,1.6,1.5,1.2,0.5,0.1,0,0],str:0.85}, // sommargjest med grøne bein — hoppar som ein liten marlin
+ {k:"taggmakrell",n:"Taggmakrell",z:0,zb:1,zbw:14,pull:0.8,w:22,len:[20,40],kg:8,pris:45,col:"#a8b0b8",shape:"streak",rar:1,fight:0.5,syn:true,ss:[0.1,0.1,0.2,0.4,0.9,1.4,1.6,1.6,1.3,0.8,0.3,0.1],str:0.85}, // følgjer makrellen nordover — kvasse skjold langs sida
+ {k:"mulle",n:"Mulle",z:0,bunn:true,pull:0.6,w:12,len:[18,38],kg:9,pris:150,col:"#c46a5c",shape:"deep",rar:1,fight:0.3,ss:[0,0,0.1,0.3,0.8,1.3,1.6,1.6,1.2,0.5,0.1,0],str:0.15}, // sørleg gjest som kryp nordover — to skjeggtrådar under haka
+ {k:"tangsprell",n:"Tangsprell",z:0,bunn:true,pull:0.2,w:24,len:[10,25],kg:2,pris:10,col:"#7d7a4a",shape:"eel",rar:1,fight:0.1,syn:true,str:0.15}, // fjørefisk med augeflekkar — glatt som ein olje-ål
+ {k:"ulke",n:"Ulke",z:0,zb:1,zbw:12,bunn:true,pull:0.5,w:40,len:[15,35],kg:14,pris:15,col:"#8a6b52",shape:"deep",rar:0,fight:0.2,syn:true,str:0.3}, // hovudet er halve fisken. Alle får ulke.
+ {k:"piggvar",n:"Piggvar",z:0,zb:1,zbw:10,bunn:true,pull:1.0,w:6,len:[30,70],kg:16,pris:350,col:"#7a6a58",shape:"flat",rar:1,fight:0.35,syn:true,ss:[0.3,0.3,0.5,0.9,1.3,1.5,1.4,1.3,1.1,0.8,0.5,0.3]}, // delikatessen — sjeldan så langt nord, og verd deretter
+ {k:"slettvar",n:"Slettvar",z:0,zb:1,zbw:10,bunn:true,pull:0.9,w:8,len:[28,60],kg:14,pris:240,col:"#8a7a62",shape:"flat",rar:1,fight:0.3,syn:true,ss:[0.3,0.3,0.5,0.9,1.3,1.5,1.4,1.3,1.1,0.8,0.5,0.3]}, // piggvaren si glatte syster
+ {k:"sypike",n:"Sypike",z:1,zb:0,zbw:12,pull:0.4,w:55,len:[15,30],kg:7,pris:20,col:"#b09a86",shape:"cod",rar:0,fight:0.15,syn:true}, // torskefisk i miniatyr — store augo, kort skjeggtråd
+ {k:"oyepaal",n:"Øyepål",z:1,zb:2,zbw:16,pull:0.3,w:48,len:[12,22],kg:7,pris:10,col:"#9aa8b0",shape:"cod",rar:0,fight:0.1}, // augo som tinnknappar — industrifisk, men ho tel i boka
+ {k:"gapeflyndre",n:"Gapeflyndre",z:1,zb:2,zbw:12,bunn:true,pull:0.7,w:18,len:[25,55],kg:11,pris:90,col:"#8a7a68",shape:"flat",rar:1,fight:0.25,syn:true}, // munnen står halvopen støtt — derav namnet
+ {k:"havaal",n:"Havål",z:1,zb:2,zbw:20,pull:2.2,w:10,len:[80,200],kg:3.5,pris:180,col:"#4a4a42",shape:"eel",rar:1,fight:0.7,dg:[1.9,0.9,0.35,1.4],str:0.3}, // nattdyret — han kjem ut av steinrøysa når sola er nede
+ {k:"kolmule",n:"Kolmule",z:2,zb:3,zbw:20,pull:0.5,w:42,len:[22,42],kg:6,pris:35,col:"#7a8894",shape:"cod",rar:0,fight:0.15}, // står i tjukke slør over eggakanten
+ {k:"vassild",n:"Vassild",z:2,zb:3,zbw:16,pull:0.6,w:20,len:[28,50],kg:6,pris:190,col:"#9fb0bd",shape:"streak",rar:1,fight:0.2,syn:true}, // sølvblank med agurklukt — Rusten sver på at ho er undervurdert
+ {k:"glassvar",n:"Glassvar",z:2,zb:1,zbw:10,bunn:true,pull:0.7,w:14,len:[25,50],kg:9,pris:160,col:"#b0a894",shape:"flat",rar:1,fight:0.25}, // så tynn at lyset går gjennom henne
+ {k:"laksesild",n:"Laksesild",z:3,zb:2,zbw:12,pull:0.2,w:26,len:[6,14],kg:8,pris:60,col:"#8a94a8",shape:"streak",rar:1,fight:0.1,lys:true}, // rader av blå lykter langs buken — ho stig mot overflata om natta
+ {k:"lysprikkfisk",n:"Lysprikkfisk",z:3,pull:0.2,w:22,len:[5,12],kg:8,pris:70,col:"#6a7a94",shape:"streak",rar:1,fight:0.1,lys:true}, // heile djuphavet lyser av dei, og ingen ser det
  {k:"kveite",n:"Kveite",z:2,bunn:true,pull:3.2,w:6,len:[84,138],kg:14,pris:6000,col:"#6d7c63",shape:"flat",trophy:true,rar:2,fight:0.85,min:84,fredet:"kveite",ss:[0.6,0.6,0.6,0.8,0.9,0.9,1.0,1.3,1.4,1.6,1.4,0.8],str:1.0} // maks ~40 kg — større er urealistisk å få i båten
 ];
 var SLUK=[
  // Signaturarten står FØRST i hver b:{}. Tallene under 1 er like viktige som de over:
  // uten demping stiger hele puljen sammen og signaturen forsvinner i normaliseringen.
- {k:"blink",e:"🥄",n:"Blink",pris:15,rec:[0],img:"blink-sluk",b:{makrell:3,sei:0.7,sandflyndre:0.7}},
- {k:"spinner",e:"🌀",n:"Spinner",pris:25,rec:[0],img:"sluk-spinner.gif",b:{lyr:4.5,sei:0.6,sandflyndre:0.7}},
- {k:"dupp",e:"🎈",n:"Dupp og mark",pris:20,rec:[0],img:"dupp",b:{sandflyndre:4.6,berggylte:1.7,sei:0.55,makrell:0.55,lyr:0.7}},
- {k:"gummimakk",e:"🪱",n:"Gummimakk",pris:30,rec:[0,1],img:"gummimakk",b:{hyse:1.3,sandflyndre:2,knurr:1.7,lomre:1.3,sei:0.75,makrell:0.7,torsk:0.6}},
- {k:"sildeforsats",e:"✨",n:"Seiforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:3.6,sild:7.5,akkar:1.4,torsk:0.6,hyse:0.6}}, // het «Sildeforsats», men løfter sei og starter ikke hekle-minispillet — navnet var en felle ved siden av Sildehekla
- {k:"wobbler",e:"🐠",n:"Wobbler",pris:45,rec:[0,1],img:"sluk-wobbler.gif",b:{lyr:3.2,lysing:1.7,sei:0.8,sild:0.8,torsk:0.55,hyse:0.55}},
+ //
+ // MERK — vektingen er RELATIV: andelen er w·b delt på summen av alle w·b. Løfter du
+ // én art kraftig, synker alle de andre, også de med b litt over 1. Et tall som 1,3 ved
+ // siden av en signatur på 7,5 er derfor ikke et løft i det hele tatt — arten blir
+ // sjeldnere, ikke vanligere. Tre slike sto her og lovet noe tabellen ikke kunne holde
+ // (Seiforsats/makrell målt ×0,62, Djuphavs-agnrigg/uer ×0,80, Storpirk/lange ×0,87).
+ // De er fjernet. Skal en sekundær art virkelig løftes ved siden av en sterk signatur,
+ // må den opp i samme størrelsesorden — og da er den ikke lenger sekundær.
+ // verktoy-spillrevisjon.mjs måler dette og faller hvis noen sniker inn et nytt.
+ {k:"blink",e:"🥄",n:"Blink",pris:15,rec:[0],img:"blink-sluk",b:{makrell:3,horngjel:2.8,sei:0.7,sandflyndre:0.7}},
+ {k:"spinner",e:"🌀",n:"Spinner",pris:25,rec:[0],img:"sluk-spinner.gif",b:{lyr:4.5,sjoorret:5.2,sei:0.6,sandflyndre:0.7}},
+ {k:"dupp",e:"🎈",n:"Dupp og mark",pris:20,rec:[0],img:"dupp",b:{sandflyndre:4.6,tangsprell:3.4,berggylte:1.7,sei:0.55,makrell:0.55,lyr:0.7}},
+ {k:"gummimakk",e:"🪱",n:"Gummimakk",pris:30,rec:[0,1],img:"gummimakk",b:{hyse:1.3,sandflyndre:2,ulke:2.4,sypike:2.2,knurr:1.7,lomre:1.3,sei:0.75,makrell:0.7,torsk:0.6}},
+ {k:"sildeforsats",e:"✨",n:"Seiforsats",pris:40,rec:[0,1],img:"sildeforsats",b:{sei:3.6,sild:7.5,brisling:6.2,taggmakrell:2.9,akkar:1.4,torsk:0.6,hyse:0.6}}, // het «Sildeforsats», men løfter sei og starter ikke hekle-minispillet — navnet var en felle ved siden av Sildehekla
+ {k:"wobbler",e:"🐠",n:"Wobbler",pris:45,rec:[0,1],img:"sluk-wobbler.gif",b:{lyr:3.2,sjoorret:2.6,horngjel:2.3,lysing:1.7,sei:0.8,sild:0.8,torsk:0.55,hyse:0.55}},
  {k:"torskepilk",e:"🎣",n:"Torskepilk",pris:50,rec:[1],img:"torskepilk",b:{torsk:1.5,hyse:0.75,lyr:0.8}},
- {k:"juksa",e:"🧵",n:"Juksa",pris:60,rec:[1],img:"sluk-juksa.gif",b:{hyse:1.6,torsk:0.55}},
- {k:"gummijigg",e:"🦎",n:"Gummijigg",pris:55,rec:[1,2],img:"sluk-gummijigg.gif",b:{lange:3.5,lyr:2.2,lysing:1.6}},
+ {k:"juksa",e:"🧵",n:"Juksa",pris:60,rec:[1],img:"sluk-juksa.gif",b:{hyse:1.6,sypike:2.4,oyepaal:2.2,torsk:0.55}},
+ {k:"gummijigg",e:"🦎",n:"Gummijigg",pris:55,rec:[1,2],img:"sluk-gummijigg.gif",b:{lange:3.5,havaal:3.0,lyr:2.2,lysing:1.6}},
  {k:"pirk",e:"⚓",n:"Pirk",pris:80,rec:[1,2],img:"sluk-mellomdyp",b:{uer:3.4,hyse:1.25,torsk:0.7,brosme:0.8,lange:0.8}},
  {k:"svenskepilk",e:"🇸🇪",n:"Svenskepilk",pris:90,rec:[1,2],img:"sluk-svenskepilk.gif",b:{torsk:1.4,uer:0.6,lange:0.6,brosme:0.55}},
- {k:"dyppilk",e:"🌑",n:"Djuphavspilk",pris:120,rec:[2],img:"sluk-djuphavs",b:{lange:3.2,uer:0.8,brosme:0.7}},
- {k:"lysende",e:"💡",n:"Selvlysende pilk",pris:150,rec:[2,3],img:"sluk-lysende.gif",b:{brosme:2.7,havmus:1.7,akkar:1.5,haagjel:0.8,blaakveite:0.8}},
+ {k:"dyppilk",e:"🌑",n:"Djuphavspilk",pris:120,rec:[2],img:"sluk-djuphavs",b:{lange:3.2,kolmule:2.4,vassild:2.6,uer:0.8,brosme:0.7}},
+ {k:"lysende",e:"💡",n:"Selvlysende pilk",pris:150,rec:[2,3],img:"sluk-lysende.gif",b:{brosme:2.7,laksesild:2.4,lysprikkfisk:2.2,havmus:1.7,akkar:1.5,haagjel:0.8,blaakveite:0.8}},
  {k:"kveitepilk",e:"🏆",n:"Kveitepilk",pris:250,rec:[2],img:"sluk-kveitepilk.gif",b:{torsk:1.9,kveite:1.6,brosme:0.7,lange:0.8}},
  {k:"agnrigg",e:"🪢",n:"Djuphavs-agnrigg",pris:250,rec:[3],img:"sluk-agnrigg",b:{haagjel:4.2,skolest:1.6,lange:0.8,brosme:0.6}},
  {k:"storpirk",e:"🦈",n:"Storpirk",pris:300,rec:[3],img:"sluk-storpilk.gif",b:{blaakveite:7.4,svarthaa:1.3,uer:0.7,haagjel:0.7,brosme:0.6}},
@@ -65,15 +95,18 @@ var SLUK=[
  // Sildehekle: forsats med små kroker og røde perler som ligner tyttebær. Båten står i
  // ro og man pumper hekla opp og ned gjennom stimen — samme minispill som markpilken,
  // men den henter sild. Teknikken er beskrevet av eierens svigerfar.
- {k:"sildehekle",e:"🫐",n:"Sildehekle",pris:70,rec:[0,1],img:"sluk-sildehekle",pilk:true,sild:true,b:{}}
+ {k:"sildehekle",e:"🫐",n:"Sildehekle",pris:70,rec:[0,1],img:"sluk-sildehekle",pilk:true,sild:true,b:{}},
+ // Lysehekla (6. aug): der markpilken hentar smaafisk paa grunna og hekla hentar silda,
+ // hentar denne dei bittesmaa i moerket — perlene lyser, og djupet har ingenting anna aa sjaa paa.
+ {k:"lysehekle",e:"🟢",n:"Lysehekle",pris:110,rec:[2,3],img:"sluk-lysehekle",pilk:true,b:{}}
 ];var AGN=[
- {k:"makrellhode",e:"🐟",n:"Makrellhode",pris:120,pakke:4,b:{blaakveite:7.5,kveite:2.2,breiflabb:1.8,haakjerring:1.7,haabrann:1.6,skate:1.5,lange:1.6,steinbit:1.3,haagjel:0.8,uer:0.7,brosme:0.6}},
- {k:"sei",e:"🐟",n:"Seibiter",pris:100,pakke:4,b:{lange:3,lysing:1.5,piggha:1.3,torsk:1.3,uer:0.7,brosme:0.6}},
+ {k:"makrellhode",e:"🐟",n:"Makrellhode",pris:120,pakke:4,b:{blaakveite:7.5,kveite:2.2,havaal:2.6,breiflabb:1.8,haakjerring:1.7,haabrann:1.6,skate:1.5,lange:1.6,steinbit:1.3,haagjel:0.8,uer:0.7,brosme:0.6}},
+ {k:"sei",e:"🐟",n:"Seibiter",pris:100,pakke:4,b:{lange:3,havaal:2.8,lysing:1.5,piggha:1.3,torsk:1.3,uer:0.7,brosme:0.6}},
  {k:"sild",e:"🐟",n:"Sild",pris:100,pakke:4,b:{sei:2.4,haabrann:1.7,torsk:1.4,lyr:1.8}},
- {k:"akkar",e:"🦑",n:"Akkar",pris:160,pakke:4,b:{torsk:1.4,skolest:1.5,havmus:1.4,svarthaa:1.4,kveite:1.4,brosme:1.3,lange:1.3,hyse:0.7}},
- {k:"reke",e:"🦐",n:"Reker",pris:80,pakke:4,b:{sandflyndre:2.6,uer:2,hyse:1.6,hvitting:1.6,rodspette:1.5,lomre:1.5,blastal:1.5,rognkjeks:1.5,rognkall:1.5,skrubbe:1.4,brungylt:1.4,berggylte:1.4,makrell:0.6,sei:0.6,brosme:0.7,lange:0.7,torsk:0.55}},
- {k:"borstemark",e:"🪱",n:"Børstemark",pris:80,pakke:4,b:{sandflyndre:4.6,aalekvabbe:1.7,skrubbe:1.6,rodspette:1.6,lomre:1.6,hyse:1.4,berggylte:1.4,knurr:1.4,rognkjeks:1.4,makrell:0.55,sei:0.55,lyr:0.7}},
- {k:"polsebiter",e:"🌭",n:"Pølsebiter",pris:50,pakke:4,b:{torsk:1.35,knurr:1.3,skrubbe:1.2,sandflyndre:1.2}},
+ {k:"akkar",e:"🦑",n:"Akkar",pris:160,pakke:4,b:{torsk:1.4,skolest:1.5,havaal:2.2,havmus:1.4,svarthaa:1.4,kveite:1.4,brosme:1.3,lange:1.3,hyse:0.7}},
+ {k:"reke",e:"🦐",n:"Reker",pris:80,pakke:4,b:{sandflyndre:2.6,uer:2,mulle:2.8,piggvar:2.2,slettvar:2.2,glassvar:2.1,gapeflyndre:2.0,sypike:1.9,hyse:1.6,hvitting:1.6,rodspette:1.5,lomre:1.5,blastal:1.5,rognkjeks:1.5,rognkall:1.5,skrubbe:1.4,brungylt:1.4,berggylte:1.4,makrell:0.6,sei:0.6,brosme:0.7,lange:0.7,torsk:0.55}},
+ {k:"borstemark",e:"🪱",n:"Børstemark",pris:80,pakke:4,b:{sandflyndre:4.6,mulle:3.4,tangsprell:3.0,gapeflyndre:2.4,aalekvabbe:1.7,skrubbe:1.6,rodspette:1.6,lomre:1.6,hyse:1.4,berggylte:1.4,knurr:1.4,rognkjeks:1.4,makrell:0.55,sei:0.55,lyr:0.7}},
+ {k:"polsebiter",e:"🌭",n:"Pølsebiter",pris:50,pakke:4,b:{torsk:1.35,ulke:2.0,knurr:1.3,skrubbe:1.2,sandflyndre:1.2}},
  {k:"blaaskjell",e:"🐚",n:"Blåskjell",pris:60,pakke:4,b:{steinbit:1.7,berggylte:1.5,brungylt:1.4,hyse:1.3,torsk:0.7}},
  {k:"fiskeboller",e:"🥣",n:"Fiskeboller",pris:50,pakke:4,b:{sei:1.9,lyr:1.4,hvitting:1.2,sandflyndre:0.8,makrell:0.8}},
  {k:"brunost",e:"🧀",n:"Brunost",pris:70,pakke:4,b:{uer:3.2,berggylte:1.2,hyse:1.3,lange:0.7,torsk:0.7,brosme:0.6}},

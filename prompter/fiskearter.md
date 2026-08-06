@@ -1,5 +1,8 @@
 # Prompter — fiskeartene
 
+**Status 6. aug: 56 arter i spillet.** 18 nye lagt inn med soner,
+sesonger, redskap, teine- og linefangst. Laksesild og lysprikkfisk lyser i mørket.
+
 > Reglene gjelder ALLE prompter i denne mappa: maks **1024 tegn**, magenta bakgrunn
 > som nøkles ut i spillet, ingen kunstnernavn, og ingen av forbudsordene (west, east,
 > rose, holm, skerry, beacon, isometric, «rust red», «bone white»). Full begrunnelse
@@ -84,26 +87,26 @@ De 38 vi har (PNG i assets) er krysset av; nye kandidater står åpne:
 - [x] Håbrann (`haabrann.png`, legendarisk)
 - [x] Kveite (`kveite.png`, legendarisk)
 
-- [ ] Sjøørret (`sjoorret.png`) — ikke generert
-- [ ] Brisling (`brisling.png`) — ikke generert
-- [ ] Horngjel (`horngjel.png`) — ikke generert
-- [ ] Taggmakrell (`taggmakrell.png`) — ikke generert
-- [ ] Mulle (`mulle.png`) — ikke generert
-- [ ] Havål (`havaal.png`) — ikke generert
-- [ ] Gapeflyndre (`gapeflyndre.png`) — ikke generert
-- [ ] Glassvar (`glassvar.png`) — ikke generert
-- [ ] Piggvar (`piggvar.png`) — ikke generert
-- [ ] Slettvar (`slettvar.png`) — ikke generert
-- [ ] Sypike (`sypike.png`) — ikke generert
-- [ ] Øyepål (`oyepaal.png`) — ikke generert
-- [ ] Kolmule (`kolmule.png`) — ikke generert
-- [ ] Vassild (`vassild.png`) — ikke generert
-- [ ] Laksesild (`laksesild.png`) — ikke generert
-- [ ] Tangsprell (`tangsprell.png`) — ikke generert
-- [ ] Ulke (`ulke.png`) — ikke generert
-- [ ] Dvergulke (`dvergulke.png`) — ikke generert
-- [ ] Paddetorsk (`paddetorsk.png`) — ikke generert
-- [ ] Lysprikkfisk (`lysprikkfisk.png`) — ikke generert
+- [x] Sjøørret (`sjoorret.png`) — i spillet 6. aug
+- [x] Brisling (`brisling.png`) — i spillet 6. aug
+- [x] Horngjel (`horngjel.png`) — i spillet 6. aug
+- [x] Taggmakrell (`taggmakrell.png`) — i spillet 6. aug
+- [x] Mulle (`mulle.png`) — i spillet 6. aug
+- [x] Havål (`havaal.png`) — i spillet 6. aug
+- [x] Gapeflyndre (`gapeflyndre.png`) — i spillet 6. aug
+- [x] Glassvar (`glassvar.png`) — i spillet 6. aug
+- [x] Piggvar (`piggvar.png`) — i spillet 6. aug
+- [x] Slettvar (`slettvar.png`) — i spillet 6. aug
+- [x] Sypike (`sypike.png`) — i spillet 6. aug
+- [x] Øyepål (`oyepaal.png`) — i spillet 6. aug
+- [x] Kolmule (`kolmule.png`) — i spillet 6. aug
+- [x] Vassild (`vassild.png`) — i spillet 6. aug
+- [x] Laksesild (`laksesild.png`) — i spillet 6. aug
+- [x] Tangsprell (`tangsprell.png`) — i spillet 6. aug
+- [x] Ulke (`ulke.png`) — i spillet 6. aug
+- [ ] Dvergulke (`dvergulke.png`) — Firefly klarte den ikke (6. aug)
+- [ ] Paddetorsk (`paddetorsk.png`) — Firefly klarte den ikke (6. aug)
+- [x] Lysprikkfisk (`lysprikkfisk.png`) — i spillet 6. aug
 
 ---
 

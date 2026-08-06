@@ -13,7 +13,7 @@
 
 import { getStore } from "@netlify/blobs";
 
-const ARTER_TOTALT = 38;      // FISH.length i fiske.html
+const ARTER_TOTALT = 56;      // FISH.length i fiske.html (18 nye 6. aug: Bergen–Trondheim)
 const TROFE_TOTALT = 109;     // trofeMulige() kjørt mot den ekte FUNN-tabellen 6. aug (eremitten kom til)
 const DAG = 864e5;
 
@@ -243,8 +243,8 @@ export default async (req) => {
         ["1-9", (f) => f.arter >= 1 && f.arter <= 9],
         ["10-19", (f) => f.arter >= 10 && f.arter <= 19],
         ["20-29", (f) => f.arter >= 20 && f.arter <= 29],
-        ["30-37", (f) => f.arter >= 30 && f.arter < ARTER_TOTALT],
-        ["alle 38", (f) => f.arter >= ARTER_TOTALT],
+        ["30-55", (f) => f.arter >= 30 && f.arter < ARTER_TOTALT],
+        ["alle 56", (f) => f.arter >= ARTER_TOTALT],
       ]),
       trofeSnitt: alle.length ? +(alle.reduce((a, f) => a + f.trofe, 0) / alle.length).toFixed(1) : 0,
       ferdigeMedArter: alle.filter((f) => f.arter >= ARTER_TOTALT).length,

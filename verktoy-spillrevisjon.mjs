@@ -50,7 +50,11 @@ ${tabell("SLUK")}
 ${tabell("AGN")}
 var slukDef={}; SLUK.forEach(function(u){slukDef[u.k]=u});
 var agnDef={};  AGN.forEach(function(a){agnDef[a.k]=a});
-var depth=0, P={ekko:false}, agEff=null, suEff=null, MND=6;
+var depth=0, P={ekko:false,tips:[]}, agEff=null, suEff=null, MND=6;
+var byKey={}; FISH.forEach(function(f){byKey[f.k]=f});
+var TIPS_DEF={};                       // revisjonen måler REN riggeffekt — ingen tips eid
+function aktivAgn(){ return agEff; } function aktivSluk(){ return suEff; }
+function tipsFaktor(){ return 1; }     // rigB kaller denne; uten den krasjer hele revisjonen
 function riggK(){ return 1; }
 function havmusOppe(){ return false; }
 function slukAnbefalt(){ var u=P.rig&&slukDef[P.rig]; return !u||u.rec.indexOf(depth)>=0; }
