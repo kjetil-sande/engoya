@@ -74,7 +74,20 @@ function velgArt(){
   for(var i=0;i<pool.length;i++){acc+=vekter[i]; if(r<=acc){cf=pool[i];break;}}
   return cf.k;
 }
-export { FISH, SLUK, AGN, slukDef, agnDef, velgArt };
+// Samme kode én gang til, men vi REGNER UT andelen på hvert trinn i stedet for å
+// trekke. 60 000 trekninger per kombinasjon ville tatt timer på alle riggene ×
+// sonene × sesongene, og en trekning på 2,4 mot 2,56 prosent drukner uansett i
+// støyen. pL og pR ER trinnhøydene, så her er tallet eksakt.
+function trinn(){
+  var zf=FISH.filter(function(f){return iSona(f) && f.k!=="makrellstorje"});
+  var t2=zf.filter(function(f){return f.rar===2}), t1=zf.filter(function(f){return f.rar===1}), t0=zf.filter(function(f){return !f.rar});
+  var base=t0.length?t0:(t1.length?t1:zf);
+  ${velgKilde}
+  var L=t2.length?Math.min(1,pL):0;
+  var S=(t1.length&&t1!==base)?Math.min(1,pR):0;
+  return {L:L, S:S, V:Math.max(0,1-L-S)};   // legendarisk, sjelden, vanlig
+}
+export { FISH, SLUK, AGN, slukDef, agnDef, velgArt, trinn };
 export function sett(d, rig, agn, ekko){
   depth=d; P={rig:rig, ekko:!!ekko};
   suEff = rig ? slukDef[rig] : null;
@@ -83,7 +96,7 @@ export function sett(d, rig, agn, ekko){
 export function settMnd(m){ MND=m; }
 `;
 const M = await import("data:text/javascript;base64," + Buffer.from(kode).toString("base64"));
-const { FISH, SLUK, AGN, velgArt, sett, settMnd } = M;
+const { FISH, SLUK, AGN, velgArt, trinn, sett, settMnd } = M;
 
 const SONER = ["Grunt", "Mellomdyp", "Dypt", "Djuphavet"];
 const N = 60000;
@@ -215,6 +228,36 @@ for (let d = 0; d < 4; d++) {
   sjekk(SONER[d] + ": " + par.length + " arter, størst " + topp[0] + " " + andel + " %",
     par.length >= 3 && andel <= 85);
 }
+
+// ── 6. Står raritetstrappa? ────────────────────────────────────────────────
+// Eierens regel: vanlig oftest, så sjelden, og legendarisk sjeldnest. Trappa er
+// bygget inn i lukene (1/150 mot 1/75), men beste() ganger begge med det riggen
+// lokker, og de to faktorene er uavhengige av hverandre. Lokker en rigg legenden
+// hardere enn den lokker noe sjeldent, velter trappa — kveitepilken gjorde det i
+// oktober før gulvet i startWait() kom på plass. Vi går gjennom hver rigg i hver
+// sone i hver årstid, for det er der en framtidig b-verdi kommer til å bryte den.
+console.log("\n6. STÅR RARITETSTRAPPA (VANLIG > SJELDEN > LEGENDARISK)?");
+const trappebrudd = [];
+let trappeTilfelle = 0, tynnest = null;
+for (let d = 0; d < 4; d++)
+  for (const u of [null, ...SLUK.filter((s) => !s.pilk).map((s) => s.k)])
+    for (const a of [null, ...AGN.filter((x) => !x.superLegend).map((x) => x.k)])
+      for (let m = 0; m < 12; m++) {
+        settMnd(m); sett(d, u, a, true);          // ekkolodd på: den verste luka
+        const t = trinn(); trappeTilfelle++;
+        const navn = SONER[d] + " · " + (u || "ingen sluk") + " + " + (a || "ingen agn") + " · mnd " + (m + 1);
+        if (!(t.V > t.S && t.S > t.L)) trappebrudd.push({ navn, t });
+        // Marginen mellom sjelden og legendarisk er den som ryker først.
+        const mrg = t.L > 0 ? t.S / t.L : Infinity;
+        if (tynnest === null || mrg < tynnest.mrg) tynnest = { navn, mrg, t };
+      }
+sjekk("vanlig > sjelden > legendarisk i alle " + trappeTilfelle + " rigg × sone × sesong",
+  trappebrudd.length === 0,
+  trappebrudd.length
+    ? trappebrudd.slice(0, 3).map((b) => b.navn + " (V " + (b.t.V * 100).toFixed(1) +
+        " % · S " + (b.t.S * 100).toFixed(2) + " % · L " + (b.t.L * 100).toFixed(2) + " %)").join("; ")
+    : "tynneste margin: " + tynnest.navn + " — sjelden ×" + tynnest.mrg.toFixed(2) + " av legendarisk");
+settMnd(6);
 
 console.log("\n" + (feil
   ? "✗ " + feil + " FEIL, " + aatvaring + " merknader, " + ok + " grønne"
