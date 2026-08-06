@@ -29,6 +29,12 @@ const tabell = (navn) => {
     else if (K[j] === "]") { d--; if (!d) return K.slice(i, j + 1) + ";"; }
   }
 };
+// Skalarer (var NAVN=…;) — trappa er ikke en tabell, men den må hentes ut like ekte.
+const konstant = (navn) => {
+  const m = K.match(new RegExp("var " + navn + "=([^;]+);"));
+  if (!m) throw new Error("fant ikke " + navn);
+  return "var " + navn + "=" + m[1] + ";";
+};
 const funksjon = (navn) => {
   const i = K.indexOf("function " + navn + "(");
   if (i < 0) throw new Error("fant ikke " + navn);
@@ -48,6 +54,9 @@ const kode = `
 ${tabell("FISH")}
 ${tabell("SLUK")}
 ${tabell("AGN")}
+${tabell("RARMAAL")}
+${tabell("RARBITT")}
+${konstant("TRAPPETRINN")}
 var slukDef={}; SLUK.forEach(function(u){slukDef[u.k]=u});
 var agnDef={};  AGN.forEach(function(a){agnDef[a.k]=a});
 var depth=0, P={ekko:false,tips:[]}, agEff=null, suEff=null, MND=6;
@@ -64,17 +73,26 @@ function dognFaktor(){ return 1; }     // nøytralisert: vi måler slukens virkn
 function vaerFaktor(){ return 1; }
 function stromFaktor(){ return 1; }
 
-function velgArt(){
+function velgArt(ut){
   var zf=FISH.filter(function(f){return iSona(f) && f.k!=="makrellstorje"});
   var t2=zf.filter(function(f){return f.rar===2}), t1=zf.filter(function(f){return f.rar===1}), t0=zf.filter(function(f){return !f.rar});
   var base=t0.length?t0:(t1.length?t1:zf);
   ${velgKilde}
+  // Med «ut» rapporterer vi trinnlukene og vektene i stedet for å trekke. Da kan
+  // trappa måles EKSAKT på spillets egne tall, uten å terne 60 000 ganger for et
+  // svar som uansett skjelver i tredje desimal.
+  if(ut){ ut.pL=pL; ut.pR=pR;
+    ut.trinn=[{pl:base, p:1-pL-pR}, {pl:(t1.length&&t1!==base)?t1:[], p:pR}, {pl:t2, p:pL}]
+      .map(function(t){ if(!t.pl.length)return {arter:[]};
+        var v=poolVekter(t.pl), s=0; v.forEach(function(x){s+=x});
+        return {arter:t.pl.map(function(f,i){ return {k:f.k, n:f.n, rar:f.rar, p:t.p*v[i]/s}; })}; });
+    return null; }
   var vekter=poolVekter(pool), tot=0; vekter.forEach(function(w){tot+=w});
   var r=Math.random()*tot, acc=0, cf=pool[0];
   for(var i=0;i<pool.length;i++){acc+=vekter[i]; if(r<=acc){cf=pool[i];break;}}
   return cf.k;
 }
-export { FISH, SLUK, AGN, slukDef, agnDef, velgArt };
+export { FISH, SLUK, AGN, slukDef, agnDef, velgArt, RARBITT };
 export function sett(d, rig, agn, ekko){
   depth=d; P={rig:rig, ekko:!!ekko};
   suEff = rig ? slukDef[rig] : null;
@@ -215,6 +233,60 @@ for (let d = 0; d < 4; d++) {
   sjekk(SONER[d] + ": " + par.length + " arter, størst " + topp[0] + " " + andel + " %",
     par.length >= 3 && andel <= 85);
 }
+
+// ── 6. Står sjeldenhetstrappa riktig vei? ───────────────────────────────────
+// Regelen eieren ba om 6. aug: de VANLIGE artene skal man få mest av, så de
+// sjeldne, og til slutt de legendariske. Ikke bare trinn mot trinn — art mot art.
+// Det var nettopp der det brast: håkjerringa arvet hele legende-luka alene i
+// Djuphavet og ble vanligere enn hver eneste sjeldne art i sona.
+//
+// Måles med nøytral rigg og midtsesong. Sluker, agn, ekkolodd og tips har LOV til
+// å bøye trappa — det er det utstyret er til for — men den skal stå av seg selv.
+console.log("\n6. STÅR SJELDENHETSTRAPPA RIKTIG VEI?");
+settMnd(6);
+const TRINN = ["vanlig", "sjelden", "legendarisk"];
+// Napp-sjansen er én ting, fangstboka en annen: de sjeldne biter halvparten så
+// ofte som hverdagsfisken, de legendariske en fjerdedel. Hentes fra spillkoden,
+// så testen ikke lever videre på gamle tall hvis noen justerer dem.
+const BC = M.RARBITT;
+// Trappa regner nå med havets egen rytme (miljoB), så den skal stå HELE året —
+// også i makrellsesongen og i akkarvinteren. Derfor: alle tolv månedene, hver sone.
+const trappa = (d, mnd) => {
+  settMnd(mnd); sett(d, null, null, false);
+  const ut = {}; velgArt(ut);
+  const arter = [];
+  ut.trinn.forEach((t, r) => t.arter.forEach((a) => arter.push({ ...a, p: a.p * BC[r] })));
+  const sum = arter.reduce((s, a) => s + a.p, 0) || 1;
+  arter.forEach((a) => (a.pct = 100 * a.p / sum));
+  return arter.filter((a) => a.pct > 0);   // arter som er helt ute av sesong (ss:0) teller ikke
+};
+for (let d = 0; d < 4; d++) {
+  const brudd = []; let verst = null, juli = null;
+  for (let mnd = 0; mnd < 12; mnd++) {
+    const arter = trappa(d, mnd);
+    const lav = (r) => Math.min(...arter.filter((a) => a.rar === r).map((a) => a.pct), Infinity);
+    const hoy = (r) => Math.max(...arter.filter((a) => a.rar === r).map((a) => a.pct), -Infinity);
+    for (const r of [0, 1]) {
+      if (!isFinite(lav(r)) || !isFinite(hoy(r + 1))) continue;
+      const klaring = lav(r) / hoy(r + 1);
+      if (!verst || klaring < verst.k) verst = { k: klaring, mnd, r };
+      if (lav(r) <= hoy(r + 1)) {
+        const under = arter.filter((a) => a.rar === r).sort((x, y) => x.pct - y.pct)[0];
+        const over = arter.filter((a) => a.rar === r + 1).sort((x, y) => y.pct - x.pct)[0];
+        brudd.push("mnd " + (mnd + 1) + ": " + over.n + " (" + TRINN[r + 1] + ", " + over.pct.toFixed(3)
+          + " %) bites oftere enn " + under.n + " (" + TRINN[r] + ", " + under.pct.toFixed(3) + " %)");
+      }
+    }
+    if (mnd === 6) juli = [0, 1, 2].map((r) =>
+      arter.filter((a) => a.rar === r).reduce((s, a) => s + a.pct, 0));
+  }
+  sjekk(SONER[d] + ": " + juli[0].toFixed(1) + " % vanlig · " + juli[1].toFixed(1) + " % sjelden · "
+    + juli[2].toFixed(2) + " % legendarisk", brudd.length === 0,
+    brudd.length ? brudd.slice(0, 3).join("; ") + (brudd.length > 3 ? " (+" + (brudd.length - 3) + ")" : "")
+      : "trangeste klaring ×" + verst.k.toFixed(1) + " (" + TRINN[verst.r] + "/" + TRINN[verst.r + 1]
+        + ", mnd " + (verst.mnd + 1) + ")");
+}
+settMnd(6);
 
 console.log("\n" + (feil
   ? "✗ " + feil + " FEIL, " + aatvaring + " merknader, " + ok + " grønne"

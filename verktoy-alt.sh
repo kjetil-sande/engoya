@@ -170,6 +170,22 @@ for n in ('SLUK', 'AGN'):
     a, b = bmap(tab(sp, n)), bmap(tab(rp, n))
     for k in sorted(set(a) | set(b)):
         if a.get(k) != b.get(k): avvik.append('%s/%s' % (n, k))
+# FISH-kopien betyr like mye: rapporten rangerer riggene på w og rar, så en art
+# som er tunet i spillet og ikke i kopien gir svogeren en anbefaling som ikke
+# stemmer. (6. aug: sypike og de fire andre nye ble tunet ned, og legendene lagt
+# om på felles vektskala — kopien fulgte ikke med av seg selv.)
+if tab(sp, 'FISH') != tab(rp, 'FISH'):
+    ap = {m.group(1): m.group(0) for m in re.finditer(r'\{k:"([^"]+)"[^\n]*', tab(sp, 'FISH'))}
+    bp = {m.group(1): m.group(0) for m in re.finditer(r'\{k:"([^"]+)"[^\n]*', tab(rp, 'FISH'))}
+    for k in sorted(set(ap) | set(bp)):
+        if ap.get(k) != bp.get(k): avvik.append('FISH/%s' % k)
+    if not avvik: avvik.append('FISH (kommentarer eller rekkefølge)')
+# Sjeldenhetstrappa står begge steder og MÅ være samme tall — driver den, viser
+# rapporten en annen fordeling enn spillet faktisk gir.
+for n in ('RARMAAL', 'TRAPPETRINN'):
+    a = re.search(r'var %s=([^;]+);' % n, sp).group(1).strip()
+    m = re.search(r'var %s=([^;]+);' % n, rp)
+    if not m or m.group(1).strip() != a: avvik.append(n)
 print("  OK  rapporttabellen er lik spillets" if not avvik
       else "  FEIL  rapportdata har drevet fra spillet: " + ", ".join(avvik))
 sys.exit(1 if avvik else 0)

@@ -28,39 +28,39 @@ var FISH=[ // rar: 0=Vanlig, 1=Sjelden, 2=Legendarisk
  {k:"svarthaa",n:"Svarthå",z:3,pull:0.8,w:22,len:[30,55],kg:5,pris:340,col:"#3a3f4a",shape:"shark",rar:1,fight:0.4},
  {k:"blaakveite",n:"Blåkveite",z:3,bunn:true,pull:1.7,w:22,len:[55,100],kg:12,pris:700,col:"#4d5a66",shape:"flat",rar:0,fight:0.5},
  {k:"steinbit",n:"Steinbit",z:2,allZ:true,pull:1.5,w:18,len:[50,125],kg:11,pris:380,col:"#5b6570",shape:"eel",rar:1,fight:0.55,ss:[0.5,0.5,1.2,1.4,1.5,1.3,1.0,1.0,1.0,0.9,0.6,0.5],str:0.3}, // biter på ALLE dyp
- {k:"piggha",n:"Pigghå",z:2,pull:2.3,w:14,len:[60,100],kg:5,pris:1400,col:"#7d8890",shape:"shark",rar:2,fight:0.5,freda:true},
- {k:"makrellstorje",n:"Makrellstørje",z:0,pull:2.9,w:3,len:[150,300],kg:19,pris:2500,col:"#2b4a66",shape:"torpedo",rar:2,reelSec:1800,fight:1.0,ss:[0,0,0,0,0,0,1.4,1.6,1.6,1.2,0,0]}, // ~45-60 min kamp
- {k:"breiflabb",n:"Breiflabb",z:1,bunn:true,pull:1.9,w:4,len:[60,150],kg:20,pris:2200,col:"#5a4a3a",shape:"flat",rar:2,fight:0.25},
- {k:"maanefisk",n:"Månefisk",z:0,pull:2.2,w:2,len:[80,200],kg:30,pris:3000,col:"#9aa4ad",shape:"deep",rar:2,reelSec:300,fight:0.3,ss:[0,0,0,0,0.2,0.8,1.6,1.8,1.2,0.3,0,0]}, // sjelden sommergjest — diger, men godslig (~5 min kamp)
- {k:"haakjerring",n:"Håkjerring",z:3,pull:3.4,w:3,len:[220,450],kg:11,reelSec:900,pris:3500,col:"#5d564e",shape:"shark",rar:2,fight:0.9}, // dyphavets kjempe — ~30 min kamp, kan veie over 1000 kg
+ {k:"piggha",n:"Pigghå",z:2,pull:2.3,w:28,len:[60,100],kg:5,pris:1400,col:"#7d8890",shape:"shark",rar:2,fight:0.5,freda:true},
+ {k:"makrellstorje",n:"Makrellstørje",z:0,pull:2.9,w:8,len:[150,300],kg:19,pris:2500,col:"#2b4a66",shape:"torpedo",rar:2,reelSec:1800,fight:1.0,ss:[0,0,0,0,0,0,1.4,1.6,1.6,1.2,0,0]}, // ~45-60 min kamp
+ {k:"breiflabb",n:"Breiflabb",z:1,bunn:true,pull:1.9,w:8,len:[60,150],kg:20,pris:2200,col:"#5a4a3a",shape:"flat",rar:2,fight:0.25},
+ {k:"maanefisk",n:"Månefisk",z:0,pull:2.2,w:8,len:[80,200],kg:30,pris:3000,col:"#9aa4ad",shape:"deep",rar:2,reelSec:300,fight:0.3,ss:[0,0,0,0,0.2,0.8,1.6,1.8,1.2,0.3,0,0]}, // sjelden sommergjest — diger, men godslig (~5 min kamp)
+ {k:"haakjerring",n:"Håkjerring",z:3,pull:3.4,w:10,len:[220,450],kg:11,reelSec:900,pris:3500,col:"#5d564e",shape:"shark",rar:2,fight:0.9}, // dyphavets kjempe — ~30 min kamp, kan veie over 1000 kg
  {k:"rognkjeks",n:"Rognkjeks",z:0,pull:0.6,w:26,len:[30,50],kg:22,pris:90,col:"#6b7a5c",shape:"deep",rar:1,fight:0.2,ss:[0.6,1.4,1.6,1.6,1.3,0.5,0.2,0.2,0.2,0.3,0.4,0.5]}, // hunnen — rund som en kokosbolle
  {k:"rognkall",n:"Rognkall",z:0,pull:0.65,w:18,len:[28,42],kg:24,pris:70,col:"#b04a30",shape:"deep",rar:1,fight:0.25,ss:[0.6,1.4,1.6,1.6,1.3,0.5,0.2,0.2,0.2,0.3,0.4,0.5]}, // hannen, rød i gytetida — han vokter rogna
  {k:"aalekvabbe",n:"Ålekvabbe",z:0,bunn:true,pull:0.5,w:20,len:[20,45],kg:4,pris:45,col:"#7a6b45",shape:"eel",rar:1,fight:0.15}, // føder levende unger, grønne bein
  {k:"akkar",n:"Akkar",z:1,zb:2,zbw:20,pull:0.8,w:16,len:[25,60],kg:6,pris:150,col:"#8a4a5c",shape:"eel",rar:1,fight:0.4,dg:[1.8,1.2,0.5,1.5],ss:[1.4,1.1,0.6,0.3,0.2,0.2,0.2,0.3,0.6,1.2,1.6,1.6]}, // storakkar — vintergjest, kan utebli i årevis
  {k:"skolest",n:"Skolest",z:3,pull:1.0,w:26,len:[45,100],kg:2,pris:320,col:"#6b7078",shape:"eel",rar:1,fight:0.2}, // nesten bare hale
- {k:"haabrann",n:"Håbrann",z:1,zb:2,zbw:14,pull:2.8,w:5,len:[150,300],kg:10,reelSec:1500,pris:0,col:"#46586b",shape:"shark",rar:2,fight:0.95,freda:true,dg:[0.6,1.5,1.0,1.5],ss:[0.4,0.4,0.5,0.7,1.0,1.3,1.5,1.5,1.3,1.0,0.6,0.4]}, // totalfreda siden 2010 — settes alltid ut
+ {k:"haabrann",n:"Håbrann",z:1,zb:2,zbw:28,pull:2.8,w:10,len:[150,300],kg:10,reelSec:1500,pris:0,col:"#46586b",shape:"shark",rar:2,fight:0.95,freda:true,dg:[0.6,1.5,1.0,1.5],ss:[0.4,0.4,0.5,0.7,1.0,1.3,1.5,1.5,1.3,1.0,0.6,0.4]}, // totalfreda siden 2010 — settes alltid ut
  // ——— Bergen–Trondheim-bolken (6. aug): 18 arter frå kysten mellom Vestlandet og Trøndelag ———
  // Kalibrert mot naboane sine: w = kor ofte ho kjem, pris = kva Rusten gir, kg = vektkoeffisient
  // (vekt = (len/100)³·kg). Sesongtala (ss) følgjer ekte vandringar nord for Stad.
  {k:"sjoorret",n:"Sjøørret",z:0,pull:1.4,w:16,len:[30,70],kg:8,pris:220,col:"#8e9aa6",shape:"torpedo",rar:1,fight:0.75,min:35,dg:[0.5,1.7,0.7,1.7],syn:true,ss:[0.3,0.3,0.6,1.2,1.5,1.3,0.9,0.9,1.3,1.5,0.8,0.4],str:0.85}, // gyter i elva, beitar i sjøen — morgon og kveld er timane
- {k:"brisling",n:"Brisling",z:0,pull:0.2,w:34,len:[8,16],kg:9,pris:6,col:"#b9c6cf",shape:"streak",rar:0,fight:0.1,syn:true,ss:[0.4,0.4,0.6,0.9,1.3,1.5,1.5,1.4,1.2,0.9,0.6,0.4]}, // silda sin vesle bror — går i tette stimar
+ {k:"brisling",n:"Brisling",z:0,pull:0.2,w:18,len:[8,16],kg:9,pris:6,col:"#b9c6cf",shape:"streak",rar:0,fight:0.1,syn:true,ss:[0.4,0.4,0.6,0.9,1.3,1.5,1.5,1.4,1.2,0.9,0.6,0.4]}, // silda sin vesle bror — går i tette stimar
  {k:"horngjel",n:"Horngjel",z:0,pull:0.9,w:20,len:[50,90],kg:1.2,pris:60,col:"#5c8a6b",shape:"streak",rar:1,fight:0.6,syn:true,ss:[0,0,0,0.1,1.2,1.6,1.5,1.2,0.5,0.1,0,0],str:0.85}, // sommargjest med grøne bein — hoppar som ein liten marlin
  {k:"taggmakrell",n:"Taggmakrell",z:0,zb:1,zbw:14,pull:0.8,w:22,len:[20,40],kg:8,pris:45,col:"#a8b0b8",shape:"streak",rar:1,fight:0.5,syn:true,ss:[0.1,0.1,0.2,0.4,0.9,1.4,1.6,1.6,1.3,0.8,0.3,0.1],str:0.85}, // følgjer makrellen nordover — kvasse skjold langs sida
  {k:"mulle",n:"Mulle",z:0,bunn:true,pull:0.6,w:12,len:[18,38],kg:9,pris:150,col:"#c46a5c",shape:"deep",rar:1,fight:0.3,ss:[0,0,0.1,0.3,0.8,1.3,1.6,1.6,1.2,0.5,0.1,0],str:0.15}, // sørleg gjest som kryp nordover — to skjeggtrådar under haka
  {k:"tangsprell",n:"Tangsprell",z:0,bunn:true,pull:0.2,w:24,len:[10,25],kg:2,pris:10,col:"#7d7a4a",shape:"eel",rar:1,fight:0.1,syn:true,str:0.15}, // fjørefisk med augeflekkar — glatt som ein olje-ål
- {k:"ulke",n:"Ulke",z:0,zb:1,zbw:12,bunn:true,pull:0.5,w:40,len:[15,35],kg:14,pris:15,col:"#8a6b52",shape:"deep",rar:0,fight:0.2,syn:true,str:0.3}, // hovudet er halve fisken. Alle får ulke.
+ {k:"ulke",n:"Ulke",z:0,zb:1,zbw:10,bunn:true,pull:0.5,w:20,len:[15,35],kg:14,pris:15,col:"#8a6b52",shape:"deep",rar:0,fight:0.2,syn:true,str:0.3}, // hovudet er halve fisken. Alle får ulke.
  {k:"piggvar",n:"Piggvar",z:0,zb:1,zbw:10,bunn:true,pull:1.0,w:6,len:[30,70],kg:16,pris:350,col:"#7a6a58",shape:"flat",rar:1,fight:0.35,syn:true,ss:[0.3,0.3,0.5,0.9,1.3,1.5,1.4,1.3,1.1,0.8,0.5,0.3]}, // delikatessen — sjeldan så langt nord, og verd deretter
  {k:"slettvar",n:"Slettvar",z:0,zb:1,zbw:10,bunn:true,pull:0.9,w:8,len:[28,60],kg:14,pris:240,col:"#8a7a62",shape:"flat",rar:1,fight:0.3,syn:true,ss:[0.3,0.3,0.5,0.9,1.3,1.5,1.4,1.3,1.1,0.8,0.5,0.3]}, // piggvaren si glatte syster
- {k:"sypike",n:"Sypike",z:1,zb:0,zbw:12,pull:0.4,w:55,len:[15,30],kg:7,pris:20,col:"#b09a86",shape:"cod",rar:0,fight:0.15,syn:true}, // torskefisk i miniatyr — store augo, kort skjeggtråd
- {k:"oyepaal",n:"Øyepål",z:1,zb:2,zbw:16,pull:0.3,w:48,len:[12,22],kg:7,pris:10,col:"#9aa8b0",shape:"cod",rar:0,fight:0.1}, // augo som tinnknappar — industrifisk, men ho tel i boka
+ {k:"sypike",n:"Sypike",z:1,zb:0,zbw:12,pull:0.4,w:22,len:[15,30],kg:7,pris:20,col:"#b09a86",shape:"cod",rar:0,fight:0.15,syn:true}, // torskefisk i miniatyr — store augo, kort skjeggtråd
+ {k:"oyepaal",n:"Øyepål",z:1,zb:2,zbw:10,pull:0.3,w:18,len:[12,22],kg:7,pris:10,col:"#9aa8b0",shape:"cod",rar:0,fight:0.1}, // augo som tinnknappar — industrifisk, men ho tel i boka
  {k:"gapeflyndre",n:"Gapeflyndre",z:1,zb:2,zbw:12,bunn:true,pull:0.7,w:18,len:[25,55],kg:11,pris:90,col:"#8a7a68",shape:"flat",rar:1,fight:0.25,syn:true}, // munnen står halvopen støtt — derav namnet
  {k:"havaal",n:"Havål",z:1,zb:2,zbw:20,pull:2.2,w:10,len:[80,200],kg:3.5,pris:180,col:"#4a4a42",shape:"eel",rar:1,fight:0.7,dg:[1.9,0.9,0.35,1.4],str:0.3}, // nattdyret — han kjem ut av steinrøysa når sola er nede
- {k:"kolmule",n:"Kolmule",z:2,zb:3,zbw:20,pull:0.5,w:42,len:[22,42],kg:6,pris:35,col:"#7a8894",shape:"cod",rar:0,fight:0.15}, // står i tjukke slør over eggakanten
+ {k:"kolmule",n:"Kolmule",z:2,zb:3,zbw:14,pull:0.5,w:24,len:[22,42],kg:6,pris:35,col:"#7a8894",shape:"cod",rar:0,fight:0.15}, // står i tjukke slør over eggakanten
  {k:"vassild",n:"Vassild",z:2,zb:3,zbw:16,pull:0.6,w:20,len:[28,50],kg:6,pris:190,col:"#9fb0bd",shape:"streak",rar:1,fight:0.2,syn:true}, // sølvblank med agurklukt — Rusten sver på at ho er undervurdert
  {k:"glassvar",n:"Glassvar",z:2,zb:1,zbw:10,bunn:true,pull:0.7,w:14,len:[25,50],kg:9,pris:160,col:"#b0a894",shape:"flat",rar:1,fight:0.25}, // så tynn at lyset går gjennom henne
  {k:"laksesild",n:"Laksesild",z:3,zb:2,zbw:12,pull:0.2,w:26,len:[6,14],kg:8,pris:60,col:"#8a94a8",shape:"streak",rar:1,fight:0.1,lys:true}, // rader av blå lykter langs buken — ho stig mot overflata om natta
  {k:"lysprikkfisk",n:"Lysprikkfisk",z:3,pull:0.2,w:22,len:[5,12],kg:8,pris:70,col:"#6a7a94",shape:"streak",rar:1,fight:0.1,lys:true}, // heile djuphavet lyser av dei, og ingen ser det
- {k:"kveite",n:"Kveite",z:2,bunn:true,pull:3.2,w:6,len:[84,138],kg:14,pris:6000,col:"#6d7c63",shape:"flat",trophy:true,rar:2,fight:0.85,min:84,fredet:"kveite",ss:[0.6,0.6,0.6,0.8,0.9,0.9,1.0,1.3,1.4,1.6,1.4,0.8],str:1.0} // maks ~40 kg — større er urealistisk å få i båten
+ {k:"kveite",n:"Kveite",z:2,bunn:true,pull:3.2,w:12,len:[84,138],kg:14,pris:6000,col:"#6d7c63",shape:"flat",trophy:true,rar:2,fight:0.85,min:84,fredet:"kveite",ss:[0.6,0.6,0.6,0.8,0.9,0.9,1.0,1.3,1.4,1.6,1.4,0.8],str:1.0} // maks ~40 kg — større er urealistisk å få i båten
 ];
 var SLUK=[
  // Signaturarten står FØRST i hver b:{}. Tallene under 1 er like viktige som de over:
@@ -117,6 +117,8 @@ var SLUK=[
 ];
 var slukDef={};SLUK.forEach(function(u){slukDef[u.k]=u});
 var agnDef={};AGN.forEach(function(a){agnDef[a.k]=a});
+// Sjeldenhetstrappa — MÅ være lik fiske.html (vakt i verktoy-alt.sh).
+var RARMAAL=[1, 0.095, 0.01]; var TRAPPETRINN=0.7; var RARBITT=[0.62, 0.5, 0.25];
 var ZONE=["Grunt","Mellomdyp","Dypt","Djuphavet"], DEPM=["0-50 m","50-150 m","150-300 m","300-500 m"];
 function iSona(f,d){ return f.z===d||f.zb===d||f.allZ; }
 function fordeling(rig,d){
@@ -133,10 +135,21 @@ function fordeling(rig,d){
     if(sum>0&&pl.length>1&&mx>0.85*sum) v[mi]=(sum-mx)*(0.85/0.15);
     return v; }
   function andel(pl){ var v=vekt(pl),t=0; v.forEach(function(x){t+=x}); var o={}; pl.forEach(function(f,i){o[f.k]=v[i]/t}); return o; }
+  // Sjeldenhetstrappa — samme regel som startWait() i fiske.html: trinnet sikter på
+  // RARMAAL og klemmes ned til den vanligste arten i trinnet biter minst 30 % sjeldnere
+  // enn den sjeldneste i trinnet over. Ren w, ingen rigg — riggen bøyer bare INNI trinnet.
+  function spenn(pl){ var raw=pl.map(function(f){return (f.zb===d&&f.zbw)?f.zbw:f.w;});
+    var t=0; raw.forEach(function(w){t+=w}); if(!t)return {min:0,maks:0};
+    var mn=1,mx=0; raw.forEach(function(w){var a=w/t; if(a<mn)mn=a; if(a>mx)mx=a;});
+    return {min:mn,maks:mx}; }
+  var sV=spenn(base), sR=(t1.length&&t1!==base)?spenn(t1):null, sL=t2.length?spenn(t2):null;
+  var pRT=sR?RARMAAL[1]:0, pLT=sL?RARMAAL[2]:0;
+  if(sR&&sR.maks>0){ var gV=sV.min*RARBITT[0]*TRAPPETRINN, hR=sR.maks*RARBITT[1]; pRT=Math.min(pRT, (1-pLT)*gV/(hR+gV)); }
+  if(sL&&sL.maks>0){ var bunn=sR?pRT*sR.min*RARBITT[1]:(1-pRT-pLT)*sV.min*RARBITT[0]; pLT=Math.min(pLT, bunn*TRAPPETRINN/(sL.maks*RARBITT[2])); }
   var ut={};
-  var pB=andel(base); for(var k in pB) ut[k]=pB[k]*0.974;
-  if(t1.length&&t1!==base){ var pR=andel(t1); for(var k2 in pR) ut[k2]=(ut[k2]||0)+pR[k2]*0.0133; }
-  if(t2.length){ var pL=andel(t2); for(var k3 in pL) ut[k3]=(ut[k3]||0)+pL[k3]*0.0067; }
+  var pB=andel(base); for(var k in pB) ut[k]=pB[k]*(1-pRT-pLT);
+  if(sR){ var pR=andel(t1); for(var k2 in pR) ut[k2]=(ut[k2]||0)+pR[k2]*pRT; }
+  if(sL){ var pL=andel(t2); for(var k3 in pL) ut[k3]=(ut[k3]||0)+pL[k3]*pLT; }
   return ut;
 }
 var RIGG=[].concat(SLUK.filter(function(u){return !u.pilk&&!u.dud}).map(function(u){return {k:u.k,n:u.n,t:"sluk",pris:u.pris,rec:u.rec,b:u.b};}),
