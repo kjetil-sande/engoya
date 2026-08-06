@@ -6,8 +6,9 @@
 //
 //   node verktoy-spillrevisjon.mjs
 //
-// Svarer på: kan alle 38 artene faktisk fås? Har hver sluk og hvert agn en
-// signatur som virker? Finnes det utstyr som ikke gjør noe?
+// Svarer på: kan alle artene faktisk fås? Har hver sluk og hvert agn en
+// signatur som virker? Finnes det utstyr som ikke gjør noe? Og står
+// sjeldenhetsstigen riktig vei — vanlig, så sjelden, så legendarisk?
 
 import { readFileSync } from "node:fs";
 
@@ -59,7 +60,7 @@ function riggK(){ return 1; }
 function havmusOppe(){ return false; }
 function slukAnbefalt(){ var u=P.rig&&slukDef[P.rig]; return !u||u.rec.indexOf(depth)>=0; }
 ${funksjon("iSona")}
-function sesongFaktor(f){ return f.ss ? f.ss[MND] : 1; }
+function sesongFaktor(f){ return (MND<0||!f.ss) ? 1 : f.ss[MND]; }  // MND -1 = sesongen slått av
 function dognFaktor(){ return 1; }     // nøytralisert: vi måler slukens virkning, ikke klokka
 function vaerFaktor(){ return 1; }
 function stromFaktor(){ return 1; }
@@ -215,6 +216,53 @@ for (let d = 0; d < 4; d++) {
   sjekk(SONER[d] + ": " + par.length + " arter, størst " + topp[0] + " " + andel + " %",
     par.length >= 3 && andel <= 85);
 }
+
+// ── 6. Står sjeldenhetsstigen riktig vei? ───────────────────────────────────
+// Eieren fikk sypike på seks av sju kast 6. august, og under det lå to feil:
+// nykomlingene var vektet på nivå med flaggskipsartene, og det sjeldne laget
+// delte ett fast budsjett på atten nye arter mens månefisken sto alene i sitt
+// og beholdt hele sitt. Resultat: en legende var seks ganger vanligere enn en
+// sjelden art. Stigen skal stå slik, art for art og ikke bare lag for lag:
+//
+//   den sjeldneste VANLIGE  ≥  den vanligste SJELDNE  ≥  den vanligste LEGENDARISKE
+//
+// Sesongen er slått av her (MND -1). En vinterfisk i august SKAL ligge nede,
+// og det er ikke stigen som er feil da — det er meningen med sesongtallene.
+// Egen, større pulje her: grensene ligger nede på tiendedels prosent, og med de
+// 60 000 kastene resten av revisjonen bruker er støyen på samme størrelse som
+// marginen. Da hadde testen blinket rødt annenhver kjøring uten at noe var galt.
+console.log("\n6. STÅR SJELDENHETSSTIGEN RIKTIG VEI?");
+settMnd(-1);
+const NS = 400000;
+const byKey = {}; FISH.forEach((f) => (byKey[f.k] = f));
+for (let d = 0; d < 4; d++) {
+  sett(d, null, null, false);
+  const f = {};
+  for (let i = 0; i < NS; i++) { const k = velgArt(); f[k] = (f[k] || 0) + 1; }
+  const lag = [[], [], []];                                     // vanlig, sjelden, legendarisk
+  Object.entries(f).forEach(([k, v]) => lag[byKey[k].rar || 0].push({ k, p: 100 * v / NS }));
+  const sum = lag.map((l) => l.reduce((s, x) => s + x.p, 0));
+  const lavest = (l) => l.length ? l.reduce((a, x) => x.p < a.p ? x : a) : null;
+  const hoyest = (l) => l.length ? l.reduce((a, x) => x.p > a.p ? x : a) : null;
+
+  sjekk(SONER[d] + ": lagene stabler seg", sum[0] > sum[1] && sum[1] > sum[2],
+    sum.map((s, i) => ["vanlig", "sjelden", "legend"][i] + " " + s.toFixed(1) + " %").join(" · "));
+
+  // Grensene mellom lagene, art for art.
+  for (const [lav, hoy, navn] of [[0, 1, "vanlig/sjelden"], [1, 2, "sjelden/legendarisk"]]) {
+    const a = lavest(lag[lav]), b = hoyest(lag[hoy]);
+    if (!a || !b) { merk(SONER[d] + ": ingen " + ["vanlige", "sjeldne", "legendariske"][b ? lav : hoy] + " arter her"); continue; }
+    sjekk(SONER[d] + " " + navn + ": " + a.k + " ≥ " + b.k, a.p >= b.p,
+      a.p.toFixed(2) + " % mot " + b.p.toFixed(2) + " %");
+  }
+
+  // Ingen enkeltart skal eie sonen. 85 %-vakta i poolVekter er nødbremsen;
+  // dette er grensen for hva som er en levelig sone å fiske i.
+  const topp = hoyest(lag[0]);
+  sjekk(SONER[d] + ": ingen art eier sonen (" + topp.k + ")", topp.p <= 45,
+    topp.p.toFixed(1) + " % av kastene");
+}
+settMnd(6);
 
 console.log("\n" + (feil
   ? "✗ " + feil + " FEIL, " + aatvaring + " merknader, " + ok + " grønne"
