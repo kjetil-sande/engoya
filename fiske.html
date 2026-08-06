@@ -1503,10 +1503,11 @@ function fiskBilde(f){
   if(typeof erSkrei==="function" && erSkrei(f) && skreiImg.complete && skreiImg.naturalWidth) return skreiImg;
   return fishImg[f.k];
 }
-var LIKNER={sjoorret:"lyr",brisling:"sild",horngjel:"sild",taggmakrell:"makrell",mulle:"berggylte",
+var LIKNER={sjoorret:"lyr",brisling:"makrell",horngjel:"makrell",taggmakrell:"makrell",mulle:"berggylte",
   tangsprell:"aalekvabbe",ulke:"knurr",piggvar:"rodspette",slettvar:"rodspette",sypike:"hyse",oyepaal:"hyse",
-  gapeflyndre:"rodspette",havaal:"lange",kolmule:"hyse",vassild:"sild",glassvar:"rodspette",
-  laksesild:"sild",lysprikkfisk:"sild", // dei 18 nye har eigne hovudbilete — dette gjeld BERRE silhuettane
+  gapeflyndre:"rodspette",havaal:"lange",kolmule:"hyse",vassild:"makrell",glassvar:"rodspette",
+  laksesild:"makrell",lysprikkfisk:"makrell", // dei 18 nye har eigne hovudbilete — dette gjeld BERRE
+  // silhuettane. MERK: «sild» duger ikkje som mål — silda har aldri hatt eigen silhuett.
   sild:"makrell",sandflyndre:"rodspette",skrubbe:"rodspette",lomre:"rodspette",skate:"rodspette",hvitting:"hyse",knurr:"uer",
   lysing:"lyr",blaalange:"lange",haagjel:"pigghaa",svarthaa:"pigghaa",haakjerring:"pigghaa",havmus:"brosme",blaakveite:"kveite",maanefisk:"breiflabb"}; // midlertidig lookalike til egen kunst er generert — egen PNG overtar automatisk
 FISH.forEach(function(f){ var base=FIMG[f.k]||f.k, fb=LIKNER[f.k];
@@ -3564,10 +3565,9 @@ var SMELL_TID=0.95;
 var myntImg=new Image(); myntImg.onload=function(){ var e=$(".hudPenge"); if(e)e.classList.add("mynt"); };
 myntImg.onerror=function(){}; myntImg.src="spill/assets/mynt-ark.png";
 var tordenCool=25, regnFase=0;
-// Lyn: eieren leverer spill/assets/lyn-1.png spill/assets/lyn-2.png
-// spill/assets/lyn-3.png spill/assets/lyn-4.png (transparente; PIL-plassholdere
-// ligger inne). Uten filer tegnes bare himmelblitsen — sekvensen virker uansett.
-var lynImg=[1,2,3,4].map(function(i){ var im=new Image(); im.onerror=function(){}; im.src="spill/assets/lyn-"+i+".png"; return im; });
+// Lyn: fem varianter frå eigaren (spill/assets/lyn-01.png … lyn-05.png), kvite på
+// gjennomsiktig botn. Manglar dei, teiknast berre himmelblitsen — sekvensen verkar uansett.
+var lynImg=["01","02","03","04","05"].map(function(i){ var im=new Image(); im.onerror=function(){}; im.src="spill/assets/lyn-"+i+".png"; return im; });
 var lynSeq=null; // {t, x, im, lydT, lydOK} — tidslinja: 2 korte blink, så hovedlynet som står ~1 s og fader raskt
 function lynAlpha(tt){
   if(tt<0.08)return 1;               // blink 1
