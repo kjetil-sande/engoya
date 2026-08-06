@@ -378,3 +378,50 @@ fiskerkortet (koden har 📱-fallback, ikonet plugger seg selv inn). (653 tegn)
 `spill/assets/appikon-kystradioen.png` — Kystradioen 📻 (om du vil ha eit eige) (633 tegn):
 
 > Retro video game pixel art style. A single square app icon: a simple stylised radio tower — a narrow dark mast with two crossbars and three curved signal arcs radiating from the top to one side. On a deep charcoal rounded-square tile background, the tile filling the frame edge-to-edge behind the tower. Chunky and readable at small size: very few details, thick clean pixel outlines, flat shapes only. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+---
+
+## Nye 6. aug (kveld)
+
+`spill/assets/appikon-albumet.png` — Albumet — ny, endå enklare (717 tegn):
+
+> Retro video game pixel art style. A single square app icon in the style of a classic photos-app symbol: one large solid triangle mountain and one smaller triangle mountain overlapping it, a plain circle sun in the empty sky above them, nothing else at all. Three flat colours only — dark mountains, a warm yellow sun, and a pale blue sky filling the whole square behind them. Chunky and readable at small size: very few details, thick clean pixel outlines, flat shapes only, no texture. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/kart-saltvaer-verkstad.png` — Kjells verkstad nede ved hamna (988 tegn):
+
+> Retro video game pixel art style. High three-quarter aerial view with a strong sense of depth and elevation. Warm golden northern light from the upper left, long soft shadows. A small boat repair workshop right at the water's edge: a weathered dark red wooden shed with wide open doors facing the sea, a sturdy timber slipway running from the doors straight down into the water, and a half-size winch with a steel drum and cable mounted at the top of the slipway, a small open boat halfway up on the rails. Oil drums, a stack of timber and a workbench outside the doors. Densely detailed, warm and lived-in, no purple or pink cast. An irregular organic natural form — no square base, no diorama tile. Only a narrow band of water and white foam hugs the shore; immediately beyond the foam the entire background is flat solid magenta on all four sides, one single colour, completely empty, and nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text.
+
+---
+
+## Båtar og trålutstyr (6. aug)
+
+**Litt om faget, sidan du spurde.** Ein reketrål er ein pose som blir slept etter båten. Dei fire oppgraderingane i spelet er ekte utstyr:
+
+1. **Sorteringsrist** — ei skrå rist av stålstenger inne i trålen. Rekene glir mellom stengene og vidare inn i posen; fisk som er for stor treff ristene og blir leidd ut gjennom ei luke. Påbode i norsk rekefiske. Gjer at fangsten blir rein, i staden for full av øydelagd småfisk.
+2. **Trålpose** (òg kalla sekken) — den bakarste, lukka delen av trålen der fangsten samlar seg. Større pose = meir rom = færre hal = lengre tid ute før ein må inn.
+3. **Ekkolodd** — finn stimen og botnforholda i staden for at ein leitar på slump.
+4. **Kraftblokk og vinsj** — den hydrauliske blokka som hiv trålen inn. Halverer tida på kvart hal, så det blir fleire hal per tur.
+
+`spill/assets/rusten-baat.png` — Rustens eigen sjark (822 tegn):
+
+> Retro video game pixel art style. A single game sprite seen from the side: a small old Norwegian wooden fishing sjark, dark green hull with a white waterline stripe and plenty of scuffs, a squat white wheelhouse set far back, a short mast with a single working lamp, worn car tyres hanging along the side as fenders, a coil of rope and two crab pots stacked on the open foredeck, a stubby exhaust pipe with a wisp of smoke. She has clearly been afloat for forty years and is not done yet. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/traaler-reke.png` — Reketrålaren (782 tegn):
+
+> Retro video game pixel art style. A single game sprite seen from the side: a working Norwegian shrimp trawler, blue steel hull with a high bow and a white superstructure aft, two tall outrigger booms angled down and out from a central mast with cables running from them, a large steel drum of trawl wire on the aft deck, a gantry frame over the stern ramp, radar and antennas on the wheelhouse roof, and a heap of green trawl netting piled on deck. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/traal-rist.png` — Sorteringsrist (oppgradering 1) (639 tegn):
+
+> Retro video game pixel art style. A single game icon: a sorting grid for a shrimp trawl — a rectangular frame of steel bars set close together, mounted at a slant, with an escape opening at the top edge and a piece of green net attached around the frame. A few tiny shrimp shapes passing between the bars. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/traal-pose.png` — Større trålpose (oppgradering 2) (586 tegn):
+
+> Retro video game pixel art style. A single game icon: the cod end of a trawl — a big bulging bag of green mesh netting tied shut at the narrow end with a thick rope, packed full of pink shrimp so the mesh is stretched tight, a few floats along the top. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/traal-ekkolodd.png` — Nytt ekkolodd (oppgradering 3) (603 tegn):
+
+> Retro video game pixel art style. A single game icon: a modern marine echo sounder unit — a chunky grey housing with a bright screen showing a thick glowing arch of fish marks over a green seabed line, a few control knobs below the screen and a short cable at the back. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/traal-kraftblokk.png` — Kraftblokk og vinsj (oppgradering 4) (619 tegn):
+
+> Retro video game pixel art style. A single game icon: a hydraulic power block for hauling nets — a heavy yellow-painted steel pulley wheel with a deep V groove, mounted in a sturdy bracket, thick wire cable running over it, hydraulic hoses coiled at the base and grease around the hub. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
