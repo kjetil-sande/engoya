@@ -2266,6 +2266,8 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.traalGjeld==null)P.traalGjeld=0;    // restgjeld til Tråløy Sparebank
   if(P.traalHalv==null)P.traalHalv=false;  // har Trude ringt om at du er halvveis?
   if(P.traalKvitt==null)P.traalKvitt=false;// har ho ringt om at lånet er innfridd?
+  if(P.lynavleder==null)P.lynavleder=false;// spiss på masta, jorda under vasslinja
+  if(P.ekkoSvidd==null)P.ekkoSvidd=false;  // lynet tok loddet — Kjell må fikse det
   if(P.traalSvc==null)P.traalSvc=0;        // hal siden båtservice på tråleren
   if(P.traalRiggTs==null)P.traalRiggTs=Date.now();     // sist trålriggen ble overhalt
   if(P.traalRiggTs>Date.now())P.traalRiggTs=Date.now();// samme klokkevern som ellers
@@ -3165,9 +3167,9 @@ function startWait(){
     var sum=0, mx=0, mi=0; v.forEach(function(x,i){ sum+=x; if(x>mx){mx=x;mi=i} });
     if(sum>0 && pl.length>1 && mx>0.85*sum) v[mi]=(sum-mx)*(0.85/0.15); // ingen art tar mer enn 85 % — hverdagsfisken kommer alltid
     return v; }
-  var roll=Math.random(), pool, bc, ek=P.ekko?1+0.5*riggK():1; // ekkoloddet ser stimene: +50 % sjanse for sjelden/legendarisk
+  var roll=Math.random(), pool, bc, ek=(P.ekko&&!P.ekkoSvidd)?1+0.5*riggK():1; // ekkoloddet ser stimene: +50 % sjanse for sjelden/legendarisk
   if(agEff&&agEff.rar)ek*=agEff.rar; // Rustens Spesialagn: +50 %
-  var pL=ek/150*beste(t2), pR=ek/75*beste(t1); // riggen lokker også de sjeldne fram
+  var pL=ek/450*beste(t2), pR=ek/160*beste(t1); // riggen lokker også de sjeldne fram
   if(agEff&&agEff.superLegend){ // Superagnet: en LEGENDE kommer — fra hele havet, ikke bare denne sonen (storkveita tar ingen snarveier)
     var sl=FISH.filter(function(f){return f.rar===2&&!f.trophy});
     if(sl.length){ var sw=sl.map(function(f){return Math.max(1,Math.round(f.pris/1200))}), st=0; // de gjeveste oftest
@@ -3704,7 +3706,19 @@ function uvaerNaa(){ return tordenNaa() || (regnerNaa() && /heavy/.test(vxKode()
 function vxKode(){ return (window.__wx!=null?window.__wx:seaWx)||""; }
 function regnerNaa(){ return /rain|sleet/.test(vxKode()); }
 function snorNaa(){ return /snow/.test(vxKode()); } // snør det på Engøya, snør det i spillet
-function tordenNaa(){ return /thunder/.test(vxKode()); }
+var SONE_RUSK=[0, 0.02, 0.06, 0.14];   // Kvitholmen, Trålsund, Svartrenna, Uthavet
+function soneRusk(){
+  if(typeof HAL!=="undefined" && HAL) return 0.17;   // Rekefeltet ligg lengst ute av alle
+  return SONE_RUSK[depth]||0;
+}
+// Vêrkoden er felles for heile dagen, men ope hav får si eiga lesing: er dagen alt
+// våt, og ligg han høgt nok på skalaen, står det tore der ute sjølv om det berre
+// regnar inne i fjorden.
+function tordenNaa(){
+  if(/thunder/.test(vxKode())) return true;
+  var r=soneRusk(); if(!r || !regnerNaa()) return false;
+  return vaerS(vaerDagNr(new Date())) > 1-r;
+}
 var sno=[]; // snøfnugg: luftboblene snudd på hodet (eiers idé) — kun i lufta, aldri under vann
 function nySno(spred){ var mn=Math.min(W,H); return {x:Math.random()*W, y:spred?Math.random()*H*0.3:-mn*0.03,
   vy:H*(0.035+Math.random()*0.05), sv:0.6+Math.random()*1.2, ph:Math.random()*6.28,
@@ -3771,6 +3785,14 @@ function tegnVaer(dt){
       pos.push(0.15+Math.random()*0.7); }
     lynSeq={t:0, bil:bil, pos:pos,
             lydT:0.46+0.4+Math.random()*0.5, lydOK:false}; // smellet kjem etter det TREDJE glimtet
+    // Treffer det masta? Berre langt ute, og berre no og då — eit familiespel skal ikkje
+    // straffe deg for å vere på sjøen, men det skal koste noko å stå der utan vern.
+    if(P && soneRusk()>=0.06 && Math.random()<0.05){
+      if(P.lynavleder) notice("Lynet slo ned i masta — men avlederen tok det rett i sjøen ⚡");
+      else if(P.ekko && !P.ekkoSvidd){ P.ekkoSvidd=true; saveAll();
+        notice("LYNET TOK EKKOLODDET! Skjermen er svart — Propell-Kjell kan fikse det ⚡");
+        if(navigator.vibrate)navigator.vibrate([200,90,200]); }
+    }
     tordenCool=40+Math.random()*80; } }
 }
 
@@ -4960,6 +4982,14 @@ function openKjell(){
       "Uten den klarer dere ikke hive en helt full sekk — taket ligger på 85 % av kapasiteten. Med den tar du opp alt som kommer.",
       70000,P.traalVinsj?"Montert":false,function(){P.traalVinsj=true; notice("Kraftblokka er på plass — nå tar dere opp alt ⚙️");});
   }
+  addShop(L,'<img src="spill/assets/traal-kraftblokk.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚡ \'" alt=""> Lynavleder',
+    "En spiss på masta, jordet til en plate under vannlinja. Den stopper ikke lynet, men gir det en trygg vei i sjøen i stedet for gjennom båten. Ute på Uthavet og Rekefeltet er det verdt pengene.",
+    9000,P.lynavleder?"Montert":false,function(){P.lynavleder=true;
+      notice("Lynavlederen sitter — nå kan du stå ute i toreværet ⚡");});
+  if(P.ekkoSvidd)
+    addShop(L,'<img src="spill/assets/ekkolodd.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Reparer ekkoloddet',
+      "Lynet svidde av kretsen. Kjell har deler liggende, men det tar en dag.",
+      2600,false,function(){P.ekkoSvidd=false; notice("Ekkoloddet lever igjen 📡");});
   if(Date.now()>P.havnNeste)
     addShop(L,'<img src="spill/assets/ornes-baatforening-logo.png" class="shoplogo rund" alt=""> Havneavgift',
       "Kaiplass i Ørnes havn — Ørnes Båtforening (stifta 1964).",350,false,
@@ -5644,17 +5674,72 @@ function updateDyptImg(){ var v=dyptVariant(); if(v===dyptCur)return; dyptCur=v;
     pre4.src=u; } } // bytt aldri bort lastede bilder før de nye er klare
 updateDyptImg();
 var vaerNaa=null; // {temp, vind, kveld} — til Været-appen på telefonen
-(function(){ try{ var c=JSON.parse(localStorage.getItem("storkveita-vaer")||"null");
-    if(c&&Date.now()-c.t<1800000){ seaWx=c.code; vaerNaa={temp:c.temp,vind:c.vind,kveld:c.kveld}; updateDyptImg(); return; } }catch(e){}
-  fetch("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=66.8706&lon=13.6733").then(function(r){return r.json()}).then(function(j){
-    var t0=j.properties.timeseries[0], d=t0.data, inst=(d.instant&&d.instant.details)||{};
-    seaWx=(d.next_1_hours&&d.next_1_hours.summary.symbol_code)||(d.next_6_hours&&d.next_6_hours.summary.symbol_code)||"";
-    vaerNaa={temp:inst.air_temperature, vind:inst.wind_speed,
-      kveld:(d.next_6_hours&&d.next_6_hours.summary.symbol_code)||""};
-    oppdaterVaerLyd();
-    try{localStorage.setItem("storkveita-vaer",JSON.stringify({t:Date.now(),code:seaWx,temp:vaerNaa.temp,vind:vaerNaa.vind,kveld:vaerNaa.kveld}))}catch(e){}
-    updateDyptImg();
-  }).catch(function(){});
+
+/* ================= ÅRSHJULET =========================================
+   Været kom før fra api.met.no. Nå lages det her, av datoen alene.
+
+   HVORFOR: spillet virker offline, en nedetid hos MET kan ikke ta været, og
+   ingenting sendes ut av telefonen. Og viktigst — hele familien ser SAMME vær
+   samme dag, uansett hvor de er, fordi alt er utledet av datoen.
+
+   HVORDAN: tolv månedsnormaler for kysten av Nordland, og oppå dem en
+   uværsverdi som svinger jevnt over flere døgn. Det siste er poenget: vær
+   kommer i systemer som varer to-fire dager, ikke som ny terning hvert døgn.
+   Derfor summen av tre sinuser med ulik periode, pluss et dagsspark fra
+   terningen. Da får man både lange, stabile perioder OG dagen som brått
+   snur — fjorten grader og sol, og storm dagen etter.
+
+   Tallene er tilnærmede normaler, ikke offisielle måledata.
+   ------------------------------------------------------------------ */
+var VAER_MND=[  // [middeltemp, døgnsving, nedbørsandel, uværsandel]
+  [ 0.5, 7, 0.62, 0.16],[ 0.3, 7, 0.56, 0.15],[ 1.6, 7, 0.50, 0.12],
+  [ 4.2, 7, 0.44, 0.08],[ 8.0, 7, 0.38, 0.05],[11.4, 7, 0.36, 0.04],
+  [13.6, 7, 0.40, 0.04],[13.0, 7, 0.44, 0.05],[ 9.6, 7, 0.56, 0.09],
+  [ 5.6, 7, 0.64, 0.13],[ 2.6, 7, 0.62, 0.15],[ 1.0, 7, 0.62, 0.16]];
+
+function vaerDagNr(d){ // dagar sidan epoken — same tal på alle einingar, uansett tidssone
+  return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5); }
+
+// Vêrverdien for eit døgn. FYRSTE FORSØK var ein sum av tre sinusar for å få system
+// som varte fleire døgn. Det gjekk gale: ein sum av sinusar klumpar seg mot midten,
+// så klarvêr og storm hende nesten aldri, og temperaturen kraup i staden for å hoppe.
+// No rår dagens eigen terning, med berre 18 % minne frå i går. Det gir nettopp det
+// som skjer her nord: fjorten grader og sol, og fire grader og kuling dagen etter.
+function vaerS(dn){
+  var i=mulberry32((dn*2654435761)|0)(), ig=mulberry32(((dn-1)*2654435761)|0)();
+  return i*0.82+ig*0.18;
+}
+function vaerFor(d){
+  var dn=vaerDagNr(d), m=VAER_MND[d.getMonth()];
+  var s=vaerS(dn), rng=mulberry32(((dn*7919)^0x5bf03635)|0);
+  var pN=m[2], pU=m[3];
+  var temp=m[0]+(0.5-s)*m[1]+(rng()-0.5)*3.0;   // uvêr dreg temperaturen ned, som i røynda
+  var vind=1.5+s*s*18+rng()*2.5;
+  var kald=temp<0.8, kode;
+  if(s>1-pU)        kode=kald?"heavysnow":(s>1-pU*0.18?"heavyrainandthunder":"heavyrain");
+  else if(s>1-pN){ var f=(s-(1-pN))/(pN-pU);
+                   kode=kald?(f>0.55?"snow":"lightsnow")
+                            :(f>0.66?"rain":(f>0.33?"lightrain":"lightrainshowers")); }
+  else { var c=s/(1-pN);
+         kode=c<0.18?"clearsky":c<0.42?"fair":c<0.70?"partlycloudy":"cloudy"; }
+  return {kode:kode, temp:Math.round(temp*10)/10, vind:Math.round(vind*10)/10};
+}
+
+(function(){
+  var no=new Date(), i=vaerFor(no);
+  // Kvelden er neste steg på same kurve — litt lenger ut i systemet.
+  var kv=new Date(no.getTime()+6*3600e3), k=vaerFor(kv);
+  seaWx=i.kode;
+  vaerNaa={temp:i.temp, vind:i.vind, kveld:k.kode};
+  if(typeof oppdaterVaerLyd==="function")oppdaterVaerLyd();
+  updateDyptImg();
+  // Ved døgnskiftet skal vêret bytte utan at nokon må laste sida på nytt.
+  setInterval(function(){ var n2=new Date(), i2=vaerFor(n2);
+    if(i2.kode===seaWx && Math.abs(i2.temp-vaerNaa.temp)<0.05) return;
+    seaWx=i2.kode; vaerNaa={temp:i2.temp, vind:i2.vind,
+      kveld:vaerFor(new Date(n2.getTime()+6*3600e3)).kode};
+    if(typeof oppdaterVaerLyd==="function")oppdaterVaerLyd(); updateDyptImg();
+  }, 300000);
 })();
 // Toppdelen av bakgrunnen (himmel + sjøflate) er teikna i 2:1 — altså halvparten så høg
 // som biletet er breitt. HIMMEL er kor mange piksler ned i den delen vannlinja ligg, og
@@ -5967,7 +6052,8 @@ function halKr(n){ return Math.round(n).toLocaleString("nb"); } // spelet elles 
 // Sekkestorleik i kroner. Dette ER makskapasiteten baren viser heilt til høgre.
 var HAL_KAP=[20000,37000,60000];
 function halKap(){ var n=(P&&P.traalPose)|0; return HAL_KAP[Math.min(n,HAL_KAP.length-1)]; }
-function halRigg(){ return { rist:!!(P&&P.traalRist), lodd:!!(P&&P.traalLodd), vinsj:!!(P&&P.traalVinsj) }; }
+function halRigg(){ return { rist:!!(P&&P.traalRist),
+  lodd:!!(P&&P.traalLodd)&&!(P&&P.ekkoSvidd), vinsj:!!(P&&P.traalVinsj) }; }
 
 function halFlak(rng, rigg){
   var n=1+Math.floor(rng()*4);

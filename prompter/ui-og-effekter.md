@@ -450,3 +450,19 @@ henne. Munnen må vende mot HØGRE (mot båten), og posen ligge mot venstre, sid
 akterut. Ingen sjø i biletet — spelet toner henne sjølv ut mot djupet.
 
 > Retro video game pixel art style. A single game sprite seen from the side: a Norwegian shrimp trawl net under water, mouth wide open to the RIGHT and tapering away to the LEFT. A row of round floats along the curved upper edge and a line of heavy steel bobbins along the lower edge. Behind the mouth, a slanted ladder of steel bars across the throat — the sorting grid — with a small escape opening above it. The body narrows through green and grey mesh into a long closed bag at the far left, tied off with thick rope. The netting is open weave, so the mesh reads as lines rather than a solid shape. Completely empty: no shrimp, no fish, no catch, no water and no seabed. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+`spill/assets/traaler-reke-rontgen.png` — Tråleren i røntgen (1003 tegn):
+
+Eierens idé: når lynet slår ned ser man innmaten i båten, som når en tegneseriefigur får
+støt og skjelettet lyser gjennom. Det er ikke teit — det er en klassiker, og på en båt er
+det ekstra fint, for båtens skjelett er spantene.
+
+**Men det står og faller på varigheten.** Vises den i mer enn to-tre frames blir den en
+plakat i stedet for et glimt. Planen er å bytte den inn kun på det tredje lynglimtet, det
+som varer 0,35 s, og bare når nedslaget faktisk treffer masta — altså den ene gangen av
+tjue, langt ute. Da blir det et sjeldent syn folk snakker om, ikke en effekt som slites ut.
+
+Sprita må ha NØYAKTIG samme silhuett og positur som `traaler-reke.png`, ellers hopper båten
+i det glimtet kommer.
+
+> Retro video game pixel art style. An X-RAY view of a Norwegian shrimp trawler seen from the side, bow to the right — the same boat as traaler-reke.png, in the same pose and proportions, but rendered as if lit from within by a lightning strike. The hull and wheelhouse are a **flat dark silhouette**, and inside it the **structure glows in pale electric blue-white**: the curved ribs of the frames along the hull, the keel line running the length of her, the engine block low and amidships, and the mast running up through the wheelhouse. A **small figure of a fisherman stands on the aft deck with his skeleton showing**, arms flung out, hair on end — the old cartoon gag, brief and funny, not gruesome. Everything else is black. Chunky and readable at small size: thick clean pixel outlines, few large details. Centred, filling most of the frame, matching the original sprite's silhouette exactly. Plain white background. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
