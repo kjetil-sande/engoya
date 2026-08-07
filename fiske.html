@@ -4887,7 +4887,7 @@ function openKjell(){
       "Påbudt i norsk reketrål. Reka smetter mellom stengene, fisken ledes ut igjen levende — og fangsten blir ren i stedet for full av ødelagt småfisk.",
       18000,P.traalRist?"Montert":false,function(){P.traalRist=true; notice("Sorteringsrista er montert 🪤");});
     if(P.traalPose<2) addShop(L,'<img src="spill/assets/traal-pose.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎣 \'" alt=""> '+(P.traalPose?"Dobbel sekk":"Større trålpose"),
-      "Mer rom i sekken: kapasiteten går fra "+HAL_KAP[P.traalPose].toLocaleString("nb")+" til "+HAL_KAP[P.traalPose+1].toLocaleString("nb")+" kr per hal. Baren blir lengre også.",
+      "Mer rom i sekken: kapasiteten går fra "+HAL_KAP[P.traalPose].toLocaleString("nb")+" til "+HAL_KAP[P.traalPose+1].toLocaleString("nb")+" kr per hal. Da mister du ikke lenger toppen av de store halene — og baren blir lengre.",
       P.traalPose?90000:45000,false,function(){P.traalPose++; notice("Ny sekk er montert — større hal fra nå 🎣");});
     addShop(L,'<img src="spill/assets/traal-ekkolodd.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Trålekkolodd',
       "Reka står i flak, ikke jevnt utover. Med lodd finner du ett–to flak til per hal, og går ikke rett forbi dem.",
@@ -5808,7 +5808,7 @@ var HAL=null;
 function halKr(n){ return Math.round(n).toLocaleString("nb"); } // spelet elles skriv tal slik
 
 // Sekkestorleik i kroner. Dette ER makskapasiteten baren viser heilt til høgre.
-var HAL_KAP=[60000,110000,180000];
+var HAL_KAP=[20000,37000,60000];
 function halKap(){ var n=(P&&P.traalPose)|0; return HAL_KAP[Math.min(n,HAL_KAP.length-1)]; }
 function halRigg(){ return { rist:!!(P&&P.traalRist), lodd:!!(P&&P.traalLodd), vinsj:!!(P&&P.traalVinsj) }; }
 
@@ -5840,10 +5840,10 @@ function halStart(){
   // undersøkelse). Et hal skal derfor stort sett være smått, ofte skuffende, og
   // først en sjelden gang stort nok til å bli en historie.
   var r=rng(), andel;
-  if(r<0.22)      andel=0.005+rng()*0.045;  // nesten tomt — over én av fem turer
-  else if(r<0.65) andel=0.040+rng()*0.080;  // vanlig dag
-  else if(r<0.92) andel=0.120+rng()*0.110;  // god dag
-  else            andel=0.240+rng()*0.400;  // eventyr — kan sprenge sekken
+  if(r<0.22)      andel=0.015+rng()*0.135;  // nesten tomt — over én av fem turer
+  else if(r<0.65) andel=0.120+rng()*0.240;  // vanlig dag
+  else if(r<0.92) andel=0.360+rng()*0.330;  // god dag
+  else            andel=0.720+rng()*1.200;  // eventyr — sprenger sekken
   if(rigg.lodd) andel*=1.15;                // du finner mer når du ser hvor hun står
   andel*=traalSesong();                     // høst og vinter er bedre enn forsommeren
   andel*=0.82+0.18*(traalRiggPct()/100);    // slitt wire og slappe dører fisker dårligere
@@ -5901,10 +5901,12 @@ function halSteg(dt){
   // sekken blir, jo større er sjansen for at nota ryker i draget — og da renner
   // halvparten tilbake i havet. Kraftblokka halverer risikoen; det er den som gjør
   // at de tåler en tung sekk i det hele tatt.
-  var fyll=v/HAL.kap;
-  if(fyll>0.55){
-    var fare=(fyll-0.55)/0.45;
-    if(Math.random() < fare*fare*(HAL.vinsj?0.05:0.12)*dt){
+  // Kraftblokka flytter TERSKELEN, ikke bare raten. Det er tiden i faresonen som
+  // avgjør, og med blokka begynner den først på 70 % i stedet for 55 %.
+  var fyll=v/HAL.kap, terskel=HAL.vinsj?0.70:0.55;
+  if(fyll>terskel){
+    var fare=(fyll-terskel)/(1-terskel);
+    if(Math.random() < fare*fare*(HAL.vinsj?0.9:1.6)*dt){
       HAL.verdi=v*0.55; HAL.rauk=true;
       HAL.status="NOTA ROK! Halvparten rant tilbake i havet.";
       Snd.snap(); if(navigator.vibrate)navigator.vibrate(180); halSlutt();   // same lyden som når snøret ryker
@@ -5917,8 +5919,8 @@ function halSteg(dt){
   if(tt>=1||HAL.full) halSlutt();
   else if(!HAL.full){
     var fart=halAndel(Math.min(1,tt+0.02))-halAndel(tt);
-    HAL.status = fyll>0.80 ? "Sekken er faretruende tung — hiv!"
-      : fyll>0.55 ? "Sekken begynner å bli tung. Hive, eller stå på?"
+    HAL.status = fyll>terskel+0.25 ? "Sekken er faretruende tung — hiv!"
+      : fyll>terskel ? "Sekken begynner å bli tung. Hive, eller stå på?"
       : fart>0.012 ? "Det koker der nede!" : (v>0 ? "Jevn reke." : "Ikke et kilo ennå.");
   }
   var f=$("#halFyll"), n=$("#halNaa"), b=$("#halBar");
