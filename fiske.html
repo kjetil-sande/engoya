@@ -2233,6 +2233,9 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.traalLodd==null)P.traalLodd=false;  // ekkolodd: finn fleire rekeflak
   if(P.traalVinsj==null)P.traalVinsj=false;// kraftblokk: greier å hive full sekk
   if(P.traalDiesel==null)P.traalDiesel=0;  // tankmål, 10 er fullt
+  if(P.traalSvc==null)P.traalSvc=0;        // hal siden båtservice på tråleren
+  if(P.traalRiggTs==null)P.traalRiggTs=Date.now();     // sist trålriggen ble overhalt
+  if(P.traalRiggTs>Date.now())P.traalRiggTs=Date.now();// samme klokkevern som ellers
   if(typeof traalKartOpne==="function")traalKartOpne(); // eig du henne alt, står feltet ope frå start
   if(P.riggTs>Date.now())P.riggTs=Date.now(); // samme klokkevern som smorTs // kampbelte (25 % saktere spenn)
   if(typeof investInit==="function"){ investInit(); innRydd(); setTimeout(innPrikk,0); }
@@ -4882,6 +4885,14 @@ function openKjell(){
     addShop(L,'<img src="spill/assets/traal-ekkolodd.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Trålekkolodd',
       "Reka står i flak, ikke jevnt utover. Med lodd finner du ett–to flak til per hal, og går ikke rett forbi dem.",
       35000,P.traalLodd?"Montert":false,function(){P.traalLodd=true; notice("Trålekkoloddet er montert 📡");});
+    addShop(L,'<img src="spill/assets/traal-rist.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🧰 \'" alt=""> Trålservice — rigg',
+      "Wire, tråldører og not. Slitt rigg sprer seg dårligere og fisker inntil 18 % svakere. "+pctBar(traalRiggPct())+" Holder i 40 dager.",
+      Math.max(1200,Math.round(9000*(1-traalRiggPct()/100))), traalRiggPct()>=95, function(){
+        P.traalRiggTs=Date.now(); notice("Trålriggen er overhalt — wire og dører står som de skal 🧰"); });
+    addShop(L,'<img src="spill/assets/traal-kraftblokk.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🔧 \'" alt=""> Trålservice — maskin',
+      "Maskin og skrog på tråleren. Under 35 % drikker hun ett ekstra dieselmål per hal. "+pctBar(traalSvcPct())+" Holder i "+TRAAL_SVC_LIV+" hal.",
+      Math.max(1500,Math.round(14000*(1-traalSvcPct()/100))), traalSvcPct()>=95, function(){
+        P.traalSvc=0; notice("Tråleren er servet — maskina går rundt igjen 🔧"); });
     addShop(L,'<img src="spill/assets/traal-kraftblokk.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Kraftblokk og vinsj',
       "Uten den klarer dere ikke hive en helt full sekk — taket ligger på 85 % av kapasiteten. Med den tar du opp alt som kommer.",
       70000,P.traalVinsj?"Montert":false,function(){P.traalVinsj=true; notice("Kraftblokka er på plass — nå tar dere opp alt ⚙️");});
@@ -5810,16 +5821,25 @@ function halFlak(rng, rigg){
 }
 
 function halStart(){
-  if(P&&P.traaler){ P.traalDiesel=Math.max(0,P.traalDiesel-TRAAL_BRUK); saveAll(); } // dieselen går med same kva halet gir
+  if(P&&P.traaler){                                    // dieselen går uansett hva halet gir
+    var slit=(traalSvcPct()<35)?1:0;                   // hakkende maskin drikker mer
+    P.traalDiesel=Math.max(0,P.traalDiesel-TRAAL_BRUK-slit);
+    P.traalSvc=(P.traalSvc||0)+1; saveAll(); }
   var rng=mulberry32((Date.now()^(Math.random()*1e9))|0), rigg=halRigg(), kap=halKap();
   // Kor mykje reke som står der ute i det heile. Vid spreiing med vilje: eit hal
   // skal kunne bli nesten tomt, og det skal kunne sprengje sekken.
+  // Kystrekeflåten er ikke noen gullgruve: driftsmarginen lå på 5,6 % i 2023, og
+  // resultatet før skatt var fortsatt negativt (Fiskeridirektoratets lønnsomhets-
+  // undersøkelse). Et hal skal derfor stort sett være smått, ofte skuffende, og
+  // først en sjelden gang stort nok til å bli en historie.
   var r=rng(), andel;
-  if(r<0.10)      andel=0.02+rng()*0.08;    // tom trål — det hender, og det må det få gjere
-  else if(r<0.55) andel=0.12+rng()*0.28;
-  else if(r<0.88) andel=0.40+rng()*0.35;
-  else            andel=0.75+rng()*0.50;    // over 1,0 = sekken går full før halet er ferdig
-  if(rigg.lodd) andel*=1.15;                // du finn meir når du ser kvar ho står
+  if(r<0.22)      andel=0.005+rng()*0.045;  // nesten tomt — over én av fem turer
+  else if(r<0.65) andel=0.040+rng()*0.080;  // vanlig dag
+  else if(r<0.92) andel=0.120+rng()*0.110;  // god dag
+  else            andel=0.240+rng()*0.400;  // eventyr — kan sprenge sekken
+  if(rigg.lodd) andel*=1.15;                // du finner mer når du ser hvor hun står
+  andel*=traalSesong();                     // høst og vinter er bedre enn forsommeren
+  andel*=0.82+0.18*(traalRiggPct()/100);    // slitt wire og slappe dører fisker dårligere
   var tak=rigg.vinsj?1.0:0.85;              // utan kraftblokk greier dei ikkje hive ein heilt full sekk
   var natt=halVariant()==="natt";
   var stj=[], sky=[], glit=[], nl=null;
@@ -6051,22 +6071,29 @@ function tegnHal(dt){
     g.fillStyle="rgba(235,240,238,.16)"; g.font=Math.round(mn*0.032)+"px monospace";
     g.textAlign="center"; g.fillText("traaler-reke.png manglar", W2*0.5, wl-mn*0.06); g.textAlign="left";
   }
-  // TRÅLEN. Du ser aldri en reke, og du ser heller ikke nota. Fra siden, med
-  // redskapen på 200-400 meter, er alt som er å se to wirer som går akterut og ned
-  // og blir borte i det blå. Alt du VET om fangsten, vet du fra baren.
+  // TRÅLEN. To wirer, én til hver tråldør — det er dørene som sprer nota ut til
+  // sidene. Begge går fra hver sin vinsjtrommel, akterover gjennom hvert sitt blokk
+  // i gantryet, og ut. Gantryet er altså riktig festepunkt.
+  //
+  // GEOMETRIEN: i rekefiske står redskapen på 150-500 meter, og man har rundt TRE
+  // ganger dybden med wire ute. Wiren ligger derfor mye mer BAKOVER enn nedover —
+  // første forsøk her sendte den bratt til bunns, og det var feil. Og jo tyngre
+  // sekken blir, jo hardere drar hun: slakken minker og wiren flater ut.
   (function(){
-    var ned=(H2-wl)*0.62;
+    var lastW=Math.max(0,Math.min(1,HAL.verdi/HAL.kap));
+    var ned=(H2-wl)*(0.42-0.10*lastW);        // tyngre sekk → strammere og flatere
+    var slakk=0.30-0.16*lastW;
     g.save(); g.lineCap="round";
     for(var w=0;w<2;w++){
-      var x1=akter+mn*0.010*w, y1=gantry;
-      var x2=akter-mn*(0.10+0.032*w), y2=wl+ned;
-      var gr=g.createLinearGradient(0,wl-mn*0.05,0,wl+ned);   // tydelig i skorpa, borte mot dypet
+      var x1=akter+mn*0.012*w, y1=gantry;
+      var x2=-mn*(0.06+0.10*w), y2=wl+ned;    // ut av bildet akterover, slik hun ligger
+      var gr=g.createLinearGradient(0,wl-mn*0.05,0,wl+ned);
       gr.addColorStop(0,   "rgba(232,240,244,"+(0.44-0.12*w).toFixed(3)+")");
-      gr.addColorStop(0.30,"rgba(206,224,236,"+(0.22-0.07*w).toFixed(3)+")");
+      gr.addColorStop(0.34,"rgba(206,224,236,"+(0.20-0.06*w).toFixed(3)+")");
       gr.addColorStop(1,   "rgba(186,210,226,0)");
       g.strokeStyle=gr; g.lineWidth=1.5;
       g.beginPath(); g.moveTo(x1,y1);
-      g.quadraticCurveTo(x1-(x1-x2)*0.30, wl+ned*0.26, x2, y2); g.stroke();
+      g.quadraticCurveTo(x1+(x2-x1)*0.45, y1+(y2-y1)*slakk, x2, y2); g.stroke();
     }
     g.restore();
   })();
@@ -6818,6 +6845,17 @@ function innRydd(){ if(!P||!P.innboks)return; var f=P.innboks.length, no=Date.no
 // Kjell held auge med kontoen din utan å seie det. I det du har 200 000 på bok,
 // ringjer han med eit tips — det er slik ting går på ei lita øy.
 var TRAAL_PRIS=200000, TRAAL_TANK=10, TRAAL_DIESEL_PR=900, TRAAL_BRUK=2;
+// Tråleren slites på to måter, som resten av båtene i spillet: maskin og skrog teller
+// TURER, mens riggen — wire, tråldører og not — teller DØGN. Wiren ruster like fort
+// om båten ligger ved kai.
+var TRAAL_SVC_LIV=90, TRAAL_RIGG_LIV=40*864e5;
+function traalSvcPct(){ return Math.max(0,Math.min(100, Math.round(100*(1-(P.traalSvc||0)/TRAAL_SVC_LIV)))); }
+function traalRiggPct(){ var d=Date.now()-(P.traalRiggTs||Date.now());
+  return Math.max(0,Math.min(100, Math.round(100*(1-d/TRAAL_RIGG_LIV)))); }
+// Sesong. Reka finnes hele året, så dette er en dur og ikke en bryter: rundt 15 % opp
+// på høsten og vinteren, tilsvarende ned på forsommeren.
+function traalSesong(){ var m=new Date().getMonth();
+  return [1.12,1.10,0.95,0.88,0.85,0.88,0.95,1.02,1.10,1.15,1.15,1.14][m]; }
 // KART.felt blir bygd éin gong ved innlasting, lenge før nokon spelar er vald. Difor
 // kan ikkje teaseren settast av P der oppe — han må fjernast aktivt når båten er kjøpt.
 function traalKartOpne(){
