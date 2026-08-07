@@ -5372,6 +5372,13 @@ function flettInvest(lp, inn){
     Object.keys(inn.nei).forEach(function(k){ iv.nei[k]=Math.max(+iv.nei[k]||0,+inn.nei[k]||0); }); }
   // Ein tur som framleis er ute skal berast vidare, aldri slettast.
   if(!iv.tur && inn.tur && (+inn.tur.ferdig||0)>Date.now()) iv.tur=inn.tur;
+  if(Array.isArray(inn.kvitt)&&inn.kvitt.length){   // union på id — ei kvittering skal aldri forsvinne
+    var sett={}, ut2=[];
+    (Array.isArray(iv.kvitt)?iv.kvitt:[]).concat(inn.kvitt).forEach(function(q){
+      if(!q||q.id==null||sett[q.id])return; sett[q.id]=1; ut2.push(q); });
+    ut2.sort(function(a,b){ return (+b.tid||0)-(+a.tid||0); });
+    iv.kvitt=ut2.slice(0,40);
+  }
   ["neste","nesteTid"].forEach(function(k){
     if(inn[k]!=null) iv[k]=Math.max(+iv[k]||0, +inn[k]||0); });
 }
@@ -6874,6 +6881,7 @@ function traalPris(f, trinn){ var u=TRAALUTSTYR[trinn]; if(!u)return 0;
 
 function investInit(){ if(!P.invest)P.invest={tur:null,hist:{},neste:0,utstyr:{},nei:{}};
   var iv=P.invest; if(!iv.hist)iv.hist={}; if(!iv.utstyr)iv.utstyr={}; if(!iv.nei)iv.nei={}; if(!iv.neste)iv.neste=0; if(iv.nesteTid==null)iv.nesteTid=0;
+  if(!Array.isArray(iv.kvitt))iv.kvitt=[];  // kvitteringar per tur — historikken du alltid kan slå opp i
   if(!iv.anrop)iv.anrop={};   // {dagKey: tal} — telefonen har eit døgntak
   if(!Array.isArray(P.innboks))P.innboks=[]; }
 function uleste(){ return (P.innboks||[]).filter(function(m){return !m.lest&&!m.borte}).length; }
@@ -7206,6 +7214,19 @@ function visTraalApp(){ investInit();
          +' onerror="this.style.display=\'none\'">':'')
       +"●".repeat(niv)+"○".repeat(4-niv)+'</span></div>'; });
   if(rader)h+='<div class="telseksjon">Fiskerne dine</div>'+rader;
+  var kv=Array.isArray(iv.kvitt)?iv.kvitt:[];
+  if(kv.length){ noe=true;
+    h+='<div class="telseksjon">Kvitteringer</div>';
+    kv.slice(0,20).forEach(function(q){
+      var fq=fiskerVed[q.fk], netto=(+q.ut||0)-(+q.inn||0);
+      var d=new Date(+q.tid||0), dato=d.getDate()+". "+["jan","feb","mars","april","mai","juni","juli","aug","sep","okt","nov","des"][d.getMonth()];
+      h+='<div class="telrad"><img class="'+(fq&&fq.speil?"speil":"")+'" src="spill/assets/'+(fq?fq.img:"")+'" alt="" onerror="this.style.visibility=\'hidden\'">'
+        +'<span class="tt"><b>'+esc(fq?fq.n:q.fk)+'</b>'
+        +'<span>'+dato+' · '+(+q.inn||0).toLocaleString("nb")+' → '+(+q.ut||0).toLocaleString("nb")+' kr</span></span>'
+        +'<span class="niva" style="color:'+(netto>0?"#3f8f5f":netto<0?"#c0392b":"inherit")+'">'
+        +(netto>0?"+":"")+netto.toLocaleString("nb")+' kr</span></div>';
+    });
+  }
   if(!noe)h+='<div class="teltom">Ingen turer ennå. Fiskerne ringer når de har en andel ledig — svarer du ja, følger du turen her. 🛥️</div>';
   $("#telInnhold").innerHTML=h;
   $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
@@ -7715,6 +7736,13 @@ function investSjekk(){
   P.kr+=ut; P.invest.tur=null;
   var h=P.invest.hist[t.fk]||(P.invest.hist[t.fk]={turar:0,inn:0,ut:0});
   h.turar++; h.inn+=t.sum; h.ut+=ut;
+  // KVITTERINGEN. En melding kan bli lest og glemt, eller gå tapt i et anrop man
+  // ikke rakk. Oppgjøret skal ALLTID kunne slås opp etterpå — derfor føres hver
+  // tur inn her, og lista står i Tråleren-appen.
+  if(!Array.isArray(P.invest.kvitt))P.invest.kvitt=[];
+  if(!P.invest.kvitt.some(function(x){return x&&x.id===t.seed;}))
+    P.invest.kvitt.unshift({id:t.seed, fk:t.fk, tid:Date.now(), inn:t.sum, ut:ut, u:u.k});
+  if(P.invest.kvitt.length>40)P.invest.kvitt.length=40;
   h.sist={mult:u.mult, utfall:u.k, tid:Date.now()};   // fiskaren hugsar til neste gong
   var m=innLegg({type:"resultat", fk:t.fk, utfall:u.k, mult:u.mult, inn:t.sum, ut:ut, id:t.seed});
   // SIKRING. Pengene er alt lagt til konto her. Blir meldinga borte på veien, sitter
