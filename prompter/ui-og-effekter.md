@@ -426,6 +426,12 @@ fiskerkortet (koden har 📱-fallback, ikonet plugger seg selv inn). (653 tegn)
 
 > Retro video game pixel art style. A single game icon: a hydraulic power block for hauling nets — a heavy yellow-painted steel pulley wheel with a deep V groove, mounted in a sturdy bracket, thick wire cable running over it, hydraulic hoses coiled at the base and grease around the hub. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
 
+**Oppdatering 7. aug:** `traaler-reke-hal.png` blei aldri laga. Eigaren teikna i staden om
+`traaler-reke.png` slik at ho duger både i ro og i arbeid — baug mot høgre, raudt bunnstoff
+nedst, og eit gantry i akterenden der wirane går ut. Halet teiknar sjølv wirane, nota som
+forsvinn ned i djupet, og kor djupt ho ligg i sjøen etter kor full sekken er. Ingen reker
+er synlege nokon stad. Prompten under er difor historikk, ikkje ei bestilling.
+
 `spill/assets/traaler-reke-hal.png` — Reketrålaren PÅ HAL, sett frå sida (1006 tegn):
 
 Den som alt ligger der (`traaler-reke.png`) er båten i ro — dette er same båt i arbeid.

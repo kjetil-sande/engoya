@@ -422,8 +422,13 @@
   /* MERK: ingen position her — .screen gir alt position:absolute;inset:0, og ein
      «position:relative» hadde teke bort inset-a og gjort skjermen null høg. */
   #halCv{position:absolute;inset:0;width:100%;height:100%;display:block}
-  #halTopp{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 14px);
-    display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;padding:0 10px}
+  #halTopp{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 14px) 10px 16px;
+    display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none}
+  /* Kvit tekst mot dagshimmelen forsvinn. Eit mjukt mørkt slør bak toppen gir feste
+     i alle tre døgnvariantane utan å teikne ein synleg boks. */
+  #halTopp::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(6,18,28,.52),rgba(6,18,28,.28) 62%,rgba(6,18,28,0))}
+  #halTopp > *{position:relative}
   #halRad{display:flex;align-items:center;gap:9px;max-width:100%}
   .halEnde{font-family:var(--mono);font-size:12.5px;color:#eaf3ee;white-space:nowrap;
     text-shadow:0 1px 3px rgba(0,0,0,.85)}
@@ -3599,8 +3604,11 @@ function tegnStjerner(dt,wlY){
       cx.save();
       var gl=cx.createRadialGradient(mx,my,msz*0.34,mx,my,msz*1.15);
       gl.addColorStop(0,"rgba(255,236,180,.20)"); gl.addColorStop(1,"rgba(255,236,180,0)");
-      cx.fillStyle=gl; cx.beginPath(); cx.arc(mx,my,msz*1.15,0,7); cx.fill();
-      cx.globalAlpha=0.5; cx.drawImage(mim, mx-msz/2, my-msz/2, msz, msz);
+      // I regn og snø ligg det skydekke mellom. Månen får stå — han ber døgnrytmen
+      // i bildet — men berre som eit anelse bak skyene: ein fjerdedel av vanleg styrke.
+      var bak=(regnerNaa()||snorNaa())?0.25:1;
+      cx.globalAlpha=bak; cx.fillStyle=gl; cx.beginPath(); cx.arc(mx,my,msz*1.15,0,7); cx.fill();
+      cx.globalAlpha=0.5*bak; cx.drawImage(mim, mx-msz/2, my-msz/2, msz, msz);
       cx.restore(); }
   }
   // Regn og snø betyr skydekke, og over skyene ser ein ikkje stjerner. Månen får stå:
@@ -5706,7 +5714,18 @@ var t0=performance.now(), bob=0;
    Ligg alle tidleg, skyt baren opp og stoppar på tjue prosent. Same maskineri,
    heilt ulik oppleving — utan at vi treng å skrive kvar variant for hand.
    ---------------------------------------------------------------------- */
-var halBaatImg=new Image(); halBaatImg.onerror=function(){}; halBaatImg.src="spill/assets/traaler-reke-hal.png";
+var halBaatImg=new Image(); halBaatImg.onerror=function(){}; halBaatImg.src="spill/assets/traaler-reke.png";
+// Tre bakgrunnar, ein per døgnfase. Alle 2000x1920, og — dette er poenget — laga så
+// venstre og høgre kant er identiske. Målt kantskilnad: under 1 av 765. Difor kan dei
+// flisleggjast rett fram, utan spegling og utan skjøt.
+var halBg={}; ["dag","skumring","natt"].forEach(function(v){
+  var im=new Image(); im.onerror=function(){}; im.src="spill/assets/rekefiske-"+v+".jpg"; halBg[v]=im; });
+function halBgNaa(){ var v=(typeof dyptVariant==="function"&&dyptVariant())||"dag"; return halBg[v]||halBg.dag; }
+var HAL_VL=0.414;   // vasslinja i bakgrunnsbileta, målt: 796 av 1920 px
+// Kor stor del av sprita som ligg OVER vatn. Ein tom båt ligg høgt og viser
+// bunnstoffet; ein full båt søkk til raudfargen er borte. Det er det du les
+// fangsten av lenge før du rekk å sjå på baren.
+var HAL_FLYT_TOM=0.955, HAL_FLYT_FULL=0.870;
 var halCv=$("#halCv"), halCx=(halCv&&halCv.getContext)?halCv.getContext("2d"):null;
 var halW=0, halH=0, halBolgeCv=document.createElement("canvas"), halBolgeCx=halBolgeCv.getContext("2d");
 var HAL=null;
@@ -5802,29 +5821,16 @@ function tegnHal(dt){
   var r=$("#stage").getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
   if(halW!==r.width||halH!==r.height){ halW=r.width; halH=r.height;
     halCv.width=halW*dpr; halCv.height=halH*dpr; halCx.setTransform(dpr,0,0,dpr,0,0); halMaal(); }
-  var W2=halW, H2=halH, mn=Math.min(W2,H2), wl=H2*0.34, g=halCx; // vasslinja på 34 %, same som ute på havet
+  var W2=halW, H2=halH, mn=Math.min(W2,H2), wl=H2*HAL_VL, g=halCx; // vasslinja der bakgrunnen har si
   g.clearRect(0,0,W2,H2);
-  // --- SJØEN: Uthavet, same bilete som den djupaste sona.
-  //     Bildet er 1600 breitt og 10090 høgt — altså smalt. Skalerer vi det så
-  //     vasslinja i bildet treffer vasslinja vår, blir flisa berre ~490 px brei, og
-  //     ei vanleg gjentaking ville synt ein hard skjøt kvart fjerde sekund.
-  //     Difor SPEGLAR vi annakvar flis: då er høgre kant av den eine alltid identisk
-  //     med venstre kant av den neste, og skjøten finst ikkje. På ope hav utan
-  //     landemerke ser ingen at bildet vender; ein ser berre at sjøen renn forbi.
-  var uh=(typeof waterImg!=="undefined")&&waterImg[3];
-  if(uh&&uh.complete&&uh.naturalWidth){
-    var sc=wl/((WLF[3]||0.089)*uh.naturalHeight);        // vasslinje mot vasslinje
-    var tw=uh.naturalWidth*sc;
-    var srcH=Math.min(uh.naturalHeight, H2/sc);          // berre den biten som havnar på skjermen
-    var per=tw*2, start=-(HAL.rull%per);
-    var hy=Math.ceil(srcH*sc);
-    for(var k=0; start+k*tw < W2; k++){
-      var x=Math.round(start+k*tw), br=Math.ceil(tw)+1;   // +1 px lapp: brøkbreidder gav elles ei hårfin glipe
-      if(x+br<0)continue;
-      if(k%2){ g.save(); g.translate(x+br,0); g.scale(-1,1);
-        g.drawImage(uh, 0,0, uh.naturalWidth, srcH, 0,0, br, hy); g.restore(); }
-      else g.drawImage(uh, 0,0, uh.naturalWidth, srcH, x,0, br, hy);
-    }
+  // --- SJØEN: eigne rekefiske-bakgrunnar, ein per døgnfase.
+  //     Kantane er identiske (målt kantskilnad under 1 av 765), så flisene kan
+  //     leggjast rett etter kvarandre. Biletet blir skalert så det fyller høgda;
+  //     då landar vasslinja i biletet nøyaktig på vasslinja vår, av seg sjølv.
+  var bg=halBgNaa();
+  if(bg&&bg.complete&&bg.naturalWidth){
+    var sc=H2/bg.naturalHeight, tw=bg.naturalWidth*sc, br=Math.ceil(tw)+1; // +1 px lapp mot brøkglipe
+    for(var x=-(HAL.rull%tw); x<W2; x+=tw) g.drawImage(bg, Math.round(x), 0, br, H2);
   } else {
     var sky=g.createLinearGradient(0,0,0,wl);
     sky.addColorStop(0,"#1d3b57"); sky.addColorStop(1,"#4d7893");
@@ -5853,55 +5859,66 @@ function tegnHal(dt){
       g.drawImage(halBolgeCv, wx*dpr, 0, wk*dpr, bh, wx, wl-wb+wo, wk, wb*2);
     }
   }
+  // --- BÅTEN. Sprita har baugen mot HØGRE og eit raudt bunnstoff nedst. Vi plasserer
+  //     henne slik at ei valt rad i sprita ligg på vasslinja, og SENKER den rada etter
+  //     kvart som sekken fyllest: tom flyt ho høgt og viser raudfargen, full søkk ho til
+  //     raudfargen er borte. Det er den eldste fangstmeldinga som finst — du les henne
+  //     på båten lenge før du ser på baren.
+  var bi=halBaatImg, dupp=Math.sin(HAL.bob*1.15)*3.0+Math.sin(HAL.bob*0.63+1.7)*1.4;
+  var last=Math.max(0,Math.min(1, HAL.verdi/HAL.kap));
+  var flyt=HAL_FLYT_TOM+(HAL_FLYT_FULL-HAL_FLYT_TOM)*last;
+  var bw2=mn*0.78, bh2=bi.naturalHeight?bw2*bi.naturalHeight/bi.naturalWidth:bw2*0.73;
+  var bx0=W2*0.52, by0=wl-flyt*bh2+dupp, krenge=Math.sin(HAL.bob*0.5)*0.012;
+  // Gantryet står i akterenden av sprita — der wirane skal ut.
+  var akter=bx0-bw2*0.405, gantry=by0+bh2*0.47;
+
   // --- TRÅLEN. Du ser aldri ei reke. Du ser wirane gå akterut og ned, og du anar
   //     nota eit stykke under overflata før ho blir borte i det blå. Reka står på
   //     200-400 meter; skulle vi teikna henne, ville vi lyge om kor djupt det er.
-  //     Alt du VEIT om fangsten, veit du frå baren. Det er heile poenget.
-  var akter=W2*0.50-mn*0.30, dupp=Math.sin(HAL.bob*1.15)*3.0+Math.sin(HAL.bob*0.63+1.7)*1.4;
+  //     Alt du VEIT om fangsten, veit du frå baren.
   (function(){
-    var ned=(H2-wl)*0.42, borte=wl+ned;             // så langt ned nota er å sjå
+    var ned=(H2-wl)*0.55, borte=wl+ned;
+    var gr=g.createLinearGradient(0,wl,0,borte);      // nota bleiknar nedover mot djupet
     g.save(); g.lineCap="round";
-    for(var w=0;w<2;w++){                            // to wirar, litt ulik lengd
-      var x1=akter-mn*0.02*w, y1=wl-mn*0.055+dupp;
-      var x2=akter-mn*(0.20+0.03*w), y2=wl+mn*0.012;
-      g.strokeStyle="rgba(225,235,240,"+(0.55-0.12*w)+")"; g.lineWidth=1.6;
-      g.beginPath(); g.moveTo(x1,y1); g.quadraticCurveTo((x1+x2)/2, y1+mn*0.03, x2, y2); g.stroke();
-    }
-    var gr=g.createLinearGradient(0,wl,0,borte);     // nota bleiknar nedover
-    gr.addColorStop(0,"rgba(120,175,150,.40)"); gr.addColorStop(1,"rgba(120,175,150,0)");
+    gr.addColorStop(0,"rgba(140,190,165,.34)"); gr.addColorStop(1,"rgba(140,190,165,0)");
     g.strokeStyle=gr; g.lineWidth=1.3;
-    var mx=akter-mn*0.215, bx=akter-mn*0.46;         // munnen oppe, posen nede bakover
-    for(var s=0;s<=6;s++){                            // langsgåande masketrådar
-      var f=s/6, x0=mx-mn*0.02*s*0.5, sp=mn*(0.055-0.028*f);
-      g.beginPath(); g.moveTo(x0, wl+sp*0.3);
-      g.quadraticCurveTo((x0+bx)/2, wl+ned*0.55+sp, bx, borte-mn*0.01); g.stroke();
+    var mx=akter-mn*0.075, px=akter-mn*0.30;          // munnen oppe, posen nede bakover
+    for(var s=0;s<=6;s++){                             // langsgåande masketrådar
+      var f=s/6, x0=mx-mn*0.012*s, sp=mn*(0.050-0.026*f);
+      g.beginPath(); g.moveTo(x0, wl+sp*0.4);
+      g.quadraticCurveTo((x0+px)/2, wl+ned*0.55+sp, px, borte-mn*0.01); g.stroke();
     }
-    for(var t2=1;t2<=4;t2++){                         // tverrbanda, så det les som eit nett
-      var ff=t2/5, yy=wl+ned*ff, xa=mx-(mx-bx)*ff*0.92;
-      g.beginPath(); g.moveTo(xa, yy-mn*(0.05-0.03*ff)); g.lineTo(xa, yy+mn*(0.05-0.03*ff)); g.stroke();
+    for(var q=1;q<=4;q++){                             // tverrband, så det les som eit nett
+      var ff=q/5, yy=wl+ned*ff, xa=mx-(mx-px)*ff*0.92, hh=mn*(0.048-0.028*ff);
+      g.beginPath(); g.moveTo(xa, yy-hh); g.lineTo(xa, yy+hh); g.stroke();
     }
     g.restore();
   })();
-  var bi=halBaatImg;
+
   if(bi.complete&&bi.naturalWidth){
-    var bw2=mn*0.78, bh2=bw2*bi.naturalHeight/bi.naturalWidth;
-    g.save(); g.translate(W2*0.50, wl-bh2*0.30+dupp);
-    g.rotate(Math.sin(HAL.bob*0.5)*0.012);
-    g.drawImage(bi,-bw2/2,-bh2/2,bw2,bh2); g.restore();
+    var tegn=function(){ g.save(); g.translate(bx0, by0+bh2/2); g.rotate(krenge);
+      g.drawImage(bi,-bw2/2,-bh2/2,bw2,bh2); g.restore(); };
+    g.save(); g.beginPath(); g.rect(0,0,W2,wl); g.clip(); tegn(); g.restore();        // over vatn
+    g.save(); g.beginPath(); g.rect(0,wl,W2,H2-wl); g.clip();
+      g.globalAlpha=0.42; tegn(); g.restore();                                        // under vatn: sjøen legg seg over
   } else {
     g.fillStyle="rgba(235,240,238,.16)"; g.font=Math.round(mn*0.032)+"px monospace";
-    g.textAlign="center"; g.fillText("traaler-reke-hal.png manglar", W2*0.5, wl-mn*0.06); g.textAlign="left";
+    g.textAlign="center"; g.fillText("traaler-reke.png manglar", W2*0.5, wl-mn*0.06); g.textAlign="left";
   }
+  // Wirane sist, så dei ligg oppå skroget der dei går ut over rekka.
+  (function(){
+    g.save(); g.lineCap="round";
+    for(var w=0;w<2;w++){
+      var x1=akter+mn*0.008*w, y1=gantry;
+      var x2=akter-mn*(0.085+0.022*w), y2=wl+mn*0.008;
+      g.strokeStyle="rgba(226,236,242,"+(0.40-0.11*w)+")"; g.lineWidth=1.1; // tynne og dempa: wire, ikkje tau
+      g.beginPath(); g.moveTo(x1,y1); g.quadraticCurveTo((x1+x2)/2, y1+(y2-y1)*0.72, x2, y2); g.stroke();
+    }
+    g.restore();
+  })();
 }
 
 function halOpne(){ show("hal"); halStart();
-  // Uthavet-bildet blir elles fyrst henta når du står i den djupaste sona. Her er
-  // det bakgrunnen, så vi ber om det med ein gong — same veg som spelet elles gjer.
-  if(!waterImg[3].complete||!waterImg[3].naturalWidth){
-    if(typeof updateDyptImg==="function")updateDyptImg();
-    if(!waterImg[3].getAttribute("src"))
-      waterImg[3].src="spill/assets/uthavet-"+((typeof dyptVariant==="function"&&dyptVariant())||"dag")+".jpg";
-  }
   var b=$("#halHiv"); b.textContent="Hiv trålen"; b.disabled=false;
   $("#halFyll").style.width="0%"; $("#halNaa").textContent="0 kr"; $("#halBar").classList.remove("full");
   halMaal(); }
