@@ -985,7 +985,6 @@
     <img src="spill/assets/rusten-logo.png" alt="Rustens agn og redskap" style="display:none;margin:-38px auto 4px;position:relative;z-index:2;max-width:86%;max-height:80px;image-rendering:pixelated"
       onload="this.style.display='block';this.nextElementSibling.style.display='none'">
     <h2 style="text-align:center">Rustens agn &amp; redskap</h2>
-    <img id="rustenBaat" alt="Rustens sjark" style="display:none;width:100%;max-width:320px;height:auto;image-rendering:pixelated;margin:2px auto 4px" onerror="this.style.display='none'">
     <p class="muted" id="shopKr"></p>
     <div id="shopList"></div>
   </div></div></div>
@@ -4672,9 +4671,6 @@ function openShop(){
     if(d.getDay()===5 && d.getHours()>=14) rustenSier("fredag", 900); })();
   shopRefresh=openShop;
   $("#shopKr").textContent="Du har "+P.kr+" kr.";
-  (function(){ var kl=new Date().getHours(); // sjarken hans ligg utanfor, og skiftar med lyset
-    var v=(kl>=22||kl<5)?"natt":(kl>=18||kl<8)?"kveld":"dag";
-    var b=$("#rustenBaat"); if(b){ b.src="spill/assets/rusten-baat-"+v+".png"; b.style.display=""; } })();
   var L=$("#shopList"); L.innerHTML="";
   var dk=dailyFish();
   L.insertAdjacentHTML("beforeend", bestillingLappHTML(dk));
