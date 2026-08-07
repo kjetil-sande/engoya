@@ -5852,6 +5852,24 @@ var HAL_FLYT_TOM=0.955, HAL_FLYT_FULL=0.870;
 var halCv=$("#halCv"), halCx=(halCv&&halCv.getContext)?halCv.getContext("2d"):null;
 var halW=0, halH=0, halBolgeCv=document.createElement("canvas"), halBolgeCx=halBolgeCv.getContext("2d");
 var HAL=null;
+// Statuslinja skal ikkje seie det same kvar gong. Fem tilstandar, og eit knippe
+// variantar i kvar. MERK: linja blir vald når tilstanden SKIFTAR, ikkje kvar frame —
+// elles ville teksten flimre seksti gonger i sekundet.
+var HALORD={
+  tom:["Ikke et kilo ennå.","Tomt så langt.","Ingenting å se. Vi går videre.",
+       "Bunnen er bar her.","Ikke et liv der nede.","Trålen går tom."],
+  smaatt:["Det kommer litt om gangen.","Jevnt og trutt.","Litt reke, ikke mye.",
+          "Det tikker inn.","Smått, men det er noe.","Hun tar imot.","Ikke rikt, men ærlig."],
+  kokar:["Det koker der nede!","Nå står hun tjukt!","Her er det reke!",
+         "Det bare renner inn!","Nå tar det av!","Vi har truffet et flak!"],
+  tung:["Nå kan det briste eller bære.","Sekken begynner å bli tung.","Wiren strammer seg.",
+        "Hun drar hardt nå.","Det knirker i blokka.","Nå står det på et hår.",
+        "Hive, eller stå på?"],
+  farleg:["Sekken er faretruende tung — hiv!","Nå ryker det snart!","Hun tåler ikke mye mer!",
+          "Dette går galt om du ikke hiver!","Wiren skriker!","Hiv, mann!"]
+};
+function halOrd(n){ if(HAL.ordN===n)return HAL.status; HAL.ordN=n;
+  var a=HALORD[n]; return a[(Math.random()*a.length)|0]; }
 function halKr(n){ return Math.round(n).toLocaleString("nb"); } // spelet elles skriv tal slik
 
 // Sekkestorleik i kroner. Dette ER makskapasiteten baren viser heilt til høgre.
@@ -5974,9 +5992,9 @@ function halSteg(dt){
   if(tt>=1||HAL.full) halSlutt();
   else if(!HAL.full){
     var fart=halAndel(Math.min(1,tt+0.02))-halAndel(tt);
-    HAL.status = fyll>terskel+0.25 ? "Sekken er faretruende tung — hiv!"
-      : fyll>terskel ? "Sekken begynner å bli tung. Hive, eller stå på?"
-      : fart>0.012 ? "Det koker der nede!" : (v>0 ? "Jevn reke." : "Ikke et kilo ennå.");
+    HAL.status = halOrd( fyll>terskel+0.25 ? "farleg"
+      : fyll>terskel ? "tung"
+      : fart>0.012 ? "kokar" : (v>0 ? "smaatt" : "tom") );
   }
   var f=$("#halFyll"), n=$("#halNaa"), b=$("#halBar");
   if(f)f.style.width=Math.min(100,HAL.verdi/HAL.kap*100)+"%";

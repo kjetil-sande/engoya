@@ -184,4 +184,37 @@ være kort — «cropped close», «compact rounded cap», «well above the jaw�
 
 Fil: **`logo-traaloy-sparebank.png`** — kvadratisk, magenta bakgrunn som skal nøkles bort
 
-Retro video game pixel art style. A small, sober logo mark for a Norwegian coastal savings bank, in the style of a sign on a brick wall in a fishing village. A simple shield or rounded square in deep navy and brass, containing a stylised **sjømerke** — a coastal navigation beacon — standing on a shallow rock with two short wave lines beneath it. Clean, symmetrical, very few details, the kind of mark that would still read at 40 pixels. Slightly worn, as if painted on metal twenty years ago and left in the salt air. Chunky and readable at small size: thick clean pixel outlines, flat colours, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no lettering, no drop shadow.
+**Alternativ A — bare bokstaver (anbefalt).** Tre forsøk på et motiv ga fyrtårn som falloss
+og deretter stearinlys. Et lite motiv i en liten logo er der generatoren feiler mest — og en
+sparebank trenger det ikke. Initialer og stiftelsesår på et treskilt er nøyaktig slik ekte
+norske sparebanker ser ut.
+
+> Retro video game pixel art style. A logo mark for a small Norwegian coastal savings bank, made of lacquered wood. A rounded shield with a **deep forest green border** framing a panel of warm honey-toned varnished wood with a soft visible grain. Centred on the wood, filling most of the panel, are the **two large letters TS** — bold, blocky, chunky pixel letterforms in cream with a dark green outline, straight and perfectly legible, no serifs and no script. Beneath them, small and level, the numerals **19** to the left and **77** to the right, about a third the height of the TS. **Nothing else at all inside the shield — no picture, no symbol, no emblem, no object of any kind.** Just wood, the border, and the lettering. Warm and calm: green, honey, cream, no red and no gold. Thick clean pixel outlines, flat colours. Centred, filling the frame. Plain white background. Strict pixel grid, hard-edged pixels, no anti-aliasing, no drop shadow.
+
+**Alternativ B — baug i PROFIL.** Vil du ha et motiv likevel, må det være fra siden. En baug
+sett rett forfra er bare en kile uten kjennetegn, og det var derfor den ble til et lys tre ganger.
+I profil er den umiskjennelig: bratt stevn, skroget som sveiper bakover, skum av baugen.
+
+> Retro video game pixel art style. A logo mark for a Norwegian coastal savings bank, made of lacquered wood. A rounded shield in deep forest green and honey-toned varnished wood. Inside it, in strict **side profile facing right**, is the **bow of a fishing boat cutting through water** — a steeply raked stem line, the sheer of the hull sweeping back and out of frame to the left, a white bow wave peeling off the stem, and two short wave lines below. Seen from the side, never head-on. **Only the bow and the water: no wheelhouse, no mast, no superstructure, nothing above the hull, and no vertical object of any kind.** The letters **TS are LARGE**, centred above. The numerals **19 and 77 are SMALL**, low on either side. Clean blocky pixel lettering, no serifs. Green, honey, cream — no red, no gold. Thick pixel outlines, flat colours. Plain white background. Strict pixel grid, hard-edged pixels, no anti-aliasing, no drop shadow.
+
+**Historikk.** Fyrtårnet ble byttet mot baugen på en skute som kommer rett mot deg, sett nedenfra
+ved vannflata. Sterkere bilde for en kystbank uansett — og ingen loddrett søyle å misforstå.
+Kun baugen: alt over skroget er skåret vekk.
+
+**Bakgrunn:** fyrtårnet kom ut som en glatt, blek søyle med rund topp og bred fot — og
+det så ut som noe helt annet. Et fyrtårn kjennes igjen på TRE ting, og ingen av dem var med:
+vannrette bånd over tårnet, en dør nede, og — viktigst — et lanternehus på toppen som er
+BREDERE enn tårnet, med rekkverk rundt. Uten den utkragingen blir silhuetten bare en søyle.
+Tårnet skal dessuten være lavt og bredt, ikke slankt.
+
+**Rettet før det:** første utkast var marineblått og messing, og det leste seg som julepynt.
+Nå er det lakkert tre i grønt og honning — ingen rødt, ingen gull. TS er den STØRSTE
+tingen i merket, 19 og 77 er små og lave.
+
+**Om bokstavene:** dette er den ene tingen bildegeneratorer er dårligst på. Regn med noen
+forsøk før TS, 19 og 77 står riktig — og sjekk hvert tegn, ikke bare helheten. Blir det
+aldri bra nok, kan jeg heller sette bokstavene i kode oppå en ren logo uten tekst; da blir
+de alltid riktige, og de kan skaleres med resten av grensesnittet.
+
+**Om hvit bakgrunn:** merk at logoen da ikke kan nøkles gjennomsiktig. Den vil stå som et
+hvitt skilt. Det er helt greit for en bank — men si fra hvis du heller vil ha den fri.
