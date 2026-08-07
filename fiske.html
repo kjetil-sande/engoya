@@ -2224,6 +2224,16 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   // gamle båter til 50 døgn tilbake, men den som betalte 30 000 kr for turbosnella under
   // gamle regler skal ikke våkne til halv snelle.
   if(P.riggTs==null)P.riggTs=Date.now();
+  // REKETRÅLEREN. Ingen eksisterande spelar har desse felta, så ingen merkar noko før
+  // dei sjølve kjøper båten — Rekefeltet står låst som før heilt til P.traaler er sann.
+  if(P.traaler==null)P.traaler=false;      // eig du henne?
+  if(P.traalTips==null)P.traalTips=false;  // har Kjell ringt om tipset sitt?
+  if(P.traalPose==null)P.traalPose=0;      // 0-2: sekkestorleik = makskapasitet
+  if(P.traalRist==null)P.traalRist=false;  // sorteringsrist (påbode)
+  if(P.traalLodd==null)P.traalLodd=false;  // ekkolodd: finn fleire rekeflak
+  if(P.traalVinsj==null)P.traalVinsj=false;// kraftblokk: greier å hive full sekk
+  if(P.traalDiesel==null)P.traalDiesel=0;  // tankmål, 10 er fullt
+  if(typeof traalKartOpne==="function")traalKartOpne(); // eig du henne alt, står feltet ope frå start
   if(P.riggTs>Date.now())P.riggTs=Date.now(); // samme klokkevern som smorTs // kampbelte (25 % saktere spenn)
   if(typeof investInit==="function"){ investInit(); innRydd(); setTimeout(innPrikk,0); }
   P.motor="stor"; if(P.motorOk==null)P.motorOk=true; // éin motor på båten — sett ubetinga, så gamle saves med "liten" ikkje står fast
@@ -2242,6 +2252,7 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
 /* ---------- HUD ---------- */
 var sisteKr=null, myntT=null;
 function hud(){
+  if(typeof traalSjekkTips==="function")traalSjekkTips(); // Kjell ringjer i det du har råd
   if(sisteKr!=null&&P.kr>sisteKr){
     // kassa vokste — la mynta snurre to runder
     var mn0=$(".hudPenge");
@@ -4710,6 +4721,17 @@ function openShop(){
   var fillCost=(P.fuelMax-P.fuel)*17; // full tank ≈ 400 kr
   addShop(L,'<img src="spill/assets/bensinpumpe.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⛽ \'" alt=""> Fyll bensin',
     "Fyll tanken helt opp.", fillCost, P.fuel>=P.fuelMax, function(){P.fuel=P.fuelMax;});
+  // Reketrålaren dukkar berre opp etter at Kjell har ringt. Er ho kjøpt, blir rada
+  // ståande som «Din» — du skal sjå kva du eig.
+  if(P.traalTips) addShop(L,'<img src="spill/assets/traaler-reke.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🚢 \'" alt=""> Reketråler',
+    P.traaler?"Din egen tråler. Ligger klar ved kaia — sett kursen mot Rekefeltet på kartet."
+      :"Kjells kontakt selger. Skrog og maskin i orden. Låser opp Rekefeltet og trålfisket — og et helt annet slag penger enn stang og snelle.",
+    TRAAL_PRIS,P.traaler?"Din":false,function(){ P.traaler=true; P.traalDiesel=TRAAL_TANK;
+      traalKartOpne(); notice("Reketråleren er din! Full tank på kjøpet — Rekefeltet er åpent 🚢"); });
+  if(P.traaler) addShop(L,'<img src="spill/assets/bensinpumpe.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⛽ \'" alt=""> Diesel til tråleren',
+    "Bunkring til reketråleren. Tanken tar "+TRAAL_TANK+" — du har "+P.traalDiesel+". Hvert hal bruker "+TRAAL_BRUK+".",
+    TRAAL_DIESEL_PR*Math.max(0,TRAAL_TANK-P.traalDiesel), P.traalDiesel>=TRAAL_TANK,
+    function(){ P.traalDiesel=TRAAL_TANK; notice("Tråleren er bunkret ⛽"); });
   addShop(L,'<img src="spill/assets/bensinkanne.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⛽ \'" alt=""> Ekstra bensinkanne',"Reserve på dekk: +4 bensin — to turer ekstra. Kan fylles over full tank.",75,P.fuel>P.fuelMax+4,function(){P.fuel=Math.min(P.fuelMax+8,P.fuel+4);});
   if(P.rod<1) addShop(L,"Stang II","Låser opp mellomdypt vann (50–150 m): torsk, hyse, blåstål.",250,false,function(){P.rod=1;});
   else if(P.rod<2) addShop(L,"Stang III","Grovt djuphavsutstyr — låser opp dypt vann (150–300 m) og storkveita.",7500,false,function(){P.rod=2;});
@@ -4832,6 +4854,21 @@ function openKjell(){
   addShop(L,'<img src="spill/assets/verksted-forsikring.gif" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🛡️ \'" alt=""> Båtforsikring (30 dager)',
     (fDager>0?("Forsikret "+fDager+" dager til — kjøp for å forlenge. Gratis propell og forsikringspris på service. "):"Gratis propellbytte og billigere service. Lønner seg! ")+pctBar(fPct),
     900,false,function(){P.forsTil=Math.max(Date.now(),P.forsTil||0)+30*864e5; notice("Båten er forsikret 🛡️");});
+  // Trålutstyret høyrer heime hos Kjell — det er han som har verkstad og kran.
+  if(P.traaler){
+    addShop(L,'<img src="spill/assets/traal-rist.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪤 \'" alt=""> Sorteringsrist',
+      "Påbudt i norsk reketrål. Reka smetter mellom stengene, fisken ledes ut igjen levende — og fangsten blir ren i stedet for full av ødelagt småfisk.",
+      18000,P.traalRist?"Montert":false,function(){P.traalRist=true; notice("Sorteringsrista er montert 🪤");});
+    if(P.traalPose<2) addShop(L,'<img src="spill/assets/traal-pose.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🎣 \'" alt=""> '+(P.traalPose?"Dobbel sekk":"Større trålpose"),
+      "Mer rom i sekken: kapasiteten går fra "+HAL_KAP[P.traalPose].toLocaleString("nb")+" til "+HAL_KAP[P.traalPose+1].toLocaleString("nb")+" kr per hal. Baren blir lengre også.",
+      P.traalPose?90000:45000,false,function(){P.traalPose++; notice("Ny sekk er montert — større hal fra nå 🎣");});
+    addShop(L,'<img src="spill/assets/traal-ekkolodd.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📡 \'" alt=""> Trålekkolodd',
+      "Reka står i flak, ikke jevnt utover. Med lodd finner du ett–to flak til per hal, og går ikke rett forbi dem.",
+      35000,P.traalLodd?"Montert":false,function(){P.traalLodd=true; notice("Trålekkoloddet er montert 📡");});
+    addShop(L,'<img src="spill/assets/traal-kraftblokk.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Kraftblokk og vinsj',
+      "Uten den klarer dere ikke hive en helt full sekk — taket ligger på 85 % av kapasiteten. Med den tar du opp alt som kommer.",
+      70000,P.traalVinsj?"Montert":false,function(){P.traalVinsj=true; notice("Kraftblokka er på plass — nå tar dere opp alt ⚙️");});
+  }
   if(Date.now()>P.havnNeste)
     addShop(L,'<img src="spill/assets/ornes-baatforening-logo.png" class="shoplogo rund" alt=""> Havneavgift',
       "Kaiplass i Ørnes havn — Ørnes Båtforening (stifta 1964).",350,false,
@@ -4887,7 +4924,8 @@ var KART={W:1320,H:2112,ramp:["#7FB6B4","#5F9AA0","#2E5F6B","#123A47"],
     {d:2, navn:"Svartrenna",img:"kart-svartrenna.png", x:30,y:64,w:13,t:.80,kanner:3},
     {d:3, navn:"Uthavet",   img:"kart-blindbaaen.png", x:77,y:78,w:18,t:1,kanner:4},
     {d:8, navn:"Bankene",   img:"kart-bankene.png",    x:36,y:87,qx:44,qy:84,w:16,t:.35,teaser:"Ukjent grunne. Ingen kartblad dekker den ennå."}, // brønnen ligger på x/y — «?» og pinnen står på qx/qy, midt på banken
-    {d:9, navn:"Rekefeltet",img:"kart-rekefeltet.png", x:25,y:91,w:16,t:.9,teaser:"Ukjent farvann. Ingen småbåt går så langt ut."}],
+    {d:9, navn:"Rekefeltet",img:"kart-rekefeltet.png", x:25,y:91,w:16,t:.9,
+     teaser:"Ukjent farvann. Ingen småbåt går så langt ut."}],
   bilder:{},sjo:null,glitter:null,anim:0,lastet:false,kanne:null,rute:null,lukkT:0,demoAlle:false};
 function kartLaast(d){ var f=KART.felt.find(function(x){return x.d===d});
   if(f&&f.teaser)return true; // teaser-felt er alltid låst — de finnes for å friste
@@ -5720,7 +5758,10 @@ var halBaatImg=new Image(); halBaatImg.onerror=function(){}; halBaatImg.src="spi
 // flisleggjast rett fram, utan spegling og utan skjøt.
 var halBg={}; ["dag","skumring","natt"].forEach(function(v){
   var im=new Image(); im.onerror=function(){}; im.src="spill/assets/rekefiske-"+v+".jpg"; halBg[v]=im; });
-function halBgNaa(){ var v=(typeof dyptVariant==="function"&&dyptVariant())||"dag"; return halBg[v]||halBg.dag; }
+function halVariant(){ return (typeof dyptVariant==="function"&&dyptVariant())||"dag"; }
+function halBgNaa(){ return halBg[halVariant()]||halBg.dag; }
+var halSkyMork=[]; ["sky-mork-01","sky-mork-02"].forEach(function(n){
+  var im=new Image(); im.onerror=function(){}; im.src="spill/assets/"+n+".png"; halSkyMork.push(im); });
 var HAL_VL=0.414;   // vasslinja i bakgrunnsbileta, målt: 796 av 1920 px
 // Kor stor del av sprita som ligg OVER vatn. Ein tom båt ligg høgt og viser
 // bunnstoffet; ein full båt søkk til raudfargen er borte. Det er det du les
@@ -5752,6 +5793,7 @@ function halFlak(rng, rigg){
 }
 
 function halStart(){
+  if(P&&P.traaler){ P.traalDiesel=Math.max(0,P.traalDiesel-TRAAL_BRUK); saveAll(); } // dieselen går med same kva halet gir
   var rng=mulberry32((Date.now()^(Math.random()*1e9))|0), rigg=halRigg(), kap=halKap();
   // Kor mykje reke som står der ute i det heile. Vid spreiing med vilje: eit hal
   // skal kunne bli nesten tomt, og det skal kunne sprengje sekken.
@@ -5762,7 +5804,21 @@ function halStart(){
   else            andel=0.75+rng()*0.50;    // over 1,0 = sekken går full før halet er ferdig
   if(rigg.lodd) andel*=1.15;                // du finn meir når du ser kvar ho står
   var tak=rigg.vinsj?1.0:0.85;              // utan kraftblokk greier dei ikkje hive ein heilt full sekk
+  var natt=halVariant()==="natt";
+  var stj=[], sky=[], glit=[], nl=null;
+  for(var i=0;i<30;i++) stj.push({u:rng(), v:0.06+rng()*0.72, sc:0.6+rng()*0.7, f:rng()*20, dur:2.2+rng()*2.8, vent:3+rng()*20});
+  for(var c=0;c<5;c++) sky.push({u:rng(), v:0.10+rng()*0.46, sc:0.55+rng()*0.85, im:(rng()*6)|0, op:0.55+rng()*0.4});
+  for(var q=0;q<74;q++) glit.push({u:rng(), v:rng(), f:rng()*6.283, br:1+rng()*2.4, fart:0.7+rng()*1.5});
+  // Nordlyset er ein sjeldan kveld, ikkje ein effekt som alltid står på. Ser du det
+  // kvar gong, sluttar du å sjå det.
+  if((natt||window.__nordlys) && (window.__nordlys||rng()<0.40)){
+    nl={ band:[] };
+    for(var b=0;b<3;b++) nl.band.push({ x:0.08+rng()*0.72, br:0.22+rng()*0.30, h:0.34+rng()*0.30,
+      amp:0.020+rng()*0.035, bolg:1.4+rng()*2.2, sp:0.11+rng()*0.20, f:rng()*6.283,
+      farge:b===2?[168,140,255]:[126,255,178], styrke:0.24+rng()*0.20 });
+  }
   HAL={ t:0, lengd:25+rng()*15, flak:halFlak(rng,rigg), rull:0, bob:0,
+        stj:stj, sky:sky, glit:glit, nordlys:nl, natt:natt,
         kap:kap, tak:tak, total:kap*andel, verdi:0, full:false, ferdig:false,
         status:"Trålen er ute." };
   halMaal();
@@ -5810,12 +5866,105 @@ function halSteg(dt){
 
 function halSlutt(){
   if(!HAL||HAL.ferdig)return; HAL.ferdig=true;
+  var inn=Math.round(HAL.verdi);
+  if(P&&P.traaler&&inn>0){ P.kr+=inn; hud(); saveAll(); }   // mottaket gjer opp med ein gong
   $("#halHiv").textContent="Ferdig";
-  var s=$("#halStatus");
-  if(s)s.textContent=HAL.verdi<HAL.kap*0.05 ? "Trålen kom opp med tang og lite annet."
-      : "Trålen er oppe: "+halKr(HAL.verdi)+" kr.";
+  // Sluttmeldinga MÅ gå gjennom HAL.status. Skreiv vi rett i elementet her, ville
+  // halSteg overskrive han att i same frame — det gjorde han, og halet enda med
+  // «Jevn reke.» i staden for oppgjeret.
+  HAL.status = HAL.verdi<HAL.kap*0.05 ? "Trålen kom opp med tang og lite annet."
+    : "Trålen er oppe: "+halKr(HAL.verdi)+" kr.";
 }
 
+// Himmelen over halet: stjerner, nordlys og skyer. ALT som ligg i sjøen eller over
+// han må rulle med bakgrunnen — står noko stille medan flisene glir mot venstre,
+// avslører det med ein gong at sjøen er ein kulisse og ikkje eit hav. Difor er kvar
+// ting festa til HAL.rull, berre med ulik faktor: stjernene ligg uendeleg langt unna
+// og driv nesten ikkje, skyene er nærare, og skimmeret ligg PÅ flata og følgjer henne
+// nøyaktig.
+function halHimmel(g,W2,H2,wl,mn){
+  var spenn=W2*1.6;
+  var vikle=function(u,fart){ var x=(u*spenn-HAL.rull*fart)%spenn; return x<0?x+spenn:x; };
+
+  if(HAL.natt||window.__nordlys){
+    // --- NORDLYSET. Eit band med bølgjande overkant og ein gradient som døyr nedover.
+    // Fyrste forsøk teikna kvart band som EI flate. Det gav harde loddrette kantar —
+    // eit nordlys har ingen kant i det heile. No blir bandet teikna som mange tynne
+    // striper med sinus-avtoning ut mot begge sider, og med bølgjande overkant.
+    // Gradienten blir laga ÉIN gong per band og gjenbrukt; berre alfaen skiftar.
+    if(HAL.nordlys){ g.save(); g.globalCompositeOperation="screen";
+      HAL.nordlys.band.forEach(function(b){
+        var bw=W2*b.br, bh=wl*b.h, amp=wl*b.amp;
+        var y0=wl*0.05+Math.sin(HAL.bob*b.sp*0.5+b.f)*wl*0.025;
+        var c=b.farge, s=b.styrke*(0.78+0.22*Math.sin(HAL.bob*b.sp*1.7+b.f));
+        var gr=g.createLinearGradient(0,y0-amp,0,y0+bh);
+        gr.addColorStop(0,   "rgba("+c[0]+","+c[1]+","+c[2]+",0)");
+        gr.addColorStop(0.18,"rgba("+c[0]+","+c[1]+","+c[2]+","+s.toFixed(3)+")");
+        gr.addColorStop(0.55,"rgba("+c[0]+","+c[1]+","+c[2]+","+(s*0.45).toFixed(3)+")");
+        gr.addColorStop(1,   "rgba("+c[0]+","+c[1]+","+c[2]+",0)");
+        g.fillStyle=gr;
+        var x0=vikle(b.x,0.035)-spenn*0.5;
+        for(var rep=0;rep<2;rep++){ var xx=x0+rep*spenn;
+          if(xx>W2||xx+bw<0)continue;
+          for(var px=0;px<bw;px+=5){
+            var kant=Math.sin(px/bw*Math.PI);        // 0 i begge endar → ingen kant å sjå
+            if(kant<0.03)continue;
+            var topp=y0+Math.sin(px/bw*Math.PI*b.bolg+HAL.bob*b.sp*2.2+b.f)*amp;
+            g.globalAlpha=kant*kant;                  // kvadrert: enda mjukare uttoning
+            g.fillRect(xx+px, topp, 6, bh);
+          }
+        }
+      });
+      g.restore(); }
+    // --- STJERNENE. Same sprites som ute på havet, og same rolege blunk.
+    if(stjImg[3]&&stjImg[3].complete&&stjImg[3].naturalWidth){
+      g.save();
+      HAL.stj.forEach(function(s){
+        var syklus=s.vent+s.dur, tt=(HAL.t+s.f)%syklus;
+        if(tt>s.dur)return;                       // stjerna kviler mellom blunka
+        var f=tt/s.dur, idx=Math.min(3,Math.max(0,(f<0.5?f*8:(1-f)*8)|0));
+        var im=stjImg[idx]; if(!im.complete||!im.naturalWidth)return;
+        var sz=mn*0.026*s.sc, y=wl*s.v;
+        for(var rep=0;rep<2;rep++){ var x=vikle(s.u,0.05)-spenn*0.5+rep*spenn;
+          if(x<-sz||x>W2+sz)continue;
+          g.globalAlpha=(0.18+0.42*Math.sin(f*Math.PI))*(HAL.nordlys?0.75:1);
+          g.drawImage(im, x-sz/2, y-sz/2, sz, sz); }
+      });
+      g.restore(); }
+  }
+
+  // --- SKYENE. Lenger unna enn sjøen, så dei driv saktare — det er parallaksen som
+  //     gjer at himmelen kjennest djup i staden for som eit bakteppe.
+  var sett=HAL.natt?halSkyMork:cloudImg;
+  if(sett&&sett.length){ g.save();
+    HAL.sky.forEach(function(c){
+      var im=sett[c.im%sett.length]; if(!im||!im.complete||!im.naturalWidth)return;
+      var cw=mn*0.30*c.sc, ch=cw*im.naturalHeight/im.naturalWidth, y=wl*c.v-ch/2;
+      for(var rep=0;rep<2;rep++){ var x=vikle(c.u,0.34)-spenn*0.5+rep*spenn;
+        if(x+cw<0||x-cw>W2)continue;
+        g.globalAlpha=c.op*(HAL.natt?0.55:1); g.drawImage(im, x-cw/2, y, cw, ch); }
+    });
+    g.restore(); }
+}
+
+// Skimmeret på flata. Punkta ligg i SJØENS eige koordinatsystem og blir dregne med
+// HAL.rull i full fart — dei driv altså forbi nøyaktig som bølgjene under dei, i
+// staden for å henge stille i biletet.
+function halSkimmer(g,W2,H2,wl,mn){
+  var band=(H2-wl)*0.10, spenn=W2*1.6;
+  g.save(); g.fillStyle="#eaf6ff";
+  HAL.glit.forEach(function(q){
+    var puls=Math.sin(HAL.bob*q.fart*1.6+q.f);
+    if(puls<=0)return;                                   // halve tida er kvart glimt av
+    var y=wl+q.v*band;
+    var x=(q.u*spenn-HAL.rull)%spenn; if(x<0)x+=spenn;
+    for(var rep=0;rep<2;rep++){ var xx=x-spenn*0.5+rep*spenn;
+      if(xx<-4||xx>W2+4)continue;
+      g.globalAlpha=puls*0.55*(1-q.v*0.55);              // svakare di lenger frå kanten
+      g.fillRect(xx, y, Math.max(1.5,q.br*1.7), 1.4); }
+  });
+  g.restore();
+}
 function tegnHal(dt){
   if(!halCx||!HAL)return;
   var r=$("#stage").getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
@@ -5846,6 +5995,8 @@ function tegnHal(dt){
       for(var sx=-o; sx<W2; sx+=avst) g.fillRect(sx, y0, avst*0.42, hgt);
     }
   }
+  halHimmel(g,W2,H2,wl,mn);     // stjerner, nordlys og skyer — alt festa til same rull
+  halSkimmer(g,W2,H2,wl,mn);    // glimt PÅ flata, i sjøens eige koordinatsystem
   // --- bølgjestripe ved vasslinja, same knep som ute på havet men RASKARE:
   //     klokka er HAL.bob, som går 2,6 ganger så fort som duppen til den kvite båten.
   if(!ROLIG_SJO){
@@ -6661,6 +6812,27 @@ function innRydd(){ if(!P||!P.innboks)return; var f=P.innboks.length, no=Date.no
     return m.type!=="tilbod" || no-m.tid<MELD_LIV; });
   if(P.innboks.length!==f){ innPrikk(); saveAll(); } }
 
+// Kjell held auge med kontoen din utan å seie det. I det du har 200 000 på bok,
+// ringjer han med eit tips — det er slik ting går på ei lita øy.
+var TRAAL_PRIS=200000, TRAAL_TANK=10, TRAAL_DIESEL_PR=900, TRAAL_BRUK=2;
+// KART.felt blir bygd éin gong ved innlasting, lenge før nokon spelar er vald. Difor
+// kan ikkje teaseren settast av P der oppe — han må fjernast aktivt når båten er kjøpt.
+function traalKartOpne(){
+  if(!P||!P.traaler||typeof KART==="undefined"||!KART.felt)return;
+  for(var i=0;i<KART.felt.length;i++) if(KART.felt[i].d===9) KART.felt[i].teaser=null;
+}
+function traalSjekkTips(){
+  if(!P||P.traaler||P.traalTips||P.kr<TRAAL_PRIS||typeof innLegg!=="function")return;
+  P.traalTips=true;
+  innLegg({type:"prat", fk:"kjell",
+    tekst:"Hei! Kjell her. Eg skal ikkje mase, men eg høyrde noko på kaia i dag.\n\n"
+      +"Ein eg kjenner skal selje reketrålaren sin. Han har vorte gammal, og ungane vil ikkje ha "
+      +"henne. Skrog og maskin er i orden — eg har vore om bord sjølv.\n\n"
+      +"Han vil ha 200 000. Det er billeg for ein slik båt, og eg sa at eg kjende ein som kanskje "
+      +"var interessert. Rusten ordnar papira om du vil sjå på henne.\n\n"
+      +"Ingen hast. Men slike båtar blir ikkje ståande lenge."});
+  notice("Kjell har ringt — sjekk meldingene 📞"); saveAll();
+}
 function investNivaa(fk){ return (P.invest&&P.invest.utstyr&&P.invest.utstyr[fk])||0; }
 
 // Trekk eit utfall. niv 0-4 flyttar vekt frå "tom"/"vaer" over til "godt"/"stinn".
@@ -7513,6 +7685,10 @@ document.querySelectorAll(".mappin").forEach(function(p){ p.onclick=function(){ 
   if(d===-1){ Snd.click(); // heimeøya: kartet vik, og du står i bygda
     if(KART.anim){cancelAnimationFrame(KART.anim);KART.anim=0;} modal("mapModal",false);
     setTimeout(function(){ modal("bygdModal",true); },160); return; }
+  if(d===9 && P.traaler){ Snd.click();     // Rekefeltet: her går du ikkje med stang
+    if(P.traalDiesel<TRAAL_BRUK){ $("#mapHint").textContent="Tom for diesel — bunkre hos Rusten før du går ut."; return; }
+    if(KART.anim){cancelAnimationFrame(KART.anim);KART.anim=0;} modal("mapModal",false);
+    setTimeout(halOpne,160); return; }
   var f2=KART.felt.find(function(f){return f.d===d}), navn=f2?f2.navn:ZONE[d];
   if(f2&&f2.teaser){ $("#mapHint").textContent=f2.teaser; return; } // teaser-felt: bare frist
   if(kartLaast(d)){ $("#mapHint").textContent=(d===3?"Vinsj og dyphavsrigg":RODS[d].n)+" trengs for "+navn+" ("+DEPM[d]+")"; return; }
@@ -7530,6 +7706,7 @@ window.addEventListener("hashchange",function(){ if(location.hash==="#kart"||loc
 if(location.hash.indexOf("uvar")>=0){ window.__wx="heavyrainandthunder"; // dev: fiske.html#uvar tvinger ruskevær (lyn, torden, regn)
   // …og #uvartest gir lyn kvart sjuande sekund, så ein kan sjå heile sekvensen utan å vente
   if(location.hash.indexOf("uvartest")>=0) setInterval(function(){ tordenCool=0; }, 7000); }
+if(location.hash.indexOf("nordlys")>=0) window.__nordlys=true; // dev: tvingar fram nordlyset i halet
 if(location.hash.indexOf("halet")>=0) setTimeout(halOpne, 1200); // dev: fiske.html#halet går rett i trålen
 if(location.hash.indexOf("lyddebug")>=0){ setInterval(function(){ try{ document.title=JSON.stringify(Snd._maal()); }catch(e){ document.title="maal-feil: "+e.message; } },1000); } // feilsøking: fiske.html#lyddebug viser hele lydmiksen i fanetittelen
 // lyd: lås opp Web Audio + start tema ved første trykk; mute-knapper; klikk-lyd på knapper
