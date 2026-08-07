@@ -5883,7 +5883,7 @@ function halStart(){
     nl={ band:[] };
     for(var b=0;b<3;b++) nl.band.push({ x:0.08+rng()*0.72, br:0.22+rng()*0.30, h:0.34+rng()*0.30,
       amp:0.020+rng()*0.035, bolg:1.4+rng()*2.2, sp:0.11+rng()*0.20, f:rng()*6.283,
-      farge:b===2?[168,140,255]:[126,255,178], styrke:0.24+rng()*0.20 });
+      styrke:0.24+rng()*0.20, raud:0.5+rng()*0.7, fiolett:0.6+rng()*0.8 });
   }
   HAL={ t:0, lengd:25+rng()*15, flak:halFlak(rng,rigg), rull:0, bob:0, vinsj:rigg.vinsj, rauk:false,
         stj:stj, sky:sky, glit:glit, nordlys:nl, natt:natt,
@@ -5954,19 +5954,28 @@ function halSteg(dt){
   if(n)n.textContent=halKr(HAL.verdi)+" kr";
   if(b)b.classList.toggle("full",HAL.full);
   var s=$("#halStatus"); if(s)s.textContent=HAL.status;
+  var hb=$("#halHiv"); if(hb&&!HAL.ferdig) hb.textContent="Hiv opp · "+halKr(HAL.verdi)+" kr";
 }
 
 function halSlutt(){
   if(!HAL||HAL.ferdig)return; HAL.ferdig=true;
   var inn=Math.round(HAL.verdi);
   if(P&&P.traaler&&inn>0){ P.kr+=inn; hud(); saveAll(); }   // mottaket gjer opp med ein gong
-  $("#halHiv").textContent="Ferdig";
+  $("#halHiv").textContent="Til lands";
   Snd.dieselLyd("tomgang");   // hun står og går mens de hiver
   // Sluttmeldinga MÅ gå gjennom HAL.status. Skreiv vi rett i elementet her, ville
   // halSteg overskrive han att i same frame — det gjorde han, og halet enda med
   // «Jevn reke.» i staden for oppgjeret.
   if(!HAL.rauk) HAL.status = HAL.verdi<HAL.kap*0.05 ? "Trålen kom opp med tang og lite annet."
     : "Trålen er oppe: "+halKr(HAL.verdi)+" kr.";
+  // Skriv DOM-en HER. halSteg gjer det elles, men han returnerer med ein gong
+  // HAL.ferdig er sann — så hiv du sjølv, blei skjermen ståande uendra og det såg
+  // ut som om knappen ikkje verka.
+  var sf=$("#halFyll"), sn=$("#halNaa"), ss=$("#halStatus"), sb=$("#halBar");
+  if(sf)sf.style.width=Math.min(100,HAL.verdi/HAL.kap*100)+"%";
+  if(sn)sn.textContent=halKr(HAL.verdi)+" kr";
+  if(ss)ss.textContent=HAL.status;
+  if(sb)sb.classList.toggle("full",HAL.full);
 }
 
 // Himmelen over halet: stjerner, nordlys og skyer. ALT som ligg i sjøen eller over
@@ -5989,12 +5998,14 @@ function halHimmel(g,W2,H2,wl,mn){
       HAL.nordlys.band.forEach(function(b){
         var bw=W2*b.br, bh=wl*b.h, amp=wl*b.amp;
         var y0=wl*0.05+Math.sin(HAL.bob*b.sp*0.5+b.f)*wl*0.025;
-        var c=b.farge, s=b.styrke*(0.78+0.22*Math.sin(HAL.bob*b.sp*1.7+b.f));
+        var s=b.styrke*(0.78+0.22*Math.sin(HAL.bob*b.sp*1.7+b.f));
         var gr=g.createLinearGradient(0,y0-amp,0,y0+bh);
-        gr.addColorStop(0,   "rgba("+c[0]+","+c[1]+","+c[2]+",0)");
-        gr.addColorStop(0.18,"rgba("+c[0]+","+c[1]+","+c[2]+","+s.toFixed(3)+")");
-        gr.addColorStop(0.55,"rgba("+c[0]+","+c[1]+","+c[2]+","+(s*0.45).toFixed(3)+")");
-        gr.addColorStop(1,   "rgba("+c[0]+","+c[1]+","+c[2]+",0)");
+        gr.addColorStop(0,   "rgba(255, 96,120,0)");
+        gr.addColorStop(0.10,"rgba(255, 96,120,"+(s*0.40*b.raud).toFixed(3)+")");  // oksygen 630 nm, høgast
+        gr.addColorStop(0.34,"rgba(150,255,170,"+s.toFixed(3)+")");                // oksygen 557,7 nm — hovudfargen
+        gr.addColorStop(0.68,"rgba(120,250,190,"+(s*0.52).toFixed(3)+")");
+        gr.addColorStop(0.90,"rgba(178,120,255,"+(s*0.34*b.fiolett).toFixed(3)+")");// nitrogen 427,8 nm, nedre frans
+        gr.addColorStop(1,   "rgba(178,120,255,0)");
         g.fillStyle=gr;
         var x0=vikle(b.x,0.035)-spenn*0.5;
         for(var rep=0;rep<2;rep++){ var xx=x0+rep*spenn;
@@ -6156,7 +6167,13 @@ function tegnHal(dt){
 }
 
 function halOpne(){ show("hal"); halStart(); Snd.dieselLyd("fart");
-  var b=$("#halHiv"); b.textContent="Hiv trålen"; b.disabled=false;
+  // Opnar scena seg utan at nokon har trykt (dev-lenkene gjer det), er lyden framleis
+  // låst av nettlesaren. Vi ber om han på nytt ved fyrste berøring.
+  (function(){ var h=$("#hal");
+    var paa=function(){ h.removeEventListener("pointerdown",paa);
+      if(HAL) Snd.dieselLyd(HAL.ferdig?"tomgang":"fart"); };
+    h.addEventListener("pointerdown",paa); })();
+  var b=$("#halHiv"); b.textContent="Hiv opp"; b.disabled=false;
   $("#halFyll").style.width="0%"; $("#halNaa").textContent="0 kr"; $("#halBar").classList.remove("full");
   halMaal(); }
 function halLukk(){ HAL=null; Snd.dieselLyd(null); show("sea"); }
