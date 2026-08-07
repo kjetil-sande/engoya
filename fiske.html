@@ -4837,6 +4837,21 @@ function openShop(){
   alle.forEach(function(r,i){ if(r.dataset&&r.dataset.kost!=null) alle[i]=sortert[vi++]; });
   alle.forEach(function(r){ L.appendChild(r); });
   modal("shopModal",true);
+  // MÅLT PÅ FERSK FISKER (812 px skjerm): portrettet, skiltet og lappen fyller hele
+  // første skjermbilde. Første vare starter 667 px ned — nøyaktig i underkanten — og
+  // Stang II ligger 985 px ned, altså 1,2 skjermer. En som nettopp har begynt ser en
+  // vegg med tekst, ruller ikke langt nok, og konkluderer med at stanga ikke finnes.
+  // Det skjedde. Derfor: rull fanene opp til toppen når butikken åpnes, så VARENE er
+  // det første man ser. Rusten og skiltet står der fortsatt, en liten rull opp.
+  // Unntaket er lappen fra Rusten første gang — den er et øyeblikk verdt å se.
+  setTimeout(function(){
+    var f=$("#shopModal .tabs"); if(!f)return;
+    if($("#bestIntroOk"))return;                      // lappen ligger på disken — la den få stå
+    var rull=f.parentNode;
+    while(rull&&rull!==document.body&&rull.scrollHeight-rull.clientHeight<=4) rull=rull.parentNode;
+    if(!rull||rull===document.body)return;
+    rull.scrollTop=f.getBoundingClientRect().top-rull.getBoundingClientRect().top+rull.scrollTop-6;
+  },0);
 }
 function openKjell(){
   shopRefresh=openKjell;
