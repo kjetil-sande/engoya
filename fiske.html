@@ -1206,7 +1206,9 @@ var Snd=(function(){
               reel:{url:"spill/lyd/fiskesnelle-loop.aac", vol:0.55, want:false, node:null},   // snelle mens man sveiver
               regn:{url:"spill/lyd/regn.aac", vol:0.40, want:false, node:null},                  // regnvær fra MET
               vindL:{url:"spill/lyd/vind.aac", vol:0.28, want:false, node:null},
-              strittL:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.6, want:false, node:null} }; // hviner mens fisken tar ut line              // vind i gråvær
+              strittL:{url:"spill/lyd/fisk-stritter-mot.aac", vol:0.6, want:false, node:null},
+              dieselF:{url:"spill/lyd/diesel-sjark-fart.aac", vol:0.30, want:false, node:null},    // tråleren i draget
+              dieselT:{url:"spill/lyd/diesel-sjark-tomgang.aac", vol:0.26, want:false, node:null} }; // hviner mens fisken tar ut line              // vind i gråvær
   var ONESHOT={ buy:{url:"spill/lyd/butikk-kjop.aac", vol:0.7},
     splash:{url:"spill/lyd/splash-sluk-treffer-vannet.aac", vol:0.7},
     napp:{url:"spill/lyd/napp.aac", vol:0.8},
@@ -1267,7 +1269,10 @@ var Snd=(function(){
     try{ if(fade&&c){ n.g.gain.setTargetAtTime(0.0001,c.currentTime,fade/3); n.s.stop(c.currentTime+fade); } else n.s.stop(); }catch(e){} }
   function startLoop(name){ var c=AC(),L=loops[name]; if(!c||!L||L.node||muted||!L.want)return; var buf=buffers[name]; if(!buf)return;
     var s=c.createBufferSource(); s.buffer=buf; s.loop=true; var g=c.createGain(); g.gain.value=L.vol;
-    if(name==="regn"){ // AAC-koding av ren støy pip metallisk i diskanten — lavpasset, og skjøten trimmes forbi encoder-primingen
+    if(name==="dieselF"||name==="dieselT"){ // koderen legger på ~10 ms stillhet i hver ende — trimmes bort, ellers hakker loopen
+      if(buf.duration>0.3){ s.loopStart=0.05; s.loopEnd=buf.duration-0.05; }
+      s.connect(g);
+    } else if(name==="regn"){ // AAC-koding av ren støy pip metallisk i diskanten — lavpasset, og skjøten trimmes forbi encoder-primingen
       var fl=c.createBiquadFilter(); fl.type="lowpass"; fl.frequency.value=4500;
       if(buf.duration>0.3){ s.loopStart=0.08; s.loopEnd=buf.duration-0.08; }
       s.connect(fl); fl.connect(g);
@@ -1332,7 +1337,9 @@ var Snd=(function(){
     torden:function(){ var c=["torden1","torden2","torden3"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
     munnspill:function(){ var c=["munnspill1","munnspill2"].filter(function(k){return buffers[k]}); if(c.length)oneShot(c[(Math.random()*c.length)|0]); },
     reelSound:function(on){ wantLoop("reel",!!on); },
-    utrasLyd:function(on){ wantLoop("strittL",!!on); }, // snella hviner så lenge fisken tar ut line
+    utrasLyd:function(on){ wantLoop("strittL",!!on); },
+    // Tråleren: full maskin mens hun drar, tomgang når trålen er oppe.
+    dieselLyd:function(m){ wantLoop("dieselF", m==="fart"); wantLoop("dieselT", m==="tomgang"); }, // snella hviner så lenge fisken tar ut line
     settLoopVol:function(name,vol){ var L=loops[name]; if(!L)return; L.vol=vol; if(L.node&&L.node.g)L.node.g.gain.value=vol; },
     fadeLoopVol:function(name,vol,sek){ var L=loops[name], c=AC(); if(!L)return; L.vol=vol;
       if(L.node&&L.node.g&&c){ try{ L.node.g.gain.setTargetAtTime(vol,c.currentTime,Math.max(0.08,sek||0.8)/3); }catch(e){ L.node.g.gain.value=vol; } } },
@@ -5854,7 +5861,7 @@ function halStart(){
       amp:0.020+rng()*0.035, bolg:1.4+rng()*2.2, sp:0.11+rng()*0.20, f:rng()*6.283,
       farge:b===2?[168,140,255]:[126,255,178], styrke:0.24+rng()*0.20 });
   }
-  HAL={ t:0, lengd:25+rng()*15, flak:halFlak(rng,rigg), rull:0, bob:0,
+  HAL={ t:0, lengd:25+rng()*15, flak:halFlak(rng,rigg), rull:0, bob:0, vinsj:rigg.vinsj, rauk:false,
         stj:stj, sky:sky, glit:glit, nordlys:nl, natt:natt,
         kap:kap, tak:tak, total:kap*andel, verdi:0, full:false, ferdig:false,
         status:"Trålen er ute." };
@@ -5889,10 +5896,30 @@ function halSteg(dt){
   if(v>=loft){ v=loft; if(!HAL.full){ HAL.full=true;
       HAL.status=HAL.tak<1?"Sekken er så tung som vinsjen klarer!":"SEKKEN ER FULL!"; } }
   HAL.verdi=v;
+  // VALGET. Fra litt over halvfull sekk står du med et spørsmål hvert sekund: hive
+  // nå og ta det du har, eller stå på og håpe på flaket som kanskje kommer? Jo tyngre
+  // sekken blir, jo større er sjansen for at nota ryker i draget — og da renner
+  // halvparten tilbake i havet. Kraftblokka halverer risikoen; det er den som gjør
+  // at de tåler en tung sekk i det hele tatt.
+  var fyll=v/HAL.kap;
+  if(fyll>0.55){
+    var fare=(fyll-0.55)/0.45;
+    if(Math.random() < fare*fare*(HAL.vinsj?0.05:0.12)*dt){
+      HAL.verdi=v*0.55; HAL.rauk=true;
+      HAL.status="NOTA ROK! Halvparten rant tilbake i havet.";
+      Snd.snap(); if(navigator.vibrate)navigator.vibrate(180); halSlutt();   // same lyden som når snøret ryker
+      var f0=$("#halFyll"), n0=$("#halNaa");
+      if(f0)f0.style.width=Math.min(100,HAL.verdi/HAL.kap*100)+"%";
+      if(n0)n0.textContent=halKr(HAL.verdi)+" kr";
+      return;
+    }
+  }
   if(tt>=1||HAL.full) halSlutt();
   else if(!HAL.full){
     var fart=halAndel(Math.min(1,tt+0.02))-halAndel(tt);
-    HAL.status = fart>0.012 ? "Det koker der nede!" : (v>0 ? "Jevn reke." : "Ikke et kilo ennå.");
+    HAL.status = fyll>0.80 ? "Sekken er faretruende tung — hiv!"
+      : fyll>0.55 ? "Sekken begynner å bli tung. Hive, eller stå på?"
+      : fart>0.012 ? "Det koker der nede!" : (v>0 ? "Jevn reke." : "Ikke et kilo ennå.");
   }
   var f=$("#halFyll"), n=$("#halNaa"), b=$("#halBar");
   if(f)f.style.width=Math.min(100,HAL.verdi/HAL.kap*100)+"%";
@@ -5906,10 +5933,11 @@ function halSlutt(){
   var inn=Math.round(HAL.verdi);
   if(P&&P.traaler&&inn>0){ P.kr+=inn; hud(); saveAll(); }   // mottaket gjer opp med ein gong
   $("#halHiv").textContent="Ferdig";
+  Snd.dieselLyd("tomgang");   // hun står og går mens de hiver
   // Sluttmeldinga MÅ gå gjennom HAL.status. Skreiv vi rett i elementet her, ville
   // halSteg overskrive han att i same frame — det gjorde han, og halet enda med
   // «Jevn reke.» i staden for oppgjeret.
-  HAL.status = HAL.verdi<HAL.kap*0.05 ? "Trålen kom opp med tang og lite annet."
+  if(!HAL.rauk) HAL.status = HAL.verdi<HAL.kap*0.05 ? "Trålen kom opp med tang og lite annet."
     : "Trålen er oppe: "+halKr(HAL.verdi)+" kr.";
 }
 
@@ -6099,11 +6127,11 @@ function tegnHal(dt){
   })();
 }
 
-function halOpne(){ show("hal"); halStart();
+function halOpne(){ show("hal"); halStart(); Snd.dieselLyd("fart");
   var b=$("#halHiv"); b.textContent="Hiv trålen"; b.disabled=false;
   $("#halFyll").style.width="0%"; $("#halNaa").textContent="0 kr"; $("#halBar").classList.remove("full");
   halMaal(); }
-function halLukk(){ HAL=null; show("sea"); }
+function halLukk(){ HAL=null; Snd.dieselLyd(null); show("sea"); }
 $("#halHiv").onclick=function(){ Snd.click();
   if(!HAL) return halLukk();
   if(!HAL.ferdig){ halSlutt(); return; }   // hiv tidleg: du får det som ligg i sekken no
