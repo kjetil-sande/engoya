@@ -2263,6 +2263,9 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.traalLodd==null)P.traalLodd=false;  // ekkolodd: finn fleire rekeflak
   if(P.traalVinsj==null)P.traalVinsj=false;// kraftblokk: greier å hive full sekk
   if(P.traalDiesel==null)P.traalDiesel=0;  // tankmål, 10 er fullt
+  if(P.traalGjeld==null)P.traalGjeld=0;    // restgjeld til Tråløy Sparebank
+  if(P.traalHalv==null)P.traalHalv=false;  // har Trude ringt om at du er halvveis?
+  if(P.traalKvitt==null)P.traalKvitt=false;// har ho ringt om at lånet er innfridd?
   if(P.traalSvc==null)P.traalSvc=0;        // hal siden båtservice på tråleren
   if(P.traalRiggTs==null)P.traalRiggTs=Date.now();     // sist trålriggen ble overhalt
   if(P.traalRiggTs>Date.now())P.traalRiggTs=Date.now();// samme klokkevern som ellers
@@ -4775,9 +4778,22 @@ function openShop(){
   // ståande som «Din» — du skal sjå kva du eig.
   if(P.traalTips) addShop(L,'<img src="spill/assets/traaler-reke.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🚢 \'" alt=""> Reketråler',
     P.traaler?"Din egen tråler. Ligger klar ved kaia — sett kursen mot Rekefeltet på kartet."
-      :"Kjells kontakt selger. Skrog og maskin i orden. Låser opp Rekefeltet og trålfisket — og et helt annet slag penger enn stang og snelle.",
+      :"Kjells kontakt selger. Skrog og maskin i orden. Båten koster "+TRAAL_BAAT.toLocaleString("nb")
+       +" kr — du legger "+TRAAL_PRIS.toLocaleString("nb")+" i egenkapital, og Tråløy Sparebank låner deg resten. "
+       +"Du betaler tilbake "+TRAAL_TILBAKE.toLocaleString("nb")+" med "+Math.round(TRAAL_BANKDEL*100)+" % av hvert hal.",
     TRAAL_PRIS,P.traaler?"Din":false,function(){ P.traaler=true; P.traalDiesel=TRAAL_TANK;
-      traalKartOpne(); notice("Reketråleren er din! Full tank på kjøpet — Rekefeltet er åpent 🚢"); });
+      P.traalGjeld=TRAAL_TILBAKE; traalKartOpne();
+      notice("Reketråleren er din! Full tank på kjøpet — Rekefeltet er åpent 🚢");
+      innLegg({type:"prat", fk:"trude",
+        tekst:"Hei, og gratulerer. Trude Skutnes i Tråløy Sparebank her — det er jeg som har "
+          +"signert lånet ditt.\n\nLa meg si det rett ut, så slipper vi misforståelser senere.\n\n"
+          +"Båten kostet 400 000. Du la 200 000 på bordet selv, og de resterende 200 000 har du "
+          +"av oss. Du betaler tilbake 240 000. De førti tusen er renta mi, og nå vet du om dem.\n\n"
+          +"Vi tar 35 prosent av hvert eneste hal du leverer, rett fra oppgjøret. Du skal ikke "
+          +"betale noe den 20. hver måned, og du kan ikke komme på etterskudd. Fisker du ikke, "
+          +"skjer det ingenting — gjelda står stille og venter.\n\n"
+          +"Så enkelt er det. Lykke til der ute."});
+      setTimeout(function(){ notice("Trude Skutnes har lagt igjen en melding 📨"); }, 900); });
   if(P.traaler) addShop(L,'<img src="spill/assets/bensinpumpe.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⛽ \'" alt=""> Diesel til tråleren',
     "Bunkring til reketråleren. Tanken tar "+TRAAL_TANK+" — du har "+P.traalDiesel+". Hvert hal bruker "+TRAAL_BRUK+".",
     TRAAL_DIESEL_PR*Math.max(0,TRAAL_TANK-P.traalDiesel), P.traalDiesel>=TRAAL_TANK,
@@ -6006,15 +6022,39 @@ function halSteg(dt){
 
 function halSlutt(){
   if(!HAL||HAL.ferdig)return; HAL.ferdig=true;
-  var inn=Math.round(HAL.verdi);
-  if(P&&P.traaler&&inn>0){ P.kr+=inn; hud(); saveAll(); }   // mottaket gjer opp med ein gong
+  var inn=Math.round(HAL.verdi), tilBank=0;
+  if(P&&P.traaler&&inn>0){
+    // Banken tek sitt FØRST. Aldri meir enn det som står att av gjelda — siste halet
+    // skal ikkje betale meir enn du skuldar.
+    if(P.traalGjeld>0){ tilBank=Math.min(P.traalGjeld, Math.round(inn*TRAAL_BANKDEL));
+      P.traalGjeld-=tilBank; }
+    P.kr+=inn-tilBank; hud(); saveAll();
+    HAL.tilBank=tilBank;
+    if(P.traalGjeld<=0 && !P.traalKvitt){ P.traalKvitt=true;
+      innLegg({type:"prat", fk:"trude",
+        tekst:"Da er vi ferdige med hverandre, du og jeg.\n\nSiste avdrag kom inn i dag. "
+          +"Lånet er innfridd, og båten står i ditt navn alene. Ingen heftelser, ingenting "
+          +"utestående.\n\nJeg skal si deg noe: de fleste som sitter der du satt, greier det "
+          +"ikke. De selger etter to sesonger. Du gjorde det.\n\nHele fangsten er din fra nå. "
+          +"Ta godt vare på henne."});
+      setTimeout(function(){ notice("Lånet er innfridd! Trude har ringt 🎉"); },700);
+    } else if(P.traalGjeld>0 && !P.traalHalv && P.traalGjeld<=TRAAL_TILBAKE*0.5){
+      P.traalHalv=true;
+      innLegg({type:"prat", fk:"trude",
+        tekst:"Trude i Tråløy her. Bare en kort beskjed.\n\nDu har passert halvveis på lånet. "
+          +"Restgjeld er "+Math.round(P.traalGjeld).toLocaleString("nb")+" kroner.\n\nDet er "
+          +"ikke alle som kommer hit. Fortsett som du har gjort."});
+    }
+  }
   $("#halHiv").textContent="Til lands";
   Snd.dieselLyd("tomgang");   // hun står og går mens de hiver
   // Sluttmeldinga MÅ gå gjennom HAL.status. Skreiv vi rett i elementet her, ville
   // halSteg overskrive han att i same frame — det gjorde han, og halet enda med
   // «Jevn reke.» i staden for oppgjeret.
   if(!HAL.rauk) HAL.status = HAL.verdi<HAL.kap*0.05 ? "Trålen kom opp med tang og lite annet."
-    : "Trålen er oppe: "+halKr(HAL.verdi)+" kr.";
+    : (HAL.tilBank>0 ? "Levert "+halKr(HAL.verdi)+" kr — "+halKr(HAL.tilBank)+" til banken, "
+                       +halKr(HAL.verdi-HAL.tilBank)+" til deg."
+                     : "Trålen er oppe: "+halKr(HAL.verdi)+" kr.");
   // Skriv DOM-en HER. halSteg gjer det elles, men han returnerer med ein gong
   // HAL.ferdig er sann — så hiv du sjølv, blei skjermen ståande uendra og det såg
   // ut som om knappen ikkje verka.
@@ -6966,6 +7006,15 @@ function innRydd(){ if(!P||!P.innboks)return; var f=P.innboks.length, no=Date.no
 // Kjell held auge med kontoen din utan å seie det. I det du har 200 000 på bok,
 // ringjer han med eit tips — det er slik ting går på ei lita øy.
 var TRAAL_PRIS=200000, TRAAL_TANK=10, TRAAL_DIESEL_PR=900, TRAAL_BRUK=2;
+// Båten koster 400 000. Du legger 200 000 i egenkapital og låner resten av Tråløy
+// Sparebank. Renta er BAKT INN i stedet for regnet per måned: du låner 200 000 og
+// betaler tilbake 240 000. De 40 000 ER renta, sagt rett ut på forhånd.
+//
+// Hvorfor ikke månedlige terminer? Fordi de følger kalenderen. En familie som ikke
+// åpner spillet på tre uker ville kommet tilbake til restanse, og det er feil straff
+// for et spill barna skal kunne legge fra seg. Banken tar sitt av FANGSTEN i stedet:
+// da kan du aldri misligholde, og gjelda står stille når du ikke fisker.
+var TRAAL_BAAT=400000, TRAAL_LAAN=200000, TRAAL_TILBAKE=240000, TRAAL_BANKDEL=0.35;
 // Tråleren slites på to måter, som resten av båtene i spillet: maskin og skrog teller
 // TURER, mens riggen — wire, tråldører og not — teller DØGN. Wiren ruster like fort
 // om båten ligger ved kai.
@@ -7176,7 +7225,9 @@ var PRAT_FOLK={
   kjell:{k:"kjell", n:"Propell-Kjell", b:"Verkstedet på Ørnes", img:"portrett-kjell.png",
          res:"logoikon-propell-kjell.gif", mal:"bm", ho:false, speil:true},   // ser mot venstre — speiles inn mot navnet
   rusten:{k:"rusten", n:"Rusten", b:"Agn & redskap", img:"portrett-rusten.png",
-          mal:"nn", ho:false, speil:true}   // ser mot venstre som dei andre — speilast inn mot namnet
+          mal:"nn", ho:false, speil:true},  // ser mot venstre som dei andre — speilast inn mot namnet
+  trude:{k:"trude", n:"Trude Skutnes", b:"Tråløy Sparebank", img:"portrett-bank.png",
+         mal:"bm", ho:true, speil:true}
 };
 function pratPerson(k){ return PRAT_FOLK[k] || fiskerVed[k] || null; }
 function pratInit(){ investInit(); var iv=P.invest;
@@ -7259,6 +7310,12 @@ function visTraalApp(){ investInit();
     +'<img src="spill/assets/traaler-reke.png" alt="" onerror="this.style.display=\'none\'"'
     +' style="width:100%;height:auto;image-rendering:pixelated;display:block;padding:8px 12px 0">';
   var iv=P.invest, noe=false;
+  if(P.traaler && P.traalGjeld>0){ noe=true;
+    var betalt=TRAAL_TILBAKE-P.traalGjeld;
+    h+='<div class="telnotat"><b>Lån i Tråløy Sparebank</b>'
+      +'Restgjeld '+Math.round(P.traalGjeld).toLocaleString("nb")+' kr av '
+      +TRAAL_TILBAKE.toLocaleString("nb")+'. Banken tar '+Math.round(TRAAL_BANKDEL*100)+' % av hvert hal.'
+      +pctBar(Math.round(100*betalt/TRAAL_TILBAKE))+'</div>'; }
   if(iv.tur){ var f0=fiskerVed[iv.tur.fk], igjen=Math.max(0,iv.tur.ferdig-Date.now());
     var tt=Math.floor(igjen/3600000), mm=Math.floor(igjen%3600000/60000);
     h+='<div class="telnotat"><b>Penger ute på tur</b>'+esc((f0?f0.n:iv.tur.fk)+" · "
