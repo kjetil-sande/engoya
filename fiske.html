@@ -990,7 +990,6 @@
     <img src="spill/assets/rusten-logo.png" alt="Rustens agn og redskap" style="display:none;margin:-38px auto 4px;position:relative;z-index:2;max-width:86%;max-height:80px;image-rendering:pixelated"
       onload="this.style.display='block';this.nextElementSibling.style.display='none'">
     <h2 style="text-align:center">Rustens agn &amp; redskap</h2>
-    <img id="rustenBaat" alt="Rustens sjark" style="display:none;width:100%;max-width:320px;height:auto;image-rendering:pixelated;margin:2px auto 4px" onerror="this.style.display='none'">
     <p class="muted" id="shopKr"></p>
     <div id="shopList"></div>
   </div></div></div>
@@ -2228,6 +2227,7 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   // dei sjølve kjøper båten — Rekefeltet står låst som før heilt til P.traaler er sann.
   if(P.traaler==null)P.traaler=false;      // eig du henne?
   if(P.traalTips==null)P.traalTips=false;  // har Kjell ringt om tipset sitt?
+  if(P.traalHint==null)P.traalHint=0;      // 0 ingen, 1 Rusten har hinta, 2 Rusten har følgt opp
   if(P.traalPose==null)P.traalPose=0;      // 0-2: sekkestorleik = makskapasitet
   if(P.traalRist==null)P.traalRist=false;  // sorteringsrist (påbode)
   if(P.traalLodd==null)P.traalLodd=false;  // ekkolodd: finn fleire rekeflak
@@ -3995,7 +3995,27 @@ var FUNN=[ // skrap og skatter i teina — jo høyere verdi, jo sjeldnere (w = v
  {k:"nordlysperlen",e:"🖤",n:"Nordlysperlen",kr:0,w:0.35,img:"funn-nordlysperlen.png",djup:true,trofeKun:true,t:"Svart perle med grønt skjær. Kan ikke selges. Skal ikke selges."},
  {k:"gullkalv",e:"🐂",n:"Gullkalv i miniatyr",kr:0,w:0.4,img:"funn-gullkalv.png",djup:true,trofeSelg:15000,t:"Hvem senket den, og hvorfor? Rusten har en teori han ikke vil dele."},
  {k:"flaskepost",e:"🍾",n:"FLASKEPOST!",kr:0,w:6,img:"funn-flaskepost.png"},
- {k:"gulltann",e:"🦷",n:"GULLTANN — noen smiler fattigere nå",kr:500,w:4.5,img:"funn-gulltann.png"}
+ {k:"gulltann",e:"🦷",n:"GULLTANN — noen smiler fattigere nå",kr:500,w:4.5,img:"funn-gulltann.png"},
+
+ // ——— Åtte nye ting frå teina, 7. august ———
+ {k:"sjakkbonde",e:"♟️",n:"Sjakkbonde i tre",kr:5,w:10,img:"funn-sjakkbrikke-bonde.png",
+  t:"Én bonde, helt alene. Et sted finnes det et brett som aldri ble spilt ferdig."},
+ {k:"geleleke",e:"🟢",n:"Geléleke med øyne",kr:10,w:9,img:"funn-geleleke.png",
+  t:"Den spretter fortsatt. Havet har ikke klart å ta knekken på den, og det gjorde neppe ungen som mistet den heller."},
+ {k:"wrestlingmaske",e:"🎭",n:"Wrestlingmaske",kr:60,w:7,img:"funn-wrestling-maske.png",
+  t:"Rød, gul og blå, og fortsatt like frekk. Ingen på øya vil vedkjenne seg den."},
+ {k:"dyreskalle",e:"💀",n:"Hodeskalle med horn",kr:40,w:6,img:"funn-hodeskalle-dyr.png",
+  t:"Ku, sier Målfrid, og hun pleier å ha rett. Hvordan den havnet på hundre meters dyp sier hun ingenting om."},
+ // Våpen skal ikke bli til penger i dette spillet. Begge er ufarlige når de kommer
+ // opp — den ene rusta fast, den andre tømt av bombegruppa — og begge ender på hylla.
+ {k:"rustenpistol",e:"🔫",n:"Pistol, rustet fast",kr:0,w:5,img:"funn-pistol.png",trofeKun:true,
+  t:"Rustet fast i ett stykke — den blir aldri skutt med igjen. Lensmannen så på den, ristet på hodet og sa du kunne beholde den."},
+ {k:"kistenokkel",e:"🗝️",n:"Nøkkel til en kiste",kr:120,w:4.5,img:"funn-kistennokkel.png",
+  t:"Tung, og altfor fin til et naust. Et sted der nede står det en kiste og savner den."},
+ {k:"lysestake",e:"🕯️",n:"Trearmet lysestake",kr:250,w:4,img:"funn-lysestake.png",
+  t:"Grønn av irr, men rett i ryggen. Noen har spist julaften i lyset fra den."},
+ {k:"handgranat",e:"💣",n:"Håndgranat fra krigen",kr:0,w:3,img:"funn-handgranat.png",trofeKun:true,
+  t:"Bunnen her ute er full av slikt etter krigen. Bombegruppa kom, tømte den og ga den tilbake. Nå står den på hylla og skremmer barnebarna."}
 ];
 function verdiSkala(){ var k=(P&&P.kr)||0; return k>50000?0.7:k>20000?0.85:k<500?1.3:k<2000?1.15:1; } // rike prutes, blakke får godvilje
 // Et funn er en SKATT hvis det er verdt penger eller hører hjemme på et museum.
@@ -4691,9 +4711,6 @@ function openShop(){
     if(d.getDay()===5 && d.getHours()>=14) rustenSier("fredag", 900); })();
   shopRefresh=openShop;
   $("#shopKr").textContent="Du har "+P.kr+" kr.";
-  (function(){ var kl=new Date().getHours(); // sjarken hans ligg utanfor, og skiftar med lyset
-    var v=(kl>=22||kl<5)?"natt":(kl>=18||kl<8)?"kveld":"dag";
-    var b=$("#rustenBaat"); if(b){ b.src="spill/assets/rusten-baat-"+v+".png"; b.style.display=""; } })();
   var L=$("#shopList"); L.innerHTML="";
   var dk=dailyFish();
   L.insertAdjacentHTML("beforeend", bestillingLappHTML(dk));
@@ -6023,28 +6040,6 @@ function tegnHal(dt){
   // Gantryet står i akterenden av sprita — der wirane skal ut.
   var akter=bx0-bw2*0.405, gantry=by0+bh2*0.47;
 
-  // --- TRÅLEN. Du ser aldri ei reke. Du ser wirane gå akterut og ned, og du anar
-  //     nota eit stykke under overflata før ho blir borte i det blå. Reka står på
-  //     200-400 meter; skulle vi teikna henne, ville vi lyge om kor djupt det er.
-  //     Alt du VEIT om fangsten, veit du frå baren.
-  (function(){
-    var ned=(H2-wl)*0.55, borte=wl+ned;
-    var gr=g.createLinearGradient(0,wl,0,borte);      // nota bleiknar nedover mot djupet
-    g.save(); g.lineCap="round";
-    gr.addColorStop(0,"rgba(140,190,165,.34)"); gr.addColorStop(1,"rgba(140,190,165,0)");
-    g.strokeStyle=gr; g.lineWidth=1.3;
-    var mx=akter-mn*0.075, px=akter-mn*0.30;          // munnen oppe, posen nede bakover
-    for(var s=0;s<=6;s++){                             // langsgåande masketrådar
-      var f=s/6, x0=mx-mn*0.012*s, sp=mn*(0.050-0.026*f);
-      g.beginPath(); g.moveTo(x0, wl+sp*0.4);
-      g.quadraticCurveTo((x0+px)/2, wl+ned*0.55+sp, px, borte-mn*0.01); g.stroke();
-    }
-    for(var q=1;q<=4;q++){                             // tverrband, så det les som eit nett
-      var ff=q/5, yy=wl+ned*ff, xa=mx-(mx-px)*ff*0.92, hh=mn*(0.048-0.028*ff);
-      g.beginPath(); g.moveTo(xa, yy-hh); g.lineTo(xa, yy+hh); g.stroke();
-    }
-    g.restore();
-  })();
 
   if(bi.complete&&bi.naturalWidth){
     var tegn=function(){ g.save(); g.translate(bx0, by0+bh2/2); g.rotate(krenge);
@@ -6056,14 +6051,22 @@ function tegnHal(dt){
     g.fillStyle="rgba(235,240,238,.16)"; g.font=Math.round(mn*0.032)+"px monospace";
     g.textAlign="center"; g.fillText("traaler-reke.png manglar", W2*0.5, wl-mn*0.06); g.textAlign="left";
   }
-  // Wirane sist, så dei ligg oppå skroget der dei går ut over rekka.
+  // TRÅLEN. Du ser aldri en reke, og du ser heller ikke nota. Fra siden, med
+  // redskapen på 200-400 meter, er alt som er å se to wirer som går akterut og ned
+  // og blir borte i det blå. Alt du VET om fangsten, vet du fra baren.
   (function(){
+    var ned=(H2-wl)*0.62;
     g.save(); g.lineCap="round";
     for(var w=0;w<2;w++){
-      var x1=akter+mn*0.008*w, y1=gantry;
-      var x2=akter-mn*(0.085+0.022*w), y2=wl+mn*0.008;
-      g.strokeStyle="rgba(226,236,242,"+(0.40-0.11*w)+")"; g.lineWidth=1.1; // tynne og dempa: wire, ikkje tau
-      g.beginPath(); g.moveTo(x1,y1); g.quadraticCurveTo((x1+x2)/2, y1+(y2-y1)*0.72, x2, y2); g.stroke();
+      var x1=akter+mn*0.010*w, y1=gantry;
+      var x2=akter-mn*(0.10+0.032*w), y2=wl+ned;
+      var gr=g.createLinearGradient(0,wl-mn*0.05,0,wl+ned);   // tydelig i skorpa, borte mot dypet
+      gr.addColorStop(0,   "rgba(232,240,244,"+(0.44-0.12*w).toFixed(3)+")");
+      gr.addColorStop(0.30,"rgba(206,224,236,"+(0.22-0.07*w).toFixed(3)+")");
+      gr.addColorStop(1,   "rgba(186,210,226,0)");
+      g.strokeStyle=gr; g.lineWidth=1.5;
+      g.beginPath(); g.moveTo(x1,y1);
+      g.quadraticCurveTo(x1-(x1-x2)*0.30, wl+ned*0.26, x2, y2); g.stroke();
     }
     g.restore();
   })();
@@ -6821,7 +6824,34 @@ function traalKartOpne(){
   if(!P||!P.traaler||typeof KART==="undefined"||!KART.felt)return;
   for(var i=0;i<KART.felt.length;i++) if(KART.felt[i].d===9) KART.felt[i].teaser=null;
 }
+// Ein spelar som har funne alt og ikkje veit at det kjem meir, gir seg. Difor skal
+// tråleren synast lenge før han er innan rekkjevidde: Rusten hintar på 50 000, følgjer
+// opp på 120 000, og fyrst på 200 000 kjem Kjell med det konkrete tilbodet.
+var TRAAL_HINT1=50000, TRAAL_HINT2=120000;
+function traalSjekkHint(){
+  if(!P||P.traaler||typeof innLegg!=="function")return;
+  if(P.traalHint<1 && P.kr>=TRAAL_HINT1){
+    P.traalHint=1;
+    innLegg({type:"prat", fk:"rusten",
+      tekst:"Du byrjar å få litt på bok no, ser eg.\n\n"
+        +"Eg skal ikkje lova noko, men det går eit rykte på kaia om ein reketrålar som kanskje skal seljast. "
+        +"Slikt tek tid, og eg veit ikkje om det blir noko av.\n\n"
+        +"Men skal du eige ein slik båt, snakkar vi om to hundre tusen. Så no veit du kva du sparar til.\n\n"
+        +"Eg seier frå om det blir alvor."});
+    notice("Rusten har lagt igjen en melding 📨"); saveAll(); return;
+  }
+  if(P.traalHint<2 && P.kr>=TRAAL_HINT2){
+    P.traalHint=2;
+    innLegg({type:"prat", fk:"rusten",
+      tekst:"Det eg nemnde om trålaren — det ser ut til å bli noko av.\n\n"
+        +"Kjell kjenner han som eig henne, og han har vore om bord. Skrog og maskin skal vere i orden.\n\n"
+        +"Prisen står framleis på to hundre tusen. Du er over halvvegs.\n\n"
+        +"Kjell ringjer deg når han har snakka ferdig med mannen."});
+    notice("Rusten har lagt igjen en melding 📨"); saveAll();
+  }
+}
 function traalSjekkTips(){
+  traalSjekkHint();
   if(!P||P.traaler||P.traalTips||P.kr<TRAAL_PRIS||typeof innLegg!=="function")return;
   P.traalTips=true;
   innLegg({type:"prat", fk:"kjell",
@@ -6979,7 +7009,7 @@ function pratSjekk(){
 function pratRing(k, tekst){
   var pe=pratPerson(k); if(!pe)return false;
   var m={type:"prat", fk:k, tekst:tekst};
-  if(fiskerVed[k]) m=innLegg(m);
+  m=innLegg(m);   // alle blir lagra no — før datt Kjell og Rusten på golvet om anropet ikkje gjekk gjennom
   if(!ringOpp(pe, m) && !fiskerVed[k]) notice(pe.n+" prøvde å ringe deg 📞"); // personen følger anropet (ringPe) — aldri lagringen
   return true;
 }
@@ -7481,7 +7511,8 @@ function visInnboks(){
   if(!synlige.length){
     L.innerHTML='<p class="muted center">Ingen meldinger. Fiskerne tar kontakt når de trenger en partner.</p>';
   } else synlige.forEach(function(m){
-    var f=fiskerVed[m.fk]; if(!f)return;
+    var f=pratPerson(m.fk); if(!f)return;   // IKKJE fiskerVed: den har berre skipperane,
+                                            // og Kjell og Rusten blei då usynlege i lista
     var d=document.createElement("button"); d.className="innrad"+(m.lest?"":" ulest");
     var forh = m.type==="prat"
       ? (m.tekst||"").replace(/^[^.]*\.\s*/,"").slice(0,44)
@@ -7504,7 +7535,7 @@ function naarTekst(t){ var d=Date.now()-t;
 
 var smsFraInn=false; // ble denne visningen åpnet fra innboksen? (styrer tilbakeknappen)
 function apneMelding(m){
-  var f=fiskerVed[m.fk]; if(!f)return;
+  var f=pratPerson(m.fk); if(!f)return;
   if(!m.lest){ m.lest=true; innPrikk(); saveAll(); }
   var qS=pratInit();
   if((qS.neiRad||0)>=3 && !qS.solveigNaar){ qS.neiRad=0; qS.solveigNaar=(P.tidMs||0)+10*60000; }
