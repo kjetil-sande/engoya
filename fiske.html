@@ -438,6 +438,9 @@
     border:2px solid #2c5a63;overflow:hidden;flex:0 0 auto}
   #halBar > i{position:absolute;left:0;top:0;bottom:0;width:0;
     background:linear-gradient(90deg,#c96a4a,#e08a5a 55%,#f0b07a);transition:width .12s linear}
+  /* Faresona: herfra kan nota ryke. Skravert, så den skiller seg fra fyllet. */
+  #halBar > u{position:absolute;top:0;bottom:0;right:0;border-left:2px solid rgba(240,120,90,.85);
+    background:repeating-linear-gradient(45deg,rgba(240,120,90,.30) 0 4px,transparent 4px 8px)}
   #halBar > b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     font-family:var(--mono);font-size:11.5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9)}
   #halBar.full{border-color:#f0c060;box-shadow:0 0 10px 2px rgba(240,192,96,.5)}
@@ -899,7 +902,7 @@
     <div id="halTopp">
       <div id="halRad">
         <span class="halEnde" id="halLo">0 kr</span>
-        <div id="halBar"><i id="halFyll"></i><b id="halNaa"></b></div>
+        <div id="halBar"><u id="halFare"></u><i id="halFyll"></i><b id="halNaa"></b></div>
         <span class="halEnde" id="halHi">0 kr</span>
       </div>
       <p id="halStatus"></p>
@@ -1194,6 +1197,24 @@ var Snd=(function(){
     o.type=type||"sine"; o.frequency.setValueAtTime(freq,t); if(slideTo)o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
     ga.gain.setValueAtTime(0.0001,t); ga.gain.exponentialRampToValueAtTime(g||0.18,t+0.008); ga.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     o.connect(ga); ga.connect(c.destination); o.start(t); o.stop(t+dur+0.03); }
+  // Ein wire under strekk knirkar fordi han glir rykkvis mot blokka. Difor: smal
+  // bandpassa støy med skjelvande senterfrekvens, ikkje ein rein tone. «spenn» 0-1
+  // hevar tonehøgda og lengda, så det høyrest tyngre ut jo fullare sekken er.
+  function knirk(spenn){ var c=AC(); if(!c||muted)return;
+    var s=Math.max(0,Math.min(1,spenn||0)), dur=0.34+s*0.30;
+    var n=Math.floor(c.sampleRate*dur), buf=c.createBuffer(1,n,c.sampleRate), d=buf.getChannelData(0);
+    for(var i=0;i<n;i++){ var u=i/n; d[i]=(Math.random()*2-1)*Math.pow(1-u,0.7); }
+    var src=c.createBufferSource(); src.buffer=buf;
+    var bp=c.createBiquadFilter(); bp.type="bandpass"; bp.Q.value=9+s*7;
+    var f0=150+s*130, t0=c.currentTime;
+    bp.frequency.setValueAtTime(f0,t0);
+    for(var k=1;k<=7;k++)   // skjelvinga: tonehøgda vandrar opp og ned medan han glir
+      bp.frequency.linearRampToValueAtTime(f0*(0.80+Math.random()*0.55), t0+dur*k/7);
+    var ga=c.createGain();
+    ga.gain.setValueAtTime(0.0001,t0);
+    ga.gain.exponentialRampToValueAtTime(0.16+s*0.16, t0+0.05);
+    ga.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    src.connect(bp); bp.connect(ga); ga.connect(c.destination); src.start(t0); }
   function noise(dur,g,lp){ var c=AC(); if(!c||muted)return; var n=Math.max(1,Math.floor(c.sampleRate*dur)),buf=c.createBuffer(1,n,c.sampleRate),d=buf.getChannelData(0);
     for(var i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n); var s=c.createBufferSource(); s.buffer=buf;
     var f=c.createBiquadFilter(); f.type="lowpass"; f.frequency.value=lp||1200; var ga=c.createGain(); ga.gain.value=g||0.2;
@@ -1438,6 +1459,8 @@ var Snd=(function(){
       },60);
     },
     kjoleribbe:function(){ oneShot("kjoleribbe"); },
+    knirk:function(spenn){ knirk(spenn); },   // trålwiren under strekk
+
     click:function(){ if(buffers.klikk1||buffers.klikk2){ altClick=!altClick; oneShot(altClick&&buffers.klikk1?"klikk1":"klikk2"); } else beep(430,0.05,"square",0.05,320); },
     cast:function(){ if(buffers.splash)oneShot("splash"); else { noise(0.3,0.22,900); beep(300,0.18,"sine",0.10,120); } },
     bite:function(){ if(buffers.napp)oneShot("napp"); else { beep(880,0.08,"triangle",0.16); setTimeout(function(){beep(1170,0.10,"triangle",0.16)},80); } },
@@ -5888,7 +5911,7 @@ function halStart(){
   HAL={ t:0, lengd:25+rng()*15, flak:halFlak(rng,rigg), rull:0, bob:0, vinsj:rigg.vinsj, rauk:false,
         stj:stj, sky:sky, glit:glit, nordlys:nl, natt:natt,
         kap:kap, tak:tak, total:kap*andel, verdi:0, full:false, ferdig:false,
-        status:"Trålen er ute." };
+        status:"Trålen er ute. Hiv opp før sekken blir for tung — eller stå på." };
   halMaal();
 }
 
@@ -5898,6 +5921,8 @@ function halMaal(){
   var full=Math.min(halH?halW:window.innerWidth, 900)-150;
   var frac=HAL.kap/HAL_KAP[HAL_KAP.length-1];
   b.style.width=Math.round(full*(0.52+0.48*frac))+"px";
+  // Kraftblokka flytter terskelen fra 55 % til 70 %, og da flytter stripa seg med.
+  var fa=$("#halFare"); if(fa){ var tk=halRigg().vinsj?0.70:0.55; fa.style.width=(100-tk*100)+"%"; }
   $("#halLo").textContent="0 kr";
   $("#halHi").textContent=halKr(HAL.kap)+" kr";
 }
@@ -5930,6 +5955,10 @@ function halSteg(dt){
   var fyll=v/HAL.kap, terskel=HAL.vinsj?0.70:0.55;
   if(fyll>terskel){
     var fare=(fyll-terskel)/(1-terskel);
+    // Knirket er varselet du HØRER. Det kommer sjelden i starten av faresona og
+    // tett når hun er på bristepunktet — 2,6 s ned til 0,5 s mellom hvert.
+    HAL.knirk=(HAL.knirk||0)-dt;
+    if(HAL.knirk<=0){ Snd.knirk(fare); HAL.knirk=2.6-2.1*fare+Math.random()*0.5; }
     if(Math.random() < fare*fare*(HAL.vinsj?0.9:1.6)*dt){
       var dekt=(P.forsTil||0)>Date.now();
       HAL.verdi=v*(dekt?0.82:0.55); HAL.rauk=true;

@@ -159,3 +159,29 @@ Fully transparent background, no shadow, no floor.
 
 ---
 
+---
+
+## Tråløy Sparebank (7. august)
+
+**Trude Skutnes** sitter med lånet til reketråleren. Hun er ikke en skurk — hun er den som
+sier ja, og som minner deg på at halvparten av hvert hal går til henne til det er
+gjort opp.
+
+Fil: **`portrett-bank.png`** — **400 × 400**, transparent
+(samme mål og ramme som `portrett-maalfrid.png`)
+
+Vises som rund avatar 44 px i SMS-en, så **ansiktet må fylle rammen** — bryst og opp.
+Hun ser mot **venstre** og speiles inn mot navnet, som Rusten og Kjell.
+
+**Rettet 7. aug:** første forsøk ble 1113 tegn — over taket — og hun kom ut med slett hår
+og altfor ung. Krøllene er nå flyttet helt fremst og sagt tre ganger, siden det er det
+generatoren glatter bort først. Alderen er satt til 45.
+
+**Andre retting:** håret ble fortsatt for langt. Nå er det sagt tre ganger at det skal
+være kort — «cropped close», «compact rounded cap», «well above the jaw».
+
+16-bit pixel art character portrait, head and shoulders, facing slightly left. A Norwegian woman of about forty-five with **short, tight spiral curls** — dense reddish-auburn corkscrew curls cropped close, a compact rounded cap of hair ending **well above the jaw**, never near the shoulders. **The curls are the first thing you notice: springy, coiled, clearly separated, never straight, never smooth, never brushed flat.** Soft full face, fair skin, a few freckles, calm and businesslike — friendly, but she has said no to loans before. Fuller build. She wears a knitted wool vest in muted mustard over a crisp white shirt buttoned to the very top collar button, the stiff collar points against her throat. A thin gold chain hangs in a small arc just below the collar points. No earrings, no pattern. Warm sober palette: mustard, cream, auburn, office grey. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette. Fully transparent background. No text, no frame, no logo.
+
+Fil: **`logo-traaloy-sparebank.png`** — kvadratisk, magenta bakgrunn som skal nøkles bort
+
+Retro video game pixel art style. A small, sober logo mark for a Norwegian coastal savings bank, in the style of a sign on a brick wall in a fishing village. A simple shield or rounded square in deep navy and brass, containing a stylised **sjømerke** — a coastal navigation beacon — standing on a shallow rock with two short wave lines beneath it. Clean, symmetrical, very few details, the kind of mark that would still read at 40 pixels. Slightly worn, as if painted on metal twenty years ago and left in the salt air. Chunky and readable at small size: thick clean pixel outlines, flat colours, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no lettering, no drop shadow.
