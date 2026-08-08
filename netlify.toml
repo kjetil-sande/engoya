@@ -13,9 +13,14 @@
   to = "/fiske.html"
   status = 301
 
-# Skjult for søkemotorer inntil videre — eieren vil spisse spillet før offentlig
-# lansering. Fjernes den dagen eieren sier fra.
+# Spillet er ÅPENT for søkemotorer fra 8. august. Den site-wide noindex-en som sto
+# her fra lanseringen i august er fjernet på eierens beskjed.
+#
+# MERK at den dekket ALT, også kontrollpanelet. Derfor står panelet nå med sin egen
+# regel under — det skal aldri indekseres, uansett hva resten av siden gjør. Panelet
+# er også låst bak Google-innlogging og har en meta-tag i seg selv, men en header er
+# det eneste som holder en crawler unna før den i det hele tatt laster siden.
 [[headers]]
-  for = "/*"
+  for = "/kontrollpanel.html"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"

@@ -20,7 +20,12 @@ from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Table,
 
 D = json.load(open('/tmp/rapport.json'))
 NAVN = D.get('navn', {})
-UT = '/Users/kjetilsande/Documents/Claude/Engøya/Sluk-og-agn-rapport.pdf'
+# Skriv ALLTID ved sida av skriptet. Stod tidlegare med ei hardkoda bane til
+# Engøya-prosjektet, så rapporten hamna i eit HEILT ANNA repo — der han korkje
+# var ignorert eller ønskt. Rapporten skal aldri publiserast, og då skal han
+# heller ikkje kunne rote seg inn i ei anna mappe.
+import os
+UT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Sluk-og-agn-rapport.pdf')
 
 SJO   = colors.HexColor('#1d4e63')
 DJUP  = colors.HexColor('#0f2c3a')

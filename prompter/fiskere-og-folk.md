@@ -113,7 +113,7 @@ Hun som holder Arkivet. Navnet følger samme mønster som Propell-Kjell, så det
 sitter med én gang: **Arkiv-Målfrid**. Målfrid er nordnorsk, litt gammeldags og
 ikke i bruk andre steder i spillet.
 
-**Hvem hun er** (til dialogen senere): rundt seksti, var bibliotekar på Ørnes til
+**Hvem hun er** (til dialogen senere): rundt seksti, var bibliotekar i Tråløy til
 skolen ble lagt ned, og fører nå arkivet over hva folk får. Hun snakker **bokmål**
 — Rusten har nynorsken, og de to skal ikke låte likt. Tørr, presis, og litt stolt
 på arkivets vegne. Hun husker hva du fikk i fjor. Hun sier ifra når du mangler noe:
@@ -161,7 +161,9 @@ Fully transparent background, no shadow, no floor.
 
 ---
 
-## Tråløy Sparebank (7. august)
+## 17. Tråløy Sparebank
+
+### 17a. Trude Skutnes — portrett til telefonen
 
 **Trude Skutnes** sitter med lånet til reketråleren. Hun er ikke en skurk — hun er den som
 sier ja, og som minner deg på at halvparten av hvert hal går til henne til det er
@@ -181,6 +183,8 @@ generatoren glatter bort først. Alderen er satt til 45.
 være kort — «cropped close», «compact rounded cap», «well above the jaw».
 
 16-bit pixel art character portrait, head and shoulders, facing slightly left. A Norwegian woman of about forty-five with **short, tight spiral curls** — dense reddish-auburn corkscrew curls cropped close, a compact rounded cap of hair ending **well above the jaw**, never near the shoulders. **The curls are the first thing you notice: springy, coiled, clearly separated, never straight, never smooth, never brushed flat.** Soft full face, fair skin, a few freckles, calm and businesslike — friendly, but she has said no to loans before. Fuller build. She wears a knitted wool vest in muted mustard over a crisp white shirt buttoned to the very top collar button, the stiff collar points against her throat. A thin gold chain hangs in a small arc just below the collar points. No earrings, no pattern. Warm sober palette: mustard, cream, auburn, office grey. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette. Fully transparent background. No text, no frame, no logo.
+
+### 17b. Logoen
 
 Fil: **`logo-traaloy-sparebank.png`** — kvadratisk, magenta bakgrunn som skal nøkles bort
 
@@ -218,3 +222,52 @@ de alltid riktige, og de kan skaleres med resten av grensesnittet.
 
 **Om hvit bakgrunn:** merk at logoen da ikke kan nøkles gjennomsiktig. Den vil stå som et
 hvitt skilt. Det er helt greit for en bank — men si fra hvis du heller vil ha den fri.
+
+---
+
+## 18. Oppkjøperne
+
+Fangsten er kilo i karet, ikke kroner på konto. Disse fire er dem du må bli kvitt henne til,
+og de vil ha ulike ting: den ene tar alt med en gang til lav pris, den andre betaler dobbelt
+men bare for det som er ferskt. Det er der veddemålet ligger.
+
+De tre portrettene: **400 × 400**, transparent, samme ramme som `portrett-maalfrid.png`. De
+ser mot **venstre** og speiles inn mot navnet, som Rusten, Kjell og Trude.
+
+**Merk:** i koden heter de foreløpig etter firmaet («Nordvik Sjømat»). Når portrettene er på
+plass bør de hete etter personen, slik resten av folkene gjør.
+
+### 18a. Roar Nordvik — Nordvik Sjømat, Storhamn
+
+Storhandleren. Tar hele lasset på flekken til lav pris. Den trygge utveien når du ikke orker
+å vente — og den du irriterer deg over etterpå.
+
+Fil: **`portrett-roar.png`** (887 tegn)
+
+> 16-bit pixel art character portrait, head and shoulders, facing slightly left. A **Norwegian man of about fifty-five** who buys fish for a living and is always on his way somewhere. Heavy-set and well fed, ruddy face, thinning grey hair combed flat, small reading glasses pushed up on his forehead. He wears a **navy quilted company jacket zipped to the chin** over a checked shirt collar. A phone is clamped between his shoulder and his ear, and he is **halfway through saying something** — mouth open, one eyebrow raised, an impatient half-smile. Not a villain, just a man with three more stops today and a price he will not go above. Cool palette against a warm face: navy, steel grey, ruddy skin, a little brass on the zip. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette. Fully transparent background. No text, no frame, no logo.
+
+### 18b. Line Kvandal — Saltvær Fiskemottak
+
+På kaia, rett ved. Grei pris, tar det de har plass til. Hverdagen.
+
+Fil: **`portrett-line.png`** (849 tegn)
+
+> 16-bit pixel art character portrait, head and shoulders, facing slightly left. A **Norwegian woman in her mid-thirties** who runs the receiving station on the quay. Dark blonde hair pulled back hard into a short practical ponytail, a few strands escaped and stuck to her cheek. Fair, wind-reddened skin, no makeup, a direct and level gaze. She wears a **worn navy fleece under a heavy orange rubber apron**, the bib coming up to her chest, straps over both shoulders, sleeves shoved to the elbow. Her expression is **friendly but already counting** — she has weighed a thousand boxes and can guess yours before you say it. Working palette: orange rubber, navy fleece, steel, cold daylight. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette. Fully transparent background. No text, no frame, no logo.
+
+### 18c. Berit Hauan — kokk i Tråløy
+
+Betaler best av alle, men bare for det som er ferskt. Er reka gammel, går hun uten å prute.
+Hun er belønningen for å ha kjøpt kjøl.
+
+Fil: **`portrett-berit.png`** (873 tegn)
+
+> 16-bit pixel art character portrait, head and shoulders, facing slightly left. A **Norwegian woman of about forty-five**, a chef who runs a small restaurant. Black hair cut in a sharp short bob, one side tucked behind an ear. Strong dark eyebrows and a keen appraising look — she is **studying something just out of frame and has not decided yet**. She wears a **crisp white chef's jacket buttoned high**, a thin dark neckerchief tucked in at the collar, and a folded blue towel over one shoulder. A small burn scar on the back of one hand. Nothing decorative anywhere. Warm but exacting: the face of someone who will pay double for the best and walk away from the rest. Clean palette: white, charcoal, deep blue. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette. Fully transparent background. No text, no frame, no logo.
+
+### 18d. Torghandel — ikke en person
+
+Du står på kaia og selger selv. Tar tid, men folk betaler for fersk reke. Her trengs et ikon,
+ikke et portrett — magenta bakgrunn som skal nøkles bort.
+
+Fil: **`ikon-torghandel.png`** (794 tegn)
+
+> Retro video game pixel art style. A single game icon: a **market table on a Norwegian quay**, seen from the side. A simple folding trestle table under a **blue-and-white striped awning**, a **brass hanging scale** on a hook at one end, and two open polystyrene boxes of cooked pink shrimp on crushed ice. A stack of paper bags and a small blank price sign leaning against the table leg. A single herring gull perched on the awning frame, waiting. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no lettering, no drop shadow.
