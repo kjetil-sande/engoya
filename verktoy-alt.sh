@@ -74,6 +74,9 @@ VENTA = {
     "knapp-rusten.png":     "under arbeid — faller tilbake til portrett-rusten.png",
     "knapp-kjell.png":      "under arbeid — faller tilbake til portrett-kjell.png",
     "knapp-maalfrid.png":   "under arbeid — faller tilbake til portrett-maalfrid.png",
+    # Dei to siste trålutstyra. Butikkrada viser emoji til bileta kjem.
+    "traal-dysepropell.png":"under arbeid — butikken viser 🌀 i mellomtiden",
+    "traal-dieseltank.png": "under arbeid — butikken viser 🛢️ i mellomtiden",
 }
 
 har = set(p.split('/')[-1] for p in subprocess.run(

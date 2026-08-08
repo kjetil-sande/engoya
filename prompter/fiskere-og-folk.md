@@ -322,3 +322,44 @@ Reke i eske er en annen vare enn reke i kar. Gir 18 prosent bedre pris per kilo 
 Fil: **`traal-pakkemaskin.png`** (840 tegn)
 
 > Retro video game pixel art style. A single game icon: a **small packing machine for a fishing boat** — a compact stainless steel bench unit with a hinged press lid raised, a roll of clear film on a spindle above it, and a short conveyor of rollers leading out to the right. On the conveyor sits **one finished white polystyrene box, sealed and ready to stack**, with a plain blank label patch on the end. Practical, oily, well used. Palette: brushed steel, white polystyrene, black rollers, a little brass. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+### 19c. Dysepropell
+
+En Kort-dyse er en ring rundt propellen som samler strålen: mer skyvekraft ved lav fart og
+under slep, som er akkurat det en tråler driver med. Standard på trålere og slepebåter i
+virkeligheten. Kutter dieselen per hal fra 2 til 1,5.
+
+Den hører hjemme hos **Propell-Kjell** — mannen heter det, og han har aldri solgt deg en.
+
+Fil: **`traal-dysepropell.png`** (907 tegn)
+
+> Retro video game pixel art style. A single game icon: a **Kort nozzle propeller for a trawler** — a heavy steel ring, seen at a slight three-quarter angle so the ring reads as an open tube, with a **four-bladed bronze propeller mounted inside it**. The ring is thick and welded, painted dark with worn red antifouling on the lower half, and a short stub of shaft enters from the back. A few streaks of green weed and barnacle scars on the outside. Heavy, industrial and clearly built for pulling, not for speed. Palette: dark steel, bronze, red antifouling, a little green. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+### 19d. Større dieseltank
+
+Fra 10 til 16 mål. Ingen effektivisering, bare rekkevidde. Med dysa i tillegg går du fra
+fem hal per tank til nesten elleve.
+
+Fil: **`traal-dieseltank.png`** (823 tegn)
+
+> Retro video game pixel art style. A single game icon: a **large marine diesel tank** — a horizontal welded steel cylinder lying on two low cradles, with a **round inspection hatch and ring of bolts** on the end facing us, a **filler cap on top** with a short hose stub, and a small vertical **sight glass showing the level near full**. Painted a dull working grey with a few drips and stains down one side. Solid and unglamorous. Palette: grey steel, dark bolts, a little brass on the cap. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+---
+
+## 20. Garn
+
+Et tredje passivt redskap ved siden av teiner og bunnline. Garnet står som en vegg i sjøen
+og fisker mens du er borte.
+
+**Slik det bør virke i spillet:** settes på mellomdypt eller dypt vann, tar helt andre arter
+enn stanga — sei, torsk, steinbit, breiflabb — og gir flere fisk per trekk enn teina, men
+kan ikke settes like ofte. Det naturlige med garn er at det også koster noe: mister du det,
+blir det stående og fiske videre helt av seg selv.
+
+Spillet har allerede `funn-spokelsesgarn.png` med teksten «Fisker videre i årevis om det får
+ligge. Nå gjør det ikke det.» Den lukker seg fint: taper du et garn, kan det dukke opp igjen
+som spøkelsesgarn i en annens teine senere.
+
+Fil: **`garn.png`** (977 tegn)
+
+> Retro video game pixel art style. A single game icon: a **Norwegian gill net piled in a heap, ready to be set**. The bulk is a **loose mound of pale-green netting** — folded, slack and bunched, the mesh reading as soft diagonal lines across the pile, not a flat sheet. Along one edge of the heap runs a **line of small oval floats** half-buried in the folds. Resting on top: **two round orange marker buoys**, one with a short flagpole, a **coil of rope** and a **small lead weight**. One compact heap, wider than tall — the way a net lies on deck before it goes over the side. Palette: pale green net, orange buoys, weathered rope, dark lead. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.

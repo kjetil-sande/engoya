@@ -2270,6 +2270,8 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.traalLast==null)P.traalLast=null;   // {kg, tid} — fangst om bord som ikkje er selt
   if(P.traalKjol==null)P.traalKjol=false;  // kjølerom: reka held seg mykje lenger
   if(P.traalPakk==null)P.traalPakk=false;  // pakkemaskin: esker gir betre pris per kilo
+  if(P.traalDyse==null)P.traalDyse=false;  // dysepropell: mindre diesel per hal
+  if(P.traalTank==null)P.traalTank=false;  // større dieseltank
   if(P.ekkoSvidd==null)P.ekkoSvidd=false;  // lynet tok loddet — Kjell må fikse det
   if(P.traalSvc==null)P.traalSvc=0;        // hal siden båtservice på tråleren
   if(P.traalRiggTs==null)P.traalRiggTs=Date.now();     // sist trålriggen ble overhalt
@@ -4806,7 +4808,7 @@ function openShop(){
       :"Kjells kontakt selger. Skrog og maskin i orden. Båten koster "+TRAAL_BAAT.toLocaleString("nb")
        +" kr — du legger "+TRAAL_PRIS.toLocaleString("nb")+" i egenkapital, og Tråløy Sparebank låner deg resten. "
        +"Du betaler tilbake "+TRAAL_TILBAKE.toLocaleString("nb")+" med "+Math.round(TRAAL_BANKDEL*100)+" % av hvert hal.",
-    TRAAL_PRIS,P.traaler?"Din":false,function(){ P.traaler=true; P.traalDiesel=TRAAL_TANK;
+    TRAAL_PRIS,P.traaler?"Din":false,function(){ P.traaler=true; P.traalDiesel=traalTank();
       P.traalGjeld=TRAAL_TILBAKE; traalKartOpne();
       notice("Reketråleren er din! Full tank på kjøpet — Rekefeltet er åpent 🚢");
       innLegg({type:"prat", fk:"trude",
@@ -4820,9 +4822,9 @@ function openShop(){
           +"Så enkelt er det. Lykke til der ute."});
       setTimeout(function(){ notice("Trude Skutnes har lagt igjen en melding 📨"); }, 900); });
   if(P.traaler) addShop(L,'<img src="spill/assets/bensinpumpe.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⛽ \'" alt=""> Diesel til tråleren',
-    "Bunkring til reketråleren. Tanken tar "+TRAAL_TANK+" — du har "+P.traalDiesel+". Hvert hal bruker "+TRAAL_BRUK+".",
-    TRAAL_DIESEL_PR*Math.max(0,TRAAL_TANK-P.traalDiesel), P.traalDiesel>=TRAAL_TANK,
-    function(){ P.traalDiesel=TRAAL_TANK; notice("Tråleren er bunkret ⛽"); });
+    "Bunkring til reketråleren. Tanken tar "+traalTank()+" — du har "+P.traalDiesel+". Hvert hal bruker "+traalBruk()+".",
+    TRAAL_DIESEL_PR*Math.max(0,traalTank()-P.traalDiesel), P.traalDiesel>=traalTank(),
+    function(){ P.traalDiesel=traalTank(); notice("Tråleren er bunkret ⛽"); });
   addShop(L,'<img src="spill/assets/bensinkanne.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⛽ \'" alt=""> Ekstra bensinkanne',"Reserve på dekk: +4 bensin — to turer ekstra. Kan fylles over full tank.",75,P.fuel>P.fuelMax+4,function(){P.fuel=Math.min(P.fuelMax+8,P.fuel+4);});
   if(P.rod<1) addShop(L,"Stang II","Låser opp mellomdypt vann (50–150 m): torsk, hyse, blåstål.",250,false,function(){P.rod=1;});
   else if(P.rod<2) addShop(L,"Stang III","Grovt djuphavsutstyr — låser opp dypt vann (150–300 m) og storkveita.",7500,false,function(){P.rod=2;});
@@ -4981,6 +4983,14 @@ function openKjell(){
       "Maskin og skrog på tråleren. Under 35 % drikker hun ett ekstra dieselmål per hal. "+pctBar(traalSvcPct())+" Holder i "+TRAAL_SVC_LIV+" hal.",
       Math.max(1500,Math.round(14000*(1-traalSvcPct()/100))), traalSvcPct()>=95, function(){
         P.traalSvc=0; notice("Tråleren er servet — maskina går rundt igjen 🔧"); });
+    addShop(L,'<img src="spill/assets/traal-dysepropell.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🌀 \'" alt=""> Dysepropell',
+      "En ring rundt propellen som samler strålen. Mer skyvekraft ved lav fart og under slep — akkurat det en tråler driver med. Dieselen per hal går fra 2 til 1,5.",
+      64000,P.traalDyse?"Montert":false,function(){P.traalDyse=true;
+        notice("Dysa sitter — hun drar lettere og drikker mindre 🌀");});
+    addShop(L,'<img src="spill/assets/traal-dieseltank.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🛢️ \'" alt=""> Større dieseltank',
+      "Fra 10 til 16 mål i tanken. Ingen effektivisering — bare flere hal før du må inn og bunkre.",
+      27000,P.traalTank?"Montert":false,function(){P.traalTank=true;
+        notice("Den store tanken er inne — nå rekker du lengre ut 🛢️");});
     addShop(L,'<img src="spill/assets/traal-kjol.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'❄️ \'" alt=""> Kjølerom',
       "Reka er god i "+FERSK_TIMAR+" timer uten. Med kjøl holder hun i "+Math.round(FERSK_TIMAR*3.6)
       +" — og da rekker du å vente på et bedre bud i stedet for å ta det første.",
@@ -6085,9 +6095,11 @@ function halFlak(rng, rigg){
 }
 
 function halStart(){
+  // Sett dei her, ikkje berre i tegnhalet. Eit felt som er undefined ein einaste
+  // frame held for å gi NaN vidare i heile kjeda.
   if(P&&P.traaler){                                    // dieselen går uansett hva halet gir
     var slit=(traalSvcPct()<35)?1:0;                   // hakkende maskin drikker mer
-    P.traalDiesel=Math.max(0,P.traalDiesel-TRAAL_BRUK-slit);
+    P.traalDiesel=Math.max(0,P.traalDiesel-traalBruk()-slit);
     P.traalSvc=(P.traalSvc||0)+1; saveAll(); }
   var rng=mulberry32((Date.now()^(Math.random()*1e9))|0), rigg=halRigg(), kap=halKap();
   // Kor mykje reke som står der ute i det heile. Vid spreiing med vilje: eit hal
@@ -6119,7 +6131,7 @@ function halStart(){
       amp:0.020+rng()*0.035, bolg:1.4+rng()*2.2, sp:0.11+rng()*0.20, f:rng()*6.283,
       styrke:0.24+rng()*0.20, raud:0.5+rng()*0.7, fiolett:0.6+rng()*0.8 });
   }
-  HAL={ t:0, lengd:25+rng()*15, flak:halFlak(rng,rigg), rull:0, sjo:0, bob:0, vinsj:rigg.vinsj, rauk:false,
+  HAL={ t:0, lengd:25+rng()*15, flak:halFlak(rng,rigg), rull:0, sjo:0, bob:0, fart:1, hiv:0, vinsj:rigg.vinsj, rauk:false,
         stj:stj, sky:sky, glit:glit, nordlys:nl, natt:natt,
         kap:kap, tak:tak, total:kap*andel, verdi:0, full:false, ferdig:false,
         status:"Trålen er ute. Hiv opp før sekken blir for tung — eller stå på." };
@@ -6149,8 +6161,7 @@ function halAndel(tt){ // kor mykje av totalen som er i sekken ved tida tt
 
 function halSteg(dt){
   if(!HAL||HAL.ferdig)return;
-  HAL.t+=dt; HAL.rull+=dt*118; HAL.bob+=dt*2.6;   // sjøen renn mot venstre; båten er i fart
-  HAL.sjo+=dt*46;   // dønninga si EIGA klokke — ho går vidare sjølv om båten ligg stille
+  HAL.t+=dt;
   var tt=Math.min(1,HAL.t/HAL.lengd);
   var v=HAL.total*halAndel(tt);
   var loft=HAL.kap*HAL.tak;
@@ -6321,6 +6332,18 @@ function halSkimmer(g,W2,H2,wl,mn){
 }
 function tegnHal(dt){
   if(!halCx||!HAL)return;
+  // KLOKKENE HØRER HJEMME HER, ikke i halSteg. halSteg returnerer med én gang halet
+  // er ferdig, og da frøs både båten OG dønninga i samme frame som du hivde — sjøen
+  // ble stående som et fotografi. Nå går dønninga alltid, og båten er det eneste som
+  // stopper: HAL.fart faller mot null etter hivet, så hun sakner av som en båt gjør.
+  // Det er hele kranen: ingen ny grafikk, bare farten som dør og nota som kommer inn.
+  if(HAL.ferdig){ HAL.fart=Math.max(0,(HAL.fart===undefined?1:HAL.fart)-dt*0.42);
+                  HAL.hiv=Math.min(1,(HAL.hiv||0)+dt*0.46); }
+  else HAL.fart=1;
+  HAL.rull+=dt*118*HAL.fart;   // båtens eiga framdrift — ho stoppar når ho stoppar
+  HAL.sjo +=dt*46;             // dønninga går vidare same kva båten gjer
+  var hv=HAL.hiv||0;   // MÅ vere ||0 fyrst: hiv er undefined i fyrste frame, og
+  HAL.bob+=dt*(2.6-1.0*hv*hv);   // undefined*0 er NaN, som forgiftar bob og alle gradientane
   var r=$("#stage").getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
   if(halW!==r.width||halH!==r.height){ halW=r.width; halH=r.height;
     halCv.width=halW*dpr; halCv.height=halH*dpr; halCx.setTransform(dpr,0,0,dpr,0,0); halMaal(); }
@@ -6402,11 +6425,13 @@ function tegnHal(dt){
   (function(){
     var lastN=Math.max(0,Math.min(1,HAL.verdi/HAL.kap));
     var RADER=1;   // frå sida ser du berre den eine telna
-    for(var r=0;r<RADER;r++){
+    for(var r=0;r<RADER;r++)(function(r){
       var dj=0.10+r*0.085;                       // kor langt ute rada ligg
       var yb=wl+(H2-wl)*Math.pow(dj,1.7);        // følgjer same perspektiv som sjøen
       var sz=Math.max(1.6, mn*(0.011-0.0022*r)); // kulene krympar utover
       var x0=akter-mn*0.02, x1=-mn*0.05;
+      x1=x0+(x1-x0)*(1-(HAL.hiv||0));   // hivet dreg den ytste enden heim mot trommelen
+      if(x0-x1<mn*0.01) return;          // heilt inne — då er det ikkje meir not å sjå
       var steg=sz*2.5+mn*0.004*r;
       g.save();
       // grøn duk under kulerada
@@ -6427,14 +6452,14 @@ function tegnHal(dt){
         g.fillStyle="#f7ab6a"; g.beginPath(); g.arc(xb-sz*0.28,yy-sz*0.28,sz*0.42,0,7); g.fill();
       }
       g.restore();
-    }
+    })(r);
     // Trommelen akterut som slepper ut og hiv inn. Ho snur fortare når sekken er tung.
     var tx=akter+mn*0.012, ty=gantry+mn*0.030, tr=mn*0.026;
     g.save();
     g.fillStyle="#5d6a70"; g.beginPath(); g.arc(tx,ty,tr,0,7); g.fill();
     g.strokeStyle="rgba(28,36,40,.85)"; g.lineWidth=1.5; g.stroke();
     g.strokeStyle="rgba(210,225,232,.7)"; g.lineWidth=1.4;
-    for(var e=0;e<4;e++){ var a2=HAL.bob*(0.9+1.4*lastN)+e*1.5708;
+    for(var e=0;e<4;e++){ var a2=HAL.bob*(0.9+1.4*lastN)+(HAL.hiv||0)*9+e*1.5708;
       g.beginPath(); g.moveTo(tx,ty); g.lineTo(tx+Math.cos(a2)*tr*0.8, ty+Math.sin(a2)*tr*0.8); g.stroke(); }
     g.restore();
   })();
@@ -7192,7 +7217,9 @@ function innRydd(){ if(!P||!P.innboks)return; var f=P.innboks.length, no=Date.no
 
 // Kjell held auge med kontoen din utan å seie det. I det du har 200 000 på bok,
 // ringjer han med eit tips — det er slik ting går på ei lita øy.
-var TRAAL_PRIS=200000, TRAAL_TANK=10, TRAAL_DIESEL_PR=900, TRAAL_BRUK=2;
+var TRAAL_PRIS=200000, TRAAL_DIESEL_PR=900;
+function traalTank(){ return (P&&P.traalTank)?16:10; }
+function traalBruk(){ return (P&&P.traalDyse)?1.5:2; }
 // Båten koster 400 000. Du legger 200 000 i egenkapital og låner resten av Tråløy
 // Sparebank. Renta er BAKT INN i stedet for regnet per måned: du låner 200 000 og
 // betaler tilbake 240 000. De 40 000 ER renta, sagt rett ut på forhånd.
@@ -7212,6 +7239,7 @@ var TRAAL_BAAT=400000, TRAAL_LAAN=200000, TRAAL_TILBAKE=240000, TRAAL_BANKDEL=0.
    Tråløy kommune og Saltvær tar alltid en slump til god pris. Det er gulvet:
    du står aldri helt uten oppgjør, uansett hvor lenge du somler.
    ------------------------------------------------------------------- */
+var LAGSAVGIFT=0.035;   // Rusten er det lokale salgslaget
 var LOKAL_KG=25, LOKAL_PRIS=1.45;        // bygda tar 25 kg og betaler godt for fersk
 var FERSK_TIMAR=14;                       // uten kjøl er hun god i fjorten timer
 function traalKjolTimar(){ return P&&P.traalKjol ? FERSK_TIMAR*3.6 : FERSK_TIMAR; }
@@ -7289,17 +7317,21 @@ function traalSelg(kg, prisPrKg, kven){
   if(!P||!P.traalLast)return;
   kg=Math.min(kg, P.traalLast.kg);
   var brutto=Math.round(kg*prisPrKg), tilBank=0;
-  if(P.traalGjeld>0){ tilBank=Math.min(P.traalGjeld, Math.round(brutto*TRAAL_BANKDEL)); P.traalGjeld-=tilBank; }
-  P.kr+=brutto-tilBank;
+  // Rusten tek si lagsavgift fyrst — det er han som gjer opp handelen og garanterer
+  // at du får pengane sjølv om kjøparen ikkje kan betale.
+  var tilRusten=Math.round(brutto*LAGSAVGIFT);
+  var etter=brutto-tilRusten;
+  if(P.traalGjeld>0){ tilBank=Math.min(P.traalGjeld, Math.round(etter*TRAAL_BANKDEL)); P.traalGjeld-=tilBank; }
+  P.kr+=etter-tilBank;
   P.traalLast.kg=Math.round((P.traalLast.kg-kg)*10)/10;
   if(P.traalLast.kg<=0.05) P.traalLast=null;
   if(!Array.isArray(P.invest.kvitt))P.invest.kvitt=[];
   P.invest.kvitt.unshift({id:Date.now()*1000+((Math.random()*1000)|0), fk:"reke", tid:Date.now(),
-    inn:0, ut:brutto-tilBank, bank:tilBank, kg:kg, kjopar:kven});
+    inn:0, ut:etter-tilBank, bank:tilBank, lag:tilRusten, kg:kg, kjopar:kven});
   if(P.invest.kvitt.length>40)P.invest.kvitt.length=40;
   hud(); saveAll();
-  notice("Solgt "+halKg(kg)+" kg til "+kven+" — "+halKr(brutto-tilBank)+" kr"
-    +(tilBank>0?" ("+halKr(tilBank)+" til banken)":"")+" 🦐");
+  notice("Solgt "+halKg(kg)+" kg til "+kven+" — "+halKr(etter-tilBank)+" kr"
+    +(tilBank>0?" ("+halKr(tilBank)+" til banken, ":" (")+halKr(tilRusten)+" i lagsavgift) 🦐");
   if(P.traalGjeld<=0 && !P.traalKvitt) traalGjeldFerdig();
 }
 function traalGjeldFerdig(){
@@ -8281,7 +8313,7 @@ document.querySelectorAll(".mappin").forEach(function(p){ p.onclick=function(){ 
     if(KART.anim){cancelAnimationFrame(KART.anim);KART.anim=0;} modal("mapModal",false);
     setTimeout(function(){ modal("bygdModal",true); },160); return; }
   if(d===9 && P.traaler){ Snd.click();     // Rekefeltet: her går du ikkje med stang
-    if(P.traalDiesel<TRAAL_BRUK){ $("#mapHint").textContent="Tom for diesel — bunkre hos Rusten før du går ut."; return; }
+    if(P.traalDiesel<traalBruk()){ $("#mapHint").textContent="Tom for diesel — bunkre hos Rusten før du går ut."; return; }
     if(KART.anim){cancelAnimationFrame(KART.anim);KART.anim=0;} modal("mapModal",false);
     setTimeout(halOpne,160); return; }
   var f2=KART.felt.find(function(f){return f.d===d}), navn=f2?f2.navn:ZONE[d];
