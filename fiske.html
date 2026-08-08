@@ -942,6 +942,8 @@
         <button class="btn sm" id="potPullH" style="display:none"></button>
         <button class="btn sm" id="potBtnL" style="display:none"></button>
         <button class="btn sm" id="potPullL" style="display:none"></button>
+        <button class="btn sm" id="potBtnG" style="display:none"></button>
+        <button class="btn sm" id="potPullG" style="display:none"></button>
       </div>
       <div class="dekk" id="dekk">
         <button id="openShop" title="Rustens agn &amp; redskap"><img src="spill/assets/knapp-rusten.png" class="di" onerror="this.onerror=null;this.src='spill/assets/portrett-rusten.png'" alt=""><span class="t">Butikk</span><i class="varsel" id="bestVarsel"></i></button>
@@ -2287,6 +2289,7 @@ function chosen(name){P=DB.players[name]; delete P.remote; // en valgt spiller e
   if(P.lures==null)P.lures={blink:3};
   if((P.lures.blink||0)<1)P.lures.blink=1; // blinken er gammel og trofast — du har alltid én
   if(P.rig==="sluk"||!P.rig||( !slukDef[P.rig]&&!agnDef[P.rig] )){ P.rig=(P.lures.blink||0)>0?"blink":(SLUK.filter(function(u){return (P.lures[u.k]||0)>0})[0]||{k:"blink"}).k; }
+  if(P.pots.garnOwned==null)P.pots.garnOwned=0;   // garn (mellomdypt og dypt) — treng ikkje agn
   if(P.pots.lineOwned==null)P.pots.lineOwned=0; if(P.pots.lineAgn==null)P.pots.lineAgn=0; // bunnline på Dypt
   var pp=P.pots; if(pp.owned==null)pp.owned=0; if(pp.bait==null)pp.bait=0; if(pp.cap==null)pp.cap=2; if(!Array.isArray(pp.out))pp.out=[]; if(pp.rescue==null)pp.rescue=false;
   if(P.remote)delete P.remote; // valgt lokalt → lokalt autoritativ (synk fletter monotont, erstatter aldri)
@@ -3895,7 +3898,7 @@ function nightOverlap(a,b){ if(b-a>=24*3600000)return true; // dekker soaket nat
   var h2=new Date(b).getHours(); return h2>=22||h2<6; }
 function potType(t){ return t.t||"k"; } // gamle saves mangler type → krabbeteine
 function freePots(ty){ var out=0; P.pots.out.forEach(function(t){ if(potType(t)===ty)out++; });
-  return (ty==="h"?(P.pots.ownedH||0):ty==="l"?(P.pots.lineOwned||0):(P.pots.owned||0))-out; }
+  return (ty==="h"?(P.pots.ownedH||0):ty==="l"?(P.pots.lineOwned||0):ty==="g"?(P.pots.garnOwned||0):(P.pots.owned||0))-out; }
 function potInZone(z,ty){ ty=ty||"k"; var best=-1, eldst=Infinity; // eldste bruket av typen i sona (trekkes først)
   for(var i=0;i<P.pots.out.length;i++){ var t=P.pots.out[i]; var sa=+t.setAt||0;
     if(t.zone===z&&potType(t)===ty&&sa<eldst){ eldst=sa; best=i; } } return best; }
@@ -3905,14 +3908,17 @@ function setPot(ty){ ty=ty||"k";
   if(ty==="h"&&depth!==0){ notice("Hummeren står på grunt vann ved skjæra — sett den på Grunt 🦞"); return; }
   if(ty==="h"&&!hummerSeason()){ notice("Hummeren er freda nå — sesongen er 1. okt til 31. des 🦞"); return; }
   if(ty==="k"&&depth!==0){ notice("Krabbeteina hører hjemme på grunt vann (0–50 m) 🦀"); return; }
+  if(ty==="g"&&depth!==1&&depth!==2){ notice("Garnet står på mellomdypt eller dypt vann — for grunt går fisken over det, for dypt får du det ikke opp 🥅"); return; }
   if(freePots(ty)<1)return;
   if(ty==="l"){ if((P.pots.lineAgn||0)<1){ notice("Lina mangler agn — kjøp linagn i butikken 🛒"); return; } }
-  else if((P.pots.bait||0)<1){ notice("Teina mangler agn — kjøp teineagn i butikken 🛒"); return; }
-  if(P.fuel<2){ notice("Trenger 2 bensin for å sette "+(ty==="l"?"lina":"teina")+" ⛽"); return; }
-  P.fuel-=2; if(ty==="l")P.pots.lineAgn--; else P.pots.bait--;
+  else if(ty!=="g"&&(P.pots.bait||0)<1){ notice("Teina mangler agn — kjøp teineagn i butikken 🛒"); return; }  // garnet lokkar ikkje, det står i vegen
+  var bens=ty==="g"?3:2;   // garnet er tyngre å setje enn ei teine
+  if(P.fuel<bens){ notice("Trenger "+bens+" bensin for å sette "+(ty==="l"?"lina":ty==="g"?"garnet":"teina")+" ⛽"); return; }
+  P.fuel-=bens; if(ty==="l")P.pots.lineAgn--; else if(ty!=="g")P.pots.bait--;
   P.pots.out.push({zone:depth, setAt:Date.now(), seed:(Math.random()*1e9)|0, t:ty});
   Snd.teinePlask(); hud(); saveAll(); updatePotBtn();
-  notice(ty==="l"?"Bunnlina er satt med agnede kroker! 🪢 La den stå til i morgen — kveita går på om natta."
+  notice(ty==="g"?"Garnet står! 🥅 Det fisker uten agn — men står det for lenge, tar sjøen det."
+        :ty==="l"?"Bunnlina er satt med agnede kroker! 🪢 La den stå til i morgen — kveita går på om natta."
         :ty==="h"?"Hummerteina er satt! 🦞 La den stå over natta — hummeren går i teina i mørket."
                  :"Teina er satt! 🦀 Kom tilbake senere — den fisker best etter noen timer.");
 }
@@ -4171,7 +4177,7 @@ function potOutcomeH(t,soak){ // hummerteine: best med natt (22–06) i soaket; 
   var total=0; lines.forEach(function(l){total+=l.kr});
   return {lines:lines,total:total,early:false,night:night};
 }
-function lineFisk(rng,k){ var f=byKey[k], t=rng(), len=Math.round(f.len[0]+(f.len[1]-f.len[0])*t);
+function lineFisk(rng,k,tMin){ var f=byKey[k], t=tMin?tMin+rng()*(1-tMin):rng(), len=Math.round(f.len[0]+(f.len[1]-f.len[0])*t);
   var wt=+((Math.pow(len/100,3)*f.kg*(0.9+rng()*0.3))).toFixed(1); if(wt<0.1)wt=0.1; if(f.trophy&&wt>40)wt=+(38+rng()*2).toFixed(1);
   var vern=fredetNaa(f), umaal=underMaal(f,len);        // lova gjelder uansett redskap
   var kr=(vern||umaal)?0:Math.max(1,Math.round(f.pris*(0.6+0.9*t)*artPris(f)));
@@ -4206,15 +4212,46 @@ function lineOutcome(t,soak){ // bunnline: kveitesjansen er BETRAKTELIG større 
   var total=0; lines.forEach(function(l){total+=l.kr});
   return {lines:lines,total:total,early:false};
 }
+function garnOutcome(t,soak){
+  // Garnet fiskar UTAN AGN. Ingenting lokkar; fisken som svømmer forbi set seg fast
+  // i maska. Difor er fangsten heilt ulik lina si:
+  //   · lina gir VARIASJON — éin fisk per krok, tolv artar i potten
+  //   · garnet gir STIM — står det rett når silda eller seien går, tek du fem av same
+  //     art i eitt trekk, og går det feil dag heng det tomt
+  //   · garnet tek STOR fisk, for dei små går rett gjennom maska (tMin under)
+  var rng=mulberry32(t.seed^((soak/60000)|0)), q=Math.max(0,Math.min(1,soak/(8*3600000))), lines=[];
+  if(soak<20*60000) return {lines:[],total:0,early:true};
+  var z=t.zone||0, POOL = z>=2
+    ? ["torsk","brosme","lange","uer","steinbit","blaalange","breiflabb"]
+    : ["sei","sei","torsk","hyse","lyr","steinbit","lysing","breiflabb"];
+  // Eit garn som står for lenge blir eit problem for seg sjølv. Risikoen startar
+  // lågt og veks etter seksten timar — same forma som lina har.
+  var risiko=0.05+Math.min(0.12, Math.max(0,(soak-16*3600000)/(30*3600000))*0.12);
+  var u=rng();
+  if(u<risiko) return {lines:[], total:0, early:false, tapt:(u<risiko*0.42?"drift":"rift")};
+  // Talet er tunt med vilje. Garnet skal liggje MELLOM teina og bunnlina i stigen,
+  // og lina krev Stang III til 7500 — garnet berre Stang II til 250. Fyrste utgåva
+  // gav 1727 kr per trekk mot lina sine 1227 på same dyp, altså meir betalt for ein
+  // tridjedel av investeringa. Då er det ingen grunn til å klatre vidare.
+  var stim=POOL[(rng()*POOL.length)|0], n=Math.round(q*(0.5+rng()*2.1));
+  for(var i=0;i<n;i++) lines.push(lineFisk(rng,stim,0.38));      // stimen — same art om att
+  var m=Math.floor(q*rng()*1.7);
+  for(var j=0;j<m;j++) lines.push(lineFisk(rng,POOL[(rng()*POOL.length)|0],0.38));  // streifarar
+  if(rng()<0.12) lines.push(potBycatch(rng,z));
+  if(!lines.length) lines.push({e:"\ud83e\udd45",n:"Garnet kom opp slik det gikk ned — ikke en maske rørt",kr:0});
+  var total=0; lines.forEach(function(l){total+=l.kr});
+  return {lines:lines,total:total,early:false};
+}
 function pullPot(ty){ ty=ty||"k";
   var idx=potInZone(depth,ty); if(idx<0||!P)return;
   var t=P.pots.out[idx], now=Date.now(), soak=Math.max(0, now-t.setAt);
   if(soak<20*60000){ // for tidlig: agnet urørt, bruket ombord uten tap
-    P.pots.out.splice(idx,1); if(ty==="l")P.pots.lineAgn++; else P.pots.bait++; saveAll(); updatePotBtn();
-    notice((ty==="l"?"Lina":"Teina")+" har bare stått i "+fmtSoak(soak)+" — agnet var urørt, du tok den ombord."); return;
+    P.pots.out.splice(idx,1); if(ty==="l")P.pots.lineAgn++; else if(ty!=="g")P.pots.bait++; saveAll(); updatePotBtn();
+    notice(ty==="g" ? "Garnet har bare stått i "+fmtSoak(soak)+" — du tok det ombord igjen."
+      : (ty==="l"?"Lina":"Teina")+" har bare stått i "+fmtSoak(soak)+" — agnet var urørt, du tok den ombord."); return;
   }
-  var res=(ty==="l"?lineOutcome(t,soak):ty==="h"?potOutcomeH(t,soak):potOutcome(t,soak)), extra="";
-  var brNavn = ty==="l"?"Lina":ty==="h"?"Hummerteina":"Teina";
+  var res=(ty==="l"?lineOutcome(t,soak):ty==="h"?potOutcomeH(t,soak):ty==="g"?garnOutcome(t,soak):potOutcome(t,soak)), extra="";
+  var brNavn = ty==="l"?"Lina":ty==="h"?"Hummerteina":ty==="g"?"Garnet":"Teina";
   if(soak>72*3600000){ // slitt seg (3+ døgn) — Rusten berger den (aldri permanent tap)
     res={lines:[],total:0,early:false};
     if(!P.pots.rescue){ P.pots.rescue=true; extra=brNavn+" hadde slitt seg! Rusten berget den for deg — gratis denne gangen. ⚓"; }
@@ -4225,7 +4262,7 @@ function pullPot(ty){ ty=ty||"k";
   // ALLE bruk fører fangst i boka, ikke bare bunnlina. Vakta «if(ty==="l")» ble skrevet
   // da lina var eneste fiskekilde; småfisken i teina kom til tre dager senere og havnet
   // bak en typevakt ingen utvidet. Krabber og funn har ingen fk og faller ut av seg selv.
-  var brRedskap=ty==="l"?"Bunnline":(ty==="h"?"Hummerteine":"Krabbeteine");
+  var brRedskap=ty==="l"?"Bunnline":ty==="h"?"Hummerteine":ty==="g"?"Garn":"Krabbeteine";
   res.lines.forEach(function(l){ if(!l.fk)return; // fisk føres i fangstboka med rekord-sporing
     var rec=P.caught[l.fk]; if(!rec)rec=P.caught[l.fk]={count:0,bestLen:0,bestWt:0};
     rec.count++; if(l.len>rec.bestLen){rec.bestLen=l.len; rec.redskap=brRedskap; rec.rts=Date.now();} if(l.wt>(rec.bestWt||0))rec.bestWt=l.wt;
@@ -4246,7 +4283,7 @@ function pullPot(ty){ ty=ty||"k";
   if(fikkKveite){ Snd.trophy(); notice("STORKVEITA GIKK PÅ LINA! 🏆"); dogShow(0,7); Snd.gladDog(); }
   else if(res.lines.some(function(l){return l.fk==="haakjerring"})){ Snd.trophy(); notice("HÅKJERRINGA GIKK PÅ LINA! 🦈 Havets eldste!"); dogShow(0,7); Snd.gladDog(); setTimeout(Snd.fiskerImponert,500); }
   if(res.lines.length)setTimeout(streakTikk,0); // etter at trekk-boksen er åpnet
-  $("#potTitle").textContent = ty==="l"?"Linetrekk":ty==="h"?"Hummerteinetrekk":"Teinetrekk";
+  $("#potTitle").textContent = ty==="l"?"Linetrekk":ty==="h"?"Hummerteinetrekk":ty==="g"?"Garntrekk":"Teinetrekk";
   // Trekkjer du teiner midt på natta, har Rusten ein kommentar. Han har stått der sjølv.
   var klNo=new Date().getHours();
   if(klNo>=1&&klNo<5&&res.lines.length) setTimeout(function(){
@@ -4255,7 +4292,12 @@ function pullPot(ty){ ty=ty||"k";
                 "Du og krabben er dei einaste som er oppe no."][(Math.random()*3)|0]+"» — Rusten"); }, 2200);
   var L=$("#potList"); L.innerHTML="";
   if(!res.lines.length){
-    var tomMsg = ty==="l" ? (res.tapt==="raid"
+    var tomMsg = ty==="g" ? (res.tapt==="rift"
+        ? "Garnet kom opp med en rift på langs. Noe stort har gått gjennom det og tatt med seg det som hang der — du har bøtt verre."
+        : res.tapt==="drift"
+        ? "Blåsene lå ikke der du satte dem. Garnet hadde tørna og lå sammenfiltret på bunnen — du fikk det opp, men tomt."
+        : "Tomt garn. Fisken gikk en annen vei i natt.")
+                 : ty==="l" ? (res.tapt==="raid"
         ? "Krokene henger tomme og agnet er borte. Blåsa hadde flyttet seg noen meter, og tauet lå feil vei i sjøen — noen har vært her før deg og tatt fangsten."
         : res.tapt==="drift"
         ? "Lina lå ikke der du satte den. Du fant blåsa drivende et godt stykke unna, og krokene var reine — strømmen har tatt henne, og fangsten med."
@@ -4347,12 +4389,12 @@ function pullPot(ty){ ty=ty||"k";
 }
 function potSetState(b,ty){ // Sett-knapp: vises når du har ledig bruk og er i riktig sone
   if(!b)return;
-  var emo=ty==="h"?"🦞":ty==="l"?"🪢":"🦀", settNavn=ty==="h"?"hummerteine":ty==="l"?"bunnline":"teine";
-  var canZone = ty==="h" ? (depth===0&&hummerSeason()) : ty==="l" ? true : depth===0; // line på alle dyp; krabbeteine kun grunt
-  var harAgn = ty==="l" ? (P.pots.lineAgn||0)>0 : (P.pots.bait||0)>0;
+  var emo=ty==="h"?"🦞":ty==="l"?"🪢":ty==="g"?"🥅":"🦀", settNavn=ty==="h"?"hummerteine":ty==="l"?"bunnline":ty==="g"?"garn":"teine";
+  var canZone = ty==="h" ? (depth===0&&hummerSeason()) : ty==="l" ? true : ty==="g" ? (depth===1||depth===2) : depth===0; // line på alle dyp; garn mellomdypt og dypt; krabbeteine kun grunt
+  var harAgn = ty==="g" ? true : ty==="l" ? (P.pots.lineAgn||0)>0 : (P.pots.bait||0)>0;   // garnet treng ikkje agn
   var fri=freePots(ty);
   if(fri>0&&canZone){
-    b.textContent = harAgn ? emo+" Sett"+(fri>1?" · "+fri:"") : emo+" Sett — mangler agn";
+    b.textContent = harAgn ? "Sett"+(fri>1?" · "+fri:"")+" "+emo : "Sett — mangler agn "+emo;
     b.title = harAgn ? "Sett "+settNavn+(fri>1?" ("+fri+" igjen)":"")+" · koster 1 agn + 2 ⛽" : "Du har ikke agn til "+settNavn;
     b.style.display="inline-block"; return; }
   b.style.display="none";
@@ -4362,17 +4404,18 @@ function potPullState(b,ty,ready){ // Trekk-knapp: vises når noe står ute i so
   var n=potsInZone(depth,ty);
   if(n<1){ b.style.display="none"; return; }
   var idx=potInZone(depth,ty), soak=Math.max(0,Date.now()-P.pots.out[idx].setAt);
-  var emo=ty==="h"?"🦞":ty==="l"?"🪢":"🦀", nm=ty==="h"?"hummerteine":ty==="l"?"bunnline":"teine";
-  b.textContent=emo+" Trekk"+(n>1?" · "+n:"")+" · "+fmtSoak(soak)+(soak>=ready?" ✓":"");
+  var emo=ty==="h"?"🦞":ty==="l"?"🪢":ty==="g"?"🥅":"🦀", nm=ty==="h"?"hummerteine":ty==="l"?"bunnline":ty==="g"?"garn":"teine";
+  b.textContent="Trekk"+(n>1?" · "+n:"")+" · "+fmtSoak(soak)+(soak>=ready?" ✓":"")+" "+emo;
   b.title="Trekk "+nm+(n>1?" ("+n+" ute)":"")+" — har stått "+fmtSoak(soak)+(soak>=ready?", klar":", ikke klar ennå");
   b.style.display="inline-block";
 }
 function updatePotBtn(){
-  var alle=["#potBtn","#potPull","#potBtnH","#potPullH","#potBtnL","#potPullL"].map(function(id){return $(id)});
+  var alle=["#potBtn","#potPull","#potBtnH","#potPullH","#potBtnL","#potPullL","#potBtnG","#potPullG"].map(function(id){return $(id)});
   if(!P||!P.pots||!$("#sea").classList.contains("on")||phase!=="idle"){ alle.forEach(function(b){if(b)b.style.display="none"}); return; }
   potSetState($("#potBtn"),"k");   potPullState($("#potPull"),"k",3*3600000);
   potSetState($("#potBtnH"),"h");  potPullState($("#potPullH"),"h",8*3600000);
   potSetState($("#potBtnL"),"l");  potPullState($("#potPullL"),"l",10*3600000);
+  potSetState($("#potBtnG"),"g");  potPullState($("#potPullG"),"g",8*3600000);
 }
 setInterval(updatePotBtn,15000);
 // Turen går i ekte tid. Vi sjekkar om han er tilbake, og om nokon vil spørje deg om noko.
@@ -4839,6 +4882,11 @@ function openShop(){
     (P.pots.owned||0)>0?null:"Krever krabbeteine");
   // Bunnlina i TO faste rader — før forvandlet raden seg til «nummer to» når du eide én,
   // og eieren fant ikke igjen den første. Nå står begge alltid, med krav-tekst.
+  addShop(L,'<img src="spill/assets/garn.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🥅 \'" alt=""> Garn',
+    "Settes på mellomdypt eller dypt vann og står uten agn — fisken går i maska av seg selv. Tar stim: flere av samme art i ett trekk, og bare den store, for de små går rett gjennom. Har "+(P.pots.garnOwned||0)+" (maks 2).",
+    1400,(P.pots.garnOwned||0)>=2,function(){P.pots.garnOwned=(P.pots.garnOwned||0)+1;
+      notice("Garnet ligger på dekk. Det trenger ikke agn — bare å sette det der fisken går.");},
+    P.rod>=1?null:"Krever "+RODS[1].n);
   addShop(L,'<img src="spill/assets/fiskesnore.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'🪢 \'" alt=""> Bunnline',
     "Settes ut på valgfritt dyp og står natta over — fangsten følger dypet, og kveita kan gå på. Har "+(P.pots.lineOwned||0)+".",
     800,(P.pots.lineOwned||0)>=1?"Kjøpt":false,function(){P.pots.lineOwned=Math.max(1,P.pots.lineOwned||0);},
@@ -8401,7 +8449,9 @@ $("#potPull").onclick=function(){ if(phase!=="idle")return; Snd.click(); pullPot
 $("#potBtnH").onclick=function(){ if(phase!=="idle")return; Snd.click(); setPot("h"); };
 $("#potPullH").onclick=function(){ if(phase!=="idle")return; Snd.click(); pullPot("h"); };
 $("#potBtnL").onclick=function(){ if(phase!=="idle")return; Snd.click(); setPot("l"); };
+$("#potBtnG").onclick=function(){ if(phase!=="idle")return; Snd.click(); setPot("g"); };
 $("#potPullL").onclick=function(){ if(phase!=="idle")return; Snd.click(); pullPot("l"); };
+$("#potPullG").onclick=function(){ if(phase!=="idle")return; Snd.click(); pullPot("g"); };
 $("#potTake").onclick=function(){ modal("potModal",false); updatePotBtn(); };
 // hold-to-reel
 var ab=$("#actionBtn");

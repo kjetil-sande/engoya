@@ -351,15 +351,31 @@ Fil: **`traal-dieseltank.png`** (823 tegn)
 Et tredje passivt redskap ved siden av teiner og bunnline. Garnet står som en vegg i sjøen
 og fisker mens du er borte.
 
-**Slik det bør virke i spillet:** settes på mellomdypt eller dypt vann, tar helt andre arter
-enn stanga — sei, torsk, steinbit, breiflabb — og gir flere fisk per trekk enn teina, men
-kan ikke settes like ofte. Det naturlige med garn er at det også koster noe: mister du det,
-blir det stående og fiske videre helt av seg selv.
+**Slik det virker (bygd 8. august):** 1 400 kr hos Rusten, krever Stang II, maks to garn.
+Settes på mellomdypt eller dypt vann og koster 3 bensin — ett mer enn teina, for det er
+tyngre å setje. Klart etter åtte timer.
 
-Spillet har allerede `funn-spokelsesgarn.png` med teksten «Fisker videre i årevis om det får
-ligge. Nå gjør det ikke det.» Den lukker seg fint: taper du et garn, kan det dukke opp igjen
-som spøkelsesgarn i en annens teine senere.
+Det som skiller garnet fra de andre bruka er at **det ikke bruker agn**. Ingenting lokker;
+fisken som svømmer forbi setter seg fast i maska. To ting følger av det:
 
-Fil: **`garn.png`** (977 tegn)
+- **Garnet tar stim.** Ett trekk gir gjerne flere av samme art — opptil fire. Lina gir det
+  motsatte: én fisk per krok, tolv arter i potten.
+- **Garnet tar stor fisk.** De små går rett gjennom maska, så lengdene ligger høyt.
 
-> Retro video game pixel art style. A single game icon: a **Norwegian gill net piled in a heap, ready to be set**. The bulk is a **loose mound of pale-green netting** — folded, slack and bunched, the mesh reading as soft diagonal lines across the pile, not a flat sheet. Along one edge of the heap runs a **line of small oval floats** half-buried in the folds. Resting on top: **two round orange marker buoys**, one with a short flagpole, a **coil of rope** and a **small lead weight**. One compact heap, wider than tall — the way a net lies on deck before it goes over the side. Palette: pale green net, orange buoys, weathered rope, dark lead. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+I stigen ligger garnet mellom teina og bunnlina: 974 kr i snitt per trekk på mellomdypt,
+mot krabbeteinas 47 og bunnlinas 1 211 på samme dyp. Første utgave ga 1 727 og var altså
+bedre betalt enn lina — som krever Stang III til 7 500 — for en tredjedel av investeringa.
+Da er det ingen grunn til å klatre videre, og fangsten ble skrudd ned.
+
+Står garnet for lenge, kan sjøen ta det: rift på langs, eller sammenfiltret på bunnen.
+Fangsten ryker, garnet berges. Spillet har allerede `funn-spokelsesgarn.png` med teksten
+«Fisker videre i årevis om det får ligge. Nå gjør det ikke det.» Den lukker seg fint om vi
+senere lar et tapt garn dukke opp igjen i en annens teine.
+
+Fil: **`garn.png`** (1020 tegn)
+
+Fyrste forsøk gav ein duk lagt over ei kasse. «Folded», «drape» og «mesh across the pile»
+peikar alle mot tekstil, og då teiknar modellen stoff med fall. Denne skildrar TAU — lykkjer,
+kveilar og floker — og seier rett ut kva ho ikkje skal vere.
+
+> Retro video game pixel art style. A single game icon: a **loose tangled pile of fishing net**, built from **many visible loops, coils and tangles of thin pale-green cord**. Heaped into an irregular lumpy mound: **bumpy uneven outline, no flat top, no straight edges** — slumped like rope dumped on deck, wider than tall. A **line of small oval floats** snakes through the coils. On top: **two round orange marker buoys**, one with a short flagpole, a **coil of brown rope** and a **small dark lead weight**. NOT cloth, NOT a sheet draped over anything — no box, no table, no hanging folds, no drapery. Only loose cord in a heap. Palette: pale green cord, orange buoys, brown rope, lead. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
