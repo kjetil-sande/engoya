@@ -4981,6 +4981,15 @@ function openKjell(){
       "Maskin og skrog på tråleren. Under 35 % drikker hun ett ekstra dieselmål per hal. "+pctBar(traalSvcPct())+" Holder i "+TRAAL_SVC_LIV+" hal.",
       Math.max(1500,Math.round(14000*(1-traalSvcPct()/100))), traalSvcPct()>=95, function(){
         P.traalSvc=0; notice("Tråleren er servet — maskina går rundt igjen 🔧"); });
+    addShop(L,'<img src="spill/assets/traal-kjol.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'❄️ \'" alt=""> Kjølerom',
+      "Reka er god i "+FERSK_TIMAR+" timer uten. Med kjøl holder hun i "+Math.round(FERSK_TIMAR*3.6)
+      +" — og da rekker du å vente på et bedre bud i stedet for å ta det første.",
+      42000,P.traalKjol?"Montert":false,function(){P.traalKjol=true;
+        notice("Kjølerommet går — nå har du tid til å lete etter riktig kjøper ❄️");});
+    addShop(L,'<img src="spill/assets/traal-pakkemaskin.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'📦 \'" alt=""> Pakkemaskin',
+      "Reke i eske er en annen vare enn reke i kar. 18 % bedre pris per kilo hos alle kjøpere, hver eneste gang.",
+      58000,P.traalPakk?"Montert":false,function(){P.traalPakk=true;
+        notice("Pakkemaskina står — fangsten går i esker fra nå 📦");});
     addShop(L,'<img src="spill/assets/traal-kraftblokk.png" class="shoplogo" style="image-rendering:pixelated" onerror="this.outerHTML=\'⚙️ \'" alt=""> Kraftblokk og vinsj',
       "Uten den klarer dere ikke hive en helt full sekk — taket ligger på 85 % av kapasiteten. Med den tar du opp alt som kommer.",
       70000,P.traalVinsj?"Montert":false,function(){P.traalVinsj=true; notice("Kraftblokka er på plass — nå tar dere opp alt ⚙️");});
@@ -7226,7 +7235,20 @@ var KJOPARAR=[
   ord:"Jeg betaler godt, men bare for det som er ferskt. Er den gammel, går jeg."},
  {k:"torget", n:"Torghandel", b:"Du selger selv fra kaia", img:"ikon-torghandel.png",
   lav:0.95, hoy:1.60,
-  ord:"Du står der selv en dag og selger. Tar tid, men folk betaler for fersk reke."}
+  ord:"Du står der selv en dag og selger. Tar tid, men folk betaler for fersk reke."},
+ // Sigrun går ei rute og er ikkje innom kvar dag — difor sjeldnare enn dei andre.
+ {k:"bilen", n:"Sigrun Bertheussen", b:"Bertheussen Transport", img:"portrett-sigrun.png",
+  lav:0.74, hoy:0.96, alt:true, sjelden:0.55,
+  ord:"Jeg er på ruta og har plass. Tar hele lasset hvis du vil bli kvitt det nå."},
+ // Odd-Hugo bryr seg ikkje om friskheita. Han er redninga når reka er for gammal for
+ // alle andre — og prisen hans seier akkurat kor lite han bryr seg.
+ {k:"eksport", n:"Odd-Hugo Strand", b:"Eksport, etter vekt", img:"portrett-oddhugo.png",
+  lav:0.40, hoy:0.52, alt:true, uansett:true,
+  ord:"Jeg kjøper på vekt. Kvaliteten er ikke mitt bord. Prisen er den samme i dag som i går."},
+ // Gunvor tek lite og betaler godt. Det vesle, gode salet.
+ {k:"gunvor", n:"Gunvor på Nedre kai", b:"Kjøper for hele gata", img:"portrett-gunvor.png",
+  lav:1.20, hoy:1.55, maks:22, sjelden:0.35,
+  ord:"Jeg tar tjue kilo til meg og naboene. Og du — hvordan går det hjemme?"}
 ];
 function traalBod(){
   if(!P||!P.traalLast||P.traalLast.kg<=0)return [];
@@ -7234,10 +7256,15 @@ function traalBod(){
   var fr=traalFriskhet(), pf=traalPrisFaktor(), ut=[];
   KJOPARAR.forEach(function(kj,i){
     var rng=mulberry32(((nokkel*31+i*7919)^0x1f2e3d)|0);
-    if(!kj.alt && rng()<0.30) return;                       // ikkje alle er på marknaden kvar time
+    var terskel=(kj.sjelden!=null)?kj.sjelden:(kj.alt?0:0.30);
+    if(rng()<terskel) return;                               // ikkje alle er på marknaden kvar time
     if(kj.k==="restaurant" && fr<0.62) return;              // ho tek ikkje gammal reke
-    var pris=Math.round(REKE_PRIS*(kj.lav+rng()*(kj.hoy-kj.lav))*pf);
-    var kg=kj.alt ? P.traalLast.kg : Math.min(P.traalLast.kg, Math.round(40+rng()*180));
+    // Odd-Hugo kjøper på vekt og bryr seg ikkje om kvalitet — prisen hans står stille
+    // uansett kor lenge reka har lege. Difor er han redninga når alt anna er tapt.
+    var pf2=kj.uansett ? (P&&P.traalPakk?1.18:1) : pf;
+    var pris=Math.round(REKE_PRIS*(kj.lav+rng()*(kj.hoy-kj.lav))*pf2);
+    var kg=kj.alt ? P.traalLast.kg
+         : Math.min(P.traalLast.kg, kj.maks || Math.round(40+rng()*180));
     ut.push({k:kj.k, n:kj.n, b:kj.b, img:kj.img, ord:kj.ord, pris:pris,
              kg:Math.round(kg*10)/10, alt:!!kj.alt});
   });

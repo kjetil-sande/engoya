@@ -271,3 +271,54 @@ ikke et portrett — magenta bakgrunn som skal nøkles bort.
 Fil: **`ikon-torghandel.png`** (794 tegn)
 
 > Retro video game pixel art style. A single game icon: a **market table on a Norwegian quay**, seen from the side. A simple folding trestle table under a **blue-and-white striped awning**, a **brass hanging scale** on a hook at one end, and two open polystyrene boxes of cooked pink shrimp on crushed ice. A stack of paper bags and a small blank price sign leaning against the table leg. A single herring gull perched on the awning frame, waiting. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no lettering, no drop shadow.
+
+### 18e. Sigrun Bertheussen — Bertheussen Transport
+
+Kjører kysten opp og ned og stopper der det er noe å hente. Tar alt, midt på treet i pris —
+men hun er ikke innom hver dag. Er hun der, er hun et godt alternativ til Roar.
+
+Fil: **`portrett-sigrun.png`** (753 tegn)
+
+> 16-bit pixel art character portrait, head and shoulders, facing slightly left. A **Norwegian woman of about fifty** who drives the fish lorry up and down the coast. Short practical grey-brown hair, weathered face, deep smile lines, a small silver hoop in one ear. She wears a **high-visibility yellow work jacket open over a hoodie**, collar turned up, and a pair of sunglasses pushed up on her head. **Mid-laugh, head tilted back slightly** — she has been driving since four in the morning and is in a very good mood about it. Palette: hi-vis yellow, grey hoodie, warm weathered skin, chrome. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette. Fully transparent background. No text, no frame, no logo.
+
+### 18f. Odd-Hugo Strand — eksportagent
+
+Kjøper etter vekt og bryr seg ikke om friskhet. Lavest pris av alle, men han tar absolutt
+alt, alltid. Den siste utveien når reka er i ferd med å bli for gammel.
+
+Fil: **`portrett-oddhugo.png`** (762 tegn)
+
+> 16-bit pixel art character portrait, head and shoulders, facing slightly left. A **Norwegian man of about forty**, an export agent who buys by the tonne. Neat dark hair, clean-shaven, narrow rimless glasses. He wears a **soft grey technical jacket over a shirt with no tie**, everything new and unmarked by work. He holds a **tablet flat against his chest** and looks over the top of it, **polite and completely unhurried** — the face of a man who already knows what he will pay and is waiting for you to arrive at the same number. Cool clean palette: pale grey, white, a little navy, no wear anywhere. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette. Fully transparent background. No text, no frame, no logo.
+
+### 18g. Gunvor på Nedre kai — kjøper for hele gata
+
+Vil ha tjue kilo og betaler i overkant av det andre gjør, fordi hun deler på naboene og
+ingen av dem har vondt av det. Lite volum, høy pris, og hun spør alltid hvordan det går
+hjemme.
+
+Fil: **`portrett-gunvor.png`** (762 tegn)
+
+> 16-bit pixel art character portrait, head and shoulders, facing slightly left. A **Norwegian woman of about seventy-five** who buys shrimp for the whole street. Short permed white hair, glasses on a beaded chain, a small gold brooch at her throat. She wears a **hand-knitted cardigan in soft heather over a floral blouse**, buttoned all the way up. Deep laughter lines and a **warm, slightly conspiratorial smile** — she is about to tell you what the neighbours paid last week. She holds a **worn oilcloth shopping bag** against her front. Warm domestic palette: heather wool, cream, faded rose, brass. Strict pixel grid, hard-edged pixels, no anti-aliasing, ordered dithering, limited 24-colour palette. Fully transparent background. No text, no frame, no logo.
+
+---
+
+## 19. Utstyr til tråleren
+
+To oppgraderinger som henger sammen med salget: den ene gir deg tid, den andre pris.
+
+### 19a. Kjølerom
+
+Reka er god i fjorten timer uten. Med kjøl holder hun i femti, og da rekker du å vente på
+Berit i stedet for å ta det første budet.
+
+Fil: **`traal-kjol.png`** (845 tegn)
+
+> Retro video game pixel art style. A single game icon: a **refrigerated hold unit for a small fishing boat** — a squat stainless steel cabinet with a heavy insulated door, a chunky lever handle, and a round temperature dial with the needle sitting low in the blue. **Cold vapour spills from the seam** at the bottom of the door and pools around the base. A thin rime of frost along the upper edge, and two coiled black hoses running out of the back. Cold palette: steel, pale ice blue, white frost, black rubber. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
+
+### 19b. Pakkemaskin
+
+Reke i eske er en annen vare enn reke i kar. Gir 18 prosent bedre pris per kilo hos alle.
+
+Fil: **`traal-pakkemaskin.png`** (840 tegn)
+
+> Retro video game pixel art style. A single game icon: a **small packing machine for a fishing boat** — a compact stainless steel bench unit with a hinged press lid raised, a roll of clear film on a spindle above it, and a short conveyor of rollers leading out to the right. On the conveyor sits **one finished white polystyrene box, sealed and ready to stack**, with a plain blank label patch on the end. Practical, oily, well used. Palette: brushed steel, white polystyrene, black rollers, a little brass. Chunky and readable at small size: few large details, thick clean pixel outlines, slight warm shading. Centred, filling most of the frame. The entire background is flat solid magenta, one single colour, completely empty; nothing touches the image edge. Strict pixel grid, hard-edged pixels, no anti-aliasing, no text, no drop shadow.
