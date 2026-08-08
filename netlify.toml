@@ -5,21 +5,25 @@
   # Ren statisk side: ingen byggekommando, publiser repo-rota
   publish = "."
 
-# Spillet ER nettstedet — rota går rett til det. fiske.html beholder navnet sitt
-# fordi hjemskjerm-installasjoner, manifestet og overleveringssiden på engoya.no
-# alle peker dit.
-[[redirects]]
-  from = "/"
-  to = "/fiske.html"
-  status = 301
-
-# Spillet er ÅPENT for søkemotorer fra 8. august. Den site-wide noindex-en som sto
-# her fra lanseringen i august er fjernet på eierens beskjed.
+# Rota var lenge en 301 rett inn i spillet. Nå ligger det en forside der i stedet,
+# med tekst søkemotorer og AI-søk kan lese — et canvas-spill gir dem ingenting.
 #
-# MERK at den dekket ALT, også kontrollpanelet. Derfor står panelet nå med sin egen
-# regel under — det skal aldri indekseres, uansett hva resten av siden gjør. Panelet
-# er også låst bak Google-innlogging og har en meta-tag i seg selv, men en header er
-# det eneste som holder en crawler unna før den i det hele tatt laster siden.
+# fiske.html beholder navnet sitt, og INGEN som har spillet fra før merker noe:
+# hjemskjerm-installasjoner, manifestet og overleveringssiden på engoya.no peker
+# alle rett dit. Det eneste som endrer seg er at den som skriver bare domenet får
+# forsiden, med ett trykk inn i spillet.
+
+# Skjult for søkemotorer inntil videre. Den ble kort fjernet 8. august og satt
+# tilbake samme dag: eieren vil ha tråleren og økonomien ferdig testet, og forsiden
+# på plass, før noen kan finne spillet. Fjernes den dagen eieren sier fra.
+#
+# MERK: dette dekker ALT, også kontrollpanelet. Panelet har i tillegg sin egen regel
+# lenger nede, så det blir stående skjult den dagen denne blir borte.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
 [[headers]]
   for = "/kontrollpanel.html"
   [headers.values]

@@ -7215,13 +7215,17 @@ function traalPrisFaktor(){ return traalFriskhet()*(P&&P.traalPakk?1.18:1); }
 // Kjøperne. Bud trekkes av DATOEN og time — samme for hele familien, og de
 // skifter gjennom dagen, så det å vente faktisk kan lønne seg.
 var KJOPARAR=[
- {k:"storaktor", n:"Nordvik Sjømat", b:"Storhandel i Storhamn", lav:0.52, hoy:0.72, alt:true,
+ {k:"storaktor", n:"Roar Nordvik", b:"Nordvik Sjømat, Storhamn", img:"portrett-roar.png",
+  lav:0.52, hoy:0.72, alt:true,
   ord:"Vi tar hele lasset på flekken. Ikke den beste prisen du får i dag, men den sikreste."},
- {k:"fiskemottak", n:"Saltvær Fiskemottak", b:"På kaia", lav:0.80, hoy:1.00,
+ {k:"fiskemottak", n:"Line Kvandal", b:"Saltvær Fiskemottak", img:"portrett-line.png",
+  lav:0.80, hoy:1.00,
   ord:"Vi tar det vi har plass til. Grei pris, og du slipper å kjøre."},
- {k:"restaurant", n:"Kokk Berit Hauan", b:"Restaurant i Tråløy", lav:1.05, hoy:1.45,
+ {k:"restaurant", n:"Berit Hauan", b:"Kokk i Tråløy", img:"portrett-berit.png",
+  lav:1.05, hoy:1.45,
   ord:"Jeg betaler godt, men bare for det som er ferskt. Er den gammel, går jeg."},
- {k:"torget", n:"Torghandel", b:"Selg selv fra kaia", lav:0.95, hoy:1.60,
+ {k:"torget", n:"Torghandel", b:"Du selger selv fra kaia", img:"ikon-torghandel.png",
+  lav:0.95, hoy:1.60,
   ord:"Du står der selv en dag og selger. Tar tid, men folk betaler for fersk reke."}
 ];
 function traalBod(){
@@ -7234,7 +7238,8 @@ function traalBod(){
     if(kj.k==="restaurant" && fr<0.62) return;              // ho tek ikkje gammal reke
     var pris=Math.round(REKE_PRIS*(kj.lav+rng()*(kj.hoy-kj.lav))*pf);
     var kg=kj.alt ? P.traalLast.kg : Math.min(P.traalLast.kg, Math.round(40+rng()*180));
-    ut.push({k:kj.k, n:kj.n, b:kj.b, ord:kj.ord, pris:pris, kg:Math.round(kg*10)/10, alt:!!kj.alt});
+    ut.push({k:kj.k, n:kj.n, b:kj.b, img:kj.img, ord:kj.ord, pris:pris,
+             kg:Math.round(kg*10)/10, alt:!!kj.alt});
   });
   return ut;
 }
@@ -7561,11 +7566,40 @@ function visTraalApp(){ investInit();
     +'<img src="spill/assets/traaler-reke.png" alt="" onerror="this.style.display=\'none\'"'
     +' style="width:100%;height:auto;image-rendering:pixelated;display:block;padding:8px 12px 0">';
   var iv=P.invest, noe=false;
+  if(P.traalLast && P.traalLast.kg>0){ noe=true;
+    var fr=traalFriskhet(), pct=Math.round(fr*100);
+    var timar=Math.round((Date.now()-P.traalLast.tid)/3600e3*10)/10;
+    var lokKg=Math.min(P.traalLast.kg, LOKAL_KG);
+    var lokKr=Math.round(lokKg*REKE_PRIS*LOKAL_PRIS*traalPrisFaktor());
+    h+='<div class="telseksjon">Fangst om bord</div>'
+      +'<div class="telnotat"><b>'+halKg(P.traalLast.kg)+' kg reke</b>'
+      +(timar<1?'Nykokt.':'I karet i '+timar.toString().replace(".",",")+' timer.')
+      +' Friskhet:'+pctBar(pct)   // pctBar skriv talet sjølv — ikkje gjenta det
+      +(P.traalKjol?'':'<br><span class="muted">Uten kjølerom er hun god i '+FERSK_TIMAR+' timer.</span>')
+      +'</div>';
+    // Bygda tek alltid ein slump til god pris. Det er golvet: du står aldri heilt
+    // utan oppgjer, uansett kor lenge du somlar med å finne ein kjøpar.
+    h+='<div class="telrad"><span class="tt"><b>Tråløy og Saltvær</b>'
+      +'<span>Folk vil ha fersk reke. De tar alltid en slump.</span>'
+      +'<span>'+halKg(lokKg)+' kg · '+Math.round(REKE_PRIS*LOKAL_PRIS*traalPrisFaktor())+' kr/kg</span></span>'
+      +'<button class="btn sm gold" data-selg="lokalt">'+halKr(lokKr)+' kr</button></div>';
+    traalBod().forEach(function(bd){
+      h+='<div class="telrad"><img src="spill/assets/'+(bd.img||"")+'" alt="" class="speil"'
+        +' onerror="this.style.visibility=\'hidden\'">'
+        +'<span class="tt"><b>'+esc(bd.n)+'</b><span>'+esc(bd.b)+'</span>'
+        +'<span>'+esc(bd.ord)+'</span>'
+        +'<span><b>'+bd.pris+' kr/kg</b> · tar '+halKg(bd.kg)+' kg'+(bd.alt?' — hele lasset':'')+'</span></span>'
+        +'<button class="btn sm" data-selg="'+bd.k+'">'+halKr(bd.kg*bd.pris)+' kr</button></div>';
+    });
+  }
   if(P.traaler && P.traalGjeld>0){ noe=true;
     var betalt=TRAAL_TILBAKE-P.traalGjeld;
     h+='<div class="telnotat"><b>Lån i Tråløy Sparebank</b>'
-      +'Restgjeld '+Math.round(P.traalGjeld).toLocaleString("nb")+' kr av '
-      +TRAAL_TILBAKE.toLocaleString("nb")+'. Banken tar '+Math.round(TRAAL_BANKDEL*100)+' % av hvert hal.'
+      +'Lånt '+TRAAL_LAAN.toLocaleString("nb")+' kr · skal betale tilbake '
+      +TRAAL_TILBAKE.toLocaleString("nb")+' kr<br>'
+      +'Betalt '+Math.round(betalt).toLocaleString("nb")+' kr · <b>står igjen '
+      +Math.round(P.traalGjeld).toLocaleString("nb")+' kr</b><br>'
+      +'Banken tar '+Math.round(TRAAL_BANKDEL*100)+' % av hvert oppgjør.'
       +pctBar(Math.round(100*betalt/TRAAL_TILBAKE))+'</div>'; }
   if(iv.tur){ var f0=fiskerVed[iv.tur.fk], igjen=Math.max(0,iv.tur.ferdig-Date.now());
     var tt=Math.floor(igjen/3600000), mm=Math.floor(igjen%3600000/60000);
@@ -7601,6 +7635,15 @@ function visTraalApp(){ investInit();
   }
   if(!noe)h+='<div class="teltom">Ingen turer ennå. Fiskerne ringer når de har en andel ledig — svarer du ja, følger du turen her. 🛥️</div>';
   $("#telInnhold").innerHTML=h;
+  [].forEach.call($("#telInnhold").querySelectorAll("[data-selg]"),function(b){
+    b.onclick=function(){ Snd.click(); var k=b.dataset.selg;
+      if(k==="lokalt"){ traalSelg(Math.min(P.traalLast.kg,LOKAL_KG),
+        REKE_PRIS*LOKAL_PRIS*traalPrisFaktor(), "Tråløy og Saltvær"); }
+      else { var bd=null; traalBod().forEach(function(x){ if(x.k===k)bd=x; });
+        if(!bd){ notice("Det budet gjelder ikke lenger."); return; }
+        traalSelg(bd.kg, bd.pris, bd.n); }
+      visTraalApp(); };
+  });
   $("#telTilbake").onclick=function(){ Snd.click(); visTelefon(); };
 }
 var VAERNAVN={clearsky:"Klårvêr",fair:"Lettskya",partlycloudy:"Delvis skya",cloudy:"Overskya",
